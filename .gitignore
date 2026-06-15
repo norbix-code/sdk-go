@@ -1,0 +1,6 @@
+# Go
+*.test
+*.out
+/bin/
+/vendor/
+.DS_Store
