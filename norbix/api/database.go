@@ -42,6 +42,33 @@ func (m *DatabaseModule) FindTermsChildren(ctx context.Context, taxonomyName str
 	}, out)
 }
 
+// FindTermTree performs GET /{version}/database/taxonomies/{taxonomyName}/terms/tree (scope: project).
+func (m *DatabaseModule) FindTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"taxonomyName": taxonomyName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/database/taxonomies/{taxonomyName}/terms/tree",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// FindTaxonomyTree performs GET /{version}/database/taxonomies/tree (scope: project).
+func (m *DatabaseModule) FindTaxonomyTree(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/database/taxonomies/tree",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetDatabaseSchema performs GET /{version}/database/schemas/{id} (scope: project).
 func (m *DatabaseModule) GetDatabaseSchema(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
