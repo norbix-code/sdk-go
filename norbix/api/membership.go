@@ -11,11 +11,11 @@ import (
 // MembershipModule groups the membership endpoints on the API.
 type MembershipModule struct{ t *transport.Transport }
 
-// BlockUser performs PATCH /{version}/membership/users/block (scope: project).
+// BlockUser performs PATCH /{version}/membership/auth/block (scope: project).
 func (m *MembershipModule) BlockUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/block",
+		Path:       "/{version}/membership/auth/block",
 		Method:     "PATCH",
 		PathParams: nil,
 		Body:       req,
@@ -23,11 +23,11 @@ func (m *MembershipModule) BlockUser(ctx context.Context, req map[string]any, ou
 	}, out)
 }
 
-// SaveSystemUserWithPermissions performs POST /{version}/membership/users/register/service (scope: project).
+// SaveSystemUserWithPermissions performs POST /{version}/membership/auth/register/service (scope: project).
 func (m *MembershipModule) SaveSystemUserWithPermissions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/service",
+		Path:       "/{version}/membership/auth/register/service",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -35,11 +35,11 @@ func (m *MembershipModule) SaveSystemUserWithPermissions(ctx context.Context, re
 	}, out)
 }
 
-// SaveGuestUser performs POST /{version}/membership/users/register/guest (scope: project).
+// SaveGuestUser performs POST /{version}/membership/auth/register/guest (scope: project).
 func (m *MembershipModule) SaveGuestUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/guest",
+		Path:       "/{version}/membership/auth/register/guest",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -47,11 +47,11 @@ func (m *MembershipModule) SaveGuestUser(ctx context.Context, req map[string]any
 	}, out)
 }
 
-// SaveUserNameUser performs POST /{version}/membership/users/register/user-name (scope: project).
+// SaveUserNameUser performs POST /{version}/membership/auth/register/user-name (scope: project).
 func (m *MembershipModule) SaveUserNameUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/user-name",
+		Path:       "/{version}/membership/auth/register/user-name",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -59,11 +59,11 @@ func (m *MembershipModule) SaveUserNameUser(ctx context.Context, req map[string]
 	}, out)
 }
 
-// SaveEmailUser performs POST /{version}/membership/users/register/email (scope: project).
+// SaveEmailUser performs POST /{version}/membership/auth/register/email (scope: project).
 func (m *MembershipModule) SaveEmailUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/email",
+		Path:       "/{version}/membership/auth/register/email",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -71,11 +71,11 @@ func (m *MembershipModule) SaveEmailUser(ctx context.Context, req map[string]any
 	}, out)
 }
 
-// SavePhoneUser performs POST /{version}/membership/users/register/phone (scope: project).
+// SavePhoneUser performs POST /{version}/membership/auth/register/phone (scope: project).
 func (m *MembershipModule) SavePhoneUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/phone",
+		Path:       "/{version}/membership/auth/register/phone",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -83,11 +83,11 @@ func (m *MembershipModule) SavePhoneUser(ctx context.Context, req map[string]any
 	}, out)
 }
 
-// SavePhoneUserNameWithPermissions performs POST /{version}/membership/users/register/phone-with-permissions (scope: project).
+// SavePhoneUserNameWithPermissions performs POST /{version}/membership/auth/register/phone-with-permissions (scope: project).
 func (m *MembershipModule) SavePhoneUserNameWithPermissions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/phone-with-permissions",
+		Path:       "/{version}/membership/auth/register/phone-with-permissions",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -95,11 +95,11 @@ func (m *MembershipModule) SavePhoneUserNameWithPermissions(ctx context.Context,
 	}, out)
 }
 
-// SaveEmailUserNameWithPermissions performs POST /{version}/membership/users/register/email-with-permissions (scope: project).
+// SaveEmailUserNameWithPermissions performs POST /{version}/membership/auth/register/email-with-permissions (scope: project).
 func (m *MembershipModule) SaveEmailUserNameWithPermissions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/email-with-permissions",
+		Path:       "/{version}/membership/auth/register/email-with-permissions",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -107,11 +107,11 @@ func (m *MembershipModule) SaveEmailUserNameWithPermissions(ctx context.Context,
 	}, out)
 }
 
-// SaveUserNameWithPermissions performs POST /{version}/membership/users/register/user-name-with-permissions (scope: project).
+// SaveUserNameWithPermissions performs POST /{version}/membership/auth/register/user-name-with-permissions (scope: project).
 func (m *MembershipModule) SaveUserNameWithPermissions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/register/user-name-with-permissions",
+		Path:       "/{version}/membership/auth/register/user-name-with-permissions",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -119,11 +119,11 @@ func (m *MembershipModule) SaveUserNameWithPermissions(ctx context.Context, req 
 	}, out)
 }
 
-// DeleteUser performs DELETE /{version}/membership/users (scope: project).
+// DeleteUser performs DELETE /{version}/membership/auth (scope: project).
 func (m *MembershipModule) DeleteUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users",
+		Path:       "/{version}/membership/auth",
 		Method:     "DELETE",
 		PathParams: nil,
 		Body:       req,
@@ -131,14 +131,14 @@ func (m *MembershipModule) DeleteUser(ctx context.Context, req map[string]any, o
 	}, out)
 }
 
-// GetUser performs GET /{version}/membership/users/{id} (scope: project).
+// GetUser performs GET /{version}/membership/auth/{id} (scope: project).
 func (m *MembershipModule) GetUser(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"id": id,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/{id}",
+		Path:       "/{version}/membership/auth/{id}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
@@ -146,11 +146,11 @@ func (m *MembershipModule) GetUser(ctx context.Context, id string, req map[strin
 	}, out)
 }
 
-// GetUsers performs GET /{version}/membership/users (scope: project).
+// GetUsers performs GET /{version}/membership/auth (scope: project).
 func (m *MembershipModule) GetUsers(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users",
+		Path:       "/{version}/membership/auth",
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
@@ -158,14 +158,14 @@ func (m *MembershipModule) GetUsers(ctx context.Context, req map[string]any, out
 	}, out)
 }
 
-// GetUserPreferences performs GET /{version}/membership/users/{id}/preferences (scope: project).
+// GetUserPreferences performs GET /{version}/membership/auth/{id}/preferences (scope: project).
 func (m *MembershipModule) GetUserPreferences(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"id": id,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/{id}/preferences",
+		Path:       "/{version}/membership/auth/{id}/preferences",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
@@ -173,11 +173,11 @@ func (m *MembershipModule) GetUserPreferences(ctx context.Context, id string, re
 	}, out)
 }
 
-// InviteUser performs POST /{version}/membership/users/invite (scope: project).
+// InviteUser performs POST /{version}/membership/auth/invite (scope: project).
 func (m *MembershipModule) InviteUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/invite",
+		Path:       "/{version}/membership/auth/invite",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -185,11 +185,11 @@ func (m *MembershipModule) InviteUser(ctx context.Context, req map[string]any, o
 	}, out)
 }
 
-// AssignRolePermissions performs PUT /{version}/membership/users/assign-roles (scope: project).
+// AssignRolePermissions performs PUT /{version}/membership/auth/assign-roles (scope: project).
 func (m *MembershipModule) AssignRolePermissions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/assign-roles",
+		Path:       "/{version}/membership/auth/assign-roles",
 		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
@@ -197,11 +197,11 @@ func (m *MembershipModule) AssignRolePermissions(ctx context.Context, req map[st
 	}, out)
 }
 
-// UnblockUser performs PATCH /{version}/membership/users/unblock (scope: project).
+// UnblockUser performs PATCH /{version}/membership/auth/unblock (scope: project).
 func (m *MembershipModule) UnblockUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/unblock",
+		Path:       "/{version}/membership/auth/unblock",
 		Method:     "PATCH",
 		PathParams: nil,
 		Body:       req,
@@ -209,11 +209,11 @@ func (m *MembershipModule) UnblockUser(ctx context.Context, req map[string]any, 
 	}, out)
 }
 
-// UpdateUser performs PUT /{version}/membership/users (scope: project).
+// UpdateUser performs PUT /{version}/membership/auth (scope: project).
 func (m *MembershipModule) UpdateUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users",
+		Path:       "/{version}/membership/auth",
 		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
@@ -221,14 +221,14 @@ func (m *MembershipModule) UpdateUser(ctx context.Context, req map[string]any, o
 	}, out)
 }
 
-// UpdateUserPreferences performs PUT /{version}/membership/users/{id}/preferences (scope: project).
+// UpdateUserPreferences performs PUT /{version}/membership/auth/{id}/preferences (scope: project).
 func (m *MembershipModule) UpdateUserPreferences(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"id": id,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/{id}/preferences",
+		Path:       "/{version}/membership/auth/{id}/preferences",
 		Method:     "PUT",
 		PathParams: pathParams,
 		Body:       req,
@@ -422,15 +422,131 @@ func (m *MembershipModule) RefreshPasskeyToken(ctx context.Context, req map[stri
 	}, out)
 }
 
-// LinkIdentity performs POST /{version}/membership/users/{userId}/link-identity (scope: project).
+// LinkIdentity performs POST /{version}/membership/auth/{userId}/link-identity (scope: project).
 func (m *MembershipModule) LinkIdentity(ctx context.Context, userId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"userId": userId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/users/{userId}/link-identity",
+		Path:       "/{version}/membership/auth/{userId}/link-identity",
 		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ChangePassword performs POST /{version}/membership/userauth/password/change (scope: project).
+func (m *MembershipModule) ChangePassword(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/userauth/password/change",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RequestPasswordReset performs POST /{version}/membership/userauth/password/reset/request (scope: project).
+func (m *MembershipModule) RequestPasswordReset(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/userauth/password/reset/request",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ConfirmPasswordReset performs POST /{version}/membership/userauth/password/reset/confirm (scope: project).
+func (m *MembershipModule) ConfirmPasswordReset(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/userauth/password/reset/confirm",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// MapAuthToUser performs POST /{version}/membership/users/{userId}/map-auth (scope: project).
+func (m *MembershipModule) MapAuthToUser(ctx context.Context, userId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"userId": userId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{userId}/map-auth",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetContactRoles performs PUT /{version}/membership/users/{userId}/roles (scope: project).
+func (m *MembershipModule) SetContactRoles(ctx context.Context, userId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"userId": userId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{userId}/roles",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GrantContactConsent performs POST /{version}/membership/users/{contactId}/marketing-state/{channel}/consent (scope: project).
+func (m *MembershipModule) GrantContactConsent(ctx context.Context, contactId string, channel string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+		"channel":   channel,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{contactId}/marketing-state/{channel}/consent",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UnsubscribeContact performs POST /{version}/membership/users/{contactId}/marketing-state/{channel}/unsubscribe (scope: project).
+func (m *MembershipModule) UnsubscribeContact(ctx context.Context, contactId string, channel string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+		"channel":   channel,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{contactId}/marketing-state/{channel}/unsubscribe",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetContactTagSubscription performs PUT /{version}/membership/users/{contactId}/marketing-state/{commChannel}/{channel}/tags/{tag} (scope: project).
+func (m *MembershipModule) SetContactTagSubscription(ctx context.Context, contactId string, commChannel string, channel string, tag string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId":   contactId,
+		"commChannel": commChannel,
+		"channel":     channel,
+		"tag":         tag,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{contactId}/marketing-state/{commChannel}/{channel}/tags/{tag}",
+		Method:     "PUT",
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
