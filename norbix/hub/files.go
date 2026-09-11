@@ -227,6 +227,18 @@ func (m *FilesModule) SaveFilesIntegration(ctx context.Context, req map[string]a
 	}, out)
 }
 
+// TestFilesIntegration performs POST /{version}/files/integrations/test (scope: project).
+func (m *FilesModule) TestFilesIntegration(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/files/integrations/test",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // SetFilesIntegrationAsDefault performs PUT /{version}/files/integrations/{Id}/default (scope: project).
 func (m *FilesModule) SetFilesIntegrationAsDefault(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
