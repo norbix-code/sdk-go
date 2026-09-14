@@ -379,3 +379,140 @@ func (m *MembershipModule) GetPolicyOptions(ctx context.Context, req map[string]
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// CreateContact performs POST /{version}/membership/users (scope: project).
+func (m *MembershipModule) CreateContact(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetAllContacts performs GET /{version}/membership/users (scope: project).
+func (m *MembershipModule) GetAllContacts(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetContact performs GET /{version}/membership/users/{contactId} (scope: project).
+func (m *MembershipModule) GetContact(ctx context.Context, contactId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteContact performs DELETE /{version}/membership/users/{contactId} (scope: project).
+func (m *MembershipModule) DeleteContact(ctx context.Context, contactId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// MergeContacts performs POST /{version}/membership/users/merge (scope: project).
+func (m *MembershipModule) MergeContacts(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/merge",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// AddContactIdentity performs POST /{version}/membership/users/{contactId}/identities (scope: project).
+func (m *MembershipModule) AddContactIdentity(ctx context.Context, contactId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}/identities",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RemoveContactIdentity performs DELETE /{version}/membership/users/{contactId}/identities/{authId} (scope: project).
+func (m *MembershipModule) RemoveContactIdentity(ctx context.Context, contactId string, authId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+		"authId":    authId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}/identities/{authId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// PromoteContactIdentity performs POST /{version}/membership/users/{contactId}/identities/{authId}/promote (scope: project).
+func (m *MembershipModule) PromoteContactIdentity(ctx context.Context, contactId string, authId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+		"authId":    authId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}/identities/{authId}/promote",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateAuthenticationSettings performs PUT /{version}/membership/authentication (scope: project).
+func (m *MembershipModule) UpdateAuthenticationSettings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/authentication",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdatePasswordComplexity performs PUT /{version}/membership/authorization/password-complexity (scope: project).
+func (m *MembershipModule) UpdatePasswordComplexity(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/authorization/password-complexity",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

@@ -663,6 +663,18 @@ func (m *NotificationsModule) EnablePush(ctx context.Context, req map[string]any
 	}, out)
 }
 
+// GetPushDisableDependencies performs GET /{version}/notifications/push/disable-dependencies (scope: project).
+func (m *NotificationsModule) GetPushDisableDependencies(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/disable-dependencies",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ArchivePushTemplate performs PUT /{version}/notifications/push/templates/{Id}/archive (scope: project).
 func (m *NotificationsModule) ArchivePushTemplate(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -783,6 +795,18 @@ func (m *NotificationsModule) UpdatePushTemplate(ctx context.Context, req map[st
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/push/templates",
 		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RenderPush performs POST /{version}/notifications/push/templates/render (scope: project).
+func (m *NotificationsModule) RenderPush(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/templates/render",
+		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -1156,6 +1180,21 @@ func (m *NotificationsModule) DeletePushCampaign(ctx context.Context, id string,
 	}, out)
 }
 
+// StopPushCampaign performs POST /{version}/notifications/push/campaigns/{Id}/stop (scope: project).
+func (m *NotificationsModule) StopPushCampaign(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/campaigns/{Id}/stop",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetPushCampaignMessages performs GET /{version}/notifications/push/campaigns/{campaignId}/messages (scope: project).
 func (m *NotificationsModule) GetPushCampaignMessages(ctx context.Context, campaignId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1260,6 +1299,18 @@ func (m *NotificationsModule) GetPushCampaignStatistics(ctx context.Context, id 
 		Path:       "/{version}/notifications/push/campaigns/{id}/stats",
 		Method:     "GET",
 		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// PreviewPushNotification performs GET /{version}/notifications/push/preview (scope: project).
+func (m *NotificationsModule) PreviewPushNotification(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/preview",
+		Method:     "GET",
+		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
