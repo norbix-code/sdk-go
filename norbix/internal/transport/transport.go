@@ -111,6 +111,9 @@ type rawResponse struct {
 
 // Send executes req and decodes the JSON response into out (which may be nil
 // to discard the body, or a *map[string]any / pointer to a typed struct).
+//
+// Pass a *[]byte as out for an endpoint that answers with a file rather than
+// a document — the raw bytes are copied into it and nothing is parsed.
 func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 	if ctx == nil {
 		ctx = context.Background()
@@ -211,6 +214,14 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 			code = fmt.Sprintf("HTTP_%d", resp.status)
 		}
 		return norbixerr.FromHTTP(message, resp.status, code, data)
+	}
+
+	// An endpoint that answers with a file, not a document: hand the bytes
+	// over untouched. Without this a caller could only ever get "failed to
+	// decode response", because a PDF is not JSON (10b-files slice SDK-2).
+	if raw, ok := out.(*[]byte); ok {
+		*raw = resp.body
+		return nil
 	}
 
 	if out == nil || resp.status == http.StatusNoContent || len(resp.body) == 0 {

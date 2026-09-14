@@ -253,3 +253,84 @@ func (m *FilesModule) SetFilesIntegrationAsDefault(ctx context.Context, id strin
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// ---------------------------------------------------------------------------
+// Public file links (10b-files slice PUB). Hand-added by slice SDK-2 in the
+// shape gen_modules.py produces.
+//
+// A file, or a whole folder, can be made readable by anyone holding a link —
+// no sign-in, no project id. Norbix mints an unguessable id that looks like
+// "nbpf_7hK2…" and the link is
+//
+//	https://<your api host>/v3/files/public/nbpf_7hK2…/invoice.pdf
+//
+// Four rules worth knowing:
+//
+//   - Publishing a folder is ONE record, whatever is under it, at any depth.
+//   - Asking twice gives the same id back — the first link is already out.
+//   - A file cannot be made private on its own while a folder above it is
+//     public (CM-ERRORS-FILES-021); switch the folder off instead.
+//   - The root cannot be published, and a folder link with nothing after it
+//     is a 404: publishing a prefix must not publish its listing.
+//
+// Open the link itself with api.FilesModule.GetPublicFile.
+// ---------------------------------------------------------------------------
+
+// MakeFilePublic performs POST /{version}/files/item/public (scope: project).
+//
+// req takes "filesIntegrationId" and "path". The response carries "id" — the
+// nbpf_… public id. The file has to exist already.
+func (m *FilesModule) MakeFilePublic(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/files/item/public",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// MakeFilePrivate performs POST /{version}/files/item/private (scope: project).
+//
+// req takes "filesIntegrationId" and "path". Afterwards the link is a 404.
+func (m *FilesModule) MakeFilePrivate(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/files/item/private",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// MakeFolderPublic performs POST /{version}/files/folder/public (scope: project).
+//
+// req takes "filesIntegrationId" and "path". Every file under the prefix
+// becomes readable at .../<id>/<path inside the folder>.
+func (m *FilesModule) MakeFolderPublic(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/files/folder/public",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// MakeFolderPrivate performs POST /{version}/files/folder/private (scope: project).
+//
+// req takes "filesIntegrationId" and "path". It takes back every link inside
+// the folder, per-file links included.
+func (m *FilesModule) MakeFolderPrivate(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/files/folder/private",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

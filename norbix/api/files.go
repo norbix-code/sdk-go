@@ -130,3 +130,44 @@ func (m *FilesModule) RequestUploadUrl(ctx context.Context, filesIntegrationId s
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// ---------------------------------------------------------------------------
+// The public file link (10b-files slice PUB). Hand-added by slice SDK-2.
+// ---------------------------------------------------------------------------
+
+// GetPublicFile performs GET /{version}/files/public/{publicId}/{name}
+// (scope: unauthenticated) — it reads a file somebody made public.
+//
+// This call carries NO sign-in and NO project id: no Authorization header is
+// sent, even when the client is signed in. That is what public means — the
+// link has to work in an e-mail, in an <img src>, or in a browser on a
+// stranger's phone, and the unguessable nbpf_… id is the whole credential.
+//
+// Pass a *[]byte as out to get the file's bytes:
+//
+//	var pdf []byte
+//	err := client.API().Files().GetPublicFile(ctx, "nbpf_7hK2abc", "invoice.pdf", &pdf)
+//
+// name is the file's name for a file link, or the path inside the folder for a
+// folder link ("2026/q1/report.pdf"); its slashes stay slashes. When the
+// storage provider signs its own links (Amazon S3, Azure Blob, Google Cloud
+// Storage) Norbix answers 302 and net/http follows it, so the bytes come from
+// the provider and never pass through Norbix.
+//
+// Every miss is the same plain 404 — an unknown id, a name that does not
+// match, a file made private again, a file gone from storage. A more precise
+// answer would tell a stranger that the file is there.
+func (m *FilesModule) GetPublicFile(ctx context.Context, publicId string, name string, out any) error {
+	pathParams := map[string]string{
+		"publicId": publicId,
+		"name":     name,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/files/public/{publicId}/{name}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       nil,
+		Scope:      transport.ScopeUnauthenticated,
+	}, out)
+}
