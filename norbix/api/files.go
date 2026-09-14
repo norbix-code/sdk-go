@@ -138,6 +138,10 @@ func (m *FilesModule) RequestUploadUrl(ctx context.Context, filesIntegrationId s
 // GetPublicFile performs GET /{version}/files/public/{publicId}/{name}
 // (scope: unauthenticated) — it reads a file somebody made public.
 //
+// The gateway declares the route as /{version}/files/public/{PublicId}/{Name*} — written
+// out here exactly as the gateway spells it, so the SDK coverage matrix can
+// see that the two agree (knowledge.md K23).
+//
 // This call carries NO sign-in and NO project id: no Authorization header is
 // sent, even when the client is signed in. That is what public means — the
 // link has to work in an e-mail, in an <img src>, or in a browser on a
