@@ -216,7 +216,7 @@ func TestAListingCarriesTheNewPublicFields(t *testing.T) {
 	  "list": {"items": [{
 	     "path": "invoices/invoice.pdf",
 	     "isPublic": true,
-	     "publicUrl": "https://api.norbix.dev/v3/files/public/nbpf_7hK2abc/invoice.pdf"}]},
+	     "publicUrl": "https://api.norbix.io/v3/files/public/nbpf_7hK2abc/invoice.pdf"}]},
 	  "folders": ["invoices", "drafts"],
 	  "publicFolders": [{"path":"invoices","publicId":"nbpf_folder1","inherited":false}]
 	}`
