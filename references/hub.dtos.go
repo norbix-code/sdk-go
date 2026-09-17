@@ -1,3 +1,5 @@
+//go:build ignore
+
 /* Options:
 Date: 2026-09-04 14:56:08
 Version: 10.08
