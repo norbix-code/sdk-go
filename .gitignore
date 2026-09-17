@@ -4,3 +4,6 @@
 /bin/
 /vendor/
 .DS_Store
+
+# semantic-release tooling (package.json / package-lock.json are committed)
+node_modules/

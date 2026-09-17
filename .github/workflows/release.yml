@@ -1,0 +1,97 @@
+name: Release
+
+# Go modules have no registry: the Go module proxy serves whatever is tagged in
+# git, so a release is the `vX.Y.Z` tag plus its GitHub Release, both created by
+# semantic-release from conventional commits since the last tag:
+# `feat:` → minor, `fix:` → patch, `feat!:` / `BREAKING CHANGE:` → major.
+# `chore:`, `ci:`, `test:` don't release.
+#
+# Note for majors: from v2 on, Go requires the module path to end in /v2
+# (go.mod `module github.com/norbix-code/sdk-go/v2`), so a breaking release
+# needs that change in the same pull request.
+#
+# `main` is protected (changes only through pull requests), so the release does
+# NOT commit back; release notes live on GitHub Releases.
+#
+# The baseline tag `v0.0.0` marks the root commit so the first release is 0.1.0
+# instead of semantic-release's default 1.0.0.
+
+on:
+  push:
+    branches: [main, next, beta]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: semantic-release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # semantic-release needs the full history and tags.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Sync branch tip
+        # A run checks out its triggering SHA. When several merges land close
+        # together that SHA is already behind origin and semantic-release
+        # refuses to release; release from the remote tip instead.
+        run: |
+          git fetch origin "${GITHUB_REF_NAME}"
+          git checkout "${GITHUB_REF_NAME}"
+          git reset --hard "origin/${GITHUB_REF_NAME}"
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # A tag is only worth creating if the module builds and its tests pass at
+      # that commit — `go get` resolves exactly this tree.
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test
+        run: go test -race -count=1 ./...
+
+      - name: Setup Node (release tooling)
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install release tooling
+        run: npm ci --no-audit --no-fund
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Warm the Go module proxy
+        # Makes the new version show up on pkg.go.dev and in `go get @latest`
+        # right away instead of on first use.
+        if: success()
+        run: |
+          TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+          if [ -n "$TAG" ] && [ "$TAG" != "v0.0.0" ]; then
+            GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod go list -m "github.com/norbix-code/sdk-go@${TAG}" || true
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Release · ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+          if [ -n "$TAG" ]; then
+            echo "Latest tag: \`${TAG}\` — notes: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${TAG}" >> $GITHUB_STEP_SUMMARY
+          fi
