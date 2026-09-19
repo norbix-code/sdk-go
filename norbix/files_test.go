@@ -396,8 +396,10 @@ func newProbeServer(t *testing.T, status int, responseBody string) (*Client, *re
 func TestAPITestFilesIntegration(t *testing.T) {
 	c, got, seen := newProbeServer(t, http.StatusOK, `{
 		"items": [
-			{"operation": "Upload", "result": "OK"},
-			{"operation": "Delete", "result": "Failed", "errors": ["access denied"]}
+			{"operation": "UploadFile", "result": "OK"},
+			{"operation": "GetFile", "result": "FAILED", "errors": ["access denied"]},
+			{"operation": "GetAllFiles", "result": "NOT_TESTED"},
+			{"operation": "DeleteFile", "result": "NOT_TESTED"}
 		],
 		"responseStatus": {"isSuccess": true}
 	}`)
@@ -422,13 +424,13 @@ func TestAPITestFilesIntegration(t *testing.T) {
 	if out.ResponseStatus == nil || !out.ResponseStatus.IsSuccess {
 		t.Errorf("responseStatus: got %+v", out.ResponseStatus)
 	}
-	if len(out.Items) != 2 {
-		t.Fatalf("items: got %d want 2", len(out.Items))
+	if len(out.Items) != 4 {
+		t.Fatalf("items: got %d want 4", len(out.Items))
 	}
-	if out.Items[0].Operation != "Upload" || out.Items[0].Result != "OK" || len(out.Items[0].Errors) != 0 {
+	if out.Items[0].Operation != "UploadFile" || out.Items[0].Result != "OK" || len(out.Items[0].Errors) != 0 {
 		t.Errorf("first item: got %+v", out.Items[0])
 	}
-	if out.Items[1].Operation != "Delete" || out.Items[1].Result != "Failed" ||
+	if out.Items[1].Operation != "GetFile" || out.Items[1].Result != "FAILED" ||
 		len(out.Items[1].Errors) != 1 || out.Items[1].Errors[0] != "access denied" {
 		t.Errorf("second item: got %+v", out.Items[1])
 	}

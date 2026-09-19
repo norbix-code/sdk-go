@@ -17,8 +17,10 @@ import (
 //
 // It runs a live probe against the files integration: it uploads a small
 // file, reads it back, lists the folder and deletes the file again. The
-// answer has one item per step, each with an Operation, a Result ("OK" or
-// "Failed") and, when the step failed, its Errors. Decode it into a
+// answer has one item per step, in order UploadFile, GetFile, GetAllFiles,
+// DeleteFile, each with an Operation, a Result ("OK", "FAILED", or
+// "NOT_TESTED" once an earlier step failed) and, when the step failed, its
+// Errors. Decode it into a
 // *dtos.TestFilesIntegrationResponse:
 //
 //	var res dtos.TestFilesIntegrationResponse
