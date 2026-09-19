@@ -3,14 +3,18 @@ package norbix
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/norbix-code/sdk-go/norbix/api/dtos"
+	norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
 )
 
 // Files endpoints, one case per endpoint: 12 on the hub (the dashboard API)
-// and 8 on the public API.
+// and 9 on the public API.
 //
 // Every case starts its own fake HTTP server and its own client, so the order
 // the tests run in does not matter and no real storage provider is contacted.
@@ -351,4 +355,131 @@ func TestAPIDeleteManyFiles(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, got, http.MethodDelete, "/v2/files/"+filesIntegrationID+"/bulk")
+}
+
+// ---- public API: the integration probe (slice API-TEST, #39) ----------------
+
+// newProbeServer is newFilesClient plus the request headers, and it answers
+// with the given HTTP status.
+func newProbeServer(t *testing.T, status int, responseBody string) (*Client, *recorded, *http.Header) {
+	t.Helper()
+	got := &recorded{}
+	seen := &http.Header{}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got.method = r.Method
+		got.path = r.URL.Path
+		got.query = r.URL.RawQuery
+		*seen = r.Header.Clone()
+		if raw, _ := io.ReadAll(r.Body); len(raw) > 0 {
+			_ = json.Unmarshal(raw, &got.body)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(responseBody))
+	}))
+	t.Cleanup(srv.Close)
+
+	c, err := New(Options{
+		ProjectID:  "proj_1",
+		APIKey:     "key_1",
+		BaseURLAPI: srv.URL,
+		BaseURLHub: srv.URL,
+		APIVersion: "v2",
+		HubVersion: "v2",
+	})
+	if err != nil {
+		t.Fatalf("client: %v", err)
+	}
+	return c, got, seen
+}
+
+func TestAPITestFilesIntegration(t *testing.T) {
+	c, got, seen := newProbeServer(t, http.StatusOK, `{
+		"items": [
+			{"operation": "UploadFile", "result": "OK"},
+			{"operation": "GetFile", "result": "FAILED", "errors": ["access denied"]},
+			{"operation": "GetAllFiles", "result": "NOT_TESTED"},
+			{"operation": "DeleteFile", "result": "NOT_TESTED"}
+		],
+		"responseStatus": {"isSuccess": true}
+	}`)
+
+	var out dtos.TestFilesIntegrationResponse
+	err := c.API.Files.TestFilesIntegration(context.Background(), filesIntegrationID, nil, &out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectCall(t, got, http.MethodPost, "/v2/files/"+filesIntegrationID+"/test")
+	if got.query != "" {
+		t.Errorf("a POST must not put anything in the query string: %q", got.query)
+	}
+	if auth := seen.Get("Authorization"); auth != "Bearer key_1" {
+		t.Errorf("Authorization: got %q want %q", auth, "Bearer key_1")
+	}
+	if p := seen.Get("X-CM-ProjectId"); p != "proj_1" {
+		t.Errorf("X-CM-ProjectId: got %q want %q", p, "proj_1")
+	}
+
+	if out.ResponseStatus == nil || !out.ResponseStatus.IsSuccess {
+		t.Errorf("responseStatus: got %+v", out.ResponseStatus)
+	}
+	if len(out.Items) != 4 {
+		t.Fatalf("items: got %d want 4", len(out.Items))
+	}
+	if out.Items[0].Operation != "UploadFile" || out.Items[0].Result != "OK" || len(out.Items[0].Errors) != 0 {
+		t.Errorf("first item: got %+v", out.Items[0])
+	}
+	if out.Items[1].Operation != "GetFile" || out.Items[1].Result != "FAILED" ||
+		len(out.Items[1].Errors) != 1 || out.Items[1].Errors[0] != "access denied" {
+		t.Errorf("second item: got %+v", out.Items[1])
+	}
+}
+
+// Without the files:create permission the gateway answers 403; the caller
+// gets the SDK's usual *errors.AuthenticationError with the status on it.
+func TestAPITestFilesIntegrationWithoutPermissionIsAnError(t *testing.T) {
+	c, _, _ := newProbeServer(t, http.StatusForbidden,
+		`{"responseStatus":{"isSuccess":false,"errors":[{"message":"files:create is required"}]}}`)
+
+	var out dtos.TestFilesIntegrationResponse
+	err := c.API.Files.TestFilesIntegration(context.Background(), filesIntegrationID, nil, &out)
+	if err == nil {
+		t.Fatal("expected an error for a 403")
+	}
+	var authErr *norbixerr.AuthenticationError
+	if !stderrors.As(err, &authErr) {
+		t.Fatalf("error type: got %T want *errors.AuthenticationError", err)
+	}
+	if authErr.Base.Status != http.StatusForbidden {
+		t.Errorf("status: got %d want 403", authErr.Base.Status)
+	}
+	if _, ok := authErr.Base.Details["responseStatus"]; !ok {
+		t.Errorf("details did not keep the responseStatus: %v", authErr.Base.Details)
+	}
+}
+
+// A request the gateway rejects before the probe runs (for example an
+// integration id that is not a valid id) comes back as HTTP 200 with
+// isSuccess false. Like every other endpoint in this SDK, that is not a Go
+// error: the caller reads ResponseStatus. This test pins that behaviour.
+func TestAPITestFilesIntegrationRejectedRequestKeepsItsResponseStatus(t *testing.T) {
+	c, _, _ := newProbeServer(t, http.StatusOK,
+		`{"responseStatus":{"isSuccess":false,"errors":[{"message":"FilesIntegrationId is not valid","errorCode":"Validation"}]}}`)
+
+	var out dtos.TestFilesIntegrationResponse
+	err := c.API.Files.TestFilesIntegration(context.Background(), "not-an-id", nil, &out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out.ResponseStatus == nil || out.ResponseStatus.IsSuccess {
+		t.Fatalf("responseStatus: got %+v, want isSuccess false", out.ResponseStatus)
+	}
+	if len(out.ResponseStatus.Errors) != 1 ||
+		out.ResponseStatus.Errors[0].Message != "FilesIntegrationId is not valid" {
+		t.Errorf("errors: got %+v", out.ResponseStatus.Errors)
+	}
+	if len(out.Items) != 0 {
+		t.Errorf("items: got %d want none", len(out.Items))
+	}
 }
