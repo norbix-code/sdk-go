@@ -99,15 +99,38 @@ Failures return `*errors.Error` or a typed variant. Use `errors.As`:
 ```go
 import norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
 
-var nf *norbixerr.NotFoundError
-if errors.As(err, &nf) {
-	// nf.Base.Status == 404, nf.Base.Code, nf.Base.Details
+var e *norbixerr.Error
+if errors.As(err, &e) {
+	fmt.Println(e.HTTPStatus(), e.Code, e.Message)
+	for _, item := range e.Errors {
+		fmt.Println(item.ErrorCode, item.FieldName, item.Message)
+	}
+	_ = e.Body // the answer exactly as it arrived
 }
 ```
 
 Types: `AuthenticationError` (401/403), `NotFoundError` (404),
 `RateLimitError` (429), `ValidationError` (400/422), base `Error` otherwise.
 Idempotent verbs (GET/DELETE) retry on 429/5xx with exponential backoff.
+
+`Message` and `Code` are the gateway's own. The gateway puts them inside
+`responseStatus.errors[]`, so the SDK reads that list first, takes the first
+entry for `Message` / `Code`, and keeps every entry in `Errors`. Only when the
+body has no `responseStatus` are the top-level `message` and `errorCode` read.
+`Request failed (HTTP <status>)` with the code `HTTP_<status>` is the last
+fallback, used when the body says nothing — a 500 page that is not JSON, say.
+
+#### Breaking change — a refused call now returns an error
+
+The gateway answers a business refusal (an unknown id, a rule that says no)
+with **HTTP 200** and `responseStatus.isSuccess = false`. The SDK used to fill
+`out` and return `nil`, so code carried on as if the call had worked. It now
+returns a `*errors.Error` with `Status` 200 and the gateway's message and code.
+
+If your code checked `out.ResponseStatus.IsSuccess` itself, check `err`
+instead. Endpoints that answer with raw bytes rather than a document (file
+download, the public file link — the ones you pass a `*[]byte` to) are not JSON
+and are unchanged.
 
 ## Working with terms
 
