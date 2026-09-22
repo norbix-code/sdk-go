@@ -27,6 +27,7 @@ const (
 	testNotificationID = "notif_1"
 	testTemplateID     = "tpl_1"
 	testIntegrationID  = "int_1"
+	testDeviceID       = "pnd_1"
 )
 
 type pushCase struct {
@@ -200,6 +201,14 @@ func pushCases() []pushCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.RegisterDevice(ctx, body, nil)
 			}},
+		{"GetPushDevices", http.MethodGet, "/v2/notifications/push/devices",
+			func(ctx context.Context, m *NotificationsModule) error {
+				return m.GetPushDevices(ctx, nil, nil)
+			}},
+		{"GetPushDevice", http.MethodGet, "/v2/notifications/push/devices/" + testDeviceID,
+			func(ctx context.Context, m *NotificationsModule) error {
+				return m.GetPushDevice(ctx, testDeviceID, nil, nil)
+			}},
 	}
 }
 
@@ -243,11 +252,12 @@ func TestPushEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Push surface is 37 routes. If the gateway grows one and the module
-// is regenerated, this count changes and the test says so, so a new endpoint
+// The whole Push surface is 39 routes (37 plus the two device reads added with
+// the devices read side). If the gateway grows one and the module is
+// regenerated, this count changes and the test says so, so a new endpoint
 // cannot arrive untested.
 func TestPushSurfaceSize(t *testing.T) {
-	const want = 37
+	const want = 39
 	if got := len(pushCases()); got != want {
 		t.Errorf("push endpoint count: got %d want %d", got, want)
 	}

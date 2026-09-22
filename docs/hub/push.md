@@ -89,6 +89,8 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 | method | verb | path |
 |---|---|---|
 | `RegisterDevice(ctx, req, out)` | `POST` | `/notifications/push/devices` |
+| `GetPushDevices(ctx, req, out)` | `GET` | `/notifications/push/devices` |
+| `GetPushDevice(ctx, id, req, out)` | `GET` | `/notifications/push/devices/{id}` |
 
 ## Choosing who a campaign goes to
 
@@ -157,6 +159,31 @@ req := map[string]any{
     "pushDeviceDto": map[string]any{"deviceOs": "iOS", "token": "<device token>"},
 }
 err := client.Hub.Notifications.RegisterDevice(ctx, req, nil)
+```
+
+## Listing registered devices
+
+`GetPushDevices` returns the devices registered in the project, each with the
+user it belongs to. Narrow it with `userId`, `deviceKey` (the provider token)
+or `platform` (`ios`, `android`, `chrome`, `safari`, `expo`); a word outside
+that list is refused rather than answered with an empty page.
+
+```go
+var devices map[string]any
+err := client.Hub.Notifications.GetPushDevices(ctx, map[string]any{
+    "platform": "ios",
+}, &devices)
+```
+
+Devices are stored inside their user, so a page is a page of **users** and
+carries every matching device those users hold. Follow `hasMore` rather than
+stopping at the first short page.
+
+`GetPushDevice` takes one device id and answers with the device and its owner:
+
+```go
+var device map[string]any
+err := client.Hub.Notifications.GetPushDevice(ctx, "pnd_123", nil, &device)
 ```
 
 ## Known gaps
