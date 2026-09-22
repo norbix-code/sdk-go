@@ -463,10 +463,30 @@ examples/webhook-receiver/                runnable webhook sink
 
 ## Codegen notes
 
-Endpoint modules are generated from the same route map the other SDKs use; DTO
-structs are generated from the ServiceStack TypeScript DTOs (`hub2.dtos.ts`,
-`api2.dtos.ts`) because ServiceStack has no native Go type exporter. Generated
-files carry a `DO NOT EDIT` header.
+`norbix/api/dtos/dtos.go` and `norbix/hub/dtos/dtos.go` are generated from the
+Norbix gateway's own contract, straight from a running gateway. They carry a
+`DO NOT EDIT` header: a change made here is lost on the next run. If a type is
+wrong, the gateway or the generator is wrong.
+
+The endpoint modules (`norbix/api/*.go`, `norbix/hub/*.go`) are **not**
+generated today — the script that made them is gone. They are maintained by
+hand, with a test per method, and they keep their old header until a module
+generator exists.
+
+### Regenerate the types
+
+Start the gateway (API on `:5002`, Hub on `:5001`), then run the generator from
+the private `typegen` toolchain — one command, both files:
+
+```bash
+python3 <typegen>/languages/go/generate.py --out .
+go build ./norbix/... && go vet ./norbix/... && gofmt -l norbix/ && go test ./norbix/...
+```
+
+`--api-url` and `--hub-url` point it somewhere else; `--api-file` / `--hub-file`
+read a saved contract export instead of a live gateway. Two runs on the same
+gateway give byte-identical files, so a non-empty `git diff` after a run is a
+real contract change — read it before committing.
 
 ## License
 
