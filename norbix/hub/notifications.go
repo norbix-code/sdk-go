@@ -960,6 +960,36 @@ func (m *NotificationsModule) RegisterDevice(ctx context.Context, req map[string
 	}, out)
 }
 
+// GetPushDevices performs GET /{version}/notifications/push/devices (scope: project).
+//
+// Narrow the list with userId, deviceKey (the provider token) or platform
+// (ios, android, chrome, safari, expo) in req.
+func (m *NotificationsModule) GetPushDevices(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/devices",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetPushDevice performs GET /{version}/notifications/push/devices/{id} (scope: project).
+func (m *NotificationsModule) GetPushDevice(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/devices/{id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetAllContacts performs GET /{version}/notifications/contacts (scope: project).
 func (m *NotificationsModule) GetAllContacts(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
