@@ -199,29 +199,24 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 	}
 
 	if resp.status >= 400 {
-		data := map[string]any{}
-		_ = json.Unmarshal(resp.body, &data)
-		message := stringField(data, "message")
-		if message == "" {
-			if len(resp.body) > 0 {
-				message = string(resp.body)
-			} else {
-				message = "Request failed"
-			}
-		}
-		code := stringField(data, "errorCode")
-		if code == "" {
-			code = fmt.Sprintf("HTTP_%d", resp.status)
-		}
-		return norbixerr.FromHTTP(message, resp.status, code, data)
+		return norbixerr.FromBody(resp.body, resp.status)
 	}
 
 	// An endpoint that answers with a file, not a document: hand the bytes
 	// over untouched. Without this a caller could only ever get "failed to
 	// decode response", because a PDF is not JSON (10b-files slice SDK-2).
+	// Those answers are not JSON, so the isSuccess check below does not apply
+	// to them.
 	if raw, ok := out.(*[]byte); ok {
 		*raw = resp.body
 		return nil
+	}
+
+	// A 2xx does not mean the call worked: the gateway answers a business
+	// refusal with HTTP 200 and responseStatus.isSuccess=false, and that is a
+	// failure the caller must see (10b-files, issue #67).
+	if norbixerr.SaysItFailed(resp.body) {
+		return norbixerr.FromBody(resp.body, resp.status)
 	}
 
 	if out == nil || resp.status == http.StatusNoContent || len(resp.body) == 0 {
@@ -407,13 +402,4 @@ func stringify(v any) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
-}
-
-func stringField(m map[string]any, key string) string {
-	if v, ok := m[key]; ok {
-		if s, ok := v.(string); ok {
-			return s
-		}
-	}
-	return ""
 }

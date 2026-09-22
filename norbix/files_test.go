@@ -461,23 +461,33 @@ func TestAPITestFilesIntegrationWithoutPermissionIsAnError(t *testing.T) {
 
 // A request the gateway rejects before the probe runs (for example an
 // integration id that is not a valid id) comes back as HTTP 200 with
-// isSuccess false. Like every other endpoint in this SDK, that is not a Go
-// error: the caller reads ResponseStatus. This test pins that behaviour.
-func TestAPITestFilesIntegrationRejectedRequestKeepsItsResponseStatus(t *testing.T) {
+// isSuccess false. That is a refusal, so it is a Go error carrying the
+// gateway's own text and code (10b-files slice ERRORS, #67). Until then this
+// test pinned the opposite — "the caller reads ResponseStatus".
+func TestAPITestFilesIntegrationRejectedRequestIsAnError(t *testing.T) {
 	c, _, _ := newProbeServer(t, http.StatusOK,
 		`{"responseStatus":{"isSuccess":false,"errors":[{"message":"FilesIntegrationId is not valid","errorCode":"Validation"}]}}`)
 
 	var out dtos.TestFilesIntegrationResponse
 	err := c.API.Files.TestFilesIntegration(context.Background(), "not-an-id", nil, &out)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	if err == nil {
+		t.Fatal("expected an error for a 200 that says isSuccess false")
 	}
-	if out.ResponseStatus == nil || out.ResponseStatus.IsSuccess {
-		t.Fatalf("responseStatus: got %+v, want isSuccess false", out.ResponseStatus)
+	var base *norbixerr.Error
+	if !stderrors.As(err, &base) {
+		t.Fatalf("error type: got %T want *errors.Error", err)
 	}
-	if len(out.ResponseStatus.Errors) != 1 ||
-		out.ResponseStatus.Errors[0].Message != "FilesIntegrationId is not valid" {
-		t.Errorf("errors: got %+v", out.ResponseStatus.Errors)
+	if base.Status != http.StatusOK {
+		t.Errorf("status: got %d want 200", base.Status)
+	}
+	if base.Message != "FilesIntegrationId is not valid" {
+		t.Errorf("message: got %q", base.Message)
+	}
+	if base.Code != "Validation" {
+		t.Errorf("code: got %q want %q", base.Code, "Validation")
+	}
+	if len(base.Errors) != 1 || base.Errors[0].Message != "FilesIntegrationId is not valid" {
+		t.Errorf("errors: got %+v", base.Errors)
 	}
 	if len(out.Items) != 0 {
 		t.Errorf("items: got %d want none", len(out.Items))
