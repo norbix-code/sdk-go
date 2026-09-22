@@ -1,7 +1,11 @@
 // Hand-written, not generated (10b-files slice API-TEST, issue #39).
 //
-// files.go carries the generator's DO NOT EDIT header, so this method lives in
-// its own file of the same package. If a future regeneration of files.go adds
+// The DTO half of this pair is gone: the type generator now writes
+// TestFilesIntegrationRequest, TestFilesIntegrationResponse and
+// IntegrationTestResultItemDto into api/dtos/dtos.go straight from the
+// gateway. The METHOD stays hand-written, because nothing generates the
+// endpoint modules yet — files.go still carries the header of a generator
+// that was lost. When module generation comes back and files.go gains
 // TestFilesIntegration itself, the build fails with "method redeclared" and
 // this file should simply be deleted.
 
