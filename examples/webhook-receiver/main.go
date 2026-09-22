@@ -23,10 +23,10 @@ func buildReceiver() *webhooks.Receiver {
 	// NORBIX_WEBHOOK_TOLERANCE_SECONDS, NORBIX_PROJECT_ID, NORBIX_ACCOUNT_ID.
 	r := webhooks.New(webhooks.Options{})
 
-	// Typed handler — decode the payload into the generated UserDto.
+	// Typed handler — decode the payload into the generated AuthDto (the gateway renamed UserDto → AuthDto).
 	r.On(webhooks.EventMembershipUserRegistered,
 		func(ctx context.Context, payload json.RawMessage, e webhooks.Event) error {
-			user, err := webhooks.DecodePayload[dtos.UserDto](payload)
+			user, err := webhooks.DecodePayload[dtos.AuthDto](payload)
 			if err != nil {
 				return err
 			}
