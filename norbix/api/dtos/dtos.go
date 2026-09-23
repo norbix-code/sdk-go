@@ -8,124 +8,6 @@
 // tag with omitempty, because the gateway leaves absent values out.
 package dtos
 
-// TimeUnit enum.
-type TimeUnit string
-
-const (
-	TimeUnitTicks        TimeUnit = "Ticks"
-	TimeUnitMilliseconds TimeUnit = "Milliseconds"
-	TimeUnitSeconds      TimeUnit = "Seconds"
-	TimeUnitMinutes      TimeUnit = "Minutes"
-	TimeUnitHours        TimeUnit = "Hours"
-)
-
-// ResourceRefKind enum.
-type ResourceRefKind string
-
-const (
-	ResourceRefKindContact         ResourceRefKind = "Contact"
-	ResourceRefKindDocument        ResourceRefKind = "Document"
-	ResourceRefKindFile            ResourceRefKind = "File"
-	ResourceRefKindPaymentCustomer ResourceRefKind = "PaymentCustomer"
-	ResourceRefKindOrder           ResourceRefKind = "Order"
-	ResourceRefKindPayment         ResourceRefKind = "Payment"
-	ResourceRefKindProduct         ResourceRefKind = "Product"
-	ResourceRefKindIntegration     ResourceRefKind = "Integration"
-)
-
-// ResourceSource enum.
-type ResourceSource string
-
-const (
-	ResourceSourceNorbix       ResourceSource = "Norbix"
-	ResourceSourceStripe       ResourceSource = "Stripe"
-	ResourceSourceShopify      ResourceSource = "Shopify"
-	ResourceSourcePayPal       ResourceSource = "PayPal"
-	ResourceSourceAdyen        ResourceSource = "Adyen"
-	ResourceSourceMollie       ResourceSource = "Mollie"
-	ResourceSourcePaddle       ResourceSource = "Paddle"
-	ResourceSourceLemonSqueezy ResourceSource = "LemonSqueezy"
-	ResourceSourceAppleInApp   ResourceSource = "AppleInApp"
-	ResourceSourceGoogleInApp  ResourceSource = "GoogleInApp"
-	ResourceSourceAuthorizeNet ResourceSource = "AuthorizeNet"
-	ResourceSourceBraintree    ResourceSource = "Braintree"
-	ResourceSourceCheckOutCom  ResourceSource = "CheckOutCom"
-	ResourceSourceWooCommerce  ResourceSource = "WooCommerce"
-	ResourceSourceMagento      ResourceSource = "Magento"
-	ResourceSourceWorldpay     ResourceSource = "Worldpay"
-)
-
-// CommunicationChannel enum.
-type CommunicationChannel string
-
-const (
-	CommunicationChannelTransactional CommunicationChannel = "Transactional"
-	CommunicationChannelMarketing     CommunicationChannel = "Marketing"
-	CommunicationChannelSystem        CommunicationChannel = "System"
-)
-
-// DeliveryChannel enum.
-type DeliveryChannel string
-
-const (
-	DeliveryChannelEmail        DeliveryChannel = "Email"
-	DeliveryChannelPush         DeliveryChannel = "Push"
-	DeliveryChannelSms          DeliveryChannel = "Sms"
-	DeliveryChannelWebPush      DeliveryChannel = "WebPush"
-	DeliveryChannelInApp        DeliveryChannel = "InApp"
-	DeliveryChannelChatBot      DeliveryChannel = "ChatBot"
-	DeliveryChannelChatPlatform DeliveryChannel = "ChatPlatform"
-)
-
-// Continent enum.
-type Continent string
-
-const (
-	ContinentAfrica       Continent = "Africa"
-	ContinentAntarctica   Continent = "Antarctica"
-	ContinentAsia         Continent = "Asia"
-	ContinentEurope       Continent = "Europe"
-	ContinentNorthAmerica Continent = "NorthAmerica"
-	ContinentOceania      Continent = "Oceania"
-	ContinentSouthAmerica Continent = "SouthAmerica"
-)
-
-// FileProvider enum.
-type FileProvider string
-
-const (
-	FileProviderLocal              FileProvider = "Local"
-	FileProviderAwsS3              FileProvider = "AwsS3"
-	FileProviderAzureBlobStorage   FileProvider = "AzureBlobStorage"
-	FileProviderGoogleCloudStorage FileProvider = "GoogleCloudStorage"
-	FileProviderFtp                FileProvider = "Ftp"
-	FileProviderAppleICloud        FileProvider = "AppleICloud"
-	FileProviderDropBox            FileProvider = "DropBox"
-	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
-)
-
-// DeviceType enum.
-type DeviceType string
-
-const (
-	DeviceTypeUnknown DeviceType = "Unknown"
-	DeviceTypePhone   DeviceType = "Phone"
-	DeviceTypeTablet  DeviceType = "Tablet"
-	DeviceTypeDesktop DeviceType = "Desktop"
-	DeviceTypeTv      DeviceType = "Tv"
-)
-
-// PushDeviceDeliveryFamily enum.
-type PushDeviceDeliveryFamily string
-
-const (
-	PushDeviceDeliveryFamilyIos     PushDeviceDeliveryFamily = "Ios"
-	PushDeviceDeliveryFamilyAndroid PushDeviceDeliveryFamily = "Android"
-	PushDeviceDeliveryFamilyChrome  PushDeviceDeliveryFamily = "Chrome"
-	PushDeviceDeliveryFamilySafari  PushDeviceDeliveryFamily = "Safari"
-	PushDeviceDeliveryFamilyExpo    PushDeviceDeliveryFamily = "Expo"
-)
-
 // Gender enum.
 type Gender string
 
@@ -145,28 +27,6 @@ const (
 	MarketingBlockReasonHardBounce   MarketingBlockReason = "HardBounce"
 	MarketingBlockReasonInvalidEmail MarketingBlockReason = "InvalidEmail"
 	MarketingBlockReasonAdminBlock   MarketingBlockReason = "AdminBlock"
-)
-
-// PushProvider enum.
-type PushProvider string
-
-const (
-	PushProviderAppleApns            PushProvider = "AppleApns"
-	PushProviderSafariWeb            PushProvider = "SafariWeb"
-	PushProviderSafariPush           PushProvider = "SafariPush"
-	PushProviderAndroidFirebase      PushProvider = "AndroidFirebase"
-	PushProviderChromeWeb            PushProvider = "ChromeWeb"
-	PushProviderFirefoxWeb           PushProvider = "FirefoxWeb"
-	PushProviderEdgeWeb              PushProvider = "EdgeWeb"
-	PushProviderChromePush           PushProvider = "ChromePush"
-	PushProviderCodeMashIosApp       PushProvider = "CodeMashIosApp"
-	PushProviderCodeMashAndroidApp   PushProvider = "CodeMashAndroidApp"
-	PushProviderCodeMashSafariPlugin PushProvider = "CodeMashSafariPlugin"
-	PushProviderCodeMashSafariWeb    PushProvider = "CodeMashSafariWeb"
-	PushProviderCodeMashChromePlugin PushProvider = "CodeMashChromePlugin"
-	PushProviderCodeMashChromeWeb    PushProvider = "CodeMashChromeWeb"
-	PushProviderExpo                 PushProvider = "Expo"
-	PushProviderFake                 PushProvider = "Fake"
 )
 
 // CodeMashRelease enum.
@@ -237,6 +97,20 @@ const (
 	TriggerActionTypeMarketplace TriggerActionType = "Marketplace"
 )
 
+// FileProvider enum.
+type FileProvider string
+
+const (
+	FileProviderLocal              FileProvider = "Local"
+	FileProviderAwsS3              FileProvider = "AwsS3"
+	FileProviderAzureBlobStorage   FileProvider = "AzureBlobStorage"
+	FileProviderGoogleCloudStorage FileProvider = "GoogleCloudStorage"
+	FileProviderFtp                FileProvider = "Ftp"
+	FileProviderAppleICloud        FileProvider = "AppleICloud"
+	FileProviderDropBox            FileProvider = "DropBox"
+	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
+)
+
 // IReturn DTO.
 type IReturn[T any] struct {
 }
@@ -275,261 +149,6 @@ type IVersionBasedRequest struct {
 
 // IHasCorrelationIdRequest DTO.
 type IHasCorrelationIdRequest struct {
-}
-
-// EmailAddress DTO.
-type EmailAddress struct {
-	Address string `json:"address,omitempty"`
-}
-
-// DisplayName DTO.
-type DisplayName struct {
-	Value string `json:"value,omitempty"`
-}
-
-// AggregateId DTO.
-type AggregateId struct {
-	Value string `json:"value,omitempty"`
-}
-
-// AccountId DTO.
-type AccountId struct {
-	AggregateId
-}
-
-// UtcDateTime DTO.
-type UtcDateTime struct {
-}
-
-// ExpirationToken DTO.
-type ExpirationToken struct {
-	Items float64  `json:"items,omitempty"`
-	Unit  TimeUnit `json:"unit,omitempty"`
-	Value float64  `json:"value,omitempty"`
-}
-
-// CodeMashSubscriptionId DTO.
-type CodeMashSubscriptionId struct {
-	AggregateId
-}
-
-// ProjectId DTO.
-type ProjectId struct {
-	AggregateId
-}
-
-// IntegrationId DTO.
-type IntegrationId struct {
-	AggregateId
-}
-
-// ResourceRef DTO.
-type ResourceRef struct {
-	ProjectId     *ProjectId      `json:"projectId,omitempty"`
-	IntegrationId *IntegrationId  `json:"integrationId,omitempty"`
-	Kind          ResourceRefKind `json:"kind,omitempty"`
-}
-
-// PaymentCustomerRef DTO.
-type PaymentCustomerRef struct {
-	ResourceRef
-	Kind       ResourceRefKind `json:"kind,omitempty"`
-	Source     ResourceSource  `json:"source,omitempty"`
-	ExternalId string          `json:"externalId,omitempty"`
-}
-
-// Quantity DTO.
-type Quantity struct {
-	Value float64 `json:"value,omitempty"`
-}
-
-// CodeMashManagedServiceSubscription DTO.
-type CodeMashManagedServiceSubscription struct {
-	SubscriptionId     *CodeMashSubscriptionId `json:"subscriptionId,omitempty"`
-	PaymentCustomerRef *PaymentCustomerRef     `json:"paymentCustomerRef,omitempty"`
-	RefSubscriptionId  string                  `json:"refSubscriptionId,omitempty"`
-	IssuedOn           *UtcDateTime            `json:"issuedOn,omitempty"`
-	WillExpireOn       *UtcDateTime            `json:"willExpireOn,omitempty"`
-	ProjectCap         *Quantity               `json:"projectCap,omitempty"`
-	IsTrial            bool                    `json:"isTrial,omitempty"`
-}
-
-// DomainUrl DTO.
-type DomainUrl struct {
-	Value string `json:"value,omitempty"`
-}
-
-// CodeMashLicense DTO.
-type CodeMashLicense struct {
-	CodeMashManagedServiceSubscription
-	Domain       *DomainUrl `json:"domain,omitempty"`
-	AccountId    *AccountId `json:"accountId,omitempty"`
-	IsEnterprise bool       `json:"isEnterprise,omitempty"`
-}
-
-// Tag DTO.
-type Tag struct {
-}
-
-// TagDescription DTO.
-type TagDescription struct {
-	DisplayName *DisplayName `json:"displayName,omitempty"`
-	Description string       `json:"description,omitempty"`
-}
-
-// MessageTranslation DTO.
-type MessageTranslation[TContent any] struct {
-}
-
-// TagTranslation DTO.
-type TagTranslation struct {
-	MessageTranslation[*TagDescription]
-}
-
-// BaseTagDefinition DTO.
-type BaseTagDefinition struct {
-	Tag          *Tag              `json:"tag,omitempty"`
-	Translations []*TagTranslation `json:"translations,omitempty"`
-}
-
-// GroupDefinition DTO.
-type GroupDefinition struct {
-	BaseTagDefinition
-}
-
-// TagDefinition DTO.
-type TagDefinition struct {
-	BaseTagDefinition
-	DefaultDelivery map[string]bool `json:"defaultDelivery,omitempty"`
-}
-
-// ProjectName DTO.
-type ProjectName struct {
-	Name       string `json:"name,omitempty"`
-	UniqueName string `json:"uniqueName,omitempty"`
-}
-
-// NorbixRegion DTO.
-type NorbixRegion struct {
-	Code string `json:"code,omitempty"`
-}
-
-// ProjectRegion DTO.
-type ProjectRegion struct {
-	Region    *NorbixRegion `json:"region,omitempty"`
-	Name      string        `json:"name,omitempty"`
-	Continent Continent     `json:"continent,omitempty"`
-}
-
-// Language DTO.
-type Language struct {
-	Code string `json:"code,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-// FileResourceId DTO.
-type FileResourceId struct {
-	Value string `json:"value,omitempty"`
-}
-
-// FileChecksum DTO.
-type FileChecksum struct {
-	Algorithm string `json:"algorithm,omitempty"`
-	Hash      string `json:"hash,omitempty"`
-}
-
-// FileResource DTO.
-type FileResource struct {
-	Id               *FileResourceId `json:"id,omitempty"`
-	OriginalFileName string          `json:"originalFileName,omitempty"`
-	Extension        string          `json:"extension,omitempty"`
-	SizeBytes        float64         `json:"sizeBytes,omitempty"`
-	Checksum         *FileChecksum   `json:"checksum,omitempty"`
-	StoredFileName   string          `json:"storedFileName,omitempty"`
-}
-
-// FileResourceRef DTO.
-type FileResourceRef struct {
-	Resource      *FileResource  `json:"resource,omitempty"`
-	IntegrationId *IntegrationId `json:"integrationId,omitempty"`
-	Provider      FileProvider   `json:"provider,omitempty"`
-	Path          string         `json:"path,omitempty"`
-}
-
-// ProjectLogo DTO.
-type ProjectLogo struct {
-	FileResource *FileResourceRef `json:"fileResource,omitempty"`
-	PublicUrl    string           `json:"publicUrl,omitempty"`
-}
-
-// ProjectIcon DTO.
-type ProjectIcon struct {
-	FileResource *FileResourceRef `json:"fileResource,omitempty"`
-	PublicUrl    string           `json:"publicUrl,omitempty"`
-}
-
-// BrandColor DTO.
-type BrandColor struct {
-	Value string `json:"value,omitempty"`
-}
-
-// TimeZone DTO.
-type TimeZone struct {
-	ZoneId string `json:"zoneId,omitempty"`
-}
-
-// GroupTags DTO.
-type GroupTags struct {
-	Group *Tag   `json:"group,omitempty"`
-	Tags  []*Tag `json:"tags,omitempty"`
-}
-
-// ProjectCommunicationChannel DTO.
-type ProjectCommunicationChannel struct {
-	Channel CommunicationChannel `json:"channel,omitempty"`
-	Groups  []*GroupTags         `json:"groups,omitempty"`
-}
-
-// ProjectCommunication DTO.
-type ProjectCommunication struct {
-	Channels []*ProjectCommunicationChannel `json:"channels,omitempty"`
-	Groups   []*GroupDefinition             `json:"groups,omitempty"`
-	Tags     []*TagDefinition               `json:"tags,omitempty"`
-}
-
-// AuthId DTO.
-type AuthId struct {
-	Value string `json:"value,omitempty"`
-}
-
-// DeviceId DTO.
-type DeviceId struct {
-	Id string `json:"id,omitempty"`
-}
-
-// PushDeviceToken DTO.
-type PushDeviceToken struct {
-	Token string `json:"token,omitempty"`
-}
-
-// PushDeviceDeliveryToken DTO.
-type PushDeviceDeliveryToken struct {
-	PushDeviceToken *PushDeviceToken         `json:"pushDeviceToken,omitempty"`
-	DeliveryFamily  PushDeviceDeliveryFamily `json:"deliveryFamily,omitempty"`
-}
-
-// PushDevice DTO.
-type PushDevice struct {
-	Id               *DeviceId                `json:"id,omitempty"`
-	Brand            string                   `json:"brand,omitempty"`
-	Manufacturer     string                   `json:"manufacturer,omitempty"`
-	ModelName        string                   `json:"modelName,omitempty"`
-	DeviceName       string                   `json:"deviceName,omitempty"`
-	DeviceType       DeviceType               `json:"deviceType,omitempty"`
-	OsName           string                   `json:"osName,omitempty"`
-	OsVersion        string                   `json:"osVersion,omitempty"`
-	PlatformApiLevel float64                  `json:"platformApiLevel,omitempty"`
-	Token            *PushDeviceDeliveryToken `json:"token,omitempty"`
 }
 
 // CodeMashRequestBase DTO.
@@ -588,10 +207,18 @@ type SaveUserWithRolesBase struct {
 	Roles []string `json:"roles,omitempty"`
 }
 
-// Env DTO.
-type Env struct {
-	Value  string `json:"value,omitempty"`
-	IsProd bool   `json:"isProd,omitempty"`
+// CodeMashListPaginationRequestBase DTO.
+type CodeMashListPaginationRequestBase struct {
+	RequestBase
+	ProjectId     string  `json:"projectId,omitempty"`
+	Env           string  `json:"env,omitempty"`
+	StartingAfter string  `json:"startingAfter,omitempty"`
+	EndingBefore  string  `json:"endingBefore,omitempty"`
+	PageSize      float64 `json:"pageSize,omitempty"`
+}
+
+// IPasskeyCeremonyRequest DTO.
+type IPasskeyCeremonyRequest struct {
 }
 
 // CursorArgs DTO.
@@ -606,88 +233,6 @@ type PagingArgs struct {
 	PageSize      float64     `json:"pageSize,omitempty"`
 	StartingAfter string      `json:"startingAfter,omitempty"`
 	EndingBefore  string      `json:"endingBefore,omitempty"`
-}
-
-// CodeMashListPaginationRequestBase DTO.
-type CodeMashListPaginationRequestBase struct {
-	RequestBase
-	ProjectId     string      `json:"projectId,omitempty"`
-	Env           string      `json:"env,omitempty"`
-	ResolvedEnv   *Env        `json:"resolvedEnv,omitempty"`
-	StartingAfter string      `json:"startingAfter,omitempty"`
-	EndingBefore  string      `json:"endingBefore,omitempty"`
-	PageSize      float64     `json:"pageSize,omitempty"`
-	Paging        *PagingArgs `json:"paging,omitempty"`
-}
-
-// IPasskeyCeremonyRequest DTO.
-type IPasskeyCeremonyRequest struct {
-}
-
-// Integration DTO.
-type Integration struct {
-	IntegrationId                    *IntegrationId `json:"integrationId,omitempty"`
-	Env                              *Env           `json:"env,omitempty"`
-	Capability                       string         `json:"capability,omitempty"`
-	IsSystemOwned                    bool           `json:"isSystemOwned,omitempty"`
-	IntegrationName                  *DisplayName   `json:"integrationName,omitempty"`
-	IsEnabled                        bool           `json:"isEnabled,omitempty"`
-	IsConfigured                     bool           `json:"isConfigured,omitempty"`
-	LastIntegrationTestAtUtc         string         `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded     bool           `json:"lastIntegrationTestSucceeded,omitempty"`
-	LastIntegrationTestErrorMessages []string       `json:"lastIntegrationTestErrorMessages,omitempty"`
-	HumanDeliveryConfirmedAtUtc      string         `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	IsApprovedThatItWorks            bool           `json:"isApprovedThatItWorks,omitempty"`
-}
-
-// PushIntegration DTO.
-type PushIntegration struct {
-	Integration
-	Provider PushProvider `json:"provider,omitempty"`
-}
-
-// TemplateId DTO.
-type TemplateId struct {
-	Value string `json:"value,omitempty"`
-}
-
-// Template DTO.
-type Template[TMessageContent any] struct {
-	TemplateId           *TemplateId                           `json:"templateId,omitempty"`
-	TemplateName         *DisplayName                          `json:"templateName,omitempty"`
-	Translations         []MessageTranslation[TMessageContent] `json:"translations,omitempty"`
-	CommunicationChannel CommunicationChannel                  `json:"communicationChannel,omitempty"`
-	IsActive             bool                                  `json:"isActive,omitempty"`
-	Description          string                                `json:"description,omitempty"`
-	Tags                 []*Tag                                `json:"tags,omitempty"`
-	FileIntegrationId    *IntegrationId                        `json:"fileIntegrationId,omitempty"`
-	Env                  *Env                                  `json:"env,omitempty"`
-}
-
-// TemplateCode DTO.
-type TemplateCode struct {
-}
-
-// PushTitle DTO.
-type PushTitle struct {
-	Value *TemplateCode `json:"value,omitempty"`
-}
-
-// PushBody DTO.
-type PushBody struct {
-	Value *TemplateCode `json:"value,omitempty"`
-}
-
-// PushMessageContent DTO.
-type PushMessageContent struct {
-	Title    *PushTitle `json:"title,omitempty"`
-	SubTitle *PushTitle `json:"subTitle,omitempty"`
-	Body     *PushBody  `json:"body,omitempty"`
-}
-
-// PushTemplate DTO.
-type PushTemplate struct {
-	Template[*PushMessageContent]
 }
 
 // EchoLicenseDto DTO.
@@ -987,14 +532,6 @@ type ResponseStatus struct {
 	StackTrace string            `json:"stackTrace,omitempty"`
 	Errors     []*ResponseError  `json:"errors,omitempty"`
 	Meta       map[string]string `json:"meta,omitempty"`
-}
-
-// IHasDomainEntityId DTO.
-type IHasDomainEntityId struct {
-}
-
-// IIntegrationIdentification DTO.
-type IIntegrationIdentification struct {
 }
 
 // IBindableContract DTO.
@@ -1376,198 +913,6 @@ type GetPublicProjectLegal struct {
 	RequestBase
 	ProjectId string `json:"projectId,omitempty"`
 	Kind      string `json:"kind,omitempty"`
-}
-
-// AccountCreated DTO.
-type AccountCreated struct {
-	Email       *EmailAddress `json:"email,omitempty"`
-	DisplayName *DisplayName  `json:"displayName,omitempty"`
-	AccountId   *AccountId    `json:"accountId,omitempty"`
-	CreatedOn   *UtcDateTime  `json:"createdOn,omitempty"`
-}
-
-// AccountVerified DTO.
-type AccountVerified struct {
-}
-
-// AccountSetAsActive DTO.
-type AccountSetAsActive struct {
-}
-
-// AccountValidationTokenIssued DTO.
-type AccountValidationTokenIssued struct {
-	Expiration *ExpirationToken `json:"expiration,omitempty"`
-}
-
-// AccountBlocked DTO.
-type AccountBlocked struct {
-}
-
-// AccountProfileUpdated DTO.
-type AccountProfileUpdated struct {
-	DisplayName     *DisplayName  `json:"displayName,omitempty"`
-	BillingEmail    *EmailAddress `json:"billingEmail,omitempty"`
-	OperationsEmail *EmailAddress `json:"operationsEmail,omitempty"`
-	SecurityEmail   *EmailAddress `json:"securityEmail,omitempty"`
-}
-
-// AccountSetAsInactive DTO.
-type AccountSetAsInactive struct {
-}
-
-// AccountUnregistered DTO.
-type AccountUnregistered struct {
-}
-
-// LicenseCreated DTO.
-type LicenseCreated struct {
-	License *CodeMashLicense `json:"license,omitempty"`
-}
-
-// CustomerCreated DTO.
-type CustomerCreated struct {
-	PaymentCustomerRef *PaymentCustomerRef `json:"paymentCustomerRef,omitempty"`
-}
-
-// SubscriptionChanged DTO.
-type SubscriptionChanged struct {
-	Subscription *CodeMashManagedServiceSubscription `json:"subscription,omitempty"`
-}
-
-// SubscriptionCanceled DTO.
-type SubscriptionCanceled struct {
-	PaymentCustomerRef *PaymentCustomerRef `json:"paymentCustomerRef,omitempty"`
-	SubscriptionId     string              `json:"subscriptionId,omitempty"`
-}
-
-// ProjectCommunicationGroupSaved DTO.
-type ProjectCommunicationGroupSaved struct {
-	Group         *GroupDefinition     `json:"group,omitempty"`
-	Channel       CommunicationChannel `json:"channel,omitempty"`
-	OriginChannel CommunicationChannel `json:"originChannel,omitempty"`
-}
-
-// ProjectCommunicationTagFromGroupDeleted DTO.
-type ProjectCommunicationTagFromGroupDeleted struct {
-	GroupTag   *Tag `json:"groupTag,omitempty"`
-	RemovedTag *Tag `json:"removedTag,omitempty"`
-}
-
-// ProjectCommunicationGroupDeleted DTO.
-type ProjectCommunicationGroupDeleted struct {
-	GroupTag *Tag `json:"groupTag,omitempty"`
-}
-
-// ProjectCommunicationTagSaved DTO.
-type ProjectCommunicationTagSaved struct {
-	Tag      *TagDefinition       `json:"tag,omitempty"`
-	GroupTag *Tag                 `json:"groupTag,omitempty"`
-	Channel  CommunicationChannel `json:"channel,omitempty"`
-}
-
-// ProjectCommunicationTagDeleted DTO.
-type ProjectCommunicationTagDeleted struct {
-	Tag *Tag `json:"tag,omitempty"`
-}
-
-// ProjectCreated DTO.
-type ProjectCreated struct {
-	Id                    *ProjectId       `json:"id,omitempty"`
-	Name                  *ProjectName     `json:"name,omitempty"`
-	DatabaseIntegrationId *IntegrationId   `json:"databaseIntegrationId,omitempty"`
-	PrimaryRegion         *ProjectRegion   `json:"primaryRegion,omitempty"`
-	AdditionalRegions     []*ProjectRegion `json:"additionalRegions,omitempty"`
-	Description           string           `json:"description,omitempty"`
-	IsProvisioning        bool             `json:"isProvisioning,omitempty"`
-}
-
-// ProjectDeleted DTO.
-type ProjectDeleted struct {
-}
-
-// ProjectActivated DTO.
-type ProjectActivated struct {
-}
-
-// ProjectDisabled DTO.
-type ProjectDisabled struct {
-}
-
-// ProjectNameChanged DTO.
-type ProjectNameChanged struct {
-	ProjectName *ProjectName `json:"projectName,omitempty"`
-}
-
-// ProjectDescriptionChanged DTO.
-type ProjectDescriptionChanged struct {
-	Description string `json:"description,omitempty"`
-}
-
-// ProjectMarketingUrlChanged DTO.
-type ProjectMarketingUrlChanged struct {
-	Url *DomainUrl `json:"url,omitempty"`
-}
-
-// ProjectAllowedOriginsChanged DTO.
-type ProjectAllowedOriginsChanged struct {
-	Origins []*DomainUrl `json:"origins,omitempty"`
-}
-
-// ProjectDefaultLanguageChanged DTO.
-type ProjectDefaultLanguageChanged struct {
-	Language *Language `json:"language,omitempty"`
-}
-
-// ProjectLanguagesChanged DTO.
-type ProjectLanguagesChanged struct {
-	Languages []*Language `json:"languages,omitempty"`
-}
-
-// ProjectLogoChanged DTO.
-type ProjectLogoChanged struct {
-	Logo *ProjectLogo `json:"logo,omitempty"`
-}
-
-// ProjectIconChanged DTO.
-type ProjectIconChanged struct {
-	Icon *ProjectIcon `json:"icon,omitempty"`
-}
-
-// ProjectMainColorChanged DTO.
-type ProjectMainColorChanged struct {
-	Color *BrandColor `json:"color,omitempty"`
-}
-
-// ProjectAccentColorChanged DTO.
-type ProjectAccentColorChanged struct {
-	Color *BrandColor `json:"color,omitempty"`
-}
-
-// ProjectRegionsChanged DTO.
-type ProjectRegionsChanged struct {
-	PrimaryRegion     *ProjectRegion   `json:"primaryRegion,omitempty"`
-	AdditionalRegions []*ProjectRegion `json:"additionalRegions,omitempty"`
-}
-
-// ProjectTimeZoneChanged DTO.
-type ProjectTimeZoneChanged struct {
-	TimeZone *TimeZone `json:"timeZone,omitempty"`
-}
-
-// ProjectPaymentZonesChanged DTO.
-type ProjectPaymentZonesChanged struct {
-	PaymentZones []*TimeZone `json:"paymentZones,omitempty"`
-}
-
-// ProjectCommunicationSet DTO.
-type ProjectCommunicationSet struct {
-	ProjectCommunication *ProjectCommunication `json:"projectCommunication,omitempty"`
-}
-
-// AccountUserPushDeviceCreated DTO.
-type AccountUserPushDeviceCreated struct {
-	AuthId     *AuthId     `json:"authId,omitempty"`
-	PushDevice *PushDevice `json:"pushDevice,omitempty"`
 }
 
 // AskChatRequest DTO.
@@ -2153,100 +1498,6 @@ type RequestUploadUrlRequest struct {
 type TestFilesIntegrationRequest struct {
 	CodeMashRequestBase
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
-}
-
-// PushIntegrationSaved DTO.
-type PushIntegrationSaved struct {
-	Integration *PushIntegration `json:"integration,omitempty"`
-}
-
-// PushIntegrationRenamed DTO.
-type PushIntegrationRenamed struct {
-	Id   *IntegrationId `json:"id,omitempty"`
-	Name *DisplayName   `json:"name,omitempty"`
-	Env  *Env           `json:"env,omitempty"`
-}
-
-// PushIntegrationSetAsDefault DTO.
-type PushIntegrationSetAsDefault struct {
-	Env *Env           `json:"env,omitempty"`
-	Id  *IntegrationId `json:"id,omitempty"`
-}
-
-// PushIntegrationDeleted DTO.
-type PushIntegrationDeleted struct {
-	Id  *IntegrationId `json:"id,omitempty"`
-	Env *Env           `json:"env,omitempty"`
-}
-
-// PushIntegrationEnabled DTO.
-type PushIntegrationEnabled struct {
-	Id  *IntegrationId `json:"id,omitempty"`
-	Env *Env           `json:"env,omitempty"`
-}
-
-// PushIntegrationDisabled DTO.
-type PushIntegrationDisabled struct {
-	Id  *IntegrationId `json:"id,omitempty"`
-	Env *Env           `json:"env,omitempty"`
-}
-
-// PushServiceEstablished DTO.
-type PushServiceEstablished struct {
-	DefaultTemplates []*PushTemplate `json:"defaultTemplates,omitempty"`
-}
-
-// PushServiceEnabled DTO.
-type PushServiceEnabled struct {
-}
-
-// PushServiceDisabled DTO.
-type PushServiceDisabled struct {
-}
-
-// PushTemplateCreated DTO.
-type PushTemplateCreated struct {
-	TemplateId   *TemplateId                               `json:"templateId,omitempty"`
-	DisplayName  *DisplayName                              `json:"displayName,omitempty"`
-	Translations []MessageTranslation[*PushMessageContent] `json:"translations,omitempty"`
-	Channel      CommunicationChannel                      `json:"channel,omitempty"`
-	Description  string                                    `json:"description,omitempty"`
-	Tags         []*Tag                                    `json:"tags,omitempty"`
-	Env          *Env                                      `json:"env,omitempty"`
-}
-
-// PushTemplateUpdated DTO.
-type PushTemplateUpdated struct {
-	TemplateId   *TemplateId                               `json:"templateId,omitempty"`
-	DisplayName  *DisplayName                              `json:"displayName,omitempty"`
-	Translations []MessageTranslation[*PushMessageContent] `json:"translations,omitempty"`
-	Channel      CommunicationChannel                      `json:"channel,omitempty"`
-	Description  string                                    `json:"description,omitempty"`
-	Tags         []*Tag                                    `json:"tags,omitempty"`
-	Env          *Env                                      `json:"env,omitempty"`
-}
-
-// PushTemplateDeleted DTO.
-type PushTemplateDeleted struct {
-	TemplateId *TemplateId `json:"templateId,omitempty"`
-	Env        *Env        `json:"env,omitempty"`
-}
-
-// PushTemplateArchived DTO.
-type PushTemplateArchived struct {
-	TemplateId *TemplateId `json:"templateId,omitempty"`
-	Env        *Env        `json:"env,omitempty"`
-}
-
-// PushTemplateUnArchived DTO.
-type PushTemplateUnArchived struct {
-	TemplateId *TemplateId `json:"templateId,omitempty"`
-	Env        *Env        `json:"env,omitempty"`
-}
-
-// PushTemplateMirrored DTO.
-type PushTemplateMirrored struct {
-	Template *PushTemplate `json:"template,omitempty"`
 }
 
 // Authenticate DTO.
