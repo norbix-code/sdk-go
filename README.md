@@ -99,15 +99,38 @@ Failures return `*errors.Error` or a typed variant. Use `errors.As`:
 ```go
 import norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
 
-var nf *norbixerr.NotFoundError
-if errors.As(err, &nf) {
-	// nf.Base.Status == 404, nf.Base.Code, nf.Base.Details
+var e *norbixerr.Error
+if errors.As(err, &e) {
+	fmt.Println(e.HTTPStatus(), e.Code, e.Message)
+	for _, item := range e.Errors {
+		fmt.Println(item.ErrorCode, item.FieldName, item.Message)
+	}
+	_ = e.Body // the answer exactly as it arrived
 }
 ```
 
 Types: `AuthenticationError` (401/403), `NotFoundError` (404),
 `RateLimitError` (429), `ValidationError` (400/422), base `Error` otherwise.
 Idempotent verbs (GET/DELETE) retry on 429/5xx with exponential backoff.
+
+`Message` and `Code` are the gateway's own. The gateway puts them inside
+`responseStatus.errors[]`, so the SDK reads that list first, takes the first
+entry for `Message` / `Code`, and keeps every entry in `Errors`. Only when the
+body has no `responseStatus` are the top-level `message` and `errorCode` read.
+`Request failed (HTTP <status>)` with the code `HTTP_<status>` is the last
+fallback, used when the body says nothing — a 500 page that is not JSON, say.
+
+#### Breaking change — a refused call now returns an error
+
+The gateway answers a business refusal (an unknown id, a rule that says no)
+with **HTTP 200** and `responseStatus.isSuccess = false`. The SDK used to fill
+`out` and return `nil`, so code carried on as if the call had worked. It now
+returns a `*errors.Error` with `Status` 200 and the gateway's message and code.
+
+If your code checked `out.ResponseStatus.IsSuccess` itself, check `err`
+instead. Endpoints that answer with raw bytes rather than a document (file
+download, the public file link — the ones you pass a `*[]byte` to) are not JSON
+and are unchanged.
 
 ## Working with terms
 
@@ -463,10 +486,30 @@ examples/webhook-receiver/                runnable webhook sink
 
 ## Codegen notes
 
-Endpoint modules are generated from the same route map the other SDKs use; DTO
-structs are generated from the ServiceStack TypeScript DTOs (`hub2.dtos.ts`,
-`api2.dtos.ts`) because ServiceStack has no native Go type exporter. Generated
-files carry a `DO NOT EDIT` header.
+`norbix/api/dtos/dtos.go` and `norbix/hub/dtos/dtos.go` are generated from the
+Norbix gateway's own contract, straight from a running gateway. They carry a
+`DO NOT EDIT` header: a change made here is lost on the next run. If a type is
+wrong, the gateway or the generator is wrong.
+
+The endpoint modules (`norbix/api/*.go`, `norbix/hub/*.go`) are **not**
+generated today — the script that made them is gone. They are maintained by
+hand, with a test per method, and they keep their old header until a module
+generator exists.
+
+### Regenerate the types
+
+Start the gateway (API on `:5002`, Hub on `:5001`), then run the generator from
+the private `typegen` toolchain — one command, both files:
+
+```bash
+python3 <typegen>/languages/go/generate.py --out .
+go build ./norbix/... && go vet ./norbix/... && gofmt -l norbix/ && go test ./norbix/...
+```
+
+`--api-url` and `--hub-url` point it somewhere else; `--api-file` / `--hub-file`
+read a saved contract export instead of a live gateway. Two runs on the same
+gateway give byte-identical files, so a non-empty `git diff` after a run is a
+real contract change — read it before committing.
 
 ## License
 
