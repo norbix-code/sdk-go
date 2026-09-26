@@ -139,20 +139,6 @@ const (
 	FilesTriggerTypeOnFileDeleted  FilesTriggerType = "OnFileDeleted"
 )
 
-// FileProvider enum.
-type FileProvider string
-
-const (
-	FileProviderLocal              FileProvider = "Local"
-	FileProviderAwsS3              FileProvider = "AwsS3"
-	FileProviderAzureBlobStorage   FileProvider = "AzureBlobStorage"
-	FileProviderGoogleCloudStorage FileProvider = "GoogleCloudStorage"
-	FileProviderFtp                FileProvider = "Ftp"
-	FileProviderAppleICloud        FileProvider = "AppleICloud"
-	FileProviderDropBox            FileProvider = "DropBox"
-	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
-)
-
 // PaymentTriggerType enum.
 type PaymentTriggerType string
 
@@ -168,6 +154,20 @@ type DatabaseProvider string
 const (
 	DatabaseProviderMongoDbConnectionString         DatabaseProvider = "MongoDbConnectionString"
 	DatabaseProviderCodeMashMongoDbAtlasFlexManaged DatabaseProvider = "CodeMashMongoDbAtlasFlexManaged"
+)
+
+// FileProvider enum.
+type FileProvider string
+
+const (
+	FileProviderLocal              FileProvider = "Local"
+	FileProviderAwsS3              FileProvider = "AwsS3"
+	FileProviderAzureBlobStorage   FileProvider = "AzureBlobStorage"
+	FileProviderGoogleCloudStorage FileProvider = "GoogleCloudStorage"
+	FileProviderFtp                FileProvider = "Ftp"
+	FileProviderAppleICloud        FileProvider = "AppleICloud"
+	FileProviderDropBox            FileProvider = "DropBox"
+	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
 )
 
 // AwsS3IntegrationType enum.
@@ -1065,32 +1065,6 @@ type SchemaTriggerRequest struct {
 	ConfigurationCode string            `json:"configurationCode,omitempty"`
 }
 
-// FileChecksumDto DTO.
-type FileChecksumDto struct {
-	Algorithm string `json:"algorithm,omitempty"`
-	Hash      string `json:"hash,omitempty"`
-}
-
-// FileResourceDto DTO.
-type FileResourceDto struct {
-	Id               string           `json:"id,omitempty"`
-	OriginalFileName string           `json:"originalFileName,omitempty"`
-	Extension        string           `json:"extension,omitempty"`
-	StoredFileName   string           `json:"storedFileName,omitempty"`
-	SizeBytes        float64          `json:"sizeBytes,omitempty"`
-	Checksum         *FileChecksumDto `json:"checksum,omitempty"`
-}
-
-// FileResourceRefDto DTO.
-type FileResourceRefDto struct {
-	Resource      *FileResourceDto `json:"resource,omitempty"`
-	IntegrationId string           `json:"integrationId,omitempty"`
-	Provider      FileProvider     `json:"provider,omitempty"`
-	Path          string           `json:"path,omitempty"`
-	PublicUrl     string           `json:"publicUrl,omitempty"`
-	IsPublic      bool             `json:"isPublic,omitempty"`
-}
-
 // FilesTriggerRequest DTO.
 type FilesTriggerRequest struct {
 	SaveTriggerRequest
@@ -1827,6 +1801,32 @@ type EmailBodyDto struct {
 	Structure      string              `json:"structure,omitempty"`
 	Code           string              `json:"code,omitempty"`
 	TemplateEngine EmailTemplateEngine `json:"templateEngine,omitempty"`
+}
+
+// FileChecksumDto DTO.
+type FileChecksumDto struct {
+	Algorithm string `json:"algorithm,omitempty"`
+	Hash      string `json:"hash,omitempty"`
+}
+
+// FileResourceDto DTO.
+type FileResourceDto struct {
+	Id               string           `json:"id,omitempty"`
+	OriginalFileName string           `json:"originalFileName,omitempty"`
+	Extension        string           `json:"extension,omitempty"`
+	StoredFileName   string           `json:"storedFileName,omitempty"`
+	SizeBytes        float64          `json:"sizeBytes,omitempty"`
+	Checksum         *FileChecksumDto `json:"checksum,omitempty"`
+}
+
+// FileResourceRefDto DTO.
+type FileResourceRefDto struct {
+	Resource      *FileResourceDto `json:"resource,omitempty"`
+	IntegrationId string           `json:"integrationId,omitempty"`
+	Provider      FileProvider     `json:"provider,omitempty"`
+	Path          string           `json:"path,omitempty"`
+	PublicUrl     string           `json:"publicUrl,omitempty"`
+	IsPublic      bool             `json:"isPublic,omitempty"`
 }
 
 // EmailMessageContentDto DTO.
