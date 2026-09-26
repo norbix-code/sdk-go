@@ -89,6 +89,8 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 | method | verb | path |
 |---|---|---|
 | `RegisterDevice(ctx, req, out)` | `POST` | `/notifications/push/devices` |
+| `GetPushDevices(ctx, req, out)` | `GET` | `/notifications/push/devices` |
+| `GetPushDevice(ctx, id, req, out)` | `GET` | `/notifications/push/devices/{id}` |
 
 ## Choosing who a campaign goes to
 
@@ -101,8 +103,13 @@ fields:
 | everyone in the project | `allUsers` | `rolesNames`, `userTags` (both optional filters) |
 | a named list of project users | `specifiedUsers` | `userRecipients` |
 | a named list of account users | `accountUsers` | `userRecipients` |
-| rows of a database collection | `collection` | `schemaName`, `fields`, `fieldType` |
-| raw device tokens | `devices` | `devices` |
+| rows of a database collection | `collection` | `schemaName`, `fields` (the record fields that hold the recipient), `fieldType` (`User` or `Email`), optional `roleNames`, `languages` |
+| raw device tokens | `devices` | `devices`: a list of `{ token, deliveryFamily }`, `deliveryFamily` one of `Ios`, `Android`, `Chrome`, `Safari`, `Expo` |
+
+Every target also takes `templateId` (required) and the optional `integrationId`,
+`language`, `notes`, `campaignTime` (Unix seconds) and `mappedTokens`. Note the
+spelling: `rolesNames` on `allUsers`, but `roleNames` on `collection` — the
+gateway names them differently.
 
 ```go
 req := map[string]any{
@@ -121,19 +128,63 @@ Send `source` as the name, not a number — the server reads it as a string.
 
 `SavePushIntegration` works the same way, with a `provider` field:
 
-| provider | `provider` value |
-|---|---|
-| Fake (sandbox, never sends) | `Fake` |
-| Android / Firebase | `AndroidFirebase` |
-| Apple APNs | `AppleApns` |
-| Chrome extension | `CodeMashChromePlugin` |
-| Chrome web | `ChromeWeb` |
-| Edge web | `EdgeWeb` |
-| Firefox web | `FirefoxWeb` |
-| Safari | `SafariPush` |
+| provider | `provider` value | own fields |
+|---|---|---|
+| Fake (sandbox, never sends) | `Fake` | none |
+| Android / Firebase | `AndroidFirebase` | `projectId`, `clientEmail`, `serviceAccountJson` |
+| Apple APNs | `AppleApns` | `teamId`, `appBundleId`, `keyId`, `privateKey`, `isProduction` |
+| Chrome extension | `ChromePush` | `extensionId` (a GUID), `vapidPublicKey`, `vapidPrivateKey`, optional `subject` |
+| Chrome web | `ChromeWeb` | `vapidPublicKey`, `vapidPrivateKey`, optional `subject` |
+| Edge web | `EdgeWeb` | `vapidPublicKey`, `vapidPrivateKey`, optional `subject` |
+| Firefox web | `FirefoxWeb` | `vapidPublicKey`, `vapidPrivateKey`, optional `subject` |
+| Safari | `SafariPush` | `websitePushId`, `certificateP12Base64`, `certificatePassword` |
+
+Every provider also takes `integrationName` and `isEnabled`; send `integrationId`
+to update an existing one. The Chrome extension value is `ChromePush`. The
+generated types also list `CodeMashChromePlugin` and other `CodeMash*` values —
+the server rejects those here with "Unsupported provider".
 
 Use `Fake` in tests and local development. It accepts a send and contacts no
 push service, so nothing reaches a real device.
+
+## Registering a device
+
+A device is registered for one user. Send the device under `pushDeviceDto`
+(`deviceOs` and `token` are required; `deviceId`, `brand`, `manufacturer`,
+`modelName`, `deviceName`, `deviceType` are optional) plus `userId`:
+
+```go
+req := map[string]any{
+    "userId": "user_123",
+    "pushDeviceDto": map[string]any{"deviceOs": "iOS", "token": "<device token>"},
+}
+err := client.Hub.Notifications.RegisterDevice(ctx, req, nil)
+```
+
+## Listing registered devices
+
+`GetPushDevices` returns the devices registered in the project, each with the
+user it belongs to. Narrow it with `userId`, `deviceKey` (the provider token)
+or `platform` (`ios`, `android`, `chrome`, `safari`, `expo`); a word outside
+that list is refused rather than answered with an empty page.
+
+```go
+var devices map[string]any
+err := client.Hub.Notifications.GetPushDevices(ctx, map[string]any{
+    "platform": "ios",
+}, &devices)
+```
+
+Devices are stored inside their user, so a page is a page of **users** and
+carries every matching device those users hold. Follow `hasMore` rather than
+stopping at the first short page.
+
+`GetPushDevice` takes one device id and answers with the device and its owner:
+
+```go
+var device map[string]any
+err := client.Hub.Notifications.GetPushDevice(ctx, "pnd_123", nil, &device)
+```
 
 ## Known gaps
 
