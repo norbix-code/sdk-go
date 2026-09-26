@@ -1259,9 +1259,9 @@ type FileResourceRefDto struct {
 // FilesTriggerRequest DTO.
 type FilesTriggerRequest struct {
 	SaveTriggerRequest
-	Type    TriggerType         `json:"type,omitempty"`
-	When    FilesTriggerType    `json:"when,omitempty"`
-	FileRef *FileResourceRefDto `json:"fileRef,omitempty"`
+	Type   TriggerType      `json:"type,omitempty"`
+	When   FilesTriggerType `json:"when,omitempty"`
+	Folder string           `json:"folder,omitempty"`
 }
 
 // PaymentTriggerRequest DTO.
@@ -4986,7 +4986,8 @@ type CodeDto struct {
 // FilesTriggerDto DTO.
 type FilesTriggerDto struct {
 	TriggerDto
-	When FilesTriggerType `json:"when,omitempty"`
+	When   FilesTriggerType `json:"when,omitempty"`
+	Folder string           `json:"folder,omitempty"`
 }
 
 // FilesDto DTO.
@@ -5685,7 +5686,8 @@ type MongoDbAggregateListProjection struct {
 // FilesTriggerProjectionList DTO.
 type FilesTriggerProjectionList struct {
 	TriggerProjectionList
-	Type FilesTriggerType `json:"type,omitempty"`
+	Type   FilesTriggerType `json:"type,omitempty"`
+	Folder string           `json:"folder,omitempty"`
 }
 
 // FilesIntegrationListProjection DTO.
