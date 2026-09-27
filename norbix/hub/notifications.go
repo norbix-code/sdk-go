@@ -936,18 +936,6 @@ func (m *NotificationsModule) TestPushIntegration(ctx context.Context, req map[s
 	}, out)
 }
 
-// RegisterCodeMashAppPushIntegration performs POST /{version}/notifications/push/integrations/app/request (scope: account).
-func (m *NotificationsModule) RegisterCodeMashAppPushIntegration(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/push/integrations/app/request",
-		Method:     "POST",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeAccount,
-	}, out)
-}
-
 // RegisterDevice performs POST /{version}/notifications/push/devices (scope: project).
 func (m *NotificationsModule) RegisterDevice(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -1340,30 +1328,6 @@ func (m *NotificationsModule) PreviewPushNotification(ctx context.Context, req m
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/push/preview",
 		Method:     "GET",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// CheckIntegrationAvailability performs POST /{version}/notifications/push/integrations/app/check (scope: project).
-func (m *NotificationsModule) CheckIntegrationAvailability(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/push/integrations/app/check",
-		Method:     "POST",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// TestCodeMashIosAppIntegration performs POST /{version}/notifications/push/integrations/test/codemash-app (scope: project).
-func (m *NotificationsModule) TestCodeMashIosAppIntegration(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/push/integrations/test/codemash-app",
-		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
