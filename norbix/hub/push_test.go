@@ -96,10 +96,6 @@ func pushCases() []pushCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.ConfirmPushIntegrationHumanDelivery(ctx, body, nil)
 			}},
-		{"RegisterCodeMashAppPushIntegration", http.MethodPost, "/v2/notifications/push/integrations/app/request",
-			func(ctx context.Context, m *NotificationsModule) error {
-				return m.RegisterCodeMashAppPushIntegration(ctx, body, nil)
-			}},
 
 		// --- templates
 		{"GetPushTemplates", http.MethodGet, "/v2/notifications/push/templates",
@@ -252,12 +248,12 @@ func TestPushEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Push surface is 39 routes (37 plus the two device reads added with
-// the devices read side). If the gateway grows one and the module is
+// The whole Push surface is 38 routes (36 plus the two device reads added with
+// the devices read side; the managed-app register route was removed). If the gateway grows one and the module is
 // regenerated, this count changes and the test says so, so a new endpoint
 // cannot arrive untested.
 func TestPushSurfaceSize(t *testing.T) {
-	const want = 39
+	const want = 38
 	if got := len(pushCases()); got != want {
 		t.Errorf("push endpoint count: got %d want %d", got, want)
 	}

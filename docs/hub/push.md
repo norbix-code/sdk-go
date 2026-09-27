@@ -43,7 +43,6 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 |---|---|---|
 | `GetPushIntegrations(ctx, req, out)` | `GET` | `/notifications/push/integrations` |
 | `SavePushIntegration(ctx, req, out)` | `POST` | `/notifications/push/integrations` |
-| `RegisterCodeMashAppPushIntegration(ctx, req, out)` | `POST` | `/notifications/push/integrations/app/request` |
 | `ConfirmPushIntegrationHumanDelivery(ctx, req, out)` | `POST` | `/notifications/push/integrations/confirm-human-delivery` |
 | `TestPushIntegration(ctx, req, out)` | `POST` | `/notifications/push/integrations/test` |
 | `DeletePushIntegration(ctx, id, req, out)` | `DELETE` | `/notifications/push/integrations/{Id}` |
@@ -185,11 +184,3 @@ stopping at the first short page.
 var device map[string]any
 err := client.Hub.Notifications.GetPushDevice(ctx, "pnd_123", nil, &device)
 ```
-
-## Known gaps
-
-| what | why |
-|---|---|
-| `CheckIntegrationAvailability` and `TestCodeMashIosAppIntegration` | these two methods point at routes the gateway has commented out, so they are not callable. They are left in place until the gateway decides whether to finish or drop them. |
-| `GetPushCampaignMessage` | the gateway route declares an `{id}` token that no request field matches, so the endpoint is unreliable until that is fixed. |
-

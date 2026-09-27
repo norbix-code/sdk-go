@@ -9682,17 +9682,6 @@ type TestPushIntegration struct {
 	DeliveryFamily string `json:"deliveryFamily,omitempty"`
 }
 
-// RegisterCodeMashAppPushIntegration DTO.
-type RegisterCodeMashAppPushIntegration struct {
-	CodeMashRequestBase
-	AccountId string  `json:"accountId,omitempty"`
-	UserId    string  `json:"userId,omitempty"`
-	RequestId string  `json:"requestId,omitempty"`
-	Pin       float64 `json:"pin,omitempty"`
-	ValidTill string  `json:"validTill,omitempty"`
-	PublicKey string  `json:"publicKey,omitempty"`
-}
-
 // RegisterDevice DTO.
 type RegisterDevice struct {
 	RequestBase
