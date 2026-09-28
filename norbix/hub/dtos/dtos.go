@@ -3262,6 +3262,14 @@ type PagingArgs struct {
 	EndingBefore  string      `json:"endingBefore,omitempty"`
 }
 
+// AiScopeDto DTO.
+type AiScopeDto struct {
+	Reach     string   `json:"reach,omitempty"`
+	ProjectId string   `json:"projectId,omitempty"`
+	Rights    string   `json:"rights,omitempty"`
+	Envs      []string `json:"envs,omitempty"`
+}
+
 // DeleteTrigger DTO.
 type DeleteTrigger struct {
 	CodeMashRequestBase
@@ -3462,6 +3470,15 @@ type EchoRegionDto struct {
 	DisplayName string `json:"displayName,omitempty"`
 	ApiUrl      string `json:"apiUrl,omitempty"`
 	HubUrl      string `json:"hubUrl,omitempty"`
+}
+
+// EchoAgentDto DTO.
+type EchoAgentDto struct {
+	McpUrl            string `json:"mcpUrl,omitempty"`
+	OAuthMetadataUrl  string `json:"oAuthMetadataUrl,omitempty"`
+	InstallationType  string `json:"installationType,omitempty"`
+	OnboardingDocsUrl string `json:"onboardingDocsUrl,omitempty"`
+	ToolsUrl          string `json:"toolsUrl,omitempty"`
 }
 
 // PublicBrandDto DTO.
@@ -4039,6 +4056,22 @@ type InstallationLicenseStatusDto struct {
 	IsTrialLicense     bool    `json:"isTrialLicense,omitempty"`
 	LicenseExpireUtc   string  `json:"licenseExpireUtc,omitempty"`
 	Message            string  `json:"message,omitempty"`
+}
+
+// AiServiceUserKeyDto DTO.
+type AiServiceUserKeyDto struct {
+	Id       string `json:"id,omitempty"`
+	Hint     string `json:"hint,omitempty"`
+	IssuedAt string `json:"issuedAt,omitempty"`
+}
+
+// AiServiceUserDto DTO.
+type AiServiceUserDto struct {
+	Id        string                 `json:"id,omitempty"`
+	Name      string                 `json:"name,omitempty"`
+	Scope     *AiScopeDto            `json:"scope,omitempty"`
+	CreatedAt string                 `json:"createdAt,omitempty"`
+	Keys      []*AiServiceUserKeyDto `json:"keys,omitempty"`
 }
 
 // ServiceUserApiKeyDto DTO.
@@ -4906,6 +4939,12 @@ type TenantLogEntryDto struct {
 	Meta          map[string]string `json:"meta,omitempty"`
 }
 
+// AgentOnboardingSnippet DTO.
+type AgentOnboardingSnippet struct {
+	Client string `json:"client,omitempty"`
+	Config string `json:"config,omitempty"`
+}
+
 // AiToolManifestParameter DTO.
 type AiToolManifestParameter struct {
 	Name        string `json:"name,omitempty"`
@@ -5613,6 +5652,7 @@ type EchoResponse struct {
 	GraceDaysLeft                float64          `json:"graceDaysLeft,omitempty"`
 	InstallationDomain           string           `json:"installationDomain,omitempty"`
 	LicensingDocsUrl             string           `json:"licensingDocsUrl,omitempty"`
+	Agent                        *EchoAgentDto    `json:"agent,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
@@ -5833,6 +5873,27 @@ type PostLicenseHeartbeatResponse struct {
 type GetInstallationLicenseStatusResponse struct {
 	ResponseBase
 	Status *InstallationLicenseStatusDto `json:"status,omitempty"`
+}
+
+// CreateAiServiceUserResponse DTO.
+type CreateAiServiceUserResponse struct {
+	ResponseBase
+	Id    string `json:"id,omitempty"`
+	KeyId string `json:"keyId,omitempty"`
+	Key   string `json:"key,omitempty"`
+}
+
+// ListAiServiceUsersResponse DTO.
+type ListAiServiceUsersResponse struct {
+	ResponseBase
+	Items []*AiServiceUserDto `json:"items,omitempty"`
+}
+
+// RotateAiServiceUserKeyResponse DTO.
+type RotateAiServiceUserKeyResponse struct {
+	ResponseBase
+	KeyId string `json:"keyId,omitempty"`
+	Key   string `json:"key,omitempty"`
 }
 
 // IssueServiceUserApiKeyResponse DTO.
@@ -6746,6 +6807,18 @@ type SaveLogSettingsResponse struct {
 	ResponseBase
 }
 
+// GetAgentOnboardingResponse DTO.
+type GetAgentOnboardingResponse struct {
+	ResponseBase
+	Prompt           string                    `json:"prompt,omitempty"`
+	HubUrl           string                    `json:"hubUrl,omitempty"`
+	ApiUrl           string                    `json:"apiUrl,omitempty"`
+	McpUrl           string                    `json:"mcpUrl,omitempty"`
+	DocsUrl          string                    `json:"docsUrl,omitempty"`
+	InstallationType string                    `json:"installationType,omitempty"`
+	Snippets         []*AgentOnboardingSnippet `json:"snippets,omitempty"`
+}
+
 // GetAiToolsResponse DTO.
 type GetAiToolsResponse struct {
 	ResponseBase
@@ -6754,12 +6827,6 @@ type GetAiToolsResponse struct {
 
 // InvokeAiToolResponse DTO.
 type InvokeAiToolResponse struct {
-	ResponseBase
-	Result string `json:"result,omitempty"`
-}
-
-// AskChatResponse DTO.
-type AskChatResponse struct {
 	ResponseBase
 	Result string `json:"result,omitempty"`
 }
@@ -7742,7 +7809,8 @@ type UpdateProjectMainColor struct {
 // UpdateProjectAllowedOrigins DTO.
 type UpdateProjectAllowedOrigins struct {
 	CodeMashRequestBase
-	Origins []string `json:"origins,omitempty"`
+	Origins                 []string `json:"origins,omitempty"`
+	RemoveAdminPortalOrigin bool     `json:"removeAdminPortalOrigin,omitempty"`
 }
 
 // UpdateProjectDefaultLanguage DTO.
@@ -8026,6 +8094,38 @@ type PostLicenseHeartbeat struct {
 // GetInstallationLicenseStatus DTO.
 type GetInstallationLicenseStatus struct {
 	RequestBase
+}
+
+// CreateAiServiceUserRequest DTO.
+type CreateAiServiceUserRequest struct {
+	RequestBase
+	Name  string      `json:"name,omitempty"`
+	Scope *AiScopeDto `json:"scope,omitempty"`
+}
+
+// ListAiServiceUsersRequest DTO.
+type ListAiServiceUsersRequest struct {
+	RequestBase
+}
+
+// RotateAiServiceUserKeyRequest DTO.
+type RotateAiServiceUserKeyRequest struct {
+	RequestBase
+	Id          string `json:"id,omitempty"`
+	RevokeKeyId string `json:"revokeKeyId,omitempty"`
+}
+
+// RevokeAiServiceUserKeyRequest DTO.
+type RevokeAiServiceUserKeyRequest struct {
+	RequestBase
+	Id    string `json:"id,omitempty"`
+	KeyId string `json:"keyId,omitempty"`
+}
+
+// DeleteAiServiceUserRequest DTO.
+type DeleteAiServiceUserRequest struct {
+	RequestBase
+	Id string `json:"id,omitempty"`
 }
 
 // DisableMembership DTO.
@@ -9193,6 +9293,7 @@ type CreateEmailCampaignRequest struct {
 	CodeMashRequestBase
 	Campaign              *EmailCampaignRequest `json:"campaign,omitempty"`
 	DatabaseIntegrationId string                `json:"databaseIntegrationId,omitempty"`
+	SendNow               bool                  `json:"sendNow,omitempty"`
 }
 
 // DeleteEmailCampaignRequest DTO.
@@ -9256,7 +9357,9 @@ type GetEmailCampaignStatistics struct {
 // PreviewEmailNotification DTO.
 type PreviewEmailNotification struct {
 	RequestBase
-	Hash string `json:"hash,omitempty"`
+	Hash           string `json:"hash,omitempty"`
+	ProjectId      string `json:"projectId,omitempty"`
+	NotificationId string `json:"notificationId,omitempty"`
 }
 
 // StopEmailCampaignRequest DTO.
@@ -9432,6 +9535,7 @@ type CreateSmsCampaignRequest struct {
 	SpecifiedUsers        *SmsToUsersDeliverySettingsDto             `json:"specifiedUsers,omitempty"`
 	Collection            *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
 	PhoneNumbers          *SmsToPhoneNumbersDeliverySettingsDto      `json:"phoneNumbers,omitempty"`
+	SendNow               bool                                       `json:"sendNow,omitempty"`
 }
 
 // DeleteSmsCampaign DTO.
@@ -9491,7 +9595,9 @@ type GetSmsCampaignStatistics struct {
 // PreviewSmsNotification DTO.
 type PreviewSmsNotification struct {
 	RequestBase
-	Hash string `json:"hash,omitempty"`
+	Hash           string `json:"hash,omitempty"`
+	ProjectId      string `json:"projectId,omitempty"`
+	NotificationId string `json:"notificationId,omitempty"`
 }
 
 // StopSmsCampaignRequest DTO.
@@ -9713,6 +9819,7 @@ type CreatePushCampaignRequest struct {
 	CodeMashRequestBase
 	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
 	DatabaseIntegrationId string               `json:"databaseIntegrationId,omitempty"`
+	SendNow               bool                 `json:"sendNow,omitempty"`
 }
 
 // DeletePushCampaignRequest DTO.
@@ -9773,7 +9880,9 @@ type GetPushCampaignStatistics struct {
 // PreviewPushNotification DTO.
 type PreviewPushNotification struct {
 	RequestBase
-	Hash string `json:"hash,omitempty"`
+	Hash           string `json:"hash,omitempty"`
+	ProjectId      string `json:"projectId,omitempty"`
+	NotificationId string `json:"notificationId,omitempty"`
 }
 
 // StopPushCampaignRequest DTO.
@@ -9983,6 +10092,11 @@ type SaveLogSettings struct {
 	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled,omitempty"`
 }
 
+// GetAgentOnboardingRequest DTO.
+type GetAgentOnboardingRequest struct {
+	RequestBase
+}
+
 // GetAiToolsRequest DTO.
 type GetAiToolsRequest struct {
 	RequestBase
@@ -9994,13 +10108,6 @@ type InvokeAiToolRequest struct {
 	RequestBase
 	ToolName      string `json:"toolName,omitempty"`
 	ArgumentsJson string `json:"argumentsJson,omitempty"`
-}
-
-// AskChatRequest DTO.
-type AskChatRequest struct {
-	RequestBase
-	Prompt  string `json:"prompt,omitempty"`
-	Profile string `json:"profile,omitempty"`
 }
 
 // UploadChatAttachmentRequest DTO.
