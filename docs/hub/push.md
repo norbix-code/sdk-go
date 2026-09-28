@@ -184,3 +184,26 @@ stopping at the first short page.
 var device map[string]any
 err := client.Hub.Notifications.GetPushDevice(ctx, "pnd_123", nil, &device)
 ```
+
+## Preview a notification with its signed link (no sign-in)
+
+A preview link carries a signed `hash`. The hash alone is the key: the client
+needs no API key and no login, so it is safe to open from a page a customer
+clicks. If the client does have a key or a token, it is still sent.
+
+```go
+// No APIKey, no login — only the project id the client always needs.
+client, err := norbix.New(norbix.Options{ProjectID: "proj_123"})
+if err != nil {
+    log.Fatal(err)
+}
+
+var preview map[string]any
+err = client.Hub.Notifications.PreviewPushNotification(ctx,
+    map[string]any{"hash": signedLink}, &preview)
+```
+
+`PreviewEmailNotification` and `PreviewSmsNotification` work the same way. A
+signed-in member can pass `projectId` + `notificationId` instead of `hash`.
+The gateway answers `401` for a bad or expired link, `403` for a missing
+permission and `400` for a malformed request.

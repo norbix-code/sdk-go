@@ -596,7 +596,7 @@ func (m *NotificationsModule) GetEmailCampaignStatistics(ctx context.Context, id
 	}, out)
 }
 
-// PreviewEmailNotification performs GET /{version}/notifications/email/preview (scope: project).
+// PreviewEmailNotification performs GET /{version}/notifications/email/preview (scope: optional — a signed link in "hash" opens it without sign-in).
 func (m *NotificationsModule) PreviewEmailNotification(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -604,7 +604,7 @@ func (m *NotificationsModule) PreviewEmailNotification(ctx context.Context, req 
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
@@ -1322,7 +1322,7 @@ func (m *NotificationsModule) GetPushCampaignStatistics(ctx context.Context, id 
 	}, out)
 }
 
-// PreviewPushNotification performs GET /{version}/notifications/push/preview (scope: project).
+// PreviewPushNotification performs GET /{version}/notifications/push/preview (scope: optional — a signed link in "hash" opens it without sign-in).
 func (m *NotificationsModule) PreviewPushNotification(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -1330,7 +1330,7 @@ func (m *NotificationsModule) PreviewPushNotification(ctx context.Context, req m
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
@@ -1641,7 +1641,7 @@ func (m *NotificationsModule) GetSmsIntegration(ctx context.Context, id string, 
 	}, out)
 }
 
-// PreviewSmsNotification performs GET /{version}/notifications/sms/preview (scope: project).
+// PreviewSmsNotification performs GET /{version}/notifications/sms/preview (scope: optional — a signed link in "hash" opens it without sign-in).
 func (m *NotificationsModule) PreviewSmsNotification(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -1649,7 +1649,7 @@ func (m *NotificationsModule) PreviewSmsNotification(ctx context.Context, req ma
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
