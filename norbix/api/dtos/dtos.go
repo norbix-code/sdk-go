@@ -254,6 +254,15 @@ type EchoRegionDto struct {
 	HubUrl      string `json:"hubUrl,omitempty"`
 }
 
+// EchoAgentDto DTO.
+type EchoAgentDto struct {
+	McpUrl            string `json:"mcpUrl,omitempty"`
+	OAuthMetadataUrl  string `json:"oAuthMetadataUrl,omitempty"`
+	InstallationType  string `json:"installationType,omitempty"`
+	OnboardingDocsUrl string `json:"onboardingDocsUrl,omitempty"`
+	ToolsUrl          string `json:"toolsUrl,omitempty"`
+}
+
 // PublicBrandDto DTO.
 type PublicBrandDto struct {
 	DisplayName string `json:"displayName,omitempty"`
@@ -664,6 +673,7 @@ type EchoResponse struct {
 	GraceDaysLeft                float64          `json:"graceDaysLeft,omitempty"`
 	InstallationDomain           string           `json:"installationDomain,omitempty"`
 	LicensingDocsUrl             string           `json:"licensingDocsUrl,omitempty"`
+	Agent                        *EchoAgentDto    `json:"agent,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
@@ -680,12 +690,6 @@ type PublicLegalDocumentDto struct {
 	Title     string `json:"title,omitempty"`
 	Body      string `json:"body,omitempty"`
 	Available bool   `json:"available,omitempty"`
-}
-
-// AskChatResponse DTO.
-type AskChatResponse struct {
-	ResponseBase
-	Result string `json:"result,omitempty"`
 }
 
 // EmptyResponse DTO.
@@ -913,12 +917,6 @@ type GetPublicProjectLegal struct {
 	RequestBase
 	ProjectId string `json:"projectId,omitempty"`
 	Kind      string `json:"kind,omitempty"`
-}
-
-// AskChatRequest DTO.
-type AskChatRequest struct {
-	CodeMashRequestBase
-	Prompt string `json:"prompt,omitempty"`
 }
 
 // BlockUserRequest DTO.

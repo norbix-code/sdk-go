@@ -1,8 +1,8 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-09-04 14:56:08
-Version: 10.08
+Date: 2026-09-28 20:32:34
+Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5001
 
@@ -22,23 +22,6 @@ package dtos
 import (
 	"time"
 )
-
-type IReturn struct {
-}
-
-type IReturnVoid struct {
-}
-
-type IHasSessionId struct {
-	SessionId *string `json:"sessionId,omitempty"`
-}
-
-type IHasBearerToken struct {
-	BearerToken *string `json:"bearerToken,omitempty"`
-}
-
-type IPost struct {
-}
 
 // @DataContract
 type EmailProvider string
@@ -255,13 +238,13 @@ type TriggerActionDto struct {
 }
 
 type SaveTriggerRequest struct {
-	Type           TriggerType      `json:"type,omitempty"`
-	TriggerId      *string          `json:"triggerId,omitempty"`
-	Name           string           `json:"name"`
-	Description    *string          `json:"description,omitempty"`
-	IsEnabled      bool             `json:"isEnabled,omitempty"`
-	PreExecuteCode *string          `json:"preExecuteCode,omitempty"`
-	Action         TriggerActionDto `json:"action"`
+	Type           TriggerType `json:"type,omitempty"`
+	TriggerId      *string     `json:"triggerId,omitempty"`
+	Name           string      `json:"name"`
+	Description    *string     `json:"description,omitempty"`
+	IsEnabled      bool        `json:"isEnabled,omitempty"`
+	PreExecuteCode *string     `json:"preExecuteCode,omitempty"`
+	Action         interface{} `json:"action"`
 }
 
 type MembershipTriggerType string
@@ -306,60 +289,11 @@ const (
 	FilesTriggerTypeOnFileDeleted                   = "OnFileDeleted"
 )
 
-// @DataContract
-type FileChecksumDto struct {
-	// @DataMember(Order=1)
-	Algorithm string `json:"algorithm"`
-	// @DataMember(Order=2)
-	Hash string `json:"hash"`
-}
-
-// @DataContract
-type FileResourceDto struct {
-	// @DataMember(Order=1)
-	Id string `json:"id"`
-	// @DataMember(Order=2)
-	OriginalFileName string `json:"originalFileName"`
-	// @DataMember(Order=3)
-	Extension string `json:"extension"`
-	// @DataMember(Order=4)
-	StoredFileName string `json:"storedFileName"`
-	// @DataMember(Order=5)
-	SizeBytes *int64 `json:"sizeBytes,omitempty"`
-	// @DataMember(Order=6)
-	Checksum *FileChecksumDto `json:"checksum,omitempty"`
-}
-
-type FileProvider string
-
-const (
-	FileProviderLocal              FileProvider = "Local"
-	FileProviderAwsS3                           = "AwsS3"
-	FileProviderAzureBlobStorage                = "AzureBlobStorage"
-	FileProviderGoogleCloudStorage              = "GoogleCloudStorage"
-	FileProviderFtp                             = "Ftp"
-	FileProviderAppleICloud                     = "AppleICloud"
-	FileProviderDropBox                         = "DropBox"
-	FileProviderGoogleDrive                     = "GoogleDrive"
-)
-
-// @DataContract
-type FileResourceRefDto struct {
-	// @DataMember(Order=1)
-	Resource FileResourceDto `json:"resource"`
-	// @DataMember(Order=2)
-	IntegrationId string `json:"integrationId"`
-	// @DataMember(Order=3)
-	Provider FileProvider `json:"provider,omitempty"`
-	// @DataMember(Order=4)
-	Path string `json:"path"`
-}
-
 type FilesTriggerRequest struct {
 	SaveTriggerRequest
-	Type    TriggerType        `json:"type,omitempty"`
-	When    FilesTriggerType   `json:"when,omitempty"`
-	FileRef FileResourceRefDto `json:"fileRef"`
+	Type   TriggerType      `json:"type,omitempty"`
+	When   FilesTriggerType `json:"when,omitempty"`
+	Folder *string          `json:"folder,omitempty"`
 }
 
 type PaymentTriggerType string
@@ -404,6 +338,19 @@ type MongoDbAtlasFlexManagedDatabaseIntegrationRequest struct {
 	Provider         DatabaseProvider `json:"provider,omitempty"`
 	NorbixRegionCode string           `json:"norbixRegionCode"`
 }
+
+type FileProvider string
+
+const (
+	FileProviderLocal              FileProvider = "Local"
+	FileProviderAwsS3                           = "AwsS3"
+	FileProviderAzureBlobStorage                = "AzureBlobStorage"
+	FileProviderGoogleCloudStorage              = "GoogleCloudStorage"
+	FileProviderFtp                             = "Ftp"
+	FileProviderAppleICloud                     = "AppleICloud"
+	FileProviderDropBox                         = "DropBox"
+	FileProviderGoogleDrive                     = "GoogleDrive"
+)
 
 type FilesIntegrationRequest struct {
 	IntegrationId   *string      `json:"integrationId,omitempty"`
@@ -1234,6 +1181,46 @@ type EmailBodyDto struct {
 }
 
 // @DataContract
+type FileChecksumDto struct {
+	// @DataMember(Order=1)
+	Algorithm string `json:"algorithm"`
+	// @DataMember(Order=2)
+	Hash string `json:"hash"`
+}
+
+// @DataContract
+type FileResourceDto struct {
+	// @DataMember(Order=1)
+	Id string `json:"id"`
+	// @DataMember(Order=2)
+	OriginalFileName string `json:"originalFileName"`
+	// @DataMember(Order=3)
+	Extension string `json:"extension"`
+	// @DataMember(Order=4)
+	StoredFileName string `json:"storedFileName"`
+	// @DataMember(Order=5)
+	SizeBytes *int64 `json:"sizeBytes,omitempty"`
+	// @DataMember(Order=6)
+	Checksum *FileChecksumDto `json:"checksum,omitempty"`
+}
+
+// @DataContract
+type FileResourceRefDto struct {
+	// @DataMember(Order=1)
+	Resource FileResourceDto `json:"resource"`
+	// @DataMember(Order=2)
+	IntegrationId string `json:"integrationId"`
+	// @DataMember(Order=3)
+	Provider FileProvider `json:"provider,omitempty"`
+	// @DataMember(Order=4)
+	Path string `json:"path"`
+	// @DataMember(Order=5)
+	PublicUrl *string `json:"publicUrl,omitempty"`
+	// @DataMember(Order=6)
+	IsPublic bool `json:"isPublic,omitempty"`
+}
+
+// @DataContract
 type EmailMessageContentDto struct {
 	// @DataMember
 	Subject string `json:"subject"`
@@ -1514,23 +1501,6 @@ type RequestBase struct {
 	CorrelationId *string `json:"correlationId,omitempty"`
 }
 
-type Env struct {
-	Value  string `json:"value"`
-	IsProd bool   `json:"isProd,omitempty"`
-}
-
-type CursorArgs struct {
-	Field string `json:"field"`
-	Order int    `json:"order,omitempty"`
-}
-
-type PagingArgs struct {
-	CursorArgs    *CursorArgs `json:"cursorArgs,omitempty"`
-	PageSize      *int        `json:"pageSize,omitempty"`
-	StartingAfter *string     `json:"startingAfter,omitempty"`
-	EndingBefore  *string     `json:"endingBefore,omitempty"`
-}
-
 type CodeMashListPaginationRequestBase struct {
 	RequestBase
 	/** @description ID of your project. Can be passed in a header as norbix-project-id. */
@@ -1540,8 +1510,7 @@ type CodeMashListPaginationRequestBase struct {
 	/** @description Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env. */
 	// @DataMember
 	// @ApiMember(DataType="string", Description="Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env.", Name="norbix-env", ParameterType="header")
-	Env         *string `json:"env,omitempty"`
-	ResolvedEnv Env     `json:"resolvedEnv"`
+	Env *string `json:"env,omitempty"`
 	/** @description Cursor token — fetch the page AFTER this item. */
 	// @DataMember
 	// @ApiMember(DataType="string", Description="Cursor token — fetch the page AFTER this item.", Name="startingAfter", ParameterType="query")
@@ -1554,9 +1523,6 @@ type CodeMashListPaginationRequestBase struct {
 	// @DataMember
 	// @ApiMember(DataType="integer", Description="Amount of records to return.", Format="int32", Name="pageSize", ParameterType="query")
 	PageSize *int `json:"pageSize,omitempty"`
-	/** @description Paging */
-	// @ApiMember(DataType="object", Description="Paging", Name="paging", ParameterType="body")
-	Paging *PagingArgs `json:"paging,omitempty"`
 }
 
 // @DataContract
@@ -1690,8 +1656,22 @@ type PushToCollectionRecordsDeliverySettingsDto struct {
 	Languages []string `json:"languages,omitempty"`
 }
 
+type PushDeviceDeliveryFamily string
+
+const (
+	PushDeviceDeliveryFamilyIos     PushDeviceDeliveryFamily = "Ios"
+	PushDeviceDeliveryFamilyAndroid                          = "Android"
+	PushDeviceDeliveryFamilyChrome                           = "Chrome"
+	PushDeviceDeliveryFamilySafari                           = "Safari"
+	PushDeviceDeliveryFamilyExpo                             = "Expo"
+)
+
 // @DataContract
 type PushDeviceDeliveryTokenDto struct {
+	// @DataMember
+	PushDeviceToken string `json:"pushDeviceToken"`
+	// @DataMember
+	DeliveryFamily PushDeviceDeliveryFamily `json:"deliveryFamily,omitempty"`
 }
 
 // @DataContract
@@ -1740,15 +1720,15 @@ type SmsToPhoneNumbersDeliverySettingsDto struct {
 }
 
 type IntegrationDto struct {
-	ViewId                            string        `json:"viewId"`
-	IntegrationName                   string        `json:"integrationName"`
-	IsEnabled                         bool          `json:"isEnabled,omitempty"`
-	Env                               *string       `json:"env,omitempty"`
-	LastIntegrationTestAtUtc          *time.Time    `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded      *bool         `json:"lastIntegrationTestSucceeded,omitempty"`
-	LastIntegrationTestErrors         IReadOnlyList `json:"lastIntegrationTestErrors"`
-	HumanDeliveryConfirmedAtUtc       *time.Time    `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	RequiresHumanDeliveryConfirmation bool          `json:"requiresHumanDeliveryConfirmation,omitempty"`
+	ViewId                            string                `json:"viewId"`
+	IntegrationName                   string                `json:"integrationName"`
+	IsEnabled                         bool                  `json:"isEnabled,omitempty"`
+	Env                               *string               `json:"env,omitempty"`
+	LastIntegrationTestAtUtc          *time.Time            `json:"lastIntegrationTestAtUtc,omitempty"`
+	LastIntegrationTestSucceeded      *bool                 `json:"lastIntegrationTestSucceeded,omitempty"`
+	LastIntegrationTestErrors         IReadOnlyList[string] `json:"lastIntegrationTestErrors"`
+	HumanDeliveryConfirmedAtUtc       *time.Time            `json:"humanDeliveryConfirmedAtUtc,omitempty"`
+	RequiresHumanDeliveryConfirmation bool                  `json:"requiresHumanDeliveryConfirmation,omitempty"`
 }
 
 type LlmIntegrationDto struct {
@@ -2261,6 +2241,10 @@ type VonageSmsIntegrationDto struct {
 	FromSender string `json:"fromSender"`
 }
 
+type FakeSmsIntegrationDto struct {
+	SmsIntegrationDto
+}
+
 type PushIntegrationDto struct {
 	IntegrationDto
 	Provider PushProvider `json:"provider,omitempty"`
@@ -2308,6 +2292,10 @@ type SafariPushIntegrationDto struct {
 	WebsitePushId string `json:"websitePushId"`
 }
 
+type FakePushIntegrationDto struct {
+	PushIntegrationDto
+}
+
 type EmailIntegrationDto struct {
 	IntegrationDto
 	Provider        EmailProvider `json:"provider,omitempty"`
@@ -2348,6 +2336,10 @@ type SmtpEmailIntegrationDto struct {
 	Port     int    `json:"port,omitempty"`
 }
 
+type FakeEmailIntegrationDto struct {
+	EmailIntegrationDto
+}
+
 // @DataContract
 type WebhookDestinationDto struct {
 	// @DataMember
@@ -2357,18 +2349,18 @@ type WebhookDestinationDto struct {
 	// @DataMember
 	EndpointUrl string `json:"endpointUrl"`
 	// @DataMember
-	SelectedEvents IReadOnlyList `json:"selectedEvents"`
+	SelectedEvents IReadOnlyList[string] `json:"selectedEvents"`
 	// @DataMember
-	ExtraHeaders *IReadOnlyDictionary `json:"extraHeaders,omitempty"`
+	ExtraHeaders *IReadOnlyDictionary[string, string] `json:"extraHeaders,omitempty"`
 	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
 }
 
 type WebhookIntegrationDto struct {
 	IntegrationDto
-	IsConfigured bool                 `json:"isConfigured,omitempty"`
-	Destinations IReadOnlyList        `json:"destinations"`
-	ExtraHeaders *IReadOnlyDictionary `json:"extraHeaders,omitempty"`
+	IsConfigured bool                                 `json:"isConfigured,omitempty"`
+	Destinations IReadOnlyList[WebhookDestinationDto] `json:"destinations"`
+	ExtraHeaders *IReadOnlyDictionary[string, string] `json:"extraHeaders,omitempty"`
 }
 
 type SchedulerTaskType string
@@ -2466,7 +2458,7 @@ type MarketplaceIntegrationDto struct {
 	// @DataMember
 	Description *string `json:"description,omitempty"`
 	// @DataMember
-	Config IReadOnlyDictionary `json:"config"`
+	Config IReadOnlyDictionary[string, string] `json:"config"`
 }
 
 type MarketplaceTokenResolverKind string
@@ -2557,7 +2549,7 @@ type MarketplaceFieldDefinitionDto struct {
 	// @DataMember
 	ValidationPattern *string `json:"validationPattern,omitempty"`
 	// @DataMember
-	AllowedValues *IReadOnlyList `json:"allowedValues,omitempty"`
+	AllowedValues *IReadOnlyList[string] `json:"allowedValues,omitempty"`
 }
 
 // @DataContract
@@ -2610,7 +2602,7 @@ type MarketplaceHttpRequestSpecDto struct {
 	// @DataMember
 	PathTemplate string `json:"pathTemplate"`
 	// @DataMember
-	Parameters IReadOnlyList `json:"parameters"`
+	Parameters IReadOnlyList[MarketplaceParameterSpecDto] `json:"parameters"`
 	// @DataMember
 	ContentType *string `json:"contentType,omitempty"`
 }
@@ -2628,7 +2620,7 @@ type MarketplaceFunctionDefinitionDto struct {
 	// @DataMember
 	Group *string `json:"group,omitempty"`
 	// @DataMember
-	Parameters IReadOnlyList `json:"parameters"`
+	Parameters IReadOnlyList[MarketplaceFunctionParameterDto] `json:"parameters"`
 	// @DataMember
 	RequestSchema *string `json:"requestSchema,omitempty"`
 	// @DataMember
@@ -2662,15 +2654,15 @@ type MarketplaceListingDto struct {
 	// @DataMember
 	IsOfficial bool `json:"isOfficial,omitempty"`
 	// @DataMember
-	Tags IReadOnlyList `json:"tags"`
+	Tags IReadOnlyList[string] `json:"tags"`
 	// @DataMember
 	SpecVersion int `json:"specVersion,omitempty"`
 	// @DataMember
-	ConfigFields IReadOnlyList `json:"configFields"`
+	ConfigFields IReadOnlyList[MarketplaceFieldDefinitionDto] `json:"configFields"`
 	// @DataMember
-	SecretFields IReadOnlyList `json:"secretFields"`
+	SecretFields IReadOnlyList[MarketplaceFieldDefinitionDto] `json:"secretFields"`
 	// @DataMember
-	Functions IReadOnlyList `json:"functions"`
+	Functions IReadOnlyList[MarketplaceFunctionDefinitionDto] `json:"functions"`
 }
 
 type AdminPortalModuleDto struct {
@@ -2845,28 +2837,12 @@ type ConversationSnapshotEntryWireDto struct {
 	CoversUpToSeq int64  `json:"coversUpToSeq,omitempty"`
 }
 
-type ICultureBasedRequest struct {
-	CultureCode *string `json:"cultureCode,omitempty"`
-}
-
-type IVersionBasedRequest struct {
-	Version string `json:"version"`
-}
-
-type IHasCorrelationIdRequest struct {
-	CorrelationId *string `json:"correlationId,omitempty"`
-}
-
 type SubscriptionType string
 
 const (
 	SubscriptionTypeManagedService SubscriptionType = "ManagedService"
 	SubscriptionTypeLicense                         = "License"
 )
-
-type IHasAccountId struct {
-	AccountId string `json:"accountId"`
-}
 
 // @DataContract(Namespace="http://codemash.io/types/")
 type CodeMashRequestBase struct {
@@ -2878,14 +2854,6 @@ type CodeMashRequestBase struct {
 	/** @description Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env. */
 	// @DataMember
 	// @ApiMember(DataType="string", Description="Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env.", Name="norbix-env", ParameterType="header")
-	Env *string `json:"env,omitempty"`
-}
-
-type IHasProjectId struct {
-	ProjectId string `json:"projectId"`
-}
-
-type IHasEnv struct {
 	Env *string `json:"env,omitempty"`
 }
 
@@ -2937,422 +2905,28 @@ type TagDefinitionDto struct {
 	DefaultDelivery map[DeliveryChannel]bool `json:"defaultDelivery"`
 }
 
-type EmailAddress struct {
-	Address string `json:"address"`
+type CursorArgs struct {
+	Field string `json:"field"`
+	Order int    `json:"order,omitempty"`
 }
 
-type AggregateId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type AccountId struct {
-	AggregateId
-}
-
-type UtcDateTime struct {
-}
-
-type TimeUnit string
-
-const (
-	TimeUnitTicks        TimeUnit = "Ticks"
-	TimeUnitMilliseconds          = "Milliseconds"
-	TimeUnitSeconds               = "Seconds"
-	TimeUnitMinutes               = "Minutes"
-	TimeUnitHours                 = "Hours"
-)
-
-type ExpirationToken struct {
-	Items int64    `json:"items,omitempty"`
-	Unit  TimeUnit `json:"unit,omitempty"`
-	Value int64    `json:"value,omitempty"`
-}
-
-type CodeMashSubscriptionId struct {
-	AggregateId
-}
-
-type ProjectId struct {
-	AggregateId
-}
-
-type IntegrationId struct {
-	AggregateId
-}
-
-type ResourceRefKind string
-
-const (
-	ResourceRefKindContact         ResourceRefKind = "Contact"
-	ResourceRefKindDocument                        = "Document"
-	ResourceRefKindFile                            = "File"
-	ResourceRefKindPaymentCustomer                 = "PaymentCustomer"
-	ResourceRefKindOrder                           = "Order"
-	ResourceRefKindPayment                         = "Payment"
-	ResourceRefKindProduct                         = "Product"
-	ResourceRefKindIntegration                     = "Integration"
-)
-
-type ResourceRef struct {
-	ProjectId     ProjectId       `json:"projectId"`
-	IntegrationId *IntegrationId  `json:"integrationId,omitempty"`
-	Kind          ResourceRefKind `json:"kind,omitempty"`
-}
-
-type ResourceSource string
-
-const (
-	ResourceSourceNorbix       ResourceSource = "Norbix"
-	ResourceSourceStripe                      = "Stripe"
-	ResourceSourceShopify                     = "Shopify"
-	ResourceSourcePayPal                      = "PayPal"
-	ResourceSourceAdyen                       = "Adyen"
-	ResourceSourceMollie                      = "Mollie"
-	ResourceSourcePaddle                      = "Paddle"
-	ResourceSourceLemonSqueezy                = "LemonSqueezy"
-	ResourceSourceAppleInApp                  = "AppleInApp"
-	ResourceSourceGoogleInApp                 = "GoogleInApp"
-	ResourceSourceAuthorizeNet                = "AuthorizeNet"
-	ResourceSourceBraintree                   = "Braintree"
-	ResourceSourceCheckOutCom                 = "CheckOutCom"
-	ResourceSourceWooCommerce                 = "WooCommerce"
-	ResourceSourceMagento                     = "Magento"
-	ResourceSourceWorldpay                    = "Worldpay"
-)
-
-type PaymentCustomerRef struct {
-	ResourceRef
-	Kind       ResourceRefKind `json:"kind,omitempty"`
-	Source     ResourceSource  `json:"source,omitempty"`
-	ExternalId string          `json:"externalId"`
-}
-
-type Quantity struct {
-	Value int `json:"value,omitempty"`
-}
-
-type CodeMashManagedServiceSubscription struct {
-	SubscriptionId     CodeMashSubscriptionId `json:"subscriptionId"`
-	PaymentCustomerRef PaymentCustomerRef     `json:"paymentCustomerRef"`
-	RefSubscriptionId  string                 `json:"refSubscriptionId"`
-	IssuedOn           UtcDateTime            `json:"issuedOn"`
-	WillExpireOn       UtcDateTime            `json:"willExpireOn"`
-	ProjectCap         Quantity               `json:"projectCap"`
-	IsTrial            bool                   `json:"isTrial,omitempty"`
-}
-
-type DomainUrl struct {
-	Value string `json:"value"`
-}
-
-type CodeMashLicense struct {
-	CodeMashManagedServiceSubscription
-	Domain       DomainUrl `json:"domain"`
-	AccountId    AccountId `json:"accountId"`
-	IsEnterprise bool      `json:"isEnterprise,omitempty"`
+type PagingArgs struct {
+	CursorArgs    *CursorArgs `json:"cursorArgs,omitempty"`
+	PageSize      *int        `json:"pageSize,omitempty"`
+	StartingAfter *string     `json:"startingAfter,omitempty"`
+	EndingBefore  *string     `json:"endingBefore,omitempty"`
 }
 
 // @DataContract
-type ProjectName struct {
+type AiScopeDto struct {
 	// @DataMember
-	Name string `json:"name"`
+	Reach string `json:"reach"`
 	// @DataMember
-	UniqueName string `json:"uniqueName"`
-}
-
-type NorbixRegion struct {
-	Code string `json:"code"`
-}
-
-type Continent string
-
-const (
-	ContinentAfrica       Continent = "Africa"
-	ContinentAntarctica             = "Antarctica"
-	ContinentAsia                   = "Asia"
-	ContinentEurope                 = "Europe"
-	ContinentNorthAmerica           = "NorthAmerica"
-	ContinentOceania                = "Oceania"
-	ContinentSouthAmerica           = "SouthAmerica"
-)
-
-// @DataContract
-type ProjectRegion struct {
+	ProjectId *string `json:"projectId,omitempty"`
 	// @DataMember
-	Region NorbixRegion `json:"region"`
+	Rights string `json:"rights"`
 	// @DataMember
-	Name *string `json:"name,omitempty"`
-	// @DataMember
-	Continent *Continent `json:"continent,omitempty"`
-}
-
-type ProjectLegalDocuments struct {
-	TermsMarkdown   *string `json:"termsMarkdown,omitempty"`
-	PrivacyMarkdown *string `json:"privacyMarkdown,omitempty"`
-}
-
-type AuthId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type Language struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-}
-
-type FileResourceId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type FileChecksum struct {
-	Algorithm string `json:"algorithm"`
-	Hash      string `json:"hash"`
-}
-
-// @DataContract
-type FileResource struct {
-	// @DataMember
-	Id FileResourceId `json:"id"`
-	// @DataMember
-	OriginalFileName string `json:"originalFileName"`
-	// @DataMember
-	Extension string `json:"extension"`
-	// @DataMember
-	SizeBytes *int64 `json:"sizeBytes,omitempty"`
-	// @DataMember
-	Checksum *FileChecksum `json:"checksum,omitempty"`
-	// @DataMember
-	StoredFileName string `json:"storedFileName"`
-}
-
-// @DataContract
-type FileResourceRef struct {
-	// @DataMember(Order=1)
-	Resource FileResource `json:"resource"`
-	// @DataMember(Order=2)
-	IntegrationId IntegrationId `json:"integrationId"`
-	// @DataMember(Order=3)
-	Provider FileProvider `json:"provider,omitempty"`
-	// @DataMember(Order=4)
-	Path string `json:"path"`
-}
-
-type ProjectLogo struct {
-	FileResource FileResourceRef `json:"fileResource"`
-	PublicUrl    string          `json:"publicUrl"`
-}
-
-type ProjectIcon struct {
-	FileResource FileResourceRef `json:"fileResource"`
-	PublicUrl    string          `json:"publicUrl"`
-}
-
-// @DataContract
-type BrandColor struct {
-	// @DataMember
-	Value string `json:"value"`
-}
-
-type Tag struct {
-}
-
-// @DataContract
-type GroupTags struct {
-	// @DataMember
-	Group Tag `json:"group"`
-	// @DataMember
-	Tags []Tag `json:"tags"`
-}
-
-// @DataContract
-type ProjectCommunicationChannel struct {
-	// @DataMember
-	Channel CommunicationChannel `json:"channel,omitempty"`
-	// @DataMember
-	Groups []GroupTags `json:"groups"`
-}
-
-type TagDescription struct {
-	DisplayName DisplayName `json:"displayName"`
-	Description *string     `json:"description,omitempty"`
-}
-
-// @DataContract
-type MessageTranslation struct {
-}
-
-type TagTranslation struct {
-	MessageTranslation
-}
-
-type BaseTagDefinition struct {
-	Tag          Tag              `json:"tag"`
-	Translations []TagTranslation `json:"translations"`
-}
-
-type GroupDefinition struct {
-	BaseTagDefinition
-}
-
-type TagDefinition struct {
-	BaseTagDefinition
-	DefaultDelivery map[DeliveryChannel]bool `json:"defaultDelivery"`
-}
-
-// @DataContract
-type ProjectCommunication struct {
-	// @DataMember
-	Channels []ProjectCommunicationChannel `json:"channels"`
-	// @DataMember
-	Groups []GroupDefinition `json:"groups"`
-	// @DataMember
-	Tags []TagDefinition `json:"tags"`
-}
-
-// @DataContract
-type TimeZone struct {
-	// @DataMember
-	ZoneId string `json:"zoneId"`
-}
-
-type PolicyId struct {
-	Template           string `json:"template,omitempty"`
-	TenancyScopeViewId string `json:"tenancyScopeViewId"`
-	ViewId             string `json:"viewId"`
-	IsSystem           bool   `json:"isSystem,omitempty"`
-}
-
-type PermissionEffect string
-
-const (
-	PermissionEffectAllow PermissionEffect = "Allow"
-	PermissionEffectDeny                   = "Deny"
-)
-
-// @Flags()
-type ApplicationModule int
-
-const (
-	ApplicationModuleAccount      ApplicationModule = 0
-	ApplicationModuleMembership   ApplicationModule = 1
-	ApplicationModuleDatabase     ApplicationModule = 2
-	ApplicationModuleFiles        ApplicationModule = 4
-	ApplicationModuleCode         ApplicationModule = 8
-	ApplicationModuleEmail        ApplicationModule = 16
-	ApplicationModulePush         ApplicationModule = 32
-	ApplicationModulePayment      ApplicationModule = 64
-	ApplicationModuleScheduler    ApplicationModule = 128
-	ApplicationModuleLogging      ApplicationModule = 256
-	ApplicationModuleServerEvents ApplicationModule = 512
-	ApplicationModuleAi           ApplicationModule = 1024
-	ApplicationModuleSms          ApplicationModule = 2048
-	ApplicationModuleProject      ApplicationModule = 4096
-	ApplicationModuleCompliance   ApplicationModule = 8192
-	ApplicationModuleContacts     ApplicationModule = 16384
-	ApplicationModuleMarketplace  ApplicationModule = 32768
-)
-
-type PermissionAction struct {
-	Module              *ApplicationModule `json:"module,omitempty"`
-	Operation           *string            `json:"operation,omitempty"`
-	IsModuleWildcard    bool               `json:"isModuleWildcard,omitempty"`
-	IsOperationWildcard bool               `json:"isOperationWildcard,omitempty"`
-	IsConcrete          bool               `json:"isConcrete,omitempty"`
-	Specificity         int                `json:"specificity,omitempty"`
-}
-
-type ResourceKind struct {
-	Name string `json:"name"`
-}
-
-type ResourceIdentifier struct {
-	Value string `json:"value"`
-}
-
-type ResourcePattern struct {
-	Account           *AccountId          `json:"account,omitempty"`
-	Project           *ProjectId          `json:"project,omitempty"`
-	Module            *ApplicationModule  `json:"module,omitempty"`
-	Kind              *ResourceKind       `json:"kind,omitempty"`
-	Id                *ResourceIdentifier `json:"id,omitempty"`
-	IsAccountWildcard bool                `json:"isAccountWildcard,omitempty"`
-	IsProjectWildcard bool                `json:"isProjectWildcard,omitempty"`
-	IsModuleWildcard  bool                `json:"isModuleWildcard,omitempty"`
-	IsKindWildcard    bool                `json:"isKindWildcard,omitempty"`
-	IsIdWildcard      bool                `json:"isIdWildcard,omitempty"`
-	IsConcrete        bool                `json:"isConcrete,omitempty"`
-	IsFullWildcard    bool                `json:"isFullWildcard,omitempty"`
-	Specificity       int                 `json:"specificity,omitempty"`
-}
-
-type Permission struct {
-	Sid       *string            `json:"sid,omitempty"`
-	Effect    PermissionEffect   `json:"effect,omitempty"`
-	Actions   []PermissionAction `json:"actions"`
-	Resources []ResourcePattern  `json:"resources"`
-}
-
-type MembershipPolicy struct {
-	Id          PolicyId     `json:"id"`
-	Name        DisplayName  `json:"name"`
-	Description *string      `json:"description,omitempty"`
-	Permissions []Permission `json:"permissions"`
-	Disabled    bool         `json:"disabled,omitempty"`
-	IsSystem    bool         `json:"isSystem,omitempty"`
-}
-
-type RoleId struct {
-	Template           string `json:"template,omitempty"`
-	TenancyScopeViewId string `json:"tenancyScopeViewId"`
-	ViewId             string `json:"viewId"`
-	IsSystem           bool   `json:"isSystem,omitempty"`
-}
-
-type MembershipRole struct {
-	Id               RoleId      `json:"id"`
-	Name             DisplayName `json:"name"`
-	Description      *string     `json:"description,omitempty"`
-	AttachedPolicies []PolicyId  `json:"attachedPolicies"`
-	Disabled         bool        `json:"disabled,omitempty"`
-	IsSystem         bool        `json:"isSystem,omitempty"`
-}
-
-type BillingPeriod struct {
-	Year            int       `json:"year,omitempty"`
-	Month           int       `json:"month,omitempty"`
-	StartUtc        time.Time `json:"startUtc,omitempty"`
-	EndExclusiveUtc time.Time `json:"endExclusiveUtc,omitempty"`
-	LastInstantUtc  time.Time `json:"lastInstantUtc,omitempty"`
-}
-
-type AtlasClusterChargeRecord struct {
-	AtlasProjectId   string `json:"atlasProjectId"`
-	AtlasClusterName string `json:"atlasClusterName"`
-	Cents            int64  `json:"cents,omitempty"`
-}
-
-type AtlasUsageRecord struct {
-	Period        BillingPeriod `json:"period"`
-	TotalCents    int64         `json:"totalCents,omitempty"`
-	PerCluster    IReadOnlyList `json:"perCluster"`
-	RecordedAtUtc UtcDateTime   `json:"recordedAtUtc"`
-}
-
-type UsageIngestionFailureReason string
-
-const (
-	UsageIngestionFailureReasonUnknownCustomer  UsageIngestionFailureReason = "UnknownCustomer"
-	UsageIngestionFailureReasonMeterNotFound                                = "MeterNotFound"
-	UsageIngestionFailureReasonValidationFailed                             = "ValidationFailed"
-	UsageIngestionFailureReasonImportSetFailed                              = "ImportSetFailed"
-)
-
-type UsageIngestionFailure struct {
-	Reason        UsageIngestionFailureReason `json:"reason,omitempty"`
-	Period        *BillingPeriod              `json:"period,omitempty"`
-	StripeEventId string                      `json:"stripeEventId"`
-	Message       string                      `json:"message"`
-	ReportedAtUtc UtcDateTime                 `json:"reportedAtUtc"`
+	Envs []string `json:"envs"`
 }
 
 // @DataContract
@@ -3398,65 +2972,12 @@ type GetTrigger struct {
 type SaveTrigger struct {
 	CodeMashRequestBase
 	// @DataMember
-	Trigger SaveTriggerRequest `json:"trigger"`
+	Trigger interface{} `json:"trigger"`
 }
 
 type CredentialsSettingsModeDto struct {
 	Name      *string `json:"name,omitempty"`
 	LogoutUrl *string `json:"logoutUrl,omitempty"`
-}
-
-type Integration struct {
-	IntegrationId                    IntegrationId `json:"integrationId"`
-	Env                              Env           `json:"env"`
-	Capability                       string        `json:"capability,omitempty"`
-	IsSystemOwned                    bool          `json:"isSystemOwned,omitempty"`
-	IntegrationName                  DisplayName   `json:"integrationName"`
-	IsEnabled                        bool          `json:"isEnabled,omitempty"`
-	IsConfigured                     bool          `json:"isConfigured,omitempty"`
-	LastIntegrationTestAtUtc         *time.Time    `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded     *bool         `json:"lastIntegrationTestSucceeded,omitempty"`
-	LastIntegrationTestErrorMessages IReadOnlyList `json:"lastIntegrationTestErrorMessages"`
-	HumanDeliveryConfirmedAtUtc      *time.Time    `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	IsApprovedThatItWorks            bool          `json:"isApprovedThatItWorks,omitempty"`
-}
-
-type MembershipIntegration struct {
-	Integration
-	Provider MembershipProvider `json:"provider,omitempty"`
-}
-
-type TriggerId struct {
-	AggregateId
-}
-
-type TriggerAction struct {
-	Type          TriggerActionType `json:"type,omitempty"`
-	IntegrationId *IntegrationId    `json:"integrationId,omitempty"`
-}
-
-// @DataContract
-type TemplateCode struct {
-}
-
-type Trigger struct {
-	TriggerId      TriggerId      `json:"triggerId"`
-	Name           DisplayName    `json:"name"`
-	TriggerAction  TriggerAction  `json:"triggerAction"`
-	ActivationCode *TemplateCode  `json:"activationCode,omitempty"`
-	Description    *string        `json:"description,omitempty"`
-	IsEnabled      bool           `json:"isEnabled,omitempty"`
-	Env            Env            `json:"env"`
-	IntegrationId  *IntegrationId `json:"integrationId,omitempty"`
-}
-
-type MembershipTrigger struct {
-	Trigger
-	When MembershipTriggerType `json:"when,omitempty"`
-}
-
-type TriggerByIdEventBase struct {
-	TriggerId TriggerId `json:"triggerId"`
 }
 
 type SchemaSettingsDto struct {
@@ -3496,395 +3017,6 @@ type ImportColumnMappingDto struct {
 	PropertyName *string `json:"propertyName,omitempty"`
 	// @DataMember
 	DontImportOnError bool `json:"dontImportOnError,omitempty"`
-}
-
-type MongoDbAggregateId struct {
-	AggregateId
-}
-
-type MongoDbAggregateQuery struct {
-	Value string `json:"value"`
-}
-
-type SchemaId struct {
-	AggregateId
-}
-
-type MongoDbAggregate struct {
-	Id          MongoDbAggregateId    `json:"id"`
-	DisplayName DisplayName           `json:"displayName"`
-	Description *string               `json:"description,omitempty"`
-	Query       MongoDbAggregateQuery `json:"query"`
-	SchemaId    SchemaId              `json:"schemaId"`
-}
-
-type DatabaseIntegration struct {
-	Integration
-	Provider         DatabaseProvider  `json:"provider,omitempty"`
-	Status           IntegrationStatus `json:"status,omitempty"`
-	AtlasProjectId   *string           `json:"atlasProjectId,omitempty"`
-	AtlasClusterName *string           `json:"atlasClusterName,omitempty"`
-	FailureReason    *string           `json:"failureReason,omitempty"`
-}
-
-type ProjectStatus string
-
-const (
-	ProjectStatusActive             ProjectStatus = "Active"
-	ProjectStatusProvisioning                     = "Provisioning"
-	ProjectStatusProvisioningFailed               = "ProvisioningFailed"
-	ProjectStatusNoDatabase                       = "NoDatabase"
-	ProjectStatusDisabled                         = "Disabled"
-	ProjectStatusSuspended                        = "Suspended"
-	ProjectStatusRemoved                          = "Removed"
-)
-
-type SchemaName struct {
-	Value string `json:"value"`
-	Title string `json:"title"`
-}
-
-type JsonSchemaFieldName struct {
-	FieldName string `json:"fieldName"`
-}
-
-type JsonSchemaField struct {
-	FieldName JsonSchemaFieldName `json:"fieldName"`
-}
-
-type DataSchema struct {
-	RawJson string            `json:"rawJson"`
-	Fields  []JsonSchemaField `json:"fields"`
-}
-
-type VisualSchema struct {
-	RawJson string `json:"rawJson"`
-}
-
-type SchemaDraft struct {
-	DataSchema   DataSchema   `json:"dataSchema"`
-	VisualSchema VisualSchema `json:"visualSchema"`
-	UpdatedAt    time.Time    `json:"updatedAt,omitempty"`
-}
-
-type SchemaVersion struct {
-	Value int `json:"value,omitempty"`
-}
-
-type MetaSchemaVersion struct {
-	Value int `json:"value,omitempty"`
-}
-
-type PublishedSchemaVersion struct {
-	Version           SchemaVersion     `json:"version"`
-	DataSchema        DataSchema        `json:"dataSchema"`
-	VisualSchema      VisualSchema      `json:"visualSchema"`
-	MetaSchemaVersion MetaSchemaVersion `json:"metaSchemaVersion"`
-	PublishedAt       time.Time         `json:"publishedAt,omitempty"`
-}
-
-type SchemaSettings struct {
-	SoftDelete     bool    `json:"softDelete,omitempty"`
-	HasRecordOwner bool    `json:"hasRecordOwner,omitempty"`
-	Description    *string `json:"description,omitempty"`
-}
-
-type Schema struct {
-	SchemaName        SchemaName      `json:"schemaName"`
-	Id                SchemaId        `json:"id"`
-	Env               Env             `json:"env"`
-	Draft             *SchemaDraft    `json:"draft,omitempty"`
-	PublishedVersions IReadOnlyList   `json:"publishedVersions"`
-	Triggers          []Trigger       `json:"triggers,omitempty"`
-	Settings          *SchemaSettings `json:"settings,omitempty"`
-}
-
-type SchemaDiff struct {
-	AddedFields              IReadOnlyList `json:"addedFields"`
-	RemovedFields            IReadOnlyList `json:"removedFields"`
-	TypeChangedFields        IReadOnlyList `json:"typeChangedFields"`
-	ValidatorTightenedFields IReadOnlyList `json:"validatorTightenedFields"`
-	IsEmpty                  bool          `json:"isEmpty,omitempty"`
-}
-
-type TaxonomyId struct {
-	AggregateId
-}
-
-type TaxonomyName struct {
-	Value string `json:"value"`
-	Title string `json:"title"`
-}
-
-type RecordId struct {
-	Id string `json:"id"`
-}
-
-type Taxonomy struct {
-	ParentId              *TaxonomyId   `json:"parentId,omitempty"`
-	Id                    TaxonomyId    `json:"id"`
-	Name                  TaxonomyName  `json:"name"`
-	Description           *string       `json:"description,omitempty"`
-	TermsMetaVisualSchema *VisualSchema `json:"termsMetaVisualSchema,omitempty"`
-	TermsMetaDataSchema   *DataSchema   `json:"termsMetaDataSchema,omitempty"`
-	Dependencies          []TaxonomyId  `json:"dependencies,omitempty"`
-	RecordId              *RecordId     `json:"recordId,omitempty"`
-}
-
-type SchemaTrigger struct {
-	Trigger
-	SchemaId      SchemaId          `json:"schemaId"`
-	When          SchemaTriggerType `json:"when,omitempty"`
-	Configuration *TemplateCode     `json:"configuration,omitempty"`
-}
-
-type IPasskeyMessage struct {
-}
-
-type AuthUserName struct {
-	Value string `json:"value"`
-}
-
-type AuthType string
-
-const (
-	AuthTypeService  AuthType = "Service"
-	AuthTypeEmail             = "Email"
-	AuthTypeUserName          = "UserName"
-	AuthTypePhone             = "Phone"
-	AuthTypeGuest             = "Guest"
-	AuthTypeSocial            = "Social"
-)
-
-type IpAddress struct {
-	Ip string `json:"ip"`
-}
-
-type AccessInformation struct {
-	Ip   *IpAddress   `json:"ip,omitempty"`
-	Date *UtcDateTime `json:"date,omitempty"`
-	Zone *TimeZone    `json:"zone,omitempty"`
-}
-
-type Registration struct {
-	RegistrationInformation AccessInformation `json:"registrationInformation"`
-}
-
-type Login struct {
-	NeedChangePasswordOnNextLogin bool               `json:"needChangePasswordOnNextLogin,omitempty"`
-	LastAccessInformation         *AccessInformation `json:"lastAccessInformation,omitempty"`
-}
-
-type Phone struct {
-	Value string `json:"value"`
-}
-
-// @DataContract
-type FirstName struct {
-	// @DataMember
-	Value string `json:"value"`
-}
-
-// @DataContract
-type LastName struct {
-	// @DataMember
-	Value string `json:"value"`
-}
-
-type MidName struct {
-	Value string `json:"value"`
-}
-
-type FullName struct {
-	FirstName *FirstName `json:"firstName,omitempty"`
-	MidName   *MidName   `json:"midName,omitempty"`
-	LastName  *LastName  `json:"lastName,omitempty"`
-	Title     *string    `json:"title,omitempty"`
-}
-
-type City struct {
-	Value string `json:"value"`
-}
-
-type Country struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-}
-
-type AddressLine struct {
-	Value string `json:"value"`
-}
-
-type PostalCode struct {
-	Value string `json:"value"`
-}
-
-type CountryState struct {
-	Value string `json:"value"`
-}
-
-type Address struct {
-	City         *City         `json:"city,omitempty"`
-	Country      *Country      `json:"country,omitempty"`
-	AddressLine1 *AddressLine  `json:"addressLine1,omitempty"`
-	AddressLine2 *AddressLine  `json:"addressLine2,omitempty"`
-	PostalCode   *PostalCode   `json:"postalCode,omitempty"`
-	State        *CountryState `json:"state,omitempty"`
-}
-
-type Gender string
-
-const (
-	GenderMale   Gender = "Male"
-	GenderFemale        = "Female"
-	GenderOther         = "Other"
-)
-
-type MarketingBlockReason string
-
-const (
-	MarketingBlockReasonUnspecified  MarketingBlockReason = "Unspecified"
-	MarketingBlockReasonUnsubscribed                      = "Unsubscribed"
-	MarketingBlockReasonComplaint                         = "Complaint"
-	MarketingBlockReasonHardBounce                        = "HardBounce"
-	MarketingBlockReasonInvalidEmail                      = "InvalidEmail"
-	MarketingBlockReasonAdminBlock                        = "AdminBlock"
-)
-
-type UserMarketingPreferences struct {
-	BlockAllMarketingMessages bool                      `json:"blockAllMarketingMessages,omitempty"`
-	BlockedTags               map[DeliveryChannel][]Tag `json:"blockedTags,omitempty"`
-	BlockReasons              []MarketingBlockReason    `json:"blockReasons,omitempty"`
-}
-
-type UserGeneralInfo struct {
-	Phone                *Phone                    `json:"phone,omitempty"`
-	PrimaryEmail         *EmailAddress             `json:"primaryEmail,omitempty"`
-	DisplayName          *DisplayName              `json:"displayName,omitempty"`
-	FirstName            *FirstName                `json:"firstName,omitempty"`
-	LastName             *LastName                 `json:"lastName,omitempty"`
-	FullName             *FullName                 `json:"fullName,omitempty"`
-	Address              *Address                  `json:"address,omitempty"`
-	Company              *string                   `json:"company,omitempty"`
-	Gender               *Gender                   `json:"gender,omitempty"`
-	BirthDate            *UtcDateTime              `json:"birthDate,omitempty"`
-	TimeZone             *TimeZone                 `json:"timeZone,omitempty"`
-	Language             *Language                 `json:"language,omitempty"`
-	MarketingPreferences *UserMarketingPreferences `json:"marketingPreferences,omitempty"`
-	Notes                *string                   `json:"notes,omitempty"`
-	ExtraMetadata        *string                   `json:"extraMetadata,omitempty"`
-}
-
-type AuthStatus string
-
-const (
-	AuthStatusRegistered        AuthStatus = "Registered"
-	AuthStatusPendingValidation            = "PendingValidation"
-	AuthStatusActive                       = "Active"
-	AuthStatusUnregistered                 = "Unregistered"
-	AuthStatusSuspended                    = "Suspended"
-	AuthStatusInActive                     = "InActive"
-	AuthStatusBlocked                      = "Blocked"
-)
-
-type DeviceId struct {
-	Id string `json:"id,omitempty"`
-}
-
-type DeviceType string
-
-const (
-	DeviceTypeUnknown DeviceType = "Unknown"
-	DeviceTypePhone              = "Phone"
-	DeviceTypeTablet             = "Tablet"
-	DeviceTypeDesktop            = "Desktop"
-	DeviceTypeTv                 = "Tv"
-)
-
-type PushDeviceToken struct {
-	Token string `json:"token"`
-}
-
-type PushDeviceDeliveryFamily string
-
-const (
-	PushDeviceDeliveryFamilyIos     PushDeviceDeliveryFamily = "Ios"
-	PushDeviceDeliveryFamilyAndroid                          = "Android"
-	PushDeviceDeliveryFamilyChrome                           = "Chrome"
-	PushDeviceDeliveryFamilySafari                           = "Safari"
-	PushDeviceDeliveryFamilyExpo                             = "Expo"
-)
-
-// @DataContract
-type PushDeviceDeliveryToken struct {
-	// @DataMember
-	PushDeviceToken PushDeviceToken `json:"pushDeviceToken"`
-	// @DataMember
-	DeliveryFamily PushDeviceDeliveryFamily `json:"deliveryFamily,omitempty"`
-}
-
-// @DataContract
-type PushDevice struct {
-	// @DataMember
-	Id DeviceId `json:"id"`
-	// @DataMember
-	Brand *string `json:"brand,omitempty"`
-	// @DataMember
-	Manufacturer *string `json:"manufacturer,omitempty"`
-	// @DataMember
-	ModelName *string `json:"modelName,omitempty"`
-	// @DataMember
-	DeviceName *string `json:"deviceName,omitempty"`
-	// @DataMember
-	DeviceType *DeviceType `json:"deviceType,omitempty"`
-	// @DataMember
-	OsName *string `json:"osName,omitempty"`
-	// @DataMember
-	OsVersion *string `json:"osVersion,omitempty"`
-	// @DataMember
-	PlatformApiLevel *int `json:"platformApiLevel,omitempty"`
-	// @DataMember
-	Token PushDeviceDeliveryToken `json:"token"`
-}
-
-type PushDevices []PushDevice
-
-type UserId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type UserRef struct {
-	ResourceRef
-	Kind   ResourceRefKind `json:"kind,omitempty"`
-	UserId UserId          `json:"userId"`
-}
-
-type Auth struct {
-	Id           AuthId           `json:"id"`
-	Roles        []RoleName       `json:"roles,omitempty"`
-	Email        *EmailAddress    `json:"email,omitempty"`
-	UserName     *AuthUserName    `json:"userName,omitempty"`
-	Type         AuthType         `json:"type,omitempty"`
-	Registration Registration     `json:"registration"`
-	Login        *Login           `json:"login,omitempty"`
-	GeneralInfo  *UserGeneralInfo `json:"generalInfo,omitempty"`
-	Status       AuthStatus       `json:"status,omitempty"`
-	CreatedOn    UtcDateTime      `json:"createdOn"`
-	ModifiedOn   UtcDateTime      `json:"modifiedOn"`
-	PushDevices  *PushDevices     `json:"pushDevices,omitempty"`
-	Tags         []Tag            `json:"tags,omitempty"`
-	UserRef      *UserRef         `json:"userRef,omitempty"`
-}
-
-type FileIntegration struct {
-	Integration
-	Provider FileProvider `json:"provider,omitempty"`
-}
-
-type FileTrigger struct {
-	Trigger
-	When            FilesTriggerType `json:"when,omitempty"`
-	FileResourceRef *FileResourceRef `json:"fileResourceRef,omitempty"`
 }
 
 // @DataContract
@@ -3935,133 +3067,6 @@ type TranslationDto struct {
 	Content string `json:"content"`
 }
 
-type EmailFooterId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type EmailFooter struct {
-	Id           EmailFooterId        `json:"id"`
-	DisplayName  DisplayName          `json:"displayName"`
-	Translations []MessageTranslation `json:"translations"`
-	Env          Env                  `json:"env"`
-}
-
-// @DataContract
-type EmailSenderName struct {
-}
-
-type EmailIntegration struct {
-	Integration
-	Provider        EmailProvider    `json:"provider,omitempty"`
-	EmailAddress    EmailAddress     `json:"emailAddress"`
-	EmailSenderName *EmailSenderName `json:"emailSenderName,omitempty"`
-}
-
-type EmailSignatureId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type EmailSignature struct {
-	Id           EmailSignatureId     `json:"id"`
-	DisplayName  DisplayName          `json:"displayName"`
-	Translations []MessageTranslation `json:"translations"`
-	Env          Env                  `json:"env"`
-}
-
-type TemplateId struct {
-	Value string `json:"value,omitempty"`
-}
-
-// @DataContract
-type Template struct {
-	// @DataMember
-	TemplateId TemplateId `json:"templateId"`
-	// @DataMember
-	TemplateName DisplayName `json:"templateName"`
-	// @DataMember
-	Translations []MessageTranslation `json:"translations"`
-	// @DataMember
-	CommunicationChannel CommunicationChannel `json:"communicationChannel,omitempty"`
-	// @DataMember
-	IsActive bool `json:"isActive,omitempty"`
-	// @DataMember
-	Description *string `json:"description,omitempty"`
-	// @DataMember
-	Tags []Tag `json:"tags,omitempty"`
-	// @DataMember
-	FileIntegrationId *IntegrationId `json:"fileIntegrationId,omitempty"`
-	// @DataMember
-	Env Env `json:"env"`
-}
-
-// @DataContract
-type EmailSubject struct {
-}
-
-// @DataContract
-type EmailBody struct {
-	// @DataMember
-	Code TemplateCode `json:"code"`
-	// @DataMember
-	Structure *string `json:"structure,omitempty"`
-	// @DataMember
-	EmailTemplateEngine EmailTemplateEngine `json:"emailTemplateEngine,omitempty"`
-}
-
-// @DataContract
-type EmailMessageContent struct {
-	// @DataMember(Order=1)
-	Subject EmailSubject `json:"subject"`
-	// @DataMember(Order=2)
-	Body EmailBody `json:"body"`
-	// @DataMember(Order=3)
-	StaticAttachments []FileResourceRef `json:"staticAttachments,omitempty"`
-}
-
-// @DataContract
-type EmailTemplate struct {
-	Template
-	// @DataMember
-	StaticAttachments []FileResourceRef `json:"staticAttachments,omitempty"`
-}
-
-type EmailValidationIntegration struct {
-	Integration
-	Provider EmailValidationProvider `json:"provider,omitempty"`
-}
-
-type CampaignId struct {
-	Id string `json:"id,omitempty"`
-}
-
-type CampaignBatchId struct {
-	Id string `json:"id,omitempty"`
-}
-
-type NotificationId struct {
-	AggregateId
-}
-
-type CampaignStopReason string
-
-const (
-	CampaignStopReasonUserRequested  CampaignStopReason = "UserRequested"
-	CampaignStopReasonModuleDisabled                    = "ModuleDisabled"
-)
-
-type EmailDeliveryEventType string
-
-const (
-	EmailDeliveryEventTypeUnknown      EmailDeliveryEventType = "Unknown"
-	EmailDeliveryEventTypeDelivered                           = "Delivered"
-	EmailDeliveryEventTypeOpen                                = "Open"
-	EmailDeliveryEventTypeClick                               = "Click"
-	EmailDeliveryEventTypeSoftBounce                          = "SoftBounce"
-	EmailDeliveryEventTypeHardBounce                          = "HardBounce"
-	EmailDeliveryEventTypeComplaint                           = "Complaint"
-	EmailDeliveryEventTypeUnsubscribed                        = "Unsubscribed"
-)
-
 type SaveSmsTemplate struct {
 	CodeMashRequestBase
 	/** @description Display name for the SMS template. */
@@ -4088,125 +3093,6 @@ type SmsIntegrationRequest struct {
 	IsEnabled       bool        `json:"isEnabled,omitempty"`
 }
 
-type SmsIntegration struct {
-	Integration
-	Provider SmsProvider `json:"provider,omitempty"`
-}
-
-type SmsTitle struct {
-	Value TemplateCode `json:"value"`
-}
-
-type SmsBody struct {
-	Value TemplateCode `json:"value"`
-}
-
-// @DataContract
-type SmsMessageContent struct {
-	// @DataMember(Order=1)
-	Title SmsTitle `json:"title"`
-	// @DataMember(Order=2)
-	Body SmsBody `json:"body"`
-}
-
-// @DataContract
-type SmsTemplate struct {
-	Template
-}
-
-type CodeIntegration struct {
-	Integration
-	Provider CodeProvider `json:"provider,omitempty"`
-}
-
-type MarketplaceIntegrationTransport string
-
-const (
-	MarketplaceIntegrationTransportMcp      MarketplaceIntegrationTransport = "Mcp"
-	MarketplaceIntegrationTransportRest                                     = "Rest"
-	MarketplaceIntegrationTransportCode                                     = "Code"
-	MarketplaceIntegrationTransportInternal                                 = "Internal"
-	MarketplaceIntegrationTransportSdk                                      = "Sdk"
-)
-
-type MarketplaceIntegrationCategory string
-
-const (
-	MarketplaceIntegrationCategoryOther         MarketplaceIntegrationCategory = "Other"
-	MarketplaceIntegrationCategoryCrm                                          = "Crm"
-	MarketplaceIntegrationCategoryErp                                          = "Erp"
-	MarketplaceIntegrationCategoryMarketing                                    = "Marketing"
-	MarketplaceIntegrationCategoryCommunication                                = "Communication"
-	MarketplaceIntegrationCategoryProductivity                                 = "Productivity"
-	MarketplaceIntegrationCategoryStorage                                      = "Storage"
-	MarketplaceIntegrationCategoryAnalytics                                    = "Analytics"
-	MarketplaceIntegrationCategoryIdentity                                     = "Identity"
-	MarketplaceIntegrationCategoryPayments                                     = "Payments"
-	MarketplaceIntegrationCategoryDevTools                                     = "DevTools"
-	MarketplaceIntegrationCategoryAi                                           = "Ai"
-	MarketplaceIntegrationCategoryFiles                                        = "Files"
-	MarketplaceIntegrationCategoryDatabase                                     = "Database"
-	MarketplaceIntegrationCategoryCalendar                                     = "Calendar"
-)
-
-type MarketplaceTokenResolver string
-
-const (
-	MarketplaceTokenResolverStatic            MarketplaceTokenResolver = "Static"
-	MarketplaceTokenResolverRequest                                    = "Request"
-	MarketplaceTokenResolverProject                                    = "Project"
-	MarketplaceTokenResolverInitiator                                  = "Initiator"
-	MarketplaceTokenResolverCustom                                     = "Custom"
-	MarketplaceTokenResolverIntegrationConfig                          = "IntegrationConfig"
-	MarketplaceTokenResolverIntegrationSecret                          = "IntegrationSecret"
-)
-
-type SecretValueFormat string
-
-const (
-	SecretValueFormatRaw      SecretValueFormat = "Raw"
-	SecretValueFormatBearer                     = "Bearer"
-	SecretValueFormatBasic                      = "Basic"
-	SecretValueFormatPrefixed                   = "Prefixed"
-)
-
-type MarketplaceTokenMapping struct {
-	Token      string                   `json:"token"`
-	Resolver   MarketplaceTokenResolver `json:"resolver,omitempty"`
-	Value      *string                  `json:"value,omitempty"`
-	SecretKeys *IReadOnlyList           `json:"secretKeys,omitempty"`
-	Format     SecretValueFormat        `json:"format,omitempty"`
-}
-
-type MarketplaceIntegration struct {
-	Integration
-	Capability    string                          `json:"capability,omitempty"`
-	ListingViewId string                          `json:"listingViewId"`
-	Transport     MarketplaceIntegrationTransport `json:"transport,omitempty"`
-	Vendor        string                          `json:"vendor"`
-	Category      MarketplaceIntegrationCategory  `json:"category,omitempty"`
-	Description   *string                         `json:"description,omitempty"`
-	Config        IReadOnlyDictionary             `json:"config"`
-	TokenMappings IReadOnlyList                   `json:"tokenMappings"`
-}
-
-type MarketplaceFunctionId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type MarketplaceFunction struct {
-	FunctionId      MarketplaceFunctionId `json:"functionId"`
-	IntegrationId   IntegrationId         `json:"integrationId"`
-	Env             Env                   `json:"env"`
-	FunctionKey     string                `json:"functionKey"`
-	DisplayName     DisplayName           `json:"displayName"`
-	Description     *string               `json:"description,omitempty"`
-	IsEnabled       bool                  `json:"isEnabled,omitempty"`
-	RequestTemplate string                `json:"requestTemplate"`
-	MappedTokens    IReadOnlyList         `json:"mappedTokens"`
-	ViewId          string                `json:"viewId"`
-}
-
 type SavePushTemplate struct {
 	CodeMashRequestBase
 	/** @description The template's display name. */
@@ -4226,9 +3112,15 @@ type SavePushTemplate struct {
 	Translations []PushMessageTranslationDto `json:"translations"`
 }
 
-type IHasAccountId struct {
-	AccountId string `json:"accountId"`
-}
+type DeviceType string
+
+const (
+	DeviceTypeUnknown DeviceType = "Unknown"
+	DeviceTypePhone              = "Phone"
+	DeviceTypeTablet             = "Tablet"
+	DeviceTypeDesktop            = "Desktop"
+	DeviceTypeTv                 = "Tv"
+)
 
 // @DataContract
 type PushDeviceDto struct {
@@ -4269,116 +3161,13 @@ type PushCampaignRequest struct {
 	CampaignTime *int64 `json:"campaignTime,omitempty"`
 }
 
-type PushIntegration struct {
-	Integration
-	Provider PushProvider `json:"provider,omitempty"`
-}
-
-// @DataContract
-type PushTitle struct {
-	// @DataMember
-	Value TemplateCode `json:"value"`
-}
-
-type PushBody struct {
-	Value TemplateCode `json:"value"`
-}
-
-// @DataContract
-type PushMessageContent struct {
-	// @DataMember(Order=1)
-	Title PushTitle `json:"title"`
-	// @DataMember(Order=1)
-	SubTitle *PushTitle `json:"subTitle,omitempty"`
-	// @DataMember(Order=2)
-	Body PushBody `json:"body"`
-}
-
-// @DataContract
-type PushTemplate struct {
-	Template
-}
-
-type PaymentIntegration struct {
-	Integration
-	Provider PaymentGatewayPlatform `json:"provider,omitempty"`
-}
-
-type PaymentTrigger struct {
-	Trigger
-	When         PaymentTriggerType `json:"when,omitempty"`
-	Integrations []IntegrationId    `json:"integrations,omitempty"`
-	Events       []string           `json:"events,omitempty"`
-}
-
-type LoggingIntegration struct {
-	Integration
-	Provider LoggingProvider `json:"provider,omitempty"`
-}
-
 type ChatScreenContextDto struct {
 	Kind   string  `json:"kind"`
 	ViewId *string `json:"viewId,omitempty"`
 }
 
-type LlmIntegration struct {
-	Integration
-	Provider     LlmProvider `json:"provider,omitempty"`
-	DefaultModel string      `json:"defaultModel"`
-}
-
-type McpIntegration struct {
-	Integration
-	Provider  McpProvider  `json:"provider,omitempty"`
-	Transport McpTransport `json:"transport,omitempty"`
-	Metadata  McpMetadata  `json:"metadata"`
-}
-
-type WebhookDestinationId struct {
-	AggregateId
-}
-
-type TriggerEventName struct {
-	Value string `json:"value"`
-}
-
-type WebhookDestination struct {
-	DestinationId   WebhookDestinationId `json:"destinationId"`
-	DestinationName DisplayName          `json:"destinationName"`
-	EndpointUrl     DomainUrl            `json:"endpointUrl"`
-	SelectedEvents  []TriggerEventName   `json:"selectedEvents"`
-	ExtraHeaders    *IReadOnlyDictionary `json:"extraHeaders,omitempty"`
-	IsEnabled       bool                 `json:"isEnabled,omitempty"`
-}
-
-type WebhookIntegration struct {
-	Integration
-	Capability   string               `json:"capability,omitempty"`
-	Destinations []WebhookDestination `json:"destinations"`
-	ExtraHeaders *IReadOnlyDictionary `json:"extraHeaders,omitempty"`
-}
-
 type SchedulerTaskRequest struct {
 	Type SchedulerTaskType `json:"type,omitempty"`
-}
-
-type TaskId struct {
-	AggregateId
-}
-
-type CronExpression struct {
-}
-
-type SchedulerTask struct {
-	Id          TaskId            `json:"id"`
-	Type        SchedulerTaskType `json:"type,omitempty"`
-	Name        DisplayName       `json:"name"`
-	Description *string           `json:"description,omitempty"`
-	Cron        CronExpression    `json:"cron"`
-	PayloadJson string            `json:"payloadJson"`
-	InitiatorId AuthId            `json:"initiatorId"`
-	IsEnabled   bool              `json:"isEnabled,omitempty"`
-	StopOnError bool              `json:"stopOnError,omitempty"`
 }
 
 type ResourceKindDto string
@@ -4426,86 +3215,6 @@ type CaseResolutionDto struct {
 	AffectedVersions []string `json:"affectedVersions,omitempty"`
 }
 
-type SupportCaseId struct {
-	AggregateId
-	ViewId string `json:"viewId"`
-}
-
-type SupportCaseKind string
-
-const (
-	SupportCaseKindQuestion       SupportCaseKind = "Question"
-	SupportCaseKindBug                            = "Bug"
-	SupportCaseKindIncident                       = "Incident"
-	SupportCaseKindBilling                        = "Billing"
-	SupportCaseKindSecurity                       = "Security"
-	SupportCaseKindFeatureRequest                 = "FeatureRequest"
-)
-
-type SupportCaseSeverity string
-
-const (
-	SupportCaseSeverityS1 SupportCaseSeverity = "S1"
-	SupportCaseSeverityS2                     = "S2"
-	SupportCaseSeverityS3                     = "S3"
-	SupportCaseSeverityS4                     = "S4"
-)
-
-type DeploymentMode string
-
-const (
-	DeploymentModeManaged    DeploymentMode = "Managed"
-	DeploymentModeSelfHosted                = "SelfHosted"
-	DeploymentModeEnterprise                = "Enterprise"
-)
-
-type SupportMessageAuthorKind string
-
-const (
-	SupportMessageAuthorKindCustomer SupportMessageAuthorKind = "Customer"
-	SupportMessageAuthorKindStaff                             = "Staff"
-	SupportMessageAuthorKindAi                                = "Ai"
-	SupportMessageAuthorKindSystem                            = "System"
-)
-
-type SupportMessageRef struct {
-	MessageId  string                   `json:"messageId"`
-	AuthorKind SupportMessageAuthorKind `json:"authorKind,omitempty"`
-	AuthorId   *string                  `json:"authorId,omitempty"`
-	SentOn     UtcDateTime              `json:"sentOn"`
-}
-
-type SupportCaseStatus string
-
-const (
-	SupportCaseStatusOpen              SupportCaseStatus = "Open"
-	SupportCaseStatusTriaged                             = "Triaged"
-	SupportCaseStatusInProgress                          = "InProgress"
-	SupportCaseStatusWaitingOnCustomer                   = "WaitingOnCustomer"
-	SupportCaseStatusResolved                            = "Resolved"
-	SupportCaseStatusClosed                              = "Closed"
-)
-
-type CaseResolution struct {
-	Problem          string                `json:"problem"`
-	Symptoms         IReadOnlyList         `json:"symptoms"`
-	RootCause        string                `json:"rootCause"`
-	Fix              CaseResolutionFixKind `json:"fix,omitempty"`
-	FixDetail        *string               `json:"fixDetail,omitempty"`
-	Module           *string               `json:"module,omitempty"`
-	Kind             SupportCaseKind       `json:"kind,omitempty"`
-	Severity         SupportCaseSeverity   `json:"severity,omitempty"`
-	AffectedVersions IReadOnlyList         `json:"affectedVersions"`
-	ResolvedBy       *string               `json:"resolvedBy,omitempty"`
-}
-
-type SupportCaseCloseReason string
-
-const (
-	SupportCaseCloseReasonManual                 SupportCaseCloseReason = "Manual"
-	SupportCaseCloseReasonAutoClosedAfterResolve                        = "AutoClosedAfterResolve"
-)
-
 // @DataContract
 type CodeMashRelease string
 
@@ -4548,6 +3257,14 @@ type EchoRegionDto struct {
 	DisplayName string `json:"displayName"`
 	ApiUrl      string `json:"apiUrl"`
 	HubUrl      string `json:"hubUrl"`
+}
+
+type EchoAgentDto struct {
+	McpUrl            string  `json:"mcpUrl"`
+	OAuthMetadataUrl  *string `json:"oAuthMetadataUrl,omitempty"`
+	InstallationType  string  `json:"installationType"`
+	OnboardingDocsUrl string  `json:"onboardingDocsUrl"`
+	ToolsUrl          string  `json:"toolsUrl"`
 }
 
 type PublicBrandDto struct {
@@ -4717,6 +3434,30 @@ type ProjectEnvironmentsDto struct {
 	Environments []string `json:"environments"`
 }
 
+type ProjectStatus string
+
+const (
+	ProjectStatusActive             ProjectStatus = "Active"
+	ProjectStatusProvisioning                     = "Provisioning"
+	ProjectStatusProvisioningFailed               = "ProvisioningFailed"
+	ProjectStatusNoDatabase                       = "NoDatabase"
+	ProjectStatusDisabled                         = "Disabled"
+	ProjectStatusSuspended                        = "Suspended"
+	ProjectStatusRemoved                          = "Removed"
+)
+
+type Continent string
+
+const (
+	ContinentAfrica       Continent = "Africa"
+	ContinentAntarctica             = "Antarctica"
+	ContinentAsia                   = "Asia"
+	ContinentEurope                 = "Europe"
+	ContinentNorthAmerica           = "NorthAmerica"
+	ContinentOceania                = "Oceania"
+	ContinentSouthAmerica           = "SouthAmerica"
+)
+
 type ProjectRegionDto struct {
 	Id        string     `json:"id"`
 	Continent *Continent `json:"continent,omitempty"`
@@ -4788,13 +3529,15 @@ type TriggerDto struct {
 	// @DataMember
 	Name string `json:"name"`
 	// @DataMember
-	ThenAction TriggerActionDto `json:"thenAction"`
+	ThenAction interface{} `json:"thenAction"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
 	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
 	// @DataMember
 	ActivationCode *string `json:"activationCode,omitempty"`
+	// @DataMember
+	SavedByAuthId *string `json:"savedByAuthId,omitempty"`
 }
 
 // @DataContract
@@ -4849,6 +3592,13 @@ type RoleItemDto struct {
 	IsSystem         bool     `json:"isSystem,omitempty"`
 	AttachedPolicies []string `json:"attachedPolicies,omitempty"`
 }
+
+type PermissionEffect string
+
+const (
+	PermissionEffectAllow PermissionEffect = "Allow"
+	PermissionEffectDeny                   = "Deny"
+)
 
 type PermissionDto struct {
 	Sid       *string          `json:"sid,omitempty"`
@@ -4934,6 +3684,8 @@ type FilesTriggerDto struct {
 	TriggerDto
 	// @DataMember
 	When FilesTriggerType `json:"when,omitempty"`
+	// @DataMember
+	Folder *string `json:"folder,omitempty"`
 }
 
 // @DataContract
@@ -5107,13 +3859,24 @@ type ProjectListItemDto struct {
 	AdditionalRegions []ProjectRegionDto `json:"additionalRegions,omitempty"`
 }
 
-type PaginatedResponse struct {
-	Items         IList   `json:"items"`
-	HasMore       bool    `json:"hasMore,omitempty"`
-	HasPrevious   bool    `json:"hasPrevious,omitempty"`
-	StartingAfter *string `json:"startingAfter,omitempty"`
-	EndingBefore  *string `json:"endingBefore,omitempty"`
+type PaginatedResponse[TViewModelProjection any] struct {
+	Items         IList[TViewModelProjection] `json:"items"`
+	HasMore       bool                        `json:"hasMore,omitempty"`
+	HasPrevious   bool                        `json:"hasPrevious,omitempty"`
+	StartingAfter *string                     `json:"startingAfter,omitempty"`
+	EndingBefore  *string                     `json:"endingBefore,omitempty"`
 }
+
+type AuthType string
+
+const (
+	AuthTypeService  AuthType = "Service"
+	AuthTypeEmail             = "Email"
+	AuthTypeUserName          = "UserName"
+	AuthTypePhone             = "Phone"
+	AuthTypeGuest             = "Guest"
+	AuthTypeSocial            = "Social"
+)
 
 type AccessInformationDto struct {
 	Ip       *string    `json:"ip,omitempty"`
@@ -5129,6 +3892,25 @@ type LoginDto struct {
 	NeedChangePasswordOnNextLogin bool                  `json:"needChangePasswordOnNextLogin,omitempty"`
 	LastAccessInformation         *AccessInformationDto `json:"lastAccessInformation,omitempty"`
 }
+
+type Gender string
+
+const (
+	GenderMale   Gender = "Male"
+	GenderFemale        = "Female"
+	GenderOther         = "Other"
+)
+
+type MarketingBlockReason string
+
+const (
+	MarketingBlockReasonUnspecified  MarketingBlockReason = "Unspecified"
+	MarketingBlockReasonUnsubscribed                      = "Unsubscribed"
+	MarketingBlockReasonComplaint                         = "Complaint"
+	MarketingBlockReasonHardBounce                        = "HardBounce"
+	MarketingBlockReasonInvalidEmail                      = "InvalidEmail"
+	MarketingBlockReasonAdminBlock                        = "AdminBlock"
+)
 
 type UserGeneralInfoDto struct {
 	Phone                     *string                `json:"phone,omitempty"`
@@ -5154,6 +3936,18 @@ type UserGeneralInfoDto struct {
 	ExtraMetadata             *string                `json:"extraMetadata,omitempty"`
 	Notes                     *string                `json:"notes,omitempty"`
 }
+
+type AuthStatus string
+
+const (
+	AuthStatusRegistered        AuthStatus = "Registered"
+	AuthStatusPendingValidation            = "PendingValidation"
+	AuthStatusActive                       = "Active"
+	AuthStatusUnregistered                 = "Unregistered"
+	AuthStatusSuspended                    = "Suspended"
+	AuthStatusInActive                     = "InActive"
+	AuthStatusBlocked                      = "Blocked"
+)
 
 type AuthDto struct {
 	Id           string              `json:"id"`
@@ -5330,6 +4124,30 @@ type InstallationLicenseStatusDto struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// @DataContract
+type AiServiceUserKeyDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Hint string `json:"hint"`
+	// @DataMember
+	IssuedAt time.Time `json:"issuedAt,omitempty"`
+}
+
+// @DataContract
+type AiServiceUserDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Scope AiScopeDto `json:"scope"`
+	// @DataMember
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	// @DataMember
+	Keys []AiServiceUserKeyDto `json:"keys"`
+}
+
 type ServiceUserApiKeyDto struct {
 	Id            int        `json:"id,omitempty"`
 	Name          string     `json:"name"`
@@ -5389,14 +4207,14 @@ type PasskeySettingsDto struct {
 }
 
 type IntegrationListProjection struct {
-	ViewId                            string        `json:"viewId"`
-	IntegrationName                   string        `json:"integrationName"`
-	IsEnabled                         bool          `json:"isEnabled,omitempty"`
-	LastIntegrationTestAtUtc          *time.Time    `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded      *bool         `json:"lastIntegrationTestSucceeded,omitempty"`
-	LastIntegrationTestErrors         IReadOnlyList `json:"lastIntegrationTestErrors"`
-	HumanDeliveryConfirmedAtUtc       *time.Time    `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	RequiresHumanDeliveryConfirmation bool          `json:"requiresHumanDeliveryConfirmation,omitempty"`
+	ViewId                            string                `json:"viewId"`
+	IntegrationName                   string                `json:"integrationName"`
+	IsEnabled                         bool                  `json:"isEnabled,omitempty"`
+	LastIntegrationTestAtUtc          *time.Time            `json:"lastIntegrationTestAtUtc,omitempty"`
+	LastIntegrationTestSucceeded      *bool                 `json:"lastIntegrationTestSucceeded,omitempty"`
+	LastIntegrationTestErrors         IReadOnlyList[string] `json:"lastIntegrationTestErrors"`
+	HumanDeliveryConfirmedAtUtc       *time.Time            `json:"humanDeliveryConfirmedAtUtc,omitempty"`
+	RequiresHumanDeliveryConfirmation bool                  `json:"requiresHumanDeliveryConfirmation,omitempty"`
 }
 
 type MembershipIntegrationListProjection struct {
@@ -5529,7 +4347,7 @@ type DataSchemaDto struct {
 	// @DataMember
 	Json string `json:"json"`
 	// @DataMember
-	Fields []JsonSchemaFieldDto `json:"fields"`
+	Fields []interface{} `json:"fields"`
 }
 
 type VisualSchemaDto struct {
@@ -5600,7 +4418,7 @@ type TermTreeDto struct {
 	// @DataMember
 	MultiParents []TermMultiParentDto `json:"multiParents,omitempty"`
 	// @DataMember
-	Meta *Object `json:"meta,omitempty"`
+	Meta *interface{} `json:"meta,omitempty"`
 	// @DataMember
 	Children []TermTreeDto `json:"children,omitempty"`
 }
@@ -5642,7 +4460,7 @@ type TermDto struct {
 	// @DataMember
 	MultiParents []TermMultiParentDto `json:"multiParents,omitempty"`
 	// @DataMember
-	Meta *Object `json:"meta,omitempty"`
+	Meta *interface{} `json:"meta,omitempty"`
 }
 
 // @DataContract
@@ -5811,7 +4629,7 @@ type IntegrationTestResultItemDto struct {
 	// @DataMember
 	Result string `json:"result"`
 	// @DataMember
-	Errors *IReadOnlyList `json:"errors,omitempty"`
+	Errors *IReadOnlyList[string] `json:"errors,omitempty"`
 }
 
 // @DataContract
@@ -5900,12 +4718,26 @@ type FilesTriggerProjectionList struct {
 	TriggerProjectionList
 	// @DataMember
 	Type FilesTriggerType `json:"type,omitempty"`
+	// @DataMember
+	Folder *string `json:"folder,omitempty"`
 }
 
 type FilesIntegrationListProjection struct {
 	IntegrationListProjection
 	// @DataMember
 	Provider FileProvider `json:"provider,omitempty"`
+}
+
+// @DataContract
+type PublicFolderDto struct {
+	// @DataMember(Order=1)
+	Path string `json:"path"`
+	// @DataMember(Order=2)
+	PublicId string `json:"publicId"`
+	// @DataMember(Order=3)
+	PublicUrl *string `json:"publicUrl,omitempty"`
+	// @DataMember(Order=4)
+	Inherited bool `json:"inherited,omitempty"`
 }
 
 // @DataContract
@@ -5960,8 +4792,8 @@ type TemplateListProjection struct {
 
 type EmailTemplateListProjection struct {
 	TemplateListProjection
-	HasAttachments bool          `json:"hasAttachments,omitempty"`
-	Languages      IReadOnlyList `json:"languages"`
+	HasAttachments bool                  `json:"hasAttachments,omitempty"`
+	Languages      IReadOnlyList[string] `json:"languages"`
 }
 
 // @DataContract
@@ -6024,8 +4856,8 @@ type EmailFooterDto struct {
 }
 
 type EmailSettings struct {
-	Signatures *IList `json:"signatures,omitempty"`
-	Footers    *IList `json:"footers,omitempty"`
+	Signatures *IList[EmailSignatureDto] `json:"signatures,omitempty"`
+	Footers    *IList[EmailFooterDto]    `json:"footers,omitempty"`
 }
 
 // @DataContract
@@ -6330,7 +5162,7 @@ type MarketplaceListingProjection struct {
 	// @DataMember
 	IsOfficial bool `json:"isOfficial,omitempty"`
 	// @DataMember
-	Tags IReadOnlyList `json:"tags"`
+	Tags IReadOnlyList[string] `json:"tags"`
 	// @DataMember
 	FunctionCount int `json:"functionCount,omitempty"`
 }
@@ -6356,7 +5188,7 @@ type MarketplaceIntegrationListProjection struct {
 	// @DataMember
 	LastIntegrationTestSucceeded *bool `json:"lastIntegrationTestSucceeded,omitempty"`
 	// @DataMember
-	LastIntegrationTestErrors IReadOnlyList `json:"lastIntegrationTestErrors"`
+	LastIntegrationTestErrors IReadOnlyList[string] `json:"lastIntegrationTestErrors"`
 	// @DataMember
 	HumanDeliveryConfirmedAtUtc *time.Time `json:"humanDeliveryConfirmedAtUtc,omitempty"`
 	// @DataMember
@@ -6399,6 +5231,34 @@ type PushIntegrationListProjection struct {
 	IntegrationListProjection
 	// @DataMember
 	Provider PushProvider `json:"provider,omitempty"`
+}
+
+// @DataContract
+type PushDeviceListProjection struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	DeviceOs string `json:"deviceOs"`
+	// @DataMember
+	Token string `json:"token"`
+	// @DataMember
+	Brand *string `json:"brand,omitempty"`
+	// @DataMember
+	Manufacturer *string `json:"manufacturer,omitempty"`
+	// @DataMember
+	ModelName *string `json:"modelName,omitempty"`
+	// @DataMember
+	DeviceName *string `json:"deviceName,omitempty"`
+	// @DataMember
+	DeviceType *string `json:"deviceType,omitempty"`
+	// @DataMember
+	OsName *string `json:"osName,omitempty"`
+	// @DataMember
+	OsVersion *string `json:"osVersion,omitempty"`
+	// @DataMember
+	PlatformApiLevel *int `json:"platformApiLevel,omitempty"`
 }
 
 // @DataContract
@@ -6508,7 +5368,12 @@ type TenantLogEntryDto struct {
 	// @DataMember
 	SpanId *string `json:"spanId,omitempty"`
 	// @DataMember
-	Meta *IReadOnlyDictionary `json:"meta,omitempty"`
+	Meta *IReadOnlyDictionary[string, string] `json:"meta,omitempty"`
+}
+
+type AgentOnboardingSnippet struct {
+	Client string `json:"client"`
+	Config string `json:"config"`
 }
 
 type AiToolManifestParameter struct {
@@ -6814,53 +5679,53 @@ type IHttpFile struct {
 }
 
 type IRequest struct {
-	OriginalRequest                *Object              `json:"originalRequest,omitempty"`
-	Response                       *IResponse           `json:"response,omitempty"`
-	OperationName                  *string              `json:"operationName,omitempty"`
-	Verb                           *string              `json:"verb,omitempty"`
-	RequestAttributes              RequestAttributes    `json:"requestAttributes,omitempty"`
-	RequestPreferences             *IRequestPreferences `json:"requestPreferences,omitempty"`
-	Dto                            *Object              `json:"dto,omitempty"`
-	ContentType                    *string              `json:"contentType,omitempty"`
-	IsLocal                        bool                 `json:"isLocal,omitempty"`
-	UserAgent                      *string              `json:"userAgent,omitempty"`
-	Cookies                        map[string]Cookie    `json:"cookies,omitempty"`
-	ResponseContentType            *string              `json:"responseContentType,omitempty"`
-	HasExplicitResponseContentType bool                 `json:"hasExplicitResponseContentType,omitempty"`
-	Items                          map[string]Object    `json:"items,omitempty"`
-	Headers                        *NameValueCollection `json:"headers,omitempty"`
-	QueryString                    *NameValueCollection `json:"queryString,omitempty"`
-	FormData                       *NameValueCollection `json:"formData,omitempty"`
-	UseBufferedStream              bool                 `json:"useBufferedStream,omitempty"`
-	RawUrl                         *string              `json:"rawUrl,omitempty"`
-	AbsoluteUri                    *string              `json:"absoluteUri,omitempty"`
-	UserHostAddress                *string              `json:"userHostAddress,omitempty"`
-	RemoteIp                       *string              `json:"remoteIp,omitempty"`
-	Authorization                  *string              `json:"authorization,omitempty"`
-	IsSecureConnection             bool                 `json:"isSecureConnection,omitempty"`
-	AcceptTypes                    []string             `json:"acceptTypes,omitempty"`
-	PathInfo                       *string              `json:"pathInfo,omitempty"`
-	OriginalPathInfo               *string              `json:"originalPathInfo,omitempty"`
-	InputStream                    []byte               `json:"inputStream,omitempty"`
-	ContentLength                  int64                `json:"contentLength,omitempty"`
-	Files                          []IHttpFile          `json:"files,omitempty"`
-	UrlReferrer                    *string              `json:"urlReferrer,omitempty"`
-	RequestAborted                 CancellationToken    `json:"requestAborted,omitempty"`
+	OriginalRequest                *interface{}           `json:"originalRequest,omitempty"`
+	Response                       *IResponse             `json:"response,omitempty"`
+	OperationName                  *string                `json:"operationName,omitempty"`
+	Verb                           *string                `json:"verb,omitempty"`
+	RequestAttributes              RequestAttributes      `json:"requestAttributes,omitempty"`
+	RequestPreferences             *IRequestPreferences   `json:"requestPreferences,omitempty"`
+	Dto                            *interface{}           `json:"dto,omitempty"`
+	ContentType                    *string                `json:"contentType,omitempty"`
+	IsLocal                        bool                   `json:"isLocal,omitempty"`
+	UserAgent                      *string                `json:"userAgent,omitempty"`
+	Cookies                        map[string]Cookie      `json:"cookies,omitempty"`
+	ResponseContentType            *string                `json:"responseContentType,omitempty"`
+	HasExplicitResponseContentType bool                   `json:"hasExplicitResponseContentType,omitempty"`
+	Items                          map[string]interface{} `json:"items,omitempty"`
+	Headers                        *NameValueCollection   `json:"headers,omitempty"`
+	QueryString                    *NameValueCollection   `json:"queryString,omitempty"`
+	FormData                       *NameValueCollection   `json:"formData,omitempty"`
+	UseBufferedStream              bool                   `json:"useBufferedStream,omitempty"`
+	RawUrl                         *string                `json:"rawUrl,omitempty"`
+	AbsoluteUri                    *string                `json:"absoluteUri,omitempty"`
+	UserHostAddress                *string                `json:"userHostAddress,omitempty"`
+	RemoteIp                       *string                `json:"remoteIp,omitempty"`
+	Authorization                  *string                `json:"authorization,omitempty"`
+	IsSecureConnection             bool                   `json:"isSecureConnection,omitempty"`
+	AcceptTypes                    []string               `json:"acceptTypes,omitempty"`
+	PathInfo                       *string                `json:"pathInfo,omitempty"`
+	OriginalPathInfo               *string                `json:"originalPathInfo,omitempty"`
+	InputStream                    []byte                 `json:"inputStream,omitempty"`
+	ContentLength                  int64                  `json:"contentLength,omitempty"`
+	Files                          []IHttpFile            `json:"files,omitempty"`
+	UrlReferrer                    *string                `json:"urlReferrer,omitempty"`
+	RequestAborted                 CancellationToken      `json:"requestAborted,omitempty"`
 }
 
 type IResponse struct {
-	OriginalResponse  *Object           `json:"originalResponse,omitempty"`
-	Request           *IRequest         `json:"request,omitempty"`
-	StatusCode        int               `json:"statusCode,omitempty"`
-	StatusDescription *string           `json:"statusDescription,omitempty"`
-	ContentType       *string           `json:"contentType,omitempty"`
-	OutputStream      []byte            `json:"outputStream,omitempty"`
-	Dto               *Object           `json:"dto,omitempty"`
-	UseBufferedStream bool              `json:"useBufferedStream,omitempty"`
-	IsClosed          bool              `json:"isClosed,omitempty"`
-	KeepAlive         bool              `json:"keepAlive,omitempty"`
-	HasStarted        bool              `json:"hasStarted,omitempty"`
-	Items             map[string]Object `json:"items,omitempty"`
+	OriginalResponse  *interface{}           `json:"originalResponse,omitempty"`
+	Request           *IRequest              `json:"request,omitempty"`
+	StatusCode        int                    `json:"statusCode,omitempty"`
+	StatusDescription *string                `json:"statusDescription,omitempty"`
+	ContentType       *string                `json:"contentType,omitempty"`
+	OutputStream      []byte                 `json:"outputStream,omitempty"`
+	Dto               *interface{}           `json:"dto,omitempty"`
+	UseBufferedStream bool                   `json:"useBufferedStream,omitempty"`
+	IsClosed          bool                   `json:"isClosed,omitempty"`
+	KeepAlive         bool                   `json:"keepAlive,omitempty"`
+	HasStarted        bool                   `json:"hasStarted,omitempty"`
+	Items             map[string]interface{} `json:"items,omitempty"`
 }
 
 // @DataContract
@@ -6892,7 +5757,7 @@ const (
 type ResolvedResourceEntry struct {
 	Ref        ResourceRefDto    `json:"ref"`
 	Status     ResolvedRefStatus `json:"status,omitempty"`
-	Resolved   *Object           `json:"resolved,omitempty"`
+	Resolved   *interface{}      `json:"resolved,omitempty"`
 	Diagnostic *string           `json:"diagnostic,omitempty"`
 }
 
@@ -7027,6 +5892,37 @@ type AccountComplianceDto struct {
 	SecurityContact       *string `json:"securityContact,omitempty"`
 }
 
+type SupportCaseKind string
+
+const (
+	SupportCaseKindQuestion       SupportCaseKind = "Question"
+	SupportCaseKindBug                            = "Bug"
+	SupportCaseKindIncident                       = "Incident"
+	SupportCaseKindBilling                        = "Billing"
+	SupportCaseKindSecurity                       = "Security"
+	SupportCaseKindFeatureRequest                 = "FeatureRequest"
+)
+
+type SupportCaseSeverity string
+
+const (
+	SupportCaseSeverityS1 SupportCaseSeverity = "S1"
+	SupportCaseSeverityS2                     = "S2"
+	SupportCaseSeverityS3                     = "S3"
+	SupportCaseSeverityS4                     = "S4"
+)
+
+type SupportCaseStatus string
+
+const (
+	SupportCaseStatusOpen              SupportCaseStatus = "Open"
+	SupportCaseStatusTriaged                             = "Triaged"
+	SupportCaseStatusInProgress                          = "InProgress"
+	SupportCaseStatusWaitingOnCustomer                   = "WaitingOnCustomer"
+	SupportCaseStatusResolved                            = "Resolved"
+	SupportCaseStatusClosed                              = "Closed"
+)
+
 type SupportCustomerStatus string
 
 const (
@@ -7034,6 +5930,14 @@ const (
 	SupportCustomerStatusOpen                          = "Open"
 	SupportCustomerStatusSolved                        = "Solved"
 	SupportCustomerStatusClosed                        = "Closed"
+)
+
+type DeploymentMode string
+
+const (
+	DeploymentModeManaged    DeploymentMode = "Managed"
+	DeploymentModeSelfHosted                = "SelfHosted"
+	DeploymentModeEnterprise                = "Enterprise"
 )
 
 // @DataContract
@@ -7081,6 +5985,15 @@ type SupportCaseDto struct {
 	// @DataMember
 	LastMessageOn *int64 `json:"lastMessageOn,omitempty"`
 }
+
+type SupportMessageAuthorKind string
+
+const (
+	SupportMessageAuthorKindCustomer SupportMessageAuthorKind = "Customer"
+	SupportMessageAuthorKindStaff                             = "Staff"
+	SupportMessageAuthorKindAi                                = "Ai"
+	SupportMessageAuthorKindSystem                            = "System"
+)
 
 // @DataContract
 type SupportCaseMessageDto struct {
@@ -7165,7 +6078,7 @@ type DiagnosticPackStepResultDto struct {
 	// @DataMember
 	IsSuccess bool `json:"isSuccess,omitempty"`
 	// @DataMember
-	Result *Object `json:"result,omitempty"`
+	Result *interface{} `json:"result,omitempty"`
 	// @DataMember
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 }
@@ -7239,7 +6152,7 @@ type DiagnosticEventsPageDto struct {
 // @DataContract
 type DiagnosticLogsResponse struct {
 	// @DataMember
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[TenantLogEntryDto] `json:"list,omitempty"`
 }
 
 // @DataContract
@@ -7261,7 +6174,7 @@ type DiagnosticRedisInspectDto struct {
 	// @DataMember
 	IsList bool `json:"isList,omitempty"`
 	// @DataMember
-	Item map[string]Object `json:"item,omitempty"`
+	Item map[string]interface{} `json:"item,omitempty"`
 	// @DataMember
 	ListItems []DiagnosticRedisListItemDto `json:"listItems,omitempty"`
 	// @DataMember
@@ -7282,154 +6195,6 @@ type DiagnosticHealthCheckDto struct {
 	Detail *string `json:"detail,omitempty"`
 }
 
-// @DataContract
-type ResponseError struct {
-	// @DataMember(Order=1)
-	ErrorCode string `json:"errorCode"`
-	// @DataMember(Order=2)
-	FieldName string `json:"fieldName"`
-	// @DataMember(Order=3)
-	Message string `json:"message"`
-	// @DataMember(Order=4)
-	Meta map[string]string `json:"meta,omitempty"`
-}
-
-// @DataContract
-type ResponseStatus struct {
-	// @DataMember(Order=1)
-	ErrorCode string `json:"errorCode"`
-	// @DataMember(Order=2)
-	Message *string `json:"message,omitempty"`
-	// @DataMember(Order=3)
-	StackTrace *string `json:"stackTrace,omitempty"`
-	// @DataMember(Order=4)
-	Errors []ResponseError `json:"errors,omitempty"`
-	// @DataMember(Order=5)
-	Meta map[string]string `json:"meta,omitempty"`
-}
-
-type ILlmApiKeyRequest struct {
-	ApiKey string `json:"apiKey"`
-}
-
-type IHasViewId struct {
-	ViewId string `json:"viewId"`
-}
-
-type IHasDatabaseId struct {
-	Id *string `json:"id,omitempty"`
-}
-
-type IBindableContract struct {
-}
-
-type IHasRazorTemplateCode struct {
-}
-
-type IHasDomainEntityId struct {
-	ViewId string `json:"viewId"`
-}
-
-type IIntegrationIdentification struct {
-	IntegrationId IntegrationId `json:"integrationId"`
-	Capability    string        `json:"capability,omitempty"`
-	IsSystemOwned bool          `json:"isSystemOwned,omitempty"`
-}
-
-type CronExpression struct {
-	Value  string         `json:"value"`
-	Parsed CronExpression `json:"parsed"`
-}
-
-type IHasResponsibleUserId struct {
-	UserId string `json:"userId"`
-}
-
-type ICursorArgs struct {
-	Field string `json:"field"`
-	Order int    `json:"order,omitempty"`
-}
-
-type StringField struct {
-	JsonSchemaField
-	Format           *string              `json:"format,omitempty"`
-	Pattern          *string              `json:"pattern,omitempty"`
-	MinLength        *int                 `json:"minLength,omitempty"`
-	MaxLength        *int                 `json:"maxLength,omitempty"`
-	TranslateOptions *IReadOnlyDictionary `json:"translateOptions,omitempty"`
-}
-
-type DecimalField struct {
-	JsonSchemaField
-	Minimum    *float64 `json:"minimum,omitempty"`
-	Maximum    *float64 `json:"maximum,omitempty"`
-	MultipleOf *float64 `json:"multipleOf,omitempty"`
-}
-
-type CurrencyField struct {
-	JsonSchemaField
-	AllowedCurrencies *IReadOnlyList `json:"allowedCurrencies,omitempty"`
-}
-
-type BooleanField struct {
-	JsonSchemaField
-}
-
-type DateField struct {
-	JsonSchemaField
-	Minimum *int64 `json:"minimum,omitempty"`
-	Maximum *int64 `json:"maximum,omitempty"`
-}
-
-type IntegerField struct {
-	JsonSchemaField
-	Minimum *int64 `json:"minimum,omitempty"`
-	Maximum *int64 `json:"maximum,omitempty"`
-}
-
-type GeolocationField struct {
-	JsonSchemaField
-	AllowedTypes *IReadOnlyList `json:"allowedTypes,omitempty"`
-}
-
-type TagsField struct {
-	JsonSchemaField
-}
-
-type FileField struct {
-	JsonSchemaField
-	Storages *IReadOnlyList `json:"storages,omitempty"`
-}
-
-type TaxonomySelectionField struct {
-	JsonSchemaField
-	TaxonomyId *string `json:"taxonomyId,omitempty"`
-	Multiple   bool    `json:"multiple,omitempty"`
-}
-
-type CollectionSelectionField struct {
-	JsonSchemaField
-	CollectionId *string `json:"collectionId,omitempty"`
-	DisplayField *string `json:"displayField,omitempty"`
-	Multiple     bool    `json:"multiple,omitempty"`
-}
-
-type UserSelectionField struct {
-	JsonSchemaField
-	Multiple bool `json:"multiple,omitempty"`
-}
-
-type RoleSelectionField struct {
-	JsonSchemaField
-	Multiple bool `json:"multiple,omitempty"`
-}
-
-type EnumSelectionField struct {
-	JsonSchemaField
-	Values   *IReadOnlyList `json:"values,omitempty"`
-	Multiple bool           `json:"multiple,omitempty"`
-}
-
 type StringFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
@@ -7441,7 +6206,7 @@ type StringFieldDto struct {
 	// @DataMember
 	MaxLength *int `json:"maxLength,omitempty"`
 	// @DataMember
-	TranslateOptions *IReadOnlyDictionary `json:"translateOptions,omitempty"`
+	TranslateOptions *IReadOnlyDictionary[string, string] `json:"translateOptions,omitempty"`
 }
 
 type DecimalFieldDto struct {
@@ -7457,7 +6222,7 @@ type DecimalFieldDto struct {
 type CurrencyFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
-	AllowedCurrencies *IReadOnlyList `json:"allowedCurrencies,omitempty"`
+	AllowedCurrencies *IReadOnlyList[string] `json:"allowedCurrencies,omitempty"`
 }
 
 type BooleanFieldDto struct {
@@ -7483,7 +6248,7 @@ type IntegerFieldDto struct {
 type GeolocationFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
-	AllowedTypes *IReadOnlyList `json:"allowedTypes,omitempty"`
+	AllowedTypes *IReadOnlyList[string] `json:"allowedTypes,omitempty"`
 }
 
 type TagsFieldDto struct {
@@ -7493,7 +6258,7 @@ type TagsFieldDto struct {
 type FileFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
-	Storages *IReadOnlyList `json:"storages,omitempty"`
+	Storages *IReadOnlyList[string] `json:"storages,omitempty"`
 }
 
 type TaxonomySelectionFieldDto struct {
@@ -7529,7 +6294,7 @@ type RoleSelectionFieldDto struct {
 type EnumSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
-	Values *IReadOnlyList `json:"values,omitempty"`
+	Values *IReadOnlyList[string] `json:"values,omitempty"`
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
 }
@@ -7557,6 +6322,7 @@ type EchoResponse struct {
 	GraceDaysLeft                *int            `json:"graceDaysLeft,omitempty"`
 	InstallationDomain           *string         `json:"installationDomain,omitempty"`
 	LicensingDocsUrl             *string         `json:"licensingDocsUrl,omitempty"`
+	Agent                        *EchoAgentDto   `json:"agent,omitempty"`
 }
 
 type PublicProjectConfigDto struct {
@@ -7672,7 +6438,7 @@ type CreateAccountResponse struct {
 
 type GetAccountCollaboratorsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[AuthDto] `json:"list,omitempty"`
 }
 
 type GetAccountPasswordPolicyResponse struct {
@@ -7753,6 +6519,33 @@ type GetInstallationLicenseStatusResponse struct {
 	Status *InstallationLicenseStatusDto `json:"status,omitempty"`
 }
 
+// @DataContract
+type CreateAiServiceUserResponse struct {
+	ResponseBase
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	KeyId string `json:"keyId"`
+	// @DataMember
+	Key string `json:"key"`
+}
+
+// @DataContract
+type ListAiServiceUsersResponse struct {
+	ResponseBase
+	// @DataMember
+	Items []AiServiceUserDto `json:"items"`
+}
+
+// @DataContract
+type RotateAiServiceUserKeyResponse struct {
+	ResponseBase
+	// @DataMember
+	KeyId string `json:"keyId"`
+	// @DataMember
+	Key string `json:"key"`
+}
+
 type IssueServiceUserApiKeyResponse struct {
 	Id   int    `json:"id,omitempty"`
 	Name string `json:"name"`
@@ -7772,7 +6565,7 @@ type GetMembershipTriggerResponse struct {
 type GetMembershipTriggersResponse struct {
 	GetTriggersResponse
 	// @DataMember
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[MembershipTriggerProjectionList] `json:"list,omitempty"`
 }
 
 type GetRoleResponse struct {
@@ -7807,7 +6600,7 @@ type GetMembershipIntegrationResponse struct {
 
 type GetMembershipIntegrationsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[MembershipIntegrationListProjection] `json:"list,omitempty"`
 }
 
 type GetAuthorizationSettingsResponse struct {
@@ -7832,7 +6625,7 @@ type GetSchemaTriggerResponse struct {
 
 type GetSchemaTriggersResponse struct {
 	GetTriggersResponse
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SchemaTriggerProjectionList] `json:"list,omitempty"`
 }
 
 type GetDatabaseTaxonomyResponse struct {
@@ -7842,7 +6635,7 @@ type GetDatabaseTaxonomyResponse struct {
 
 type GetDatabaseTaxonomiesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[TaxonomyListProjection] `json:"list,omitempty"`
 }
 
 type GetDatabaseTaxonomyTreeResponse struct {
@@ -7887,7 +6680,7 @@ type GetDatabaseSchemaResponse struct {
 
 type GetDatabaseSchemasResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SchemaListProjection] `json:"list,omitempty"`
 }
 
 type GetDatabaseSchemaDraftResponse struct {
@@ -7912,7 +6705,7 @@ type GetDatabaseSchemaVersionsResponse struct {
 
 type AggregateRecordsResponse struct {
 	ResponseBase
-	Result []Object `json:"result,omitempty"`
+	Result []interface{} `json:"result,omitempty"`
 }
 
 type CountRecordsResponse struct {
@@ -7922,22 +6715,22 @@ type CountRecordsResponse struct {
 
 type DistinctRecordValuesResponse struct {
 	ResponseBase
-	Values []Object `json:"values,omitempty"`
+	Values []interface{} `json:"values,omitempty"`
 }
 
 type ExecuteRecordsAggregateResponse struct {
 	ResponseBase
-	Result []Object `json:"result,omitempty"`
+	Result []interface{} `json:"result,omitempty"`
 }
 
 type FindRecordsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[interface{}] `json:"list,omitempty"`
 }
 
 type FindOneRecordResponse struct {
 	ResponseBase
-	Result *Object `json:"result,omitempty"`
+	Result *interface{} `json:"result,omitempty"`
 }
 
 type GetCollectionIndexesResponse struct {
@@ -7959,8 +6752,8 @@ type GetDatabaseIntegrationResponse struct {
 
 type GetDatabaseIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                               `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[DatabaseIntegrationListProjection] `json:"list,omitempty"`
 }
 
 type GetAllowedFlexTiersResponse struct {
@@ -7977,7 +6770,7 @@ type RevealManagedFlexConnectionStringResponse struct {
 type TestDatabaseIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetCollectionImportResponse struct {
@@ -7987,7 +6780,7 @@ type GetCollectionImportResponse struct {
 
 type GetCollectionImportsResponse struct {
 	ResponseBase
-	Result *PaginatedResponse `json:"result,omitempty"`
+	Result *PaginatedResponse[CollectionImportDto] `json:"result,omitempty"`
 }
 
 type RequestImportUploadUrlResponse struct {
@@ -8007,12 +6800,12 @@ type GetDatabaseAggregateResponse struct {
 
 type GetDatabaseAggregatesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[MongoDbAggregateListProjection] `json:"list,omitempty"`
 }
 
 type TestDatabaseAggregateResponse struct {
 	ResponseBase
-	Result []Object `json:"result,omitempty"`
+	Result []interface{} `json:"result,omitempty"`
 }
 
 type GetFilesTriggerResponse struct {
@@ -8022,7 +6815,7 @@ type GetFilesTriggerResponse struct {
 
 type GetFilesTriggersResponse struct {
 	GetTriggersResponse
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[FilesTriggerProjectionList] `json:"list,omitempty"`
 }
 
 type GetFilesIntegrationResponse struct {
@@ -8032,15 +6825,16 @@ type GetFilesIntegrationResponse struct {
 
 type GetFilesIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                            `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[FilesIntegrationListProjection] `json:"list,omitempty"`
+	AvailableProviders   []FileProvider                                     `json:"availableProviders"`
 }
 
 // @DataContract
 type TestFilesIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetFileResponse struct {
@@ -8052,8 +6846,9 @@ type GetFileResponse struct {
 
 type GetFolderFilesResponse struct {
 	ResponseBase
-	List    *PaginatedResponse `json:"list,omitempty"`
-	Folders *IList             `json:"folders,omitempty"`
+	List          *PaginatedResponse[FileResourceRefDto] `json:"list,omitempty"`
+	Folders       *IList[string]                         `json:"folders,omitempty"`
+	PublicFolders *IList[PublicFolderDto]                `json:"publicFolders,omitempty"`
 }
 
 type GetNotificationModuleDisableDependenciesResponse struct {
@@ -8075,7 +6870,7 @@ type GetEmailTemplateResponse struct {
 
 type GetEmailTemplatesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[EmailTemplateListProjection] `json:"list,omitempty"`
 }
 
 type GetHtmlFromMjmlResponse struct {
@@ -8091,7 +6886,7 @@ type GetSystemEmailTemplateResponse struct {
 
 type GetSystemEmailTemplatesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SystemEmailTemplateListProjection] `json:"list,omitempty"`
 }
 
 type GetEmailTemplateAvailableTokensResponse struct {
@@ -8106,7 +6901,7 @@ type GetEmailSignatureResponse struct {
 
 type GetEmailSignaturesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[ListItemWithTranslationsProjection] `json:"list,omitempty"`
 }
 
 type GetEmailSettingsResponse struct {
@@ -8121,7 +6916,7 @@ type CheckEmailIntegrationDomainHealthResponse struct {
 	// @DataMember
 	Domain *string `json:"domain,omitempty"`
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[DomainHealthRecordItemDto] `json:"items,omitempty"`
 }
 
 type GetEmailIntegrationResponse struct {
@@ -8131,15 +6926,15 @@ type GetEmailIntegrationResponse struct {
 
 type GetEmailIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                            `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[EmailIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // @DataContract
 type TestEmailIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetEmailFooterResponse struct {
@@ -8149,7 +6944,7 @@ type GetEmailFooterResponse struct {
 
 type GetEmailFootersResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[ListItemWithTranslationsProjection] `json:"list,omitempty"`
 }
 
 type GetEmailCampaignResponse struct {
@@ -8159,12 +6954,12 @@ type GetEmailCampaignResponse struct {
 
 type GetEmailCampaignsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[EmailCampaignListProjection] `json:"list,omitempty"`
 }
 
 type GetEmailCampaignBatchesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[EmailCampaignBatchDto] `json:"list,omitempty"`
 }
 
 type GetEmailCampaignBatchNotificationResponse struct {
@@ -8174,8 +6969,8 @@ type GetEmailCampaignBatchNotificationResponse struct {
 
 type GetEmailCampaignBatchNotificationsResponse struct {
 	ResponseBase
-	BatchStatusHistory []BatchStatusChangeEntryDto `json:"batchStatusHistory,omitempty"`
-	List               *PaginatedResponse          `json:"list,omitempty"`
+	BatchStatusHistory []BatchStatusChangeEntryDto                           `json:"batchStatusHistory,omitempty"`
+	List               *PaginatedResponse[EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetEmailCampaignStatisticsResponse struct {
@@ -8196,7 +6991,7 @@ type GetEmailCampaignMessageResponse struct {
 
 type GetEmailCampaignMessagesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetSmsTemplateResponse struct {
@@ -8206,7 +7001,7 @@ type GetSmsTemplateResponse struct {
 
 type GetSmsTemplatesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SmsTemplateListProjection] `json:"list,omitempty"`
 }
 
 type GetSmsMessageContentTokensResponse struct {
@@ -8232,15 +7027,15 @@ type GetSmsIntegrationResponse struct {
 
 type GetSmsIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                          `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[SmsIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // @DataContract
 type TestSmsIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetSmsCampaignResponse struct {
@@ -8250,12 +7045,12 @@ type GetSmsCampaignResponse struct {
 
 type GetSmsCampaignsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SmsCampaignDto] `json:"list,omitempty"`
 }
 
 type GetSmsCampaignBatchesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SmsCampaignBatchDto] `json:"list,omitempty"`
 }
 
 type GetSmsCampaignBatchNotificationResponse struct {
@@ -8265,8 +7060,8 @@ type GetSmsCampaignBatchNotificationResponse struct {
 
 type GetSmsCampaignBatchNotificationsResponse struct {
 	ResponseBase
-	BatchStatusHistory []BatchStatusChangeEntryDto `json:"batchStatusHistory,omitempty"`
-	List               *PaginatedResponse          `json:"list,omitempty"`
+	BatchStatusHistory []BatchStatusChangeEntryDto                         `json:"batchStatusHistory,omitempty"`
+	List               *PaginatedResponse[SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetSmsCampaignStatisticsResponse struct {
@@ -8286,7 +7081,7 @@ type GetSmsCampaignMessageResponse struct {
 
 type GetSmsCampaignMessagesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetMarketplaceListingResponse struct {
@@ -8301,7 +7096,7 @@ type GetMarketplaceTokensResponse struct {
 
 type GetMarketplaceListingsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[MarketplaceListingProjection] `json:"list,omitempty"`
 }
 
 type GetMarketplaceIntegrationResponse struct {
@@ -8311,7 +7106,7 @@ type GetMarketplaceIntegrationResponse struct {
 
 type GetMarketplaceIntegrationsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[MarketplaceIntegrationListProjection] `json:"list,omitempty"`
 }
 
 type EmptyMarketplaceSecretsResponse struct {
@@ -8320,14 +7115,14 @@ type EmptyMarketplaceSecretsResponse struct {
 
 type RevealMarketplaceIntegrationSecretsResponse struct {
 	ResponseBase
-	Secrets *IReadOnlyDictionary `json:"secrets,omitempty"`
+	Secrets *IReadOnlyDictionary[string, string] `json:"secrets,omitempty"`
 }
 
 // @DataContract
 type TestMarketplaceIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type SetMarketplaceIntegrationTokenMappingsResponse struct {
@@ -8341,19 +7136,19 @@ type GetMarketplaceFunctionResponse struct {
 
 type GetMarketplaceFunctionsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[MarketplaceFunctionProjection] `json:"list,omitempty"`
 }
 
 type GetMarketplaceFunctionCatalogResponse struct {
 	ResponseBase
-	Functions IReadOnlyList `json:"functions"`
+	Functions IReadOnlyList[MarketplaceFunctionDefinitionDto] `json:"functions"`
 }
 
 type InvokeMarketplaceFunctionResponse struct {
 	ResponseBase
-	IsSuccess       bool    `json:"isSuccess,omitempty"`
-	Output          *Object `json:"output,omitempty"`
-	VendorRequestId *string `json:"vendorRequestId,omitempty"`
+	IsSuccess       bool         `json:"isSuccess,omitempty"`
+	Output          *interface{} `json:"output,omitempty"`
+	VendorRequestId *string      `json:"vendorRequestId,omitempty"`
 }
 
 type GetCodeIntegrationResponse struct {
@@ -8363,14 +7158,14 @@ type GetCodeIntegrationResponse struct {
 
 type GetCodeIntegrationsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[CodeIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // @DataContract
 type TestCodeIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetPushTemplateResponse struct {
@@ -8380,7 +7175,7 @@ type GetPushTemplateResponse struct {
 
 type GetPushTemplatesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[PushTemplateListProjection] `json:"list,omitempty"`
 }
 
 type GetPushMessageContentTokensResponse struct {
@@ -8408,8 +7203,19 @@ type GetPushIntegrationResponse struct {
 
 type GetPushIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                           `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[PushIntegrationListProjection] `json:"list,omitempty"`
+}
+
+type GetPushDeviceResponse struct {
+	ResponseBase
+	Item   *PushDeviceDto `json:"item,omitempty"`
+	UserId *string        `json:"userId,omitempty"`
+}
+
+type GetPushDevicesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[PushDeviceListProjection] `json:"list,omitempty"`
 }
 
 type GetPushCampaignResponse struct {
@@ -8419,12 +7225,12 @@ type GetPushCampaignResponse struct {
 
 type GetPushCampaignsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[PushCampaignDto] `json:"list,omitempty"`
 }
 
 type GetPushCampaignBatchesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[PushCampaignBatchDto] `json:"list,omitempty"`
 }
 
 type GetPushCampaignBatchNotificationResponse struct {
@@ -8434,8 +7240,8 @@ type GetPushCampaignBatchNotificationResponse struct {
 
 type GetPushCampaignBatchNotificationsResponse struct {
 	ResponseBase
-	BatchStatusHistory []BatchStatusChangeEntryDto `json:"batchStatusHistory,omitempty"`
-	List               *PaginatedResponse          `json:"list,omitempty"`
+	BatchStatusHistory []BatchStatusChangeEntryDto                          `json:"batchStatusHistory,omitempty"`
+	List               *PaginatedResponse[PushCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetPushCampaignStatisticsResponse struct {
@@ -8457,12 +7263,12 @@ type GetPushCampaignMessageResponse struct {
 
 type GetPushCampaignMessagesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[PushCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetPaymentsWebhookLogResponse struct {
 	ResponseBase
-	List *IReadOnlyList `json:"list,omitempty"`
+	List *IReadOnlyList[PaymentsWebhookLogEntry] `json:"list,omitempty"`
 }
 
 type GetPaymentsTriggerResponse struct {
@@ -8472,7 +7278,7 @@ type GetPaymentsTriggerResponse struct {
 
 type GetPaymentsTriggersResponse struct {
 	GetTriggersResponse
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[PaymentTriggerProjectionList] `json:"list,omitempty"`
 }
 
 type GetPaymentsIntegrationResponse struct {
@@ -8482,14 +7288,14 @@ type GetPaymentsIntegrationResponse struct {
 
 type GetPaymentsIntegrationsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[PaymentsIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // @DataContract
 type TestPaymentsIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetLoggingIntegrationResponse struct {
@@ -8499,14 +7305,14 @@ type GetLoggingIntegrationResponse struct {
 
 type GetLoggingIntegrationsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[LoggingIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // @DataContract
 type TestLoggingIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type CleanLogsResponse struct {
@@ -8515,12 +7321,12 @@ type CleanLogsResponse struct {
 
 type GetLogsByCorrelationIdResponse struct {
 	ResponseBase
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[TenantLogEntryDto] `json:"items,omitempty"`
 }
 
 type GetLogsResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[TenantLogEntryDto] `json:"list,omitempty"`
 }
 
 type GetLogSettingsResponse struct {
@@ -8535,17 +7341,23 @@ type SaveLogSettingsResponse struct {
 	ResponseBase
 }
 
+type GetAgentOnboardingResponse struct {
+	ResponseBase
+	Prompt           *string                  `json:"prompt,omitempty"`
+	HubUrl           *string                  `json:"hubUrl,omitempty"`
+	ApiUrl           *string                  `json:"apiUrl,omitempty"`
+	McpUrl           *string                  `json:"mcpUrl,omitempty"`
+	DocsUrl          *string                  `json:"docsUrl,omitempty"`
+	InstallationType *string                  `json:"installationType,omitempty"`
+	Snippets         []AgentOnboardingSnippet `json:"snippets,omitempty"`
+}
+
 type GetAiToolsResponse struct {
 	ResponseBase
 	Tools []AiToolManifestItem `json:"tools,omitempty"`
 }
 
 type InvokeAiToolResponse struct {
-	ResponseBase
-	Result *string `json:"result,omitempty"`
-}
-
-type AskChatResponse struct {
 	ResponseBase
 	Result *string `json:"result,omitempty"`
 }
@@ -8576,13 +7388,13 @@ type GetChatSessionsResponse struct {
 
 type GetChatSessionEntriesResponse struct {
 	ResponseBase
-	SessionId         *string              `json:"sessionId,omitempty"`
-	Profile           *string              `json:"profile,omitempty"`
-	ProjectId         *string              `json:"projectId,omitempty"`
-	Env               *string              `json:"env,omitempty"`
-	Entries           []AiChatEntryWireDto `json:"entries,omitempty"`
-	LastSeq           int64                `json:"lastSeq,omitempty"`
-	ActiveWorkItemIds []string             `json:"activeWorkItemIds,omitempty"`
+	SessionId         *string       `json:"sessionId,omitempty"`
+	Profile           *string       `json:"profile,omitempty"`
+	ProjectId         *string       `json:"projectId,omitempty"`
+	Env               *string       `json:"env,omitempty"`
+	Entries           []interface{} `json:"entries,omitempty"`
+	LastSeq           int64         `json:"lastSeq,omitempty"`
+	ActiveWorkItemIds []string      `json:"activeWorkItemIds,omitempty"`
 }
 
 type ChatTurnResponse struct {
@@ -8609,9 +7421,9 @@ type GetWorkItemsResponse struct {
 
 type GetWorkItemResponse struct {
 	ResponseBase
-	WorkItem *WorkItemWireDto     `json:"workItem,omitempty"`
-	Plans    []AiChatEntryWireDto `json:"plans,omitempty"`
-	Steps    []AiChatEntryWireDto `json:"steps,omitempty"`
+	WorkItem *WorkItemWireDto `json:"workItem,omitempty"`
+	Plans    []interface{}    `json:"plans,omitempty"`
+	Steps    []interface{}    `json:"steps,omitempty"`
 }
 
 type ExportWorkItemResponse struct {
@@ -8622,31 +7434,31 @@ type ExportWorkItemResponse struct {
 
 type GetLlmIntegrationResponse struct {
 	ResponseBase
-	Item *LlmIntegrationDto `json:"item,omitempty"`
+	Item *interface{} `json:"item,omitempty"`
 }
 
 type GetLlmIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                          `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[LlmIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // @DataContract
 type TestLlmIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
-	Items *IReadOnlyList `json:"items,omitempty"`
+	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
 type GetMcpIntegrationResponse struct {
 	ResponseBase
-	Item *McpIntegrationDto `json:"item,omitempty"`
+	Item *interface{} `json:"item,omitempty"`
 }
 
 type GetMcpIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId *string            `json:"defaultIntegrationId,omitempty"`
-	List                 *PaginatedResponse `json:"list,omitempty"`
+	DefaultIntegrationId *string                                          `json:"defaultIntegrationId,omitempty"`
+	List                 *PaginatedResponse[McpIntegrationListProjection] `json:"list,omitempty"`
 }
 
 type GetWebhookIntegrationResponse struct {
@@ -8678,13 +7490,13 @@ type HttpResult struct {
 	Expires               *time.Time          `json:"expires,omitempty"`
 	LastModified          *time.Time          `json:"lastModified,omitempty"`
 	CacheControl          CacheControl        `json:"cacheControl,omitempty"`
-	ResultScope           *Func               `json:"resultScope,omitempty"`
+	ResultScope           *Func[IDisposable]  `json:"resultScope,omitempty"`
 	AllowsPartialResponse bool                `json:"allowsPartialResponse,omitempty"`
 	Options               map[string]string   `json:"options,omitempty"`
 	Status                int                 `json:"status,omitempty"`
 	StatusCode            HttpStatusCode      `json:"statusCode,omitempty"`
 	StatusDescription     *string             `json:"statusDescription,omitempty"`
-	Response              *Object             `json:"response,omitempty"`
+	Response              *interface{}        `json:"response,omitempty"`
 	ResponseFilter        *IContentTypeWriter `json:"responseFilter,omitempty"`
 	RequestContext        *IRequest           `json:"requestContext,omitempty"`
 	View                  *string             `json:"view,omitempty"`
@@ -8705,12 +7517,12 @@ type GetSchedulerTaskResponse struct {
 
 type GetSchedulerTasksResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SchedulerTaskListProjection] `json:"list,omitempty"`
 }
 
 type ResolveResourcesResponse struct {
 	ResponseBase
-	Resolved IReadOnlyList `json:"resolved"`
+	Resolved IReadOnlyList[ResolvedResourceEntry] `json:"resolved"`
 }
 
 type GetContactResponse struct {
@@ -8720,8 +7532,8 @@ type GetContactResponse struct {
 
 type GetAllContactsResponse struct {
 	ResponseBase
-	Items      *IReadOnlyList `json:"items,omitempty"`
-	NextCursor *string        `json:"nextCursor,omitempty"`
+	Items      *IReadOnlyList[UserDto] `json:"items,omitempty"`
+	NextCursor *string                 `json:"nextCursor,omitempty"`
 }
 
 type GetComplianceSettingsResponse struct {
@@ -8756,7 +7568,7 @@ type GetSupportCaseResponse struct {
 
 type GetSupportCasesResponse struct {
 	ResponseBase
-	List *PaginatedResponse `json:"list,omitempty"`
+	List *PaginatedResponse[SupportCaseListProjection] `json:"list,omitempty"`
 }
 
 type GetDiagnosticPacksResponse struct {
@@ -8794,62 +7606,29 @@ type RunDiagnosticHealthCheckResponse struct {
 	Result *DiagnosticHealthCheckDto `json:"result,omitempty"`
 }
 
-// @DataContract
-type AuthenticateResponse struct {
-	// @DataMember(Order=1)
-	UserId *string `json:"userId,omitempty"`
-	// @DataMember(Order=2)
-	SessionId *string `json:"sessionId,omitempty"`
-	// @DataMember(Order=3)
-	UserName *string `json:"userName,omitempty"`
-	// @DataMember(Order=4)
-	DisplayName *string `json:"displayName,omitempty"`
-	// @DataMember(Order=5)
-	ReferrerUrl *string `json:"referrerUrl,omitempty"`
-	// @DataMember(Order=6)
-	BearerToken *string `json:"bearerToken,omitempty"`
-	// @DataMember(Order=7)
-	RefreshToken *string `json:"refreshToken,omitempty"`
-	// @DataMember(Order=8)
-	RefreshTokenExpiry *time.Time `json:"refreshTokenExpiry,omitempty"`
-	// @DataMember(Order=9)
-	ProfileUrl *string `json:"profileUrl,omitempty"`
-	// @DataMember(Order=10)
-	Roles []string `json:"roles,omitempty"`
-	// @DataMember(Order=11)
-	Permissions []string `json:"permissions,omitempty"`
-	// @DataMember(Order=12)
-	AuthProvider *string `json:"authProvider,omitempty"`
-	// @DataMember(Order=13)
-	ResponseStatus *ResponseStatus `json:"responseStatus,omitempty"`
-	// @DataMember(Order=14)
-	Meta map[string]string `json:"meta,omitempty"`
-}
-
-// @DataContract
-type GetAccessTokenResponse struct {
-	// @DataMember(Order=1)
-	AccessToken *string `json:"accessToken,omitempty"`
-	// @DataMember(Order=2)
-	Meta map[string]string `json:"meta,omitempty"`
-	// @DataMember(Order=3)
-	ResponseStatus *ResponseStatus `json:"responseStatus,omitempty"`
-}
-
 // @Route("/{version}/code/enable", "GET")
 type EnableCode struct {
 	CodeMashRequestBase
 }
+
+func (EnableCode) CreateResponse() (r EmptyResponse) { return }
+func (EnableCode) HttpMethod() string                { return "GET" }
 
 // @Route("/{version}/code/disable", "GET")
 type DisableCode struct {
 	CodeMashRequestBase
 }
 
+func (DisableCode) CreateResponse() (r EmptyResponse) { return }
+func (DisableCode) HttpMethod() string                { return "GET" }
+
 // @Route("/{version}/code/integrations", "GET")
 type GetCodeIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetCodeIntegrations) CreateResponse() (r GetCodeIntegrationsResponse) { return }
+func (GetCodeIntegrations) HttpMethod() string                              { return "GET" }
 
 // @Route("/{version}/code/integrations/{id}", "GET")
 type GetCodeIntegration struct {
@@ -8859,13 +7638,19 @@ type GetCodeIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetCodeIntegration) CreateResponse() (r GetCodeIntegrationResponse) { return }
+func (GetCodeIntegration) HttpMethod() string                             { return "GET" }
+
 // @Route("/{version}/code/integrations", "POST")
 // @DataContract
 type SaveCodeIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration CodeIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveCodeIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveCodeIntegration) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/code/integrations/test", "POST")
 type TestCodeIntegration struct {
@@ -8874,6 +7659,9 @@ type TestCodeIntegration struct {
 	// @ApiMember(Description="Integration id, from get_code_integrations.", IsRequired=true)
 	IntegrationId string `json:"integrationId"`
 }
+
+func (TestCodeIntegration) CreateResponse() (r TestCodeIntegrationResponse) { return }
+func (TestCodeIntegration) HttpMethod() string                              { return "POST" }
 
 // @Route("/{version}/code/integrations/confirm-human-delivery", "POST")
 // @DataContract
@@ -8885,6 +7673,9 @@ type ConfirmCodeIntegrationHumanDeliveryRequest struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (ConfirmCodeIntegrationHumanDeliveryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ConfirmCodeIntegrationHumanDeliveryRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/code/integrations/{Id}/default", "PUT")
 type SetCodeIntegrationAsDefault struct {
 	CodeMashRequestBase
@@ -8892,6 +7683,9 @@ type SetCodeIntegrationAsDefault struct {
 	// @ApiMember(Description="Integration id, from get_code_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (SetCodeIntegrationAsDefault) CreateResponse() (r EmptyResponse) { return }
+func (SetCodeIntegrationAsDefault) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/code/integrations/{Id}", "DELETE")
 type DeleteCodeIntegrationRequest struct {
@@ -8901,6 +7695,9 @@ type DeleteCodeIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DeleteCodeIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteCodeIntegrationRequest) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/code/integrations/{Id}/enable", "PUT")
 type EnableCodeIntegrationRequest struct {
 	CodeMashRequestBase
@@ -8909,6 +7706,9 @@ type EnableCodeIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (EnableCodeIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableCodeIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/code/integrations/{Id}/disable", "PUT")
 type DisableCodeIntegrationRequest struct {
 	CodeMashRequestBase
@@ -8916,6 +7716,9 @@ type DisableCodeIntegrationRequest struct {
 	// @ApiMember(Description="Integration id, from get_code_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DisableCodeIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableCodeIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/code/marketplace/listings", "GET")
 type GetMarketplaceListings struct {
@@ -8937,6 +7740,9 @@ type GetMarketplaceListings struct {
 	Tags []string `json:"tags,omitempty"`
 }
 
+func (GetMarketplaceListings) CreateResponse() (r GetMarketplaceListingsResponse) { return }
+func (GetMarketplaceListings) HttpMethod() string                                 { return "GET" }
+
 // @Route("/{version}/code/marketplace/listings/{ListingViewId}/functions/{FunctionKey}/tokens", "GET")
 type GetMarketplaceListingFunctionTokens struct {
 	CodeMashRequestBase
@@ -8948,10 +7754,16 @@ type GetMarketplaceListingFunctionTokens struct {
 	FunctionKey string `json:"functionKey"`
 }
 
+func (GetMarketplaceListingFunctionTokens) CreateResponse() (r GetMarketplaceTokensResponse) { return }
+func (GetMarketplaceListingFunctionTokens) HttpMethod() string                               { return "GET" }
+
 // @Route("/{version}/code/marketplace/integrations", "GET")
 type GetMarketplaceIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetMarketplaceIntegrations) CreateResponse() (r GetMarketplaceIntegrationsResponse) { return }
+func (GetMarketplaceIntegrations) HttpMethod() string                                     { return "GET" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}", "GET")
 type GetMarketplaceIntegration struct {
@@ -8960,6 +7772,9 @@ type GetMarketplaceIntegration struct {
 	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
 	IntegrationViewId string `json:"integrationViewId"`
 }
+
+func (GetMarketplaceIntegration) CreateResponse() (r GetMarketplaceIntegrationResponse) { return }
+func (GetMarketplaceIntegration) HttpMethod() string                                    { return "GET" }
 
 // @Route("/{version}/code/marketplace/integrations", "POST")
 // @DataContract
@@ -8973,6 +7788,9 @@ type SaveMarketplaceIntegration struct {
 	Secrets map[string]string `json:"secrets"`
 }
 
+func (SaveMarketplaceIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveMarketplaceIntegration) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}", "DELETE")
 type DeleteMarketplaceIntegration struct {
 	CodeMashRequestBase
@@ -8980,6 +7798,9 @@ type DeleteMarketplaceIntegration struct {
 	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
 	IntegrationViewId string `json:"integrationViewId"`
 }
+
+func (DeleteMarketplaceIntegration) CreateResponse() (r IdResponse) { return }
+func (DeleteMarketplaceIntegration) HttpMethod() string             { return "DELETE" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/enable", "POST")
 type EnableMarketplaceIntegration struct {
@@ -8989,6 +7810,9 @@ type EnableMarketplaceIntegration struct {
 	IntegrationViewId string `json:"integrationViewId"`
 }
 
+func (EnableMarketplaceIntegration) CreateResponse() (r IdResponse) { return }
+func (EnableMarketplaceIntegration) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/disable", "POST")
 type DisableMarketplaceIntegration struct {
 	CodeMashRequestBase
@@ -8997,6 +7821,9 @@ type DisableMarketplaceIntegration struct {
 	IntegrationViewId string `json:"integrationViewId"`
 }
 
+func (DisableMarketplaceIntegration) CreateResponse() (r IdResponse) { return }
+func (DisableMarketplaceIntegration) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions", "GET")
 type GetMarketplaceFunctions struct {
 	CodeMashListPaginationRequestBase
@@ -9004,6 +7831,9 @@ type GetMarketplaceFunctions struct {
 	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
 	IntegrationViewId string `json:"integrationViewId"`
 }
+
+func (GetMarketplaceFunctions) CreateResponse() (r GetMarketplaceFunctionsResponse) { return }
+func (GetMarketplaceFunctions) HttpMethod() string                                  { return "GET" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}", "GET")
 type GetMarketplaceFunction struct {
@@ -9015,6 +7845,9 @@ type GetMarketplaceFunction struct {
 	// @ApiMember(Description="Function view id, from get_marketplace_functions.", IsRequired=true)
 	FunctionViewId string `json:"functionViewId"`
 }
+
+func (GetMarketplaceFunction) CreateResponse() (r GetMarketplaceFunctionResponse) { return }
+func (GetMarketplaceFunction) HttpMethod() string                                 { return "GET" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions", "POST")
 // @DataContract
@@ -9030,6 +7863,9 @@ type SaveMarketplaceFunction struct {
 	Function MarketplaceFunctionDto `json:"function"`
 }
 
+func (SaveMarketplaceFunction) CreateResponse() (r IdResponse) { return }
+func (SaveMarketplaceFunction) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}", "DELETE")
 type DeleteMarketplaceFunction struct {
 	CodeMashRequestBase
@@ -9040,6 +7876,9 @@ type DeleteMarketplaceFunction struct {
 	// @ApiMember(Description="Function view id, from get_marketplace_functions.", IsRequired=true)
 	FunctionViewId string `json:"functionViewId"`
 }
+
+func (DeleteMarketplaceFunction) CreateResponse() (r IdResponse) { return }
+func (DeleteMarketplaceFunction) HttpMethod() string             { return "DELETE" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/enable", "POST")
 type EnableMarketplaceFunction struct {
@@ -9052,6 +7891,9 @@ type EnableMarketplaceFunction struct {
 	FunctionViewId string `json:"functionViewId"`
 }
 
+func (EnableMarketplaceFunction) CreateResponse() (r IdResponse) { return }
+func (EnableMarketplaceFunction) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/disable", "POST")
 type DisableMarketplaceFunction struct {
 	CodeMashRequestBase
@@ -9062,6 +7904,9 @@ type DisableMarketplaceFunction struct {
 	// @ApiMember(Description="Function view id, from get_marketplace_functions.", IsRequired=true)
 	FunctionViewId string `json:"functionViewId"`
 }
+
+func (DisableMarketplaceFunction) CreateResponse() (r IdResponse) { return }
+func (DisableMarketplaceFunction) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/tokens", "GET")
 type GetMarketplaceFunctionTokens struct {
@@ -9074,6 +7919,9 @@ type GetMarketplaceFunctionTokens struct {
 	FunctionViewId string `json:"functionViewId"`
 }
 
+func (GetMarketplaceFunctionTokens) CreateResponse() (r GetMarketplaceTokensResponse) { return }
+func (GetMarketplaceFunctionTokens) HttpMethod() string                               { return "GET" }
+
 // @Route("/{version}/code/marketplace/functions/{FunctionViewId}/invoke", "POST")
 // @DataContract
 type InvokeMarketplaceFunction struct {
@@ -9083,8 +7931,11 @@ type InvokeMarketplaceFunction struct {
 	// @ApiMember(Description="Function view id (func_…), from get_marketplace_functions.", IsRequired=true)
 	FunctionViewId string `json:"functionViewId"`
 	// @DataMember
-	Payload map[string]Object `json:"payload"`
+	Payload map[string]interface{} `json:"payload"`
 }
+
+func (InvokeMarketplaceFunction) CreateResponse() (r InvokeMarketplaceFunctionResponse) { return }
+func (InvokeMarketplaceFunction) HttpMethod() string                                    { return "POST" }
 
 // @Route("/{version}/code/marketplace/listings/{ListingViewId}", "GET")
 type GetMarketplaceListing struct {
@@ -9094,6 +7945,9 @@ type GetMarketplaceListing struct {
 	ListingViewId string `json:"listingViewId"`
 }
 
+func (GetMarketplaceListing) CreateResponse() (r GetMarketplaceListingResponse) { return }
+func (GetMarketplaceListing) HttpMethod() string                                { return "GET" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/test", "POST")
 type TestMarketplaceIntegration struct {
 	CodeMashRequestBase
@@ -9101,6 +7955,9 @@ type TestMarketplaceIntegration struct {
 	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
 	IntegrationViewId string `json:"integrationViewId"`
 }
+
+func (TestMarketplaceIntegration) CreateResponse() (r TestMarketplaceIntegrationResponse) { return }
+func (TestMarketplaceIntegration) HttpMethod() string                                     { return "POST" }
 
 // @Route("/internal/_typegen", "GET")
 type InternalsTypeGen struct {
@@ -9278,6 +8135,7 @@ type InternalsTypeGen struct {
 	Typegen169TelnyxSmsIntegrationDto                          *TelnyxSmsIntegrationDto                           `json:"typegen_169_TelnyxSmsIntegrationDto,omitempty"`
 	Typegen170TwilioSmsIntegrationDto                          *TwilioSmsIntegrationDto                           `json:"typegen_170_TwilioSmsIntegrationDto,omitempty"`
 	Typegen171VonageSmsIntegrationDto                          *VonageSmsIntegrationDto                           `json:"typegen_171_VonageSmsIntegrationDto,omitempty"`
+	Typegen246FakeSmsIntegrationDto                            *FakeSmsIntegrationDto                             `json:"typegen_246_FakeSmsIntegrationDto,omitempty"`
 	Typegen172AndroidFirebasePushIntegrationDto                *AndroidFirebasePushIntegrationDto                 `json:"typegen_172_AndroidFirebasePushIntegrationDto,omitempty"`
 	Typegen173AppleApnsPushIntegrationDto                      *AppleApnsPushIntegrationDto                       `json:"typegen_173_AppleApnsPushIntegrationDto,omitempty"`
 	Typegen174ChromePluginPushIntegrationDto                   *ChromePluginPushIntegrationDto                    `json:"typegen_174_ChromePluginPushIntegrationDto,omitempty"`
@@ -9285,11 +8143,13 @@ type InternalsTypeGen struct {
 	Typegen176EdgeWebPushIntegrationDto                        *EdgeWebPushIntegrationDto                         `json:"typegen_176_EdgeWebPushIntegrationDto,omitempty"`
 	Typegen177FirefoxWebPushIntegrationDto                     *FirefoxWebPushIntegrationDto                      `json:"typegen_177_FirefoxWebPushIntegrationDto,omitempty"`
 	Typegen178SafariPushIntegrationDto                         *SafariPushIntegrationDto                          `json:"typegen_178_SafariPushIntegrationDto,omitempty"`
+	Typegen247FakePushIntegrationDto                           *FakePushIntegrationDto                            `json:"typegen_247_FakePushIntegrationDto,omitempty"`
 	Typegen179AwsCrossAccountRoleEmailIntegrationDto           *AwsCrossAccountRoleEmailIntegrationDto            `json:"typegen_179_AwsCrossAccountRoleEmailIntegrationDto,omitempty"`
 	Typegen180AwsIamEmailIntegrationDto                        *AwsIamEmailIntegrationDto                         `json:"typegen_180_AwsIamEmailIntegrationDto,omitempty"`
 	Typegen181MailGunEmailIntegrationDto                       *MailGunEmailIntegrationDto                        `json:"typegen_181_MailGunEmailIntegrationDto,omitempty"`
 	Typegen182SendGridEmailIntegrationDto                      *SendGridEmailIntegrationDto                       `json:"typegen_182_SendGridEmailIntegrationDto,omitempty"`
 	Typegen183SmtpEmailIntegrationDto                          *SmtpEmailIntegrationDto                           `json:"typegen_183_SmtpEmailIntegrationDto,omitempty"`
+	Typegen248FakeEmailIntegrationDto                          *FakeEmailIntegrationDto                           `json:"typegen_248_FakeEmailIntegrationDto,omitempty"`
 	Typegen192WebhookIntegrationDto                            *WebhookIntegrationDto                             `json:"typegen_192_WebhookIntegrationDto,omitempty"`
 	Typegen193WebhookDestinationDto                            *WebhookDestinationDto                             `json:"typegen_193_WebhookDestinationDto,omitempty"`
 	Typegen194SchedulerTaskDto                                 *SchedulerTaskDto                                  `json:"typegen_194_SchedulerTaskDto,omitempty"`
@@ -9344,16 +8204,25 @@ type InternalsTypeGen struct {
 	Typegen245ConversationSnapshotEntryWireDto                 *ConversationSnapshotEntryWireDto                  `json:"typegen_245_ConversationSnapshotEntryWireDto,omitempty"`
 }
 
+func (InternalsTypeGen) CreateResponseVoid() {}
+func (InternalsTypeGen) HttpMethod() string  { return "GET" }
+
 // @Route("/{version}/echo", "GET")
 type Echo struct {
 	RequestBase
 }
+
+func (Echo) CreateResponse() (r EchoResponse) { return }
+func (Echo) HttpMethod() string               { return "GET" }
 
 // @Route("/{version}/public/projects/{ProjectId}/config", "GET")
 type GetPublicProjectConfig struct {
 	RequestBase
 	ProjectId *string `json:"projectId,omitempty"`
 }
+
+func (GetPublicProjectConfig) CreateResponse() (r PublicProjectConfigDto) { return }
+func (GetPublicProjectConfig) HttpMethod() string                         { return "GET" }
 
 // @Route("/{version}/public/projects/{ProjectId}/legal/{Kind}", "GET")
 type GetPublicProjectLegal struct {
@@ -9362,10 +8231,16 @@ type GetPublicProjectLegal struct {
 	Kind      *string `json:"kind,omitempty"`
 }
 
+func (GetPublicProjectLegal) CreateResponse() (r PublicLegalDocumentDto) { return }
+func (GetPublicProjectLegal) HttpMethod() string                         { return "GET" }
+
 // @Route("/{version}/account/profile", "GET")
 type GetAccountProfile struct {
 	RequestBase
 }
+
+func (GetAccountProfile) CreateResponse() (r GetAccountProfileResponse) { return }
+func (GetAccountProfile) HttpMethod() string                            { return "GET" }
 
 // @Route("/{version}/account/profile", "PUT")
 // @DataContract
@@ -9389,10 +8264,16 @@ type UpdateAccountProfile struct {
 	SecurityEmail *string `json:"securityEmail,omitempty"`
 }
 
+func (UpdateAccountProfile) CreateResponse() (r EmptyResponse) { return }
+func (UpdateAccountProfile) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/account/verify/resend", "GET")
 type ResendAccountVerificationToken struct {
 	RequestBase
 }
+
+func (ResendAccountVerificationToken) CreateResponse() (r EmptyResponse) { return }
+func (ResendAccountVerificationToken) HttpMethod() string                { return "GET" }
 
 /** @description Get Account Status. */
 // @Route("/{version}/account/status", "GET")
@@ -9400,6 +8281,9 @@ type ResendAccountVerificationToken struct {
 type GetAccountStatus struct {
 	RequestBase
 }
+
+func (GetAccountStatus) CreateResponse() (r GetAccountStatusResponse) { return }
+func (GetAccountStatus) HttpMethod() string                           { return "GET" }
 
 // @Route("/{version}/account/stripe/create-checkout-session", "POST")
 // @DataContract
@@ -9417,6 +8301,9 @@ type CreateStripeCheckoutSession struct {
 	ReturnUrl *string `json:"returnUrl,omitempty"`
 }
 
+func (CreateStripeCheckoutSession) CreateResponse() (r CreateStripeCheckoutSessionResponse) { return }
+func (CreateStripeCheckoutSession) HttpMethod() string                                      { return "POST" }
+
 // @Route("/{version}/account/stripe/get-portal-url", "POST")
 // @DataContract
 type GetStripeBillingPortalUrl struct {
@@ -9430,6 +8317,9 @@ type GetStripeBillingPortalUrl struct {
 	// @ApiMember(Description="URL to return to after the customer leaves the billing portal.")
 	ReturnUrl *string `json:"returnUrl,omitempty"`
 }
+
+func (GetStripeBillingPortalUrl) CreateResponse() (r GetStripeBillingPortalUrlResponse) { return }
+func (GetStripeBillingPortalUrl) HttpMethod() string                                    { return "POST" }
 
 // @Route("/{version}/account/team/member", "POST")
 type CreateTeamMemberFromInvitation struct {
@@ -9445,6 +8335,11 @@ type CreateTeamMemberFromInvitation struct {
 	Password string `json:"password"`
 }
 
+func (CreateTeamMemberFromInvitation) CreateResponse() (r CreateTeamMemberFromInvitationResponse) {
+	return
+}
+func (CreateTeamMemberFromInvitation) HttpMethod() string { return "POST" }
+
 /** @description Get Account Usage Billing. */
 // @Route("/{version}/account/usage-billing", "GET")
 // @Api(Description="Get Account Usage Billing.")
@@ -9452,12 +8347,18 @@ type GetAccountUsageBilling struct {
 	RequestBase
 }
 
+func (GetAccountUsageBilling) CreateResponse() (r GetAccountUsageBillingResponse) { return }
+func (GetAccountUsageBilling) HttpMethod() string                                 { return "GET" }
+
 // @Route("/{version}/account/verify", "GET")
 type VerifyAccount struct {
 	RequestBase
 	Token     string `json:"token"`
 	AccountId string `json:"accountId"`
 }
+
+func (VerifyAccount) CreateResponse() (r EmptyResponse) { return }
+func (VerifyAccount) HttpMethod() string                { return "GET" }
 
 // @Route("/{version}/account/projects/{projectId}/notifications/settings/group", "DELETE")
 type DeleteNotificationsGroup struct {
@@ -9467,6 +8368,9 @@ type DeleteNotificationsGroup struct {
 	GroupTag string `json:"groupTag"`
 }
 
+func (DeleteNotificationsGroup) CreateResponse() (r EmptyResponse) { return }
+func (DeleteNotificationsGroup) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/account/projects/{projectId}/notifications/settings/tag", "DELETE")
 type DeleteNotificationsTag struct {
 	CodeMashRequestBase
@@ -9474,6 +8378,9 @@ type DeleteNotificationsTag struct {
 	// @ApiMember(Description="Tag identifying the notification tag to delete.", IsRequired=true)
 	Tag string `json:"tag"`
 }
+
+func (DeleteNotificationsTag) CreateResponse() (r EmptyResponse) { return }
+func (DeleteNotificationsTag) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/account/projects/{projectId}/notifications/settings/group/tag", "DELETE")
 type RemoveTagFromNotificationsGroup struct {
@@ -9485,6 +8392,9 @@ type RemoveTagFromNotificationsGroup struct {
 	// @ApiMember(Description="Tag identifying the notification tag to remove from the group.", IsRequired=true)
 	Tag string `json:"tag"`
 }
+
+func (RemoveTagFromNotificationsGroup) CreateResponse() (r EmptyResponse) { return }
+func (RemoveTagFromNotificationsGroup) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/account/projects/{projectId}/notifications/settings/group", "POST")
 type SaveNotificationsGroup struct {
@@ -9500,6 +8410,9 @@ type SaveNotificationsGroup struct {
 	OriginChannel *CommunicationChannel `json:"originChannel,omitempty"`
 }
 
+func (SaveNotificationsGroup) CreateResponse() (r EmptyResponse) { return }
+func (SaveNotificationsGroup) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/account/projects/{projectId}/notifications/settings/tag", "POST")
 type SaveNotificationsTag struct {
 	CodeMashRequestBase
@@ -9514,6 +8427,9 @@ type SaveNotificationsTag struct {
 	GroupTag *string `json:"groupTag,omitempty"`
 }
 
+func (SaveNotificationsTag) CreateResponse() (r EmptyResponse) { return }
+func (SaveNotificationsTag) HttpMethod() string                { return "POST" }
+
 /** @description Create a new backend project. */
 // @Route("/{version}/account/projects", "POST")
 // @Api(Description="Create a new backend project.")
@@ -9521,7 +8437,7 @@ type SaveNotificationsTag struct {
 type CreateProjectRequest struct {
 	RequestBase
 	// @DataMember
-	Integration DatabaseIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 	/** @description Project name, unique per account. */
 	// @DataMember
 	// @ApiMember(Description="Project name, unique per account.")
@@ -9536,12 +8452,18 @@ type CreateProjectRequest struct {
 	Description *string `json:"description,omitempty"`
 }
 
+func (CreateProjectRequest) CreateResponse() (r IdResponse) { return }
+func (CreateProjectRequest) HttpMethod() string             { return "POST" }
+
 /** @description Deletes project */
 // @Route("/{version}/account/projects/{projectId}", "DELETE")
 // @Api(Description="Deletes project")
 type DeleteProject struct {
 	CodeMashRequestBase
 }
+
+func (DeleteProject) CreateResponse() (r EmptyResponse) { return }
+func (DeleteProject) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/account/projects/environments", "POST")
 // @DataContract
@@ -9552,8 +8474,11 @@ type CreateProjectEnvironmentRequest struct {
 	// @ApiMember(Description="Name for the new environment (e.g. 'TEST', 'STAGING'). A-Z/0-9/space, up to 15 chars, cannot be PROD.", IsRequired=true)
 	EnvironmentName string `json:"environmentName"`
 	// @DataMember(Name="integration")
-	Integration DatabaseIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (CreateProjectEnvironmentRequest) CreateResponse() (r EmptyResponse) { return }
+func (CreateProjectEnvironmentRequest) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/account/projects/environments/{environmentName}", "DELETE")
 // @DataContract
@@ -9564,6 +8489,9 @@ type DeleteProjectEnvironmentRequest struct {
 	// @ApiMember(Description="Name of the environment to delete (from get_project_environments), e.g. 'TEST'. PROD is rejected.", IsRequired=true)
 	EnvironmentName string `json:"environmentName"`
 }
+
+func (DeleteProjectEnvironmentRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteProjectEnvironmentRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/account/projects/environments/{environmentName}/rank", "PATCH")
 // @DataContract
@@ -9578,6 +8506,9 @@ type SetEnvironmentRankRequest struct {
 	// @ApiMember(Description="New promotion-ladder rank. Out-of-range values are clamped and ranks re-normalized.")
 	Rank int `json:"rank,omitempty"`
 }
+
+func (SetEnvironmentRankRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetEnvironmentRankRequest) HttpMethod() string                { return "PATCH" }
 
 // @Route("/{version}/account/projects/environments/promote", "POST")
 // @DataContract
@@ -9597,6 +8528,9 @@ type PromoteEnvironmentRequest struct {
 	DryRun bool `json:"dryRun,omitempty"`
 }
 
+func (PromoteEnvironmentRequest) CreateResponse() (r PromoteEnvironmentResponse) { return }
+func (PromoteEnvironmentRequest) HttpMethod() string                             { return "POST" }
+
 // @Route("/{version}/account/projects/environments/promote/rollback", "POST")
 // @DataContract
 type RollbackPromotionRequest struct {
@@ -9611,11 +8545,17 @@ type RollbackPromotionRequest struct {
 	FromVersion int64 `json:"fromVersion"`
 }
 
+func (RollbackPromotionRequest) CreateResponse() (r PromoteEnvironmentResponse) { return }
+func (RollbackPromotionRequest) HttpMethod() string                             { return "POST" }
+
 // @Route("/{version}/account/projects/environments", "GET")
 // @DataContract
 type GetProjectEnvironments struct {
 	CodeMashRequestBase
 }
+
+func (GetProjectEnvironments) CreateResponse() (r GetProjectEnvironmentsResponse) { return }
+func (GetProjectEnvironments) HttpMethod() string                                 { return "GET" }
 
 /** @description Gets project info. */
 // @Route("/{version}/account/projects/{projectId}", "GET")
@@ -9624,6 +8564,9 @@ type GetProject struct {
 	CodeMashRequestBase
 }
 
+func (GetProject) CreateResponse() (r GetProjectResponse) { return }
+func (GetProject) HttpMethod() string                     { return "GET" }
+
 /** @description Retrieve projects list. */
 // @Route("/{version}/account/projects", "GET")
 // @Api(Description="Retrieve projects list.")
@@ -9631,12 +8574,18 @@ type GetProjects struct {
 	RequestBase
 }
 
+func (GetProjects) CreateResponse() (r GetProjectsResponse) { return }
+func (GetProjects) HttpMethod() string                      { return "GET" }
+
 /** @description Get available project regions. */
 // @Route("/{version}/account/regions", "GET")
 // @Api(Description="Get available project regions.")
 type GetAccountRegions struct {
 	RequestBase
 }
+
+func (GetAccountRegions) CreateResponse() (r GetAccountRegionsResponse) { return }
+func (GetAccountRegions) HttpMethod() string                            { return "GET" }
 
 /** @description Waits (bounded, server-side) for a project to finish provisioning and become active. */
 // @Route("/{version}/account/projects/{projectId}/wait-active", "GET")
@@ -9647,6 +8596,9 @@ type WaitForProjectActiveRequest struct {
 	// @ApiMember(Description="Max seconds to wait before returning 'not active yet' (default 30, capped at 90).")
 	TimeoutSeconds *int `json:"timeoutSeconds,omitempty"`
 }
+
+func (WaitForProjectActiveRequest) CreateResponse() (r WaitForProjectActiveResponse) { return }
+func (WaitForProjectActiveRequest) HttpMethod() string                               { return "GET" }
 
 /** @description Gets project tokens. */
 // @Route("/{version}/account/projects/{projectId}/tokens", "GET")
@@ -9660,6 +8612,9 @@ type GetProjectTokens struct {
 	MembershipTriggerNewUserId *string `json:"membershipTriggerNewUserId,omitempty"`
 }
 
+func (GetProjectTokens) CreateResponse() (r GetProjectTokensResponse) { return }
+func (GetProjectTokens) HttpMethod() string                           { return "GET" }
+
 /** @description Assigns the project's Admin Portal service user */
 // @Route("/{version}/account/projects/{projectId}/settings/admin-portal/service-user", "PUT")
 // @Api(Description="Assigns the project's Admin Portal service user")
@@ -9670,12 +8625,18 @@ type AssignAdminPortalServiceUserRequest struct {
 	ServiceUserId string `json:"serviceUserId"`
 }
 
+func (AssignAdminPortalServiceUserRequest) CreateResponse() (r EmptyResponse) { return }
+func (AssignAdminPortalServiceUserRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Reads the Admin Portal layout/structure (service user only) */
 // @Route("/{version}/account/projects/{projectId}/admin-portal/structure", "GET")
 // @Api(Description="Reads the Admin Portal layout/structure (service user only)")
 type GetAdminPortalStructure struct {
 	CodeMashRequestBase
 }
+
+func (GetAdminPortalStructure) CreateResponse() (r AdminPortalStructureDto) { return }
+func (GetAdminPortalStructure) HttpMethod() string                          { return "GET" }
 
 /** @description Updates the project's admin-portal URL override */
 // @Route("/{version}/account/projects/{projectId}/settings/admin-url", "PATCH")
@@ -9687,6 +8648,9 @@ type UpdateProjectAdminUrl struct {
 	Url *string `json:"url,omitempty"`
 }
 
+func (UpdateProjectAdminUrl) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectAdminUrl) HttpMethod() string                { return "PATCH" }
+
 /** @description Updates project accent color */
 // @Route("/{version}/account/projects/{projectId}/settings/accent-color", "PATCH")
 // @Api(Description="Updates project accent color")
@@ -9697,6 +8661,9 @@ type UpdateProjectAccentColor struct {
 	Color string `json:"color"`
 }
 
+func (UpdateProjectAccentColor) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectAccentColor) HttpMethod() string                { return "PATCH" }
+
 /** @description Updates project icon */
 // @Route("/{version}/account/projects/{projectId}/settings/icon", "PATCH")
 // @Api(Description="Updates project icon")
@@ -9705,6 +8672,9 @@ type UpdateProjectIcon struct {
 	FileResource *FileResourceRefDto `json:"fileResource,omitempty"`
 }
 
+func (UpdateProjectIcon) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectIcon) HttpMethod() string                { return "PATCH" }
+
 /** @description Updates project logo */
 // @Route("/{version}/account/projects/{projectId}/settings/logo", "PATCH")
 // @Api(Description="Updates project logo")
@@ -9712,6 +8682,9 @@ type UpdateProjectLogo struct {
 	CodeMashRequestBase
 	FileResource *FileResourceRefDto `json:"fileResource,omitempty"`
 }
+
+func (UpdateProjectLogo) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectLogo) HttpMethod() string                { return "PATCH" }
 
 /** @description Updates project main color */
 // @Route("/{version}/account/projects/{projectId}/settings/main-color", "PATCH")
@@ -9723,6 +8696,9 @@ type UpdateProjectMainColor struct {
 	Color string `json:"color"`
 }
 
+func (UpdateProjectMainColor) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectMainColor) HttpMethod() string                { return "PATCH" }
+
 /** @description Updates project CORS settings */
 // @Route("/{version}/account/projects/{projectId}/settings/origins", "PATCH")
 // @Api(Description="Updates project CORS settings")
@@ -9731,7 +8707,13 @@ type UpdateProjectAllowedOrigins struct {
 	/** @description The complete new list of allowed origin URLs, e.g. ["https://app.example.com", "https://example.com"]. An entry with no scheme (e.g. "example.com") defaults to https. Whatever is not in this list stops being allowed. */
 	// @ApiMember(Description="The complete new list of allowed origin URLs, e.g. [\"https://app.example.com\", \"https://example.com\"]. An entry with no scheme (e.g. \"example.com\") defaults to https. Whatever is not in this list stops being allowed.")
 	Origins []string `json:"origins,omitempty"`
+	/** @description Optional. true removes the project's own Admin Portal origin (pr_{projectId}.{admin host}) on purpose. Without it, a list that drops that origin is rejected with CM-ERRORS-PROJECTS-037, because the Norbix-generated end-user portal could no longer call the project's API. */
+	// @ApiMember(Description="Optional. true removes the project's own Admin Portal origin (pr_{projectId}.{admin host}) on purpose. Without it, a list that drops that origin is rejected with CM-ERRORS-PROJECTS-037, because the Norbix-generated end-user portal could no longer call the project's API.")
+	RemoveAdminPortalOrigin *bool `json:"removeAdminPortalOrigin,omitempty"`
 }
+
+func (UpdateProjectAllowedOrigins) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectAllowedOrigins) HttpMethod() string                { return "PATCH" }
 
 /** @description Update project default language */
 // @Route("/{version}/account/projects/{projectId}/settings/default-language", "PATCH")
@@ -9743,6 +8725,9 @@ type UpdateProjectDefaultLanguage struct {
 	DefaultLanguage string `json:"defaultLanguage"`
 }
 
+func (UpdateProjectDefaultLanguage) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectDefaultLanguage) HttpMethod() string                { return "PATCH" }
+
 /** @description Updates project description */
 // @Route("/{version}/account/projects/{projectId}/settings/description", "PATCH")
 // @Api(Description="Updates project description")
@@ -9753,6 +8738,9 @@ type UpdateProjectDescription struct {
 	Description *string `json:"description,omitempty"`
 }
 
+func (UpdateProjectDescription) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectDescription) HttpMethod() string                { return "PATCH" }
+
 /** @description Disables project */
 // @Route("/{version}/account/projects/{projectId}/disable", "PATCH")
 // @Api(Description="Disables project")
@@ -9760,12 +8748,18 @@ type DisableProject struct {
 	CodeMashRequestBase
 }
 
+func (DisableProject) CreateResponse() (r EmptyResponse) { return }
+func (DisableProject) HttpMethod() string                { return "PATCH" }
+
 /** @description Enables project */
 // @Route("/{version}/account/projects/{projectId}/enable", "PATCH")
 // @Api(Description="Enables project")
 type EnableProject struct {
 	CodeMashRequestBase
 }
+
+func (EnableProject) CreateResponse() (r EmptyResponse) { return }
+func (EnableProject) HttpMethod() string                { return "PATCH" }
 
 /** @description Updates project languages */
 // @Route("/{version}/account/projects/{projectId}/settings/languages", "PATCH")
@@ -9776,6 +8770,9 @@ type UpdateProjectLanguages struct {
 	// @ApiMember(Description="The complete new list of language codes, e.g. [\"en\", \"de\", \"lt\"].", IsRequired=true)
 	Languages []string `json:"languages"`
 }
+
+func (UpdateProjectLanguages) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectLanguages) HttpMethod() string                { return "PATCH" }
 
 /** @description Updates the project's public legal documents (Terms & Conditions, Privacy Policy) */
 // @Route("/{version}/account/projects/{projectId}/settings/legal", "PATCH")
@@ -9790,6 +8787,9 @@ type UpdateProjectLegalDocuments struct {
 	PrivacyMarkdown *string `json:"privacyMarkdown,omitempty"`
 }
 
+func (UpdateProjectLegalDocuments) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectLegalDocuments) HttpMethod() string                { return "PATCH" }
+
 /** @description Sets whether the project's legal documents are publicly readable via the Admin Portal */
 // @Route("/{version}/account/projects/{projectId}/settings/legal/expose", "PATCH")
 // @Api(Description="Sets whether the project's legal documents are publicly readable via the Admin Portal")
@@ -9799,6 +8799,9 @@ type UpdateProjectExposeLegal struct {
 	// @ApiMember(Description="True to make the legal documents publicly readable via the Admin Portal, false to hide them.")
 	Exposed bool `json:"exposed,omitempty"`
 }
+
+func (UpdateProjectExposeLegal) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectExposeLegal) HttpMethod() string                { return "PATCH" }
 
 /** @description Updates project marketing url */
 // @Route("/{version}/account/projects/{projectId}/settings/url", "PATCH")
@@ -9810,6 +8813,9 @@ type UpdateProjectUrl struct {
 	Url *string `json:"url,omitempty"`
 }
 
+func (UpdateProjectUrl) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectUrl) HttpMethod() string                { return "PATCH" }
+
 /** @description Updates project name */
 // @Route("/{version}/account/projects/{projectId}/settings/name", "PATCH")
 // @Api(Description="Updates project name")
@@ -9819,6 +8825,9 @@ type UpdateProjectName struct {
 	// @ApiMember(Description="The new project name, unique per account.", IsRequired=true)
 	Name string `json:"name"`
 }
+
+func (UpdateProjectName) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectName) HttpMethod() string                { return "PATCH" }
 
 /** @description Updates project regions */
 // @Route("/{version}/account/projects/{projectId}/settings/regions", "PATCH")
@@ -9832,6 +8841,9 @@ type UpdateProjectRegions struct {
 	// @ApiMember(Description="The complete new list of additional region codes (full replacement). A region that still hosts a provisioned database cluster cannot be removed.")
 	AdditionalRegions []string `json:"additionalRegions,omitempty"`
 }
+
+func (UpdateProjectRegions) CreateResponse() (r EmptyResponse) { return }
+func (UpdateProjectRegions) HttpMethod() string                { return "PATCH" }
 
 /** @description This API endpoint allows users to create a new CodeMash account. */
 // @Route("/{version}/account", "POST")
@@ -9849,6 +8861,9 @@ type CreateAccount struct {
 	Password string `json:"password"`
 }
 
+func (CreateAccount) CreateResponse() (r CreateAccountResponse) { return }
+func (CreateAccount) HttpMethod() string                        { return "POST" }
+
 // @Route("/{version}/account/team/member/password", "POST")
 type ChangeTeamMemberPassword struct {
 	RequestBase
@@ -9856,6 +8871,9 @@ type ChangeTeamMemberPassword struct {
 	CurrentPassword string `json:"currentPassword"`
 	NewPassword     string `json:"newPassword"`
 }
+
+func (ChangeTeamMemberPassword) CreateResponse() (r IdResponse) { return }
+func (ChangeTeamMemberPassword) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/account/team/member/create", "POST")
 type CreateTeamMember struct {
@@ -9866,6 +8884,9 @@ type CreateTeamMember struct {
 	Roles          []string `json:"roles,omitempty"`
 	SendInvitation bool     `json:"sendInvitation,omitempty"`
 }
+
+func (CreateTeamMember) CreateResponse() (r IdResponse) { return }
+func (CreateTeamMember) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/account/team/policies", "POST")
 type CreateAccountPolicy struct {
@@ -9881,6 +8902,9 @@ type CreateAccountPolicy struct {
 	PolicyDocumentJson *string `json:"policyDocumentJson,omitempty"`
 }
 
+func (CreateAccountPolicy) CreateResponse() (r IdResponse) { return }
+func (CreateAccountPolicy) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/account/team/roles", "POST")
 type CreateAccountRole struct {
 	RequestBase
@@ -9895,6 +8919,9 @@ type CreateAccountRole struct {
 	Policies []string `json:"policies,omitempty"`
 }
 
+func (CreateAccountRole) CreateResponse() (r IdResponse) { return }
+func (CreateAccountRole) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/account/team/policies/{Id}", "DELETE")
 type DeleteAccountPolicy struct {
 	RequestBase
@@ -9903,6 +8930,9 @@ type DeleteAccountPolicy struct {
 	Id string `json:"id"`
 }
 
+func (DeleteAccountPolicy) CreateResponse() (r IdResponse) { return }
+func (DeleteAccountPolicy) HttpMethod() string             { return "DELETE" }
+
 // @Route("/{version}/account/team/roles/{Id}", "DELETE")
 type DeleteAccountRole struct {
 	RequestBase
@@ -9910,6 +8940,9 @@ type DeleteAccountRole struct {
 	// @ApiMember(Description="Role template id (from get_account_team_roles) to delete.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteAccountRole) CreateResponse() (r IdResponse) { return }
+func (DeleteAccountRole) HttpMethod() string             { return "DELETE" }
 
 /** @description Gets account team members (collaborators) */
 // @Route("/{version}/account/collaborators", "GET")
@@ -9934,20 +8967,32 @@ type GetAccountCollaborators struct {
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
 }
 
+func (GetAccountCollaborators) CreateResponse() (r GetAccountCollaboratorsResponse) { return }
+func (GetAccountCollaborators) HttpMethod() string                                  { return "GET" }
+
 // @Route("/{version}/account/team/password-policy", "GET")
 type GetAccountPasswordPolicy struct {
 	RequestBase
 }
+
+func (GetAccountPasswordPolicy) CreateResponse() (r GetAccountPasswordPolicyResponse) { return }
+func (GetAccountPasswordPolicy) HttpMethod() string                                   { return "GET" }
 
 // @Route("/{version}/account/team/policies", "GET")
 type GetAccountTeamPolicies struct {
 	RequestBase
 }
 
+func (GetAccountTeamPolicies) CreateResponse() (r GetAccountTeamPoliciesResponse) { return }
+func (GetAccountTeamPolicies) HttpMethod() string                                 { return "GET" }
+
 // @Route("/{version}/account/team/roles", "GET")
 type GetAccountTeamRoles struct {
 	RequestBase
 }
+
+func (GetAccountTeamRoles) CreateResponse() (r GetAccountTeamRolesResponse) { return }
+func (GetAccountTeamRoles) HttpMethod() string                              { return "GET" }
 
 /** @description Send invite to team member */
 // @Route("/{version}/account/team/member/invite", "POST")
@@ -9961,6 +9006,9 @@ type SendInviteToTeamMember struct {
 	// @ApiMember(Description="Account role ids (GUIDs from get_account_team_roles) the member gets on accepting. Omit for the default member role.")
 	Roles []string `json:"roles,omitempty"`
 }
+
+func (SendInviteToTeamMember) CreateResponse() (r EmptyResponse) { return }
+func (SendInviteToTeamMember) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/account/team/policies", "PUT")
 type UpdateAccountPolicy struct {
@@ -9979,6 +9027,9 @@ type UpdateAccountPolicy struct {
 	PolicyDocumentJson *string `json:"policyDocumentJson,omitempty"`
 }
 
+func (UpdateAccountPolicy) CreateResponse() (r IdResponse) { return }
+func (UpdateAccountPolicy) HttpMethod() string             { return "PUT" }
+
 // @Route("/{version}/account/team/roles", "PUT")
 type UpdateAccountRole struct {
 	RequestBase
@@ -9996,6 +9047,9 @@ type UpdateAccountRole struct {
 	Policies []string `json:"policies,omitempty"`
 }
 
+func (UpdateAccountRole) CreateResponse() (r IdResponse) { return }
+func (UpdateAccountRole) HttpMethod() string             { return "PUT" }
+
 // @Route("/{version}/account/userauth/has-passkey", "POST")
 // @DataContract
 type AccountHasPasskeyRequest struct {
@@ -10004,6 +9058,9 @@ type AccountHasPasskeyRequest struct {
 	Email string `json:"email"`
 }
 
+func (AccountHasPasskeyRequest) CreateResponse() (r AccountPasskeyOkResponse) { return }
+func (AccountHasPasskeyRequest) HttpMethod() string                           { return "POST" }
+
 // @Route("/{version}/account/userauth/email/start-verification", "POST")
 // @DataContract
 type AccountStartEmailVerificationRequest struct {
@@ -10011,6 +9068,9 @@ type AccountStartEmailVerificationRequest struct {
 	// @DataMember
 	Email string `json:"email"`
 }
+
+func (AccountStartEmailVerificationRequest) CreateResponse() (r AccountPasskeyOkResponse) { return }
+func (AccountStartEmailVerificationRequest) HttpMethod() string                           { return "POST" }
 
 // @Route("/{version}/account/userauth/email/confirm-verification", "POST")
 // @DataContract
@@ -10022,6 +9082,11 @@ type AccountConfirmEmailVerificationRequest struct {
 	Code string `json:"code"`
 }
 
+func (AccountConfirmEmailVerificationRequest) CreateResponse() (r AccountPasskeyVerificationTokenResponse) {
+	return
+}
+func (AccountConfirmEmailVerificationRequest) HttpMethod() string { return "POST" }
+
 // @Route("/{version}/account/userauth/passkey/registration-options", "POST")
 // @DataContract
 type AccountPasskeyRegistrationOptionsRequest struct {
@@ -10029,6 +9094,11 @@ type AccountPasskeyRegistrationOptionsRequest struct {
 	// @DataMember
 	VerificationToken string `json:"verificationToken"`
 }
+
+func (AccountPasskeyRegistrationOptionsRequest) CreateResponse() (r AccountPasskeyCeremonyOptionsResponse) {
+	return
+}
+func (AccountPasskeyRegistrationOptionsRequest) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/account/userauth/passkey/verify-registration", "POST")
 // @DataContract
@@ -10044,6 +9114,11 @@ type AccountVerifyPasskeyRegistrationRequest struct {
 	FriendlyName *string `json:"friendlyName,omitempty"`
 }
 
+func (AccountVerifyPasskeyRegistrationRequest) CreateResponse() (r AccountPasskeyAuthTokensResponse) {
+	return
+}
+func (AccountVerifyPasskeyRegistrationRequest) HttpMethod() string { return "POST" }
+
 // @Route("/{version}/account/userauth/passkey/authentication-options", "POST")
 // @DataContract
 type AccountPasskeyAuthenticationOptionsRequest struct {
@@ -10051,6 +9126,11 @@ type AccountPasskeyAuthenticationOptionsRequest struct {
 	// @DataMember
 	Email string `json:"email"`
 }
+
+func (AccountPasskeyAuthenticationOptionsRequest) CreateResponse() (r AccountPasskeyCeremonyOptionsResponse) {
+	return
+}
+func (AccountPasskeyAuthenticationOptionsRequest) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/account/userauth/passkey/verify-authentication", "POST")
 // @DataContract
@@ -10062,11 +9142,19 @@ type AccountVerifyPasskeyAuthenticationRequest struct {
 	AssertionResponse string `json:"assertionResponse"`
 }
 
+func (AccountVerifyPasskeyAuthenticationRequest) CreateResponse() (r AccountPasskeyAuthTokensResponse) {
+	return
+}
+func (AccountVerifyPasskeyAuthenticationRequest) HttpMethod() string { return "POST" }
+
 // @Route("/{version}/account/userauth/passkeys", "GET")
 // @DataContract
 type ListAccountPasskeysRequest struct {
 	RequestBase
 }
+
+func (ListAccountPasskeysRequest) CreateResponse() (r AccountPasskeyListResponse) { return }
+func (ListAccountPasskeysRequest) HttpMethod() string                             { return "GET" }
 
 // @Route("/{version}/account/userauth/passkeys/{CredentialId}/rename", "POST")
 // @DataContract
@@ -10078,6 +9166,9 @@ type RenameAccountPasskeyRequest struct {
 	FriendlyName string `json:"friendlyName"`
 }
 
+func (RenameAccountPasskeyRequest) CreateResponse() (r AccountPasskeyOkResponse) { return }
+func (RenameAccountPasskeyRequest) HttpMethod() string                           { return "POST" }
+
 // @Route("/{version}/account/userauth/passkeys/{CredentialId}/revoke", "POST")
 // @DataContract
 type RevokeAccountPasskeyRequest struct {
@@ -10086,11 +9177,19 @@ type RevokeAccountPasskeyRequest struct {
 	CredentialId string `json:"credentialId"`
 }
 
+func (RevokeAccountPasskeyRequest) CreateResponse() (r AccountPasskeyOkResponse) { return }
+func (RevokeAccountPasskeyRequest) HttpMethod() string                           { return "POST" }
+
 // @Route("/{version}/account/userauth/passkey/enrollment-options", "POST")
 // @DataContract
 type AccountPasskeyEnrollmentOptionsRequest struct {
 	RequestBase
 }
+
+func (AccountPasskeyEnrollmentOptionsRequest) CreateResponse() (r AccountPasskeyCeremonyOptionsResponse) {
+	return
+}
+func (AccountPasskeyEnrollmentOptionsRequest) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/account/userauth/passkey/verify-enrollment", "POST")
 // @DataContract
@@ -10104,11 +9203,19 @@ type AccountVerifyPasskeyEnrollmentRequest struct {
 	FriendlyName *string `json:"friendlyName,omitempty"`
 }
 
+func (AccountVerifyPasskeyEnrollmentRequest) CreateResponse() (r AccountPasskeyEnrollmentResponse) {
+	return
+}
+func (AccountVerifyPasskeyEnrollmentRequest) HttpMethod() string { return "POST" }
+
 // @Route("/{version}/account/licensing/dns-status", "GET")
 type GetLicenseDomainDnsStatus struct {
 	RequestBase
 	Domain *string `json:"domain,omitempty"`
 }
+
+func (GetLicenseDomainDnsStatus) CreateResponse() (r GetLicenseDomainDnsStatusResponse) { return }
+func (GetLicenseDomainDnsStatus) HttpMethod() string                                    { return "GET" }
 
 // @Route("/{version}/licensing/domain-verification/start", "POST")
 type StartLicenseDomainVerificationRequest struct {
@@ -10116,16 +9223,29 @@ type StartLicenseDomainVerificationRequest struct {
 	Domain *string `json:"domain,omitempty"`
 }
 
+func (StartLicenseDomainVerificationRequest) CreateResponse() (r StartLicenseDomainVerificationResponse) {
+	return
+}
+func (StartLicenseDomainVerificationRequest) HttpMethod() string { return "POST" }
+
 // @Route("/{version}/licensing/domain-verification/status", "GET")
 type GetLicenseDomainVerificationStatus struct {
 	RequestBase
 	Domain *string `json:"domain,omitempty"`
 }
 
+func (GetLicenseDomainVerificationStatus) CreateResponse() (r GetLicenseDomainVerificationStatusResponse) {
+	return
+}
+func (GetLicenseDomainVerificationStatus) HttpMethod() string { return "GET" }
+
 // @Route("/{version}/account/licenses", "GET")
 type GetLicenses struct {
 	RequestBase
 }
+
+func (GetLicenses) CreateResponse() (r GetLicensesResponse) { return }
+func (GetLicenses) HttpMethod() string                      { return "GET" }
 
 // @Route("/{version}/licensing/heartbeat", "POST")
 type PostLicenseHeartbeat struct {
@@ -10139,239 +9259,93 @@ type PostLicenseHeartbeat struct {
 	InstanceVersion  *string `json:"instanceVersion,omitempty"`
 }
 
+func (PostLicenseHeartbeat) CreateResponse() (r PostLicenseHeartbeatResponse) { return }
+func (PostLicenseHeartbeat) HttpMethod() string                               { return "POST" }
+
 // @Route("/{version}/account/licensing/status", "GET")
 type GetInstallationLicenseStatus struct {
 	RequestBase
 }
 
-type AccountCreated struct {
-	Email       EmailAddress `json:"email"`
-	DisplayName DisplayName  `json:"displayName"`
-	AccountId   AccountId    `json:"accountId"`
-	CreatedOn   UtcDateTime  `json:"createdOn"`
+func (GetInstallationLicenseStatus) CreateResponse() (r GetInstallationLicenseStatusResponse) { return }
+func (GetInstallationLicenseStatus) HttpMethod() string                                       { return "GET" }
+
+// @Route("/{version}/account/ai/service-users", "POST")
+type CreateAiServiceUserRequest struct {
+	RequestBase
+	/** @description A name people recognise, e.g. "Claude Code on my laptop". */
+	// @ApiMember(Description="A name people recognise, e.g. \"Claude Code on my laptop\".", IsRequired=true)
+	Name string `json:"name"`
+	/** @description Reach (account | project + projectId), rights (read | admin), envs (["TEST"] or ["TEST","PROD"]). */
+	// @ApiMember(Description="Reach (account | project + projectId), rights (read | admin), envs ([\"TEST\"] or [\"TEST\",\"PROD\"]).", IsRequired=true)
+	Scope AiScopeDto `json:"scope"`
 }
 
-type AccountProfileUpdated struct {
-	DisplayName     DisplayName   `json:"displayName"`
-	BillingEmail    *EmailAddress `json:"billingEmail,omitempty"`
-	OperationsEmail *EmailAddress `json:"operationsEmail,omitempty"`
-	SecurityEmail   *EmailAddress `json:"securityEmail,omitempty"`
+func (CreateAiServiceUserRequest) CreateResponse() (r CreateAiServiceUserResponse) { return }
+func (CreateAiServiceUserRequest) HttpMethod() string                              { return "POST" }
+
+// @Route("/{version}/account/ai/service-users", "GET")
+type ListAiServiceUsersRequest struct {
+	RequestBase
 }
 
-type AccountSetAsActive struct {
+func (ListAiServiceUsersRequest) CreateResponse() (r ListAiServiceUsersResponse) { return }
+func (ListAiServiceUsersRequest) HttpMethod() string                             { return "GET" }
+
+// @Route("/{version}/account/ai/service-users/{Id}/keys", "POST")
+type RotateAiServiceUserKeyRequest struct {
+	RequestBase
+	/** @description The service user id (aisu_…). */
+	// @ApiMember(Description="The service user id (aisu_…).", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional key id (aisk_…) to revoke in the same change — a rotation. */
+	// @ApiMember(Description="Optional key id (aisk_…) to revoke in the same change — a rotation.")
+	RevokeKeyId *string `json:"revokeKeyId,omitempty"`
 }
 
-type AccountValidationTokenIssued struct {
-	Expiration ExpirationToken `json:"expiration"`
+func (RotateAiServiceUserKeyRequest) CreateResponse() (r RotateAiServiceUserKeyResponse) { return }
+func (RotateAiServiceUserKeyRequest) HttpMethod() string                                 { return "POST" }
+
+// @Route("/{version}/account/ai/service-users/{Id}/keys/{KeyId}", "DELETE")
+type RevokeAiServiceUserKeyRequest struct {
+	RequestBase
+	/** @description The service user id (aisu_…). */
+	// @ApiMember(Description="The service user id (aisu_…).", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The key id (aisk_…) to revoke. */
+	// @ApiMember(Description="The key id (aisk_…) to revoke.", IsRequired=true)
+	KeyId string `json:"keyId"`
 }
 
-type AccountVerified struct {
+func (RevokeAiServiceUserKeyRequest) CreateResponse() (r EmptyResponse) { return }
+func (RevokeAiServiceUserKeyRequest) HttpMethod() string                { return "DELETE" }
+
+// @Route("/{version}/account/ai/service-users/{Id}", "DELETE")
+type DeleteAiServiceUserRequest struct {
+	RequestBase
+	/** @description The service user id (aisu_…). */
+	// @ApiMember(Description="The service user id (aisu_…).", IsRequired=true)
+	Id string `json:"id"`
 }
 
-type AccountBlocked struct {
-}
-
-type AccountSetAsInactive struct {
-}
-
-type AccountUnregistered struct {
-}
-
-type LicenseCreated struct {
-	License CodeMashLicense `json:"license"`
-}
-
-type ProjectCreated struct {
-	Id                    ProjectId       `json:"id"`
-	Name                  ProjectName     `json:"name"`
-	DatabaseIntegrationId IntegrationId   `json:"databaseIntegrationId"`
-	PrimaryRegion         *ProjectRegion  `json:"primaryRegion,omitempty"`
-	AdditionalRegions     []ProjectRegion `json:"additionalRegions,omitempty"`
-	Description           *string         `json:"description,omitempty"`
-	IsProvisioning        bool            `json:"isProvisioning,omitempty"`
-}
-
-type ProjectActivated struct {
-}
-
-type ProjectSuspendedByLicense struct {
-}
-
-type ProjectResumedFromLicenseSuspension struct {
-}
-
-type ProjectDisabled struct {
-}
-
-type ProjectDeleted struct {
-}
-
-type ProjectNameChanged struct {
-	ProjectName ProjectName `json:"projectName"`
-}
-
-type ProjectDescriptionChanged struct {
-	Description *string `json:"description,omitempty"`
-}
-
-type ProjectMarketingUrlChanged struct {
-	Url *DomainUrl `json:"url,omitempty"`
-}
-
-type ProjectAdminUrlChanged struct {
-	Url *DomainUrl `json:"url,omitempty"`
-}
-
-type ProjectLegalDocumentsChanged struct {
-	Documents ProjectLegalDocuments `json:"documents"`
-}
-
-type ProjectExposeLegalToAdminPortalChanged struct {
-	Exposed bool `json:"exposed,omitempty"`
-}
-
-type ProjectAdminPortalServiceUserAssigned struct {
-	ServiceUserId AuthId `json:"serviceUserId"`
-}
-
-type ProjectAllowedOriginsChanged struct {
-	Origins []DomainUrl `json:"origins,omitempty"`
-}
-
-type ProjectEnvironmentCreated struct {
-	Env   Env            `json:"env"`
-	Ranks map[string]int `json:"ranks"`
-}
-
-type ProjectEnvironmentDeleted struct {
-	Env   Env            `json:"env"`
-	Ranks map[string]int `json:"ranks"`
-}
-
-type ProjectEnvironmentRanksChanged struct {
-	Ranks map[string]int `json:"ranks"`
-}
-
-type ProjectDefaultLanguageChanged struct {
-	Language Language `json:"language"`
-}
-
-type ProjectLanguagesChanged struct {
-	Languages []Language `json:"languages"`
-}
-
-type ProjectLogoChanged struct {
-	Logo *ProjectLogo `json:"logo,omitempty"`
-}
-
-type ProjectIconChanged struct {
-	Icon *ProjectIcon `json:"icon,omitempty"`
-}
-
-type ProjectMainColorChanged struct {
-	Color BrandColor `json:"color"`
-}
-
-type ProjectAccentColorChanged struct {
-	Color BrandColor `json:"color"`
-}
-
-type ProjectRegionsChanged struct {
-	PrimaryRegion     *ProjectRegion  `json:"primaryRegion,omitempty"`
-	AdditionalRegions []ProjectRegion `json:"additionalRegions,omitempty"`
-}
-
-type ProjectCommunicationSet struct {
-	ProjectCommunication ProjectCommunication `json:"projectCommunication"`
-}
-
-type ProjectTimeZoneChanged struct {
-	TimeZone *TimeZone `json:"timeZone,omitempty"`
-}
-
-type ProjectPaymentZonesChanged struct {
-	PaymentZones []TimeZone `json:"paymentZones,omitempty"`
-}
-
-type ProjectCommunicationGroupSaved struct {
-	Group         GroupDefinition       `json:"group"`
-	Channel       CommunicationChannel  `json:"channel,omitempty"`
-	OriginChannel *CommunicationChannel `json:"originChannel,omitempty"`
-}
-
-type ProjectCommunicationTagFromGroupDeleted struct {
-	GroupTag   Tag `json:"groupTag"`
-	RemovedTag Tag `json:"removedTag"`
-}
-
-type ProjectCommunicationGroupDeleted struct {
-	GroupTag Tag `json:"groupTag"`
-}
-
-type ProjectCommunicationTagSaved struct {
-	Tag      TagDefinition         `json:"tag"`
-	GroupTag *Tag                  `json:"groupTag,omitempty"`
-	Channel  *CommunicationChannel `json:"channel,omitempty"`
-}
-
-type ProjectCommunicationTagDeleted struct {
-	Tag Tag `json:"tag"`
-}
-
-type CustomerCreated struct {
-	PaymentCustomerRef PaymentCustomerRef `json:"paymentCustomerRef"`
-}
-
-type SubscriptionChanged struct {
-	Subscription CodeMashManagedServiceSubscription `json:"subscription"`
-}
-
-type SubscriptionCanceled struct {
-	PaymentCustomerRef PaymentCustomerRef `json:"paymentCustomerRef"`
-	SubscriptionId     string             `json:"subscriptionId"`
-}
-
-type AccountTeamPolicyCreated struct {
-	Policy MembershipPolicy `json:"policy"`
-}
-
-type AccountTeamPolicyUpdated struct {
-	Policy MembershipPolicy `json:"policy"`
-}
-
-type AccountTeamPolicyDeleted struct {
-	PolicyId PolicyId `json:"policyId"`
-}
-
-type AccountTeamRoleCreated struct {
-	Role MembershipRole `json:"role"`
-}
-
-type AccountTeamRoleUpdated struct {
-	Role MembershipRole `json:"role"`
-}
-
-type AccountTeamRoleDeleted struct {
-	RoleId RoleId `json:"roleId"`
-}
-
-type AtlasUsageRecorded struct {
-	Record AtlasUsageRecord `json:"record"`
-}
-
-type UsageBillingIngestionFailed struct {
-	Failure UsageIngestionFailure `json:"failure"`
-}
+func (DeleteAiServiceUserRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteAiServiceUserRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/membership/disable", "GET")
 type DisableMembership struct {
 	CodeMashRequestBase
 }
 
+func (DisableMembership) CreateResponse() (r EmptyResponse) { return }
+func (DisableMembership) HttpMethod() string                { return "GET" }
+
 // @Route("/{version}/membership/enable", "GET")
 type EnableMembership struct {
 	CodeMashRequestBase
 }
+
+func (EnableMembership) CreateResponse() (r EmptyResponse) { return }
+func (EnableMembership) HttpMethod() string                { return "GET" }
 
 /** @description Membership */
 // @Route("/{version}/membership/users/{Id}/api-keys", "POST")
@@ -10393,6 +9367,9 @@ type IssueServiceUserApiKeyRequest struct {
 	Notes *string `json:"notes,omitempty"`
 }
 
+func (IssueServiceUserApiKeyRequest) CreateResponse() (r IssueServiceUserApiKeyResponse) { return }
+func (IssueServiceUserApiKeyRequest) HttpMethod() string                                 { return "POST" }
+
 /** @description Membership */
 // @Route("/{version}/membership/users/{Id}/api-keys", "GET")
 // @Api(Description="Membership")
@@ -10404,6 +9381,9 @@ type ListServiceUserApiKeysRequest struct {
 	// @ApiMember(Description="The service user's auth id.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (ListServiceUserApiKeysRequest) CreateResponse() (r ListServiceUserApiKeysResponse) { return }
+func (ListServiceUserApiKeysRequest) HttpMethod() string                                 { return "GET" }
 
 /** @description Membership */
 // @Route("/{version}/membership/users/{Id}/api-keys/{KeyId}", "DELETE")
@@ -10421,11 +9401,17 @@ type DeleteServiceUserApiKeyRequest struct {
 	KeyId int `json:"keyId"`
 }
 
+func (DeleteServiceUserApiKeyRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteServiceUserApiKeyRequest) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/membership/triggers/{triggerId}", "DELETE")
 // @DataContract
 type DeleteMembershipTrigger struct {
 	DeleteTrigger
 }
+
+func (DeleteMembershipTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DeleteMembershipTrigger) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/membership/triggers/{triggerId}/disable", "PATCH")
 // @DataContract
@@ -10433,11 +9419,17 @@ type DisableMembershipTrigger struct {
 	DisableTrigger
 }
 
+func (DisableMembershipTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DisableMembershipTrigger) HttpMethod() string                { return "PATCH" }
+
 // @Route("/{version}/membership/triggers/{triggerId}/enable", "PATCH")
 // @DataContract
 type EnableMembershipTrigger struct {
 	EnableTrigger
 }
+
+func (EnableMembershipTrigger) CreateResponse() (r EmptyResponse) { return }
+func (EnableMembershipTrigger) HttpMethod() string                { return "PATCH" }
 
 /** @description Gets membership trigger by specified Id */
 // @Route("/{version}/membership/triggers/{id}", "GET")
@@ -10446,6 +9438,9 @@ type GetMembershipTrigger struct {
 	GetTrigger
 }
 
+func (GetMembershipTrigger) CreateResponse() (r GetMembershipTriggerResponse) { return }
+func (GetMembershipTrigger) HttpMethod() string                               { return "GET" }
+
 /** @description Gets membership triggers */
 // @Route("/{version}/membership/triggers", "GET")
 // @Api(Description="Gets membership triggers")
@@ -10453,11 +9448,17 @@ type GetMembershipTriggers struct {
 	GetTriggers
 }
 
+func (GetMembershipTriggers) CreateResponse() (r GetMembershipTriggersResponse) { return }
+func (GetMembershipTriggers) HttpMethod() string                                { return "GET" }
+
 // @Route("/{version}/membership/triggers", "POST")
 // @DataContract
 type SaveMembershipTrigger struct {
 	SaveTrigger
 }
+
+func (SaveMembershipTrigger) CreateResponse() (r IdResponse) { return }
+func (SaveMembershipTrigger) HttpMethod() string             { return "POST" }
 
 /** @description Create a new custom role for project. */
 // @Route("/{version}/membership/roles", "POST")
@@ -10473,6 +9474,9 @@ type CreateRole struct {
 	Policies []string `json:"policies,omitempty"`
 }
 
+func (CreateRole) CreateResponse() (r IdResponse) { return }
+func (CreateRole) HttpMethod() string             { return "POST" }
+
 /** @description Deletes custom role from project. */
 // @Route("/{version}/membership/roles", "DELETE")
 // @Api(Description="Deletes custom role from project.")
@@ -10482,6 +9486,9 @@ type DeleteRole struct {
 	// @ApiMember(Description="Id of the role to delete, from get_roles.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteRole) CreateResponse() (r EmptyResponse) { return }
+func (DeleteRole) HttpMethod() string                { return "DELETE" }
 
 /** @description Gets project role details. */
 // @Route("/{version}/membership/roles/{Id}", "GET")
@@ -10493,12 +9500,18 @@ type GetRole struct {
 	Id string `json:"id"`
 }
 
+func (GetRole) CreateResponse() (r GetRoleResponse) { return }
+func (GetRole) HttpMethod() string                  { return "GET" }
+
 /** @description Gets project roles. */
 // @Route("/{version}/membership/roles", "GET")
 // @Api(Description="Gets project roles.")
 type GetRoles struct {
 	CodeMashRequestBase
 }
+
+func (GetRoles) CreateResponse() (r GetRolesResponse) { return }
+func (GetRoles) HttpMethod() string                   { return "GET" }
 
 /** @description Updates role policies */
 // @Route("/{version}/membership/roles", "PATCH")
@@ -10517,6 +9530,9 @@ type UpdateRolePolicies struct {
 	Policies []string `json:"policies,omitempty"`
 }
 
+func (UpdateRolePolicies) CreateResponse() (r EmptyResponse) { return }
+func (UpdateRolePolicies) HttpMethod() string                { return "PATCH" }
+
 /** @description Create a new custom policy for project. */
 // @Route("/{version}/membership/policies", "POST")
 // @Api(Description="Create a new custom policy for project.")
@@ -10533,6 +9549,9 @@ type CreatePolicy struct {
 	PolicyDocumentJson *string `json:"policyDocumentJson,omitempty"`
 }
 
+func (CreatePolicy) CreateResponse() (r IdResponse) { return }
+func (CreatePolicy) HttpMethod() string             { return "POST" }
+
 /** @description Deletes custom policy from project. */
 // @Route("/{version}/membership/policies", "DELETE")
 // @Api(Description="Deletes custom policy from project.")
@@ -10542,6 +9561,9 @@ type DeletePolicy struct {
 	// @ApiMember(Description="Public policy id, e.g. 'pol_database-read', from get_policies.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeletePolicy) CreateResponse() (r EmptyResponse) { return }
+func (DeletePolicy) HttpMethod() string                { return "DELETE" }
 
 /** @description Gets project policy details. */
 // @Route("/{version}/membership/policies/{Id}", "GET")
@@ -10553,12 +9575,18 @@ type GetPolicy struct {
 	Id string `json:"id"`
 }
 
+func (GetPolicy) CreateResponse() (r GetPolicyResponse) { return }
+func (GetPolicy) HttpMethod() string                    { return "GET" }
+
 /** @description Gets project policies. */
 // @Route("/{version}/membership/policies", "GET")
 // @Api(Description="Gets project policies.")
 type GetPolicies struct {
 	CodeMashRequestBase
 }
+
+func (GetPolicies) CreateResponse() (r GetPoliciesResponse) { return }
+func (GetPolicies) HttpMethod() string                      { return "GET" }
 
 /** @description Updates a custom policy for project. */
 // @Route("/{version}/membership/policies", "PUT")
@@ -10579,12 +9607,18 @@ type UpdatePolicy struct {
 	PolicyDocumentJson *string `json:"policyDocumentJson,omitempty"`
 }
 
+func (UpdatePolicy) CreateResponse() (r IdResponse) { return }
+func (UpdatePolicy) HttpMethod() string             { return "PUT" }
+
 /** @description Gets the project's passkey authentication settings. */
 // @Route("/{version}/membership/passkey/settings", "GET")
 // @Api(Description="Gets the project's passkey authentication settings.")
 type GetPasskeySettings struct {
 	CodeMashRequestBase
 }
+
+func (GetPasskeySettings) CreateResponse() (r GetPasskeySettingsResponse) { return }
+func (GetPasskeySettings) HttpMethod() string                             { return "GET" }
 
 /** @description Saves the project's passkey authentication settings. */
 // @Route("/{version}/membership/passkey/settings", "POST")
@@ -10620,6 +9654,9 @@ type SavePasskeySettings struct {
 	RpId *string `json:"rpId,omitempty"`
 }
 
+func (SavePasskeySettings) CreateResponse() (r EmptyResponse) { return }
+func (SavePasskeySettings) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/membership/integrations/{Id}", "DELETE")
 type DeleteMembershipIntegrationRequest struct {
 	CodeMashRequestBase
@@ -10627,6 +9664,9 @@ type DeleteMembershipIntegrationRequest struct {
 	// @ApiMember(Description="Integration id, from get_membership_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteMembershipIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteMembershipIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/membership/integrations/{Id}/disable", "PUT")
 type DisableMembershipIntegrationRequest struct {
@@ -10636,6 +9676,9 @@ type DisableMembershipIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisableMembershipIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableMembershipIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/membership/integrations/{Id}/enable", "PUT")
 type EnableMembershipIntegrationRequest struct {
 	CodeMashRequestBase
@@ -10643,6 +9686,9 @@ type EnableMembershipIntegrationRequest struct {
 	// @ApiMember(Description="Integration id, from get_membership_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnableMembershipIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableMembershipIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/membership/integrations/{id}", "GET")
 type GetMembershipIntegration struct {
@@ -10652,18 +9698,27 @@ type GetMembershipIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetMembershipIntegration) CreateResponse() (r GetMembershipIntegrationResponse) { return }
+func (GetMembershipIntegration) HttpMethod() string                                   { return "GET" }
+
 // @Route("/{version}/membership/integrations", "GET")
 type GetMembershipIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetMembershipIntegrations) CreateResponse() (r GetMembershipIntegrationsResponse) { return }
+func (GetMembershipIntegrations) HttpMethod() string                                    { return "GET" }
 
 // @Route("/{version}/membership/integrations", "POST")
 // @DataContract
 type SaveMembershipIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration MembershipIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveMembershipIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveMembershipIntegration) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/membership/integrations/{Id}/default", "PUT")
 type SetMembershipIntegrationAsDefaultRequest struct {
@@ -10673,12 +9728,18 @@ type SetMembershipIntegrationAsDefaultRequest struct {
 	Id string `json:"id"`
 }
 
+func (SetMembershipIntegrationAsDefaultRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetMembershipIntegrationAsDefaultRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Gets the project's membership authorization (role-assignment) settings. */
 // @Route("/{version}/membership/authorization", "GET")
 // @Api(Description="Gets the project's membership authorization (role-assignment) settings.")
 type GetAuthorizationSettings struct {
 	CodeMashRequestBase
 }
+
+func (GetAuthorizationSettings) CreateResponse() (r GetAuthorizationSettingsResponse) { return }
+func (GetAuthorizationSettings) HttpMethod() string                                   { return "GET" }
 
 /** @description Updates the project's membership authorization settings. */
 // @Route("/{version}/membership/authorization", "PUT")
@@ -10715,6 +9776,9 @@ type UpdateAuthorizationSettings struct {
 	MaxSpecial                  *int     `json:"maxSpecial,omitempty"`
 	AllowedSpecial              *string  `json:"allowedSpecial,omitempty"`
 }
+
+func (UpdateAuthorizationSettings) CreateResponse() (r EmptyResponse) { return }
+func (UpdateAuthorizationSettings) HttpMethod() string                { return "PUT" }
 
 /** @description Updates the project's membership password complexity policy. */
 // @Route("/{version}/membership/authorization/password-complexity", "PUT")
@@ -10756,12 +9820,18 @@ type UpdatePasswordComplexity struct {
 	AllowedSpecial *string `json:"allowedSpecial,omitempty"`
 }
 
+func (UpdatePasswordComplexity) CreateResponse() (r UpdatePasswordComplexityResponse) { return }
+func (UpdatePasswordComplexity) HttpMethod() string                                   { return "PUT" }
+
 /** @description Gets the project's configured membership authentication sign-in flows. */
 // @Route("/{version}/membership/authentication", "GET")
 // @Api(Description="Gets the project's configured membership authentication sign-in flows.")
 type GetAuthenticationSettings struct {
 	CodeMashRequestBase
 }
+
+func (GetAuthenticationSettings) CreateResponse() (r GetAuthenticationSettingsResponse) { return }
+func (GetAuthenticationSettings) HttpMethod() string                                    { return "GET" }
 
 /** @description Updates the project's membership authentication preferences. */
 // @Route("/{version}/membership/authentication", "PUT")
@@ -10779,103 +9849,8 @@ type UpdateAuthenticationSettings struct {
 	Modes []CredentialsSettingsModeDto `json:"modes,omitempty"`
 }
 
-type MembershipIntegrationSaved struct {
-	Integration MembershipIntegration `json:"integration"`
-}
-
-type MembershipIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type MembershipIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type MembershipIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MembershipIntegrationSetAsDefault struct {
-	Id IntegrationId `json:"id"`
-}
-
-type MembershipIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MembershipIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MembershipEstablished struct {
-}
-
-type MembershipEnabled struct {
-}
-
-type MembershipDisabled struct {
-}
-
-type SetUserRegistersAsRole struct {
-	ProjectId *ProjectId `json:"projectId,omitempty"`
-	Role      RoleName   `json:"role"`
-}
-
-type PolicyCreated struct {
-	Policy MembershipPolicy `json:"policy"`
-}
-
-type PolicyUpdated struct {
-	Policy MembershipPolicy `json:"policy"`
-}
-
-type PolicyDeleted struct {
-	PolicyId PolicyId `json:"policyId"`
-}
-
-type RoleCreated struct {
-	Role MembershipRole `json:"role"`
-}
-
-type RoleUpdated struct {
-	Role MembershipRole `json:"role"`
-}
-
-type RoleDeleted struct {
-	RoleId RoleId `json:"roleId"`
-}
-
-type MembershipTriggerSaved struct {
-	Trigger MembershipTrigger `json:"trigger"`
-}
-
-type MembershipTriggerMirrored struct {
-	Trigger Trigger `json:"trigger"`
-}
-
-type MembershipTriggerEnabled struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type MembershipTriggerDisabled struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type MembershipTriggerDeleted struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
+func (UpdateAuthenticationSettings) CreateResponse() (r EmptyResponse) { return }
+func (UpdateAuthenticationSettings) HttpMethod() string                { return "PUT" }
 
 /** @description Disable database service */
 // @Route("/{version}/database/disable", "GET")
@@ -10884,10 +9859,16 @@ type DisableDatabase struct {
 	CodeMashRequestBase
 }
 
+func (DisableDatabase) CreateResponse() (r EmptyResponse) { return }
+func (DisableDatabase) HttpMethod() string                { return "GET" }
+
 // @Route("/{version}/database/enable", "GET")
 type EnableDatabase struct {
 	CodeMashRequestBase
 }
+
+func (EnableDatabase) CreateResponse() (r EmptyResponse) { return }
+func (EnableDatabase) HttpMethod() string                { return "GET" }
 
 /** @description Delete database trigger */
 // @Route("/{version}/database/schemas/triggers/{triggerId}", "DELETE")
@@ -10897,6 +9878,9 @@ type DeleteSchemaTrigger struct {
 	DeleteTrigger
 }
 
+func (DeleteSchemaTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DeleteSchemaTrigger) HttpMethod() string                { return "DELETE" }
+
 /** @description Disable database trigger */
 // @Route("/{version}/database/schemas/triggers/{triggerId}/disable", "PATCH")
 // @Api(Description="Disable database trigger")
@@ -10904,6 +9888,9 @@ type DeleteSchemaTrigger struct {
 type DisableSchemaTrigger struct {
 	DisableTrigger
 }
+
+func (DisableSchemaTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DisableSchemaTrigger) HttpMethod() string                { return "PATCH" }
 
 /** @description Enable database trigger */
 // @Route("/{version}/database/schemas/triggers/{triggerId}/enable", "PATCH")
@@ -10913,12 +9900,18 @@ type EnableSchemaTrigger struct {
 	EnableTrigger
 }
 
+func (EnableSchemaTrigger) CreateResponse() (r EmptyResponse) { return }
+func (EnableSchemaTrigger) HttpMethod() string                { return "PATCH" }
+
 /** @description Gets database trigger by specified Id */
 // @Route("/{version}/database/schemas/triggers/{id}", "GET")
 // @Api(Description="Gets database trigger by specified Id")
 type GetSchemaTrigger struct {
 	GetTrigger
 }
+
+func (GetSchemaTrigger) CreateResponse() (r GetSchemaTriggerResponse) { return }
+func (GetSchemaTrigger) HttpMethod() string                           { return "GET" }
 
 /** @description Gets database triggers */
 // @Route("/{version}/database/schemas/triggers", "GET")
@@ -10927,11 +9920,17 @@ type GetSchemaTriggers struct {
 	GetTriggers
 }
 
+func (GetSchemaTriggers) CreateResponse() (r GetSchemaTriggersResponse) { return }
+func (GetSchemaTriggers) HttpMethod() string                            { return "GET" }
+
 // @Route("/{version}/database/schemas/triggers", "POST")
 // @DataContract
 type SaveSchemaTrigger struct {
 	SaveTrigger
 }
+
+func (SaveSchemaTrigger) CreateResponse() (r IdResponse) { return }
+func (SaveSchemaTrigger) HttpMethod() string             { return "POST" }
 
 /** @description Delete database taxonomy */
 // @Route("/{version}/database/taxonomies/{Id}", "DELETE")
@@ -10943,6 +9942,9 @@ type DeleteDatabaseTaxonomyRequest struct {
 	Id string `json:"id"`
 }
 
+func (DeleteDatabaseTaxonomyRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteDatabaseTaxonomyRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Gets database taxonomy by id */
 // @Route("/{version}/database/taxonomies/{id}", "GET")
 // @Api(Description="Gets database taxonomy by id")
@@ -10953,6 +9955,9 @@ type GetDatabaseTaxonomy struct {
 	Id string `json:"id"`
 }
 
+func (GetDatabaseTaxonomy) CreateResponse() (r GetDatabaseTaxonomyResponse) { return }
+func (GetDatabaseTaxonomy) HttpMethod() string                              { return "GET" }
+
 /** @description Gets database taxonomies */
 // @Route("/{version}/database/taxonomies", "GET")
 // @Api(Description="Gets database taxonomies")
@@ -10960,6 +9965,9 @@ type GetDatabaseTaxonomies struct {
 	CodeMashListPaginationRequestBase
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
 }
+
+func (GetDatabaseTaxonomies) CreateResponse() (r GetDatabaseTaxonomiesResponse) { return }
+func (GetDatabaseTaxonomies) HttpMethod() string                                { return "GET" }
 
 /** @description Returns the single-parent taxonomy structure tree */
 // @Route("/{version}/database/taxonomies/tree", "GET")
@@ -10976,6 +9984,9 @@ type GetDatabaseTaxonomyTreeRequest struct {
 	// @ApiMember(Description="Optional database integration id. When omitted, the project's default database integration is used.")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetDatabaseTaxonomyTreeRequest) CreateResponse() (r GetDatabaseTaxonomyTreeResponse) { return }
+func (GetDatabaseTaxonomyTreeRequest) HttpMethod() string                                  { return "GET" }
 
 /** @description Creates or updates a database taxonomy */
 // @Route("/{version}/database/taxonomies", "POST")
@@ -11013,6 +10024,9 @@ type SaveDatabaseTaxonomyRequest struct {
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 
+func (SaveDatabaseTaxonomyRequest) CreateResponse() (r IdResponse) { return }
+func (SaveDatabaseTaxonomyRequest) HttpMethod() string             { return "POST" }
+
 /** @description Delete a single term from a taxonomy by id */
 // @Route("/{version}/database/taxonomies/{TaxonomyId}/terms/{Id}", "DELETE")
 // @Api(Description="Delete a single term from a taxonomy by id")
@@ -11032,6 +10046,9 @@ type DeleteDatabaseTaxonomyTermRequest struct {
 	// @ApiMember(Description="Optional database integration id. When omitted, the project's default database integration is used.")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (DeleteDatabaseTaxonomyTermRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteDatabaseTaxonomyTermRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Delete many terms in a taxonomy matching the given filter */
 // @Route("/{version}/database/taxonomies/{TaxonomyId}/terms/many", "DELETE")
@@ -11053,6 +10070,9 @@ type DeleteManyDatabaseTaxonomyTermsRequest struct {
 	Filter string `json:"filter"`
 }
 
+func (DeleteManyDatabaseTaxonomyTermsRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteManyDatabaseTaxonomyTermsRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Get a single term from a taxonomy by id */
 // @Route("/{version}/database/taxonomies/{TaxonomyId}/terms/{Id}", "GET")
 // @Api(Description="Get a single term from a taxonomy by id")
@@ -11073,6 +10093,9 @@ type GetDatabaseTaxonomyTermRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetDatabaseTaxonomyTermRequest) CreateResponse() (r GetDatabaseTaxonomyTermResponse) { return }
+func (GetDatabaseTaxonomyTermRequest) HttpMethod() string                                  { return "GET" }
+
 /** @description Returns a merged term tree across a taxonomy and its child taxonomies */
 // @Route("/{version}/database/taxonomies/{TaxonomyName}/merged-tree", "GET")
 // @Api(Description="Returns a merged term tree across a taxonomy and its child taxonomies")
@@ -11088,6 +10111,11 @@ type GetDatabaseMergedTermTreeRequest struct {
 	// @ApiMember(Description="Optional database integration id. When omitted, the project's default database integration is used.")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetDatabaseMergedTermTreeRequest) CreateResponse() (r GetDatabaseMergedTermTreeResponse) {
+	return
+}
+func (GetDatabaseMergedTermTreeRequest) HttpMethod() string { return "GET" }
 
 /** @description Returns the whole term tree of a taxonomy (or a sub-tree) in one call */
 // @Route("/{version}/database/taxonomies/{TaxonomyName}/terms/tree", "GET")
@@ -11113,6 +10141,11 @@ type GetDatabaseTaxonomyTermTreeRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetDatabaseTaxonomyTermTreeRequest) CreateResponse() (r GetDatabaseTaxonomyTermTreeResponse) {
+	return
+}
+func (GetDatabaseTaxonomyTermTreeRequest) HttpMethod() string { return "GET" }
+
 /** @description Insert a single term into a taxonomy */
 // @Route("/{version}/database/taxonomies/{TaxonomyId}/terms", "POST")
 // @Api(Description="Insert a single term into a taxonomy")
@@ -11132,6 +10165,9 @@ type SaveDatabaseTaxonomyTermRequest struct {
 	// @ApiMember(Description="The term to insert, as a MongoDB extended-JSON document string (a raw JSON object). Supported term fields: name (string, or a {lang:value} map — required); description; order (integer sort position, lower shows first — omit for unordered); parentId (id of the single parent term); multiParents (\"additional categories\": array of {taxonomyId, parentId}). The server stamps taxonomyId/taxonomyName automatically — do not include them. Example: {\"name\":\"France\",\"order\":1}.", IsRequired=true)
 	Document string `json:"document"`
 }
+
+func (SaveDatabaseTaxonomyTermRequest) CreateResponse() (r IdResponse) { return }
+func (SaveDatabaseTaxonomyTermRequest) HttpMethod() string             { return "POST" }
 
 /** @description Update a single term in a taxonomy by id */
 // @Route("/{version}/database/taxonomies/{TaxonomyId}/terms/{Id}", "PUT")
@@ -11156,6 +10192,9 @@ type UpdateDatabaseTaxonomyTermRequest struct {
 	// @ApiMember(Description="Partial update document as MongoDB extended-JSON (a raw JSON object of fields to change), applied with $set — only the given fields change. Updatable term fields: name (string or {lang:value} map); description; order (integer sort position, lower shows first — use this to numerate/rank terms; set null to clear); parentId (single parent term id — a term from THIS taxonomy's parent taxonomy; e.g. link a country to its region by setting the country term's parentId to the region term id); multiParents (\"additional categories\": array of {taxonomyId, parentId}). Example to rank a term: {\"order\":1}.", IsRequired=true)
 	Update string `json:"update"`
 }
+
+func (UpdateDatabaseTaxonomyTermRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateDatabaseTaxonomyTermRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Creates every collection and taxonomy of a compiled IF bundle, linked and published */
 // @Route("/{version}/database/schemas/apply-bundle", "POST")
@@ -11185,6 +10224,11 @@ type ApplyDatabaseSchemaBundleRequest struct {
 	Publish bool `json:"publish,omitempty"`
 }
 
+func (ApplyDatabaseSchemaBundleRequest) CreateResponse() (r ApplyDatabaseSchemaBundleResponse) {
+	return
+}
+func (ApplyDatabaseSchemaBundleRequest) HttpMethod() string { return "POST" }
+
 /** @description Delete database schema (collection) */
 // @Route("/{version}/database/schemas/{Id}", "DELETE")
 // @Api(Description="Delete database schema (collection)")
@@ -11194,6 +10238,9 @@ type DeleteDatabaseSchemaRequest struct {
 	// @ApiMember(Description="Schema id to delete, from get_database_schemas.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteDatabaseSchemaRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteDatabaseSchemaRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Discards the working-copy draft of a database schema without publishing */
 // @Route("/{version}/database/schemas/{Id}/draft", "DELETE")
@@ -11206,6 +10253,9 @@ type DiscardDatabaseSchemaDraftRequest struct {
 	// @ApiMember(Description="Schema id whose draft to discard, from get_database_schemas.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DiscardDatabaseSchemaDraftRequest) CreateResponse() (r EmptyResponse) { return }
+func (DiscardDatabaseSchemaDraftRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Gets database schema by id */
 // @Route("/{version}/database/schemas/{id}", "GET")
@@ -11223,6 +10273,9 @@ type GetDatabaseSchema struct {
 	Version *int `json:"version,omitempty"`
 }
 
+func (GetDatabaseSchema) CreateResponse() (r GetDatabaseSchemaResponse) { return }
+func (GetDatabaseSchema) HttpMethod() string                            { return "GET" }
+
 /** @description Gets database schemas (collections) */
 // @Route("/{version}/database/schemas", "GET")
 // @Api(Description="Gets database schemas (collections)")
@@ -11230,6 +10283,9 @@ type GetDatabaseSchemas struct {
 	CodeMashListPaginationRequestBase
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
 }
+
+func (GetDatabaseSchemas) CreateResponse() (r GetDatabaseSchemasResponse) { return }
+func (GetDatabaseSchemas) HttpMethod() string                             { return "GET" }
 
 /** @description Gets the current draft of a database schema */
 // @Route("/{version}/database/schemas/{Id}/draft", "GET")
@@ -11243,6 +10299,9 @@ type GetDatabaseSchemaDraft struct {
 	Id string `json:"id"`
 }
 
+func (GetDatabaseSchemaDraft) CreateResponse() (r GetDatabaseSchemaDraftResponse) { return }
+func (GetDatabaseSchemaDraft) HttpMethod() string                                 { return "GET" }
+
 /** @description Gets database schema records-list display settings */
 // @Route("/{version}/database/schemas/{Id}/list-settings", "GET")
 // @Api(Description="Gets database schema records-list display settings")
@@ -11254,6 +10313,11 @@ type GetDatabaseSchemaListSettings struct {
 	// @ApiMember(Description="Schema id from get_database_schemas.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (GetDatabaseSchemaListSettings) CreateResponse() (r GetDatabaseSchemaListSettingsResponse) {
+	return
+}
+func (GetDatabaseSchemaListSettings) HttpMethod() string { return "GET" }
 
 /** @description Structural diff between two published versions of a database schema */
 // @Route("/{version}/database/schemas/{Id}/versions/diff", "GET")
@@ -11275,6 +10339,9 @@ type GetDatabaseSchemaVersionDiff struct {
 	ToVersion int `json:"toVersion"`
 }
 
+func (GetDatabaseSchemaVersionDiff) CreateResponse() (r GetDatabaseSchemaVersionDiffResponse) { return }
+func (GetDatabaseSchemaVersionDiff) HttpMethod() string                                       { return "GET" }
+
 /** @description Lists published version summaries for a database schema */
 // @Route("/{version}/database/schemas/{Id}/versions", "GET")
 // @Api(Description="Lists published version summaries for a database schema")
@@ -11287,6 +10354,9 @@ type GetDatabaseSchemaVersions struct {
 	Id string `json:"id"`
 }
 
+func (GetDatabaseSchemaVersions) CreateResponse() (r GetDatabaseSchemaVersionsResponse) { return }
+func (GetDatabaseSchemaVersions) HttpMethod() string                                    { return "GET" }
+
 // @Route("/{version}/database/schemas/{Id}/publish", "POST")
 // @DataContract
 type PublishDatabaseSchemaRequest struct {
@@ -11296,6 +10366,9 @@ type PublishDatabaseSchemaRequest struct {
 	// @DataMember
 	Confirmed bool `json:"confirmed,omitempty"`
 }
+
+func (PublishDatabaseSchemaRequest) CreateResponse() (r EmptyResponse) { return }
+func (PublishDatabaseSchemaRequest) HttpMethod() string                { return "POST" }
 
 /** @description Renames a database schema (collection) */
 // @Route("/{version}/database/schemas/{Id}/rename", "PUT")
@@ -11316,6 +10389,9 @@ type RenameDatabaseSchemaRequest struct {
 	// @ApiMember(Description="When true (default), rejects the rename if another schema already owns the derived slug. Leave true unless explicitly asked to bypass the uniqueness check.")
 	RenameUniqueName bool `json:"renameUniqueName,omitempty"`
 }
+
+func (RenameDatabaseSchemaRequest) CreateResponse() (r EmptyResponse) { return }
+func (RenameDatabaseSchemaRequest) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/database/schemas", "POST")
 // @DataContract
@@ -11343,6 +10419,9 @@ type SaveDatabaseSchemaRequest struct {
 	Settings *SchemaSettingsDto `json:"settings,omitempty"`
 }
 
+func (SaveDatabaseSchemaRequest) CreateResponse() (r IdResponse) { return }
+func (SaveDatabaseSchemaRequest) HttpMethod() string             { return "POST" }
+
 /** @description Saves the working-copy draft of a database schema */
 // @Route("/{version}/database/schemas/{Id}/draft", "PUT")
 // @Api(Description="Saves the working-copy draft of a database schema")
@@ -11363,6 +10442,9 @@ type UpdateDatabaseSchemaDraftRequest struct {
 	VisualSchema *string `json:"visualSchema,omitempty"`
 }
 
+func (UpdateDatabaseSchemaDraftRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateDatabaseSchemaDraftRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Updates database schema records-list display settings */
 // @Route("/{version}/database/schemas/{Id}/list-settings", "PUT")
 // @Api(Description="Updates database schema records-list display settings")
@@ -11378,6 +10460,9 @@ type UpdateDatabaseSchemaListSettingsRequest struct {
 	// @ApiMember(Description="The complete new list settings object (full replace).", IsRequired=true)
 	Settings SchemaListSettingsDto `json:"settings"`
 }
+
+func (UpdateDatabaseSchemaListSettingsRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateDatabaseSchemaListSettingsRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Updates database schema settings */
 // @Route("/{version}/database/schemas/{Id}/settings", "PUT")
@@ -11395,6 +10480,9 @@ type UpdateDatabaseSchemaSettingsRequest struct {
 	Settings SchemaSettingsDto `json:"settings"`
 }
 
+func (UpdateDatabaseSchemaSettingsRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateDatabaseSchemaSettingsRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/aggregate", "POST")
 // @Api(Description="Database")
@@ -11408,6 +10496,9 @@ type AggregateRecords struct {
 	// @ApiMember(Description="The aggregation pipeline as a MongoDB extended-JSON array of stages.", IsRequired=true)
 	Pipeline string `json:"pipeline"`
 }
+
+func (AggregateRecords) CreateResponse() (r AggregateRecordsResponse) { return }
+func (AggregateRecords) HttpMethod() string                           { return "POST" }
 
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/{id}/responsibility", "PUT")
@@ -11426,6 +10517,9 @@ type ChangeRecordResponsibility struct {
 	NewResponsibleUserId string `json:"newResponsibleUserId"`
 }
 
+func (ChangeRecordResponsibility) CreateResponse() (r EmptyResponse) { return }
+func (ChangeRecordResponsibility) HttpMethod() string                { return "PUT" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/count", "GET")
 // @Api(Description="Database")
@@ -11441,6 +10535,9 @@ type CountRecords struct {
 	SchemaVersion *int    `json:"schemaVersion,omitempty"`
 }
 
+func (CountRecords) CreateResponse() (r CountRecordsResponse) { return }
+func (CountRecords) HttpMethod() string                       { return "GET" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/many", "DELETE")
 // @Api(Description="Database")
@@ -11455,6 +10552,9 @@ type DeleteManyRecords struct {
 	Filter string `json:"filter"`
 }
 
+func (DeleteManyRecords) CreateResponse() (r EmptyResponse) { return }
+func (DeleteManyRecords) HttpMethod() string                { return "DELETE" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/{id}", "DELETE")
 // @Api(Description="Database")
@@ -11468,6 +10568,9 @@ type DeleteRecord struct {
 	Id                    string  `json:"id"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (DeleteRecord) CreateResponse() (r EmptyResponse) { return }
+func (DeleteRecord) HttpMethod() string                { return "DELETE" }
 
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/distinct", "GET")
@@ -11487,6 +10590,9 @@ type DistinctRecordValues struct {
 	SchemaVersion *int    `json:"schemaVersion,omitempty"`
 }
 
+func (DistinctRecordValues) CreateResponse() (r DistinctRecordValuesResponse) { return }
+func (DistinctRecordValues) HttpMethod() string                               { return "GET" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/aggregates/{aggregateId}/execute", "POST")
 // @Api(Description="Database")
@@ -11503,6 +10609,9 @@ type ExecuteRecordsAggregate struct {
 	// @ApiMember(Description="Optional key/value substitutions for {TokenKey} placeholders in the saved pipeline.")
 	Tokens map[string]string `json:"tokens,omitempty"`
 }
+
+func (ExecuteRecordsAggregate) CreateResponse() (r ExecuteRecordsAggregateResponse) { return }
+func (ExecuteRecordsAggregate) HttpMethod() string                                  { return "POST" }
 
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}", "GET")
@@ -11525,6 +10634,9 @@ type FindRecords struct {
 	SortOrder     *int        `json:"sortOrder,omitempty"`
 }
 
+func (FindRecords) CreateResponse() (r FindRecordsResponse) { return }
+func (FindRecords) HttpMethod() string                      { return "GET" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/{id}", "GET")
 // @Api(Description="Database")
@@ -11538,6 +10650,9 @@ type FindOneRecord struct {
 	Id                    string  `json:"id"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (FindOneRecord) CreateResponse() (r FindOneRecordResponse) { return }
+func (FindOneRecord) HttpMethod() string                        { return "GET" }
 
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/indexes", "GET")
@@ -11553,6 +10668,9 @@ type GetCollectionIndexes struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetCollectionIndexes) CreateResponse() (r GetCollectionIndexesResponse) { return }
+func (GetCollectionIndexes) HttpMethod() string                               { return "GET" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/many", "POST")
 // @Api(Description="Database")
@@ -11567,6 +10685,9 @@ type InsertManyRecords struct {
 	Documents string `json:"documents"`
 }
 
+func (InsertManyRecords) CreateResponse() (r EmptyResponse) { return }
+func (InsertManyRecords) HttpMethod() string                { return "POST" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}", "POST")
 // @Api(Description="Database")
@@ -11580,6 +10701,9 @@ type InsertRecord struct {
 	// @ApiMember(Description="The record to insert, as a MongoDB extended-JSON document string.", IsRequired=true)
 	Document string `json:"document"`
 }
+
+func (InsertRecord) CreateResponse() (r IdResponse) { return }
+func (InsertRecord) HttpMethod() string             { return "POST" }
 
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/{id}/replace", "PUT")
@@ -11598,6 +10722,9 @@ type ReplaceRecord struct {
 	Replacement string `json:"replacement"`
 }
 
+func (ReplaceRecord) CreateResponse() (r EmptyResponse) { return }
+func (ReplaceRecord) HttpMethod() string                { return "PUT" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/seed", "POST")
 // @Api(Description="Database")
@@ -11611,6 +10738,9 @@ type SeedCollectionRecords struct {
 	// @ApiMember(Description="JSON array of {collectionName, count?, documents?}. count applies to dummy mode (max 100 per collection); documents (extended-JSON objects, may contain $seedRef placeholders) apply to realistic mode.", IsRequired=true)
 	Collections string `json:"collections"`
 }
+
+func (SeedCollectionRecords) CreateResponse() (r SeedCollectionRecordsResponse) { return }
+func (SeedCollectionRecords) HttpMethod() string                                { return "POST" }
 
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/many", "PUT")
@@ -11629,6 +10759,9 @@ type UpdateManyRecords struct {
 	Update string `json:"update"`
 }
 
+func (UpdateManyRecords) CreateResponse() (r EmptyResponse) { return }
+func (UpdateManyRecords) HttpMethod() string                { return "PUT" }
+
 /** @description Database */
 // @Route("/{version}/database/collections/{collectionName}/{id}", "PUT")
 // @Api(Description="Database")
@@ -11646,6 +10779,9 @@ type UpdateOneRecord struct {
 	Update string `json:"update"`
 }
 
+func (UpdateOneRecord) CreateResponse() (r EmptyResponse) { return }
+func (UpdateOneRecord) HttpMethod() string                { return "PUT" }
+
 /** @description Delete integration for particular project */
 // @Route("/{version}/database/integrations/{Id}", "DELETE")
 // @Api(Description="Delete integration for particular project")
@@ -11655,6 +10791,9 @@ type DeleteDatabaseIntegrationRequest struct {
 	// @ApiMember(Description="Database integration id to delete, from get_database_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteDatabaseIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteDatabaseIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Disable integration for particular project */
 // @Route("/{version}/database/integrations/{Id}/disable", "PUT")
@@ -11666,6 +10805,9 @@ type DisableDatabaseIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisableDatabaseIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableDatabaseIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Enable integration for particular project */
 // @Route("/{version}/database/integrations/{Id}/enable", "PUT")
 // @Api(Description="Enable integration for particular project")
@@ -11675,6 +10817,9 @@ type EnableDatabaseIntegrationRequest struct {
 	// @ApiMember(Description="Database integration id to enable, from get_database_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnableDatabaseIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableDatabaseIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Gets integration by specified Id */
 // @Route("/{version}/database/integrations/{id}", "GET")
@@ -11686,6 +10831,9 @@ type GetDatabaseIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetDatabaseIntegration) CreateResponse() (r GetDatabaseIntegrationResponse) { return }
+func (GetDatabaseIntegration) HttpMethod() string                                 { return "GET" }
+
 /** @description Gets database integrations */
 // @Route("/{version}/database/integrations", "GET")
 // @Api(Description="Gets database integrations")
@@ -11694,6 +10842,9 @@ type GetDatabaseIntegrations struct {
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
 }
 
+func (GetDatabaseIntegrations) CreateResponse() (r GetDatabaseIntegrationsResponse) { return }
+func (GetDatabaseIntegrations) HttpMethod() string                                  { return "GET" }
+
 /** @description Returns the Flex tiers this account is entitled to pick */
 // @Route("/{version}/database/integrations/flex-tiers", "GET")
 // @Api(Description="Returns the Flex tiers this account is entitled to pick")
@@ -11701,11 +10852,19 @@ type GetAllowedFlexTiers struct {
 	CodeMashRequestBase
 }
 
+func (GetAllowedFlexTiers) CreateResponse() (r GetAllowedFlexTiersResponse) { return }
+func (GetAllowedFlexTiers) HttpMethod() string                              { return "GET" }
+
 // @Route("/{version}/database/integrations/{Id}/connection-string", "GET")
 type RevealManagedFlexConnectionString struct {
 	CodeMashRequestBase
 	Id string `json:"id"`
 }
+
+func (RevealManagedFlexConnectionString) CreateResponse() (r RevealManagedFlexConnectionStringResponse) {
+	return
+}
+func (RevealManagedFlexConnectionString) HttpMethod() string { return "GET" }
 
 /** @description Saves database integration */
 // @Route("/{version}/database/integrations", "POST")
@@ -11714,8 +10873,11 @@ type RevealManagedFlexConnectionString struct {
 type SaveDatabaseIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration DatabaseIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveDatabaseIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveDatabaseIntegration) HttpMethod() string             { return "POST" }
 
 /** @description Sets integration as default */
 // @Route("/{version}/database/integrations/{Id}/default", "PUT")
@@ -11727,6 +10889,9 @@ type SetDatabaseIntegrationAsDefaultRequest struct {
 	Id string `json:"id"`
 }
 
+func (SetDatabaseIntegrationAsDefaultRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetDatabaseIntegrationAsDefaultRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Test database integration */
 // @Route("/{version}/database/integrations/test", "POST")
 // @Api(Description="Test database integration")
@@ -11736,6 +10901,9 @@ type TestDatabaseIntegration struct {
 	// @ApiMember(Description="Database integration id to test, from get_database_integrations.", IsRequired=true)
 	IntegrationId string `json:"integrationId"`
 }
+
+func (TestDatabaseIntegration) CreateResponse() (r TestDatabaseIntegrationResponse) { return }
+func (TestDatabaseIntegration) HttpMethod() string                                  { return "POST" }
 
 /** @description Database */
 // @Route("/{version}/database/imports", "POST")
@@ -11761,6 +10929,9 @@ type CreateCollectionImport struct {
 	Mapping []ImportColumnMappingDto `json:"mapping"`
 }
 
+func (CreateCollectionImport) CreateResponse() (r IdResponse) { return }
+func (CreateCollectionImport) HttpMethod() string             { return "POST" }
+
 /** @description Database */
 // @Route("/{version}/database/imports/{Id}", "DELETE")
 // @Api(Description="Database")
@@ -11771,6 +10942,9 @@ type DeleteCollectionImportRequest struct {
 	Id                    string  `json:"id"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (DeleteCollectionImportRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteCollectionImportRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Database */
 // @Route("/{version}/database/imports/{Id}", "GET")
@@ -11783,6 +10957,9 @@ type GetCollectionImport struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetCollectionImport) CreateResponse() (r GetCollectionImportResponse) { return }
+func (GetCollectionImport) HttpMethod() string                              { return "GET" }
+
 /** @description Database */
 // @Route("/{version}/database/imports", "GET")
 // @Api(Description="Database")
@@ -11790,6 +10967,9 @@ type GetCollectionImports struct {
 	CodeMashListPaginationRequestBase
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetCollectionImports) CreateResponse() (r GetCollectionImportsResponse) { return }
+func (GetCollectionImports) HttpMethod() string                               { return "GET" }
 
 /** @description Database */
 // @Route("/{version}/database/imports/upload-url", "POST")
@@ -11801,6 +10981,9 @@ type RequestImportUploadUrlRequest struct {
 	// @ApiMember(Description="The original CSV file name, e.g. people.csv.", IsRequired=true)
 	FileName string `json:"fileName"`
 }
+
+func (RequestImportUploadUrlRequest) CreateResponse() (r RequestImportUploadUrlResponse) { return }
+func (RequestImportUploadUrlRequest) HttpMethod() string                                 { return "POST" }
 
 /** @description Database */
 // @Route("/{version}/database/imports/analyze", "POST")
@@ -11818,6 +11001,9 @@ type AnalyzeImportFileRequest struct {
 	HasHeader bool `json:"hasHeader,omitempty"`
 }
 
+func (AnalyzeImportFileRequest) CreateResponse() (r AnalyzeImportFileResponse) { return }
+func (AnalyzeImportFileRequest) HttpMethod() string                            { return "POST" }
+
 /** @description Delete saved Mongo aggregation */
 // @Route("/{version}/database/aggregates/{Id}", "DELETE")
 // @Api(Description="Delete saved Mongo aggregation")
@@ -11834,6 +11020,9 @@ type DeleteDatabaseAggregateRequest struct {
 	SchemaId string `json:"schemaId"`
 }
 
+func (DeleteDatabaseAggregateRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteDatabaseAggregateRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Get saved Mongo aggregation by id */
 // @Route("/{version}/database/aggregates/{Id}", "GET")
 // @Api(Description="Get saved Mongo aggregation by id")
@@ -11847,6 +11036,9 @@ type GetDatabaseAggregate struct {
 	SchemaId string `json:"schemaId"`
 }
 
+func (GetDatabaseAggregate) CreateResponse() (r GetDatabaseAggregateResponse) { return }
+func (GetDatabaseAggregate) HttpMethod() string                               { return "GET" }
+
 /** @description Lists saved Mongo aggregations for a schema */
 // @Route("/{version}/database/aggregates", "GET")
 // @Api(Description="Lists saved Mongo aggregations for a schema")
@@ -11857,6 +11049,9 @@ type GetDatabaseAggregates struct {
 	SchemaId   string      `json:"schemaId"`
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
 }
+
+func (GetDatabaseAggregates) CreateResponse() (r GetDatabaseAggregatesResponse) { return }
+func (GetDatabaseAggregates) HttpMethod() string                                { return "GET" }
 
 /** @description Creates or updates a saved Mongo aggregation */
 // @Route("/{version}/database/aggregates", "POST")
@@ -11886,6 +11081,9 @@ type SaveDatabaseAggregateRequest struct {
 	Pipeline string `json:"pipeline"`
 }
 
+func (SaveDatabaseAggregateRequest) CreateResponse() (r IdResponse) { return }
+func (SaveDatabaseAggregateRequest) HttpMethod() string             { return "POST" }
+
 /** @description Test-run an aggregation pipeline with caller-supplied tokens */
 // @Route("/{version}/database/aggregates/test", "POST")
 // @Api(Description="Test-run an aggregation pipeline with caller-supplied tokens")
@@ -11910,185 +11108,8 @@ type TestDatabaseAggregateRequest struct {
 	Tokens map[string]string `json:"tokens,omitempty"`
 }
 
-type MongoDbAggregateCreated struct {
-	Aggregate MongoDbAggregate `json:"aggregate"`
-}
-
-type MongoDbAggregateUpdated struct {
-	Aggregate MongoDbAggregate `json:"aggregate"`
-}
-
-type MongoDbAggregateDeleted struct {
-	SchemaId SchemaId           `json:"schemaId"`
-	Id       MongoDbAggregateId `json:"id"`
-}
-
-type DatabaseEstablished struct {
-}
-
-type DatabaseEnabled struct {
-}
-
-type DatabaseDisabled struct {
-}
-
-type DatabaseIntegrationSaved struct {
-	Integration DatabaseIntegration `json:"integration"`
-}
-
-type DatabaseIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type DatabaseIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type DatabaseIntegrationSetAsDefault struct {
-	Env Env           `json:"env"`
-	Id  IntegrationId `json:"id"`
-}
-
-type DatabaseIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type DatabaseIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type DatabaseIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type DatabaseIntegrationProvisioningStarted struct {
-	IntegrationId    IntegrationId `json:"integrationId"`
-	AtlasProjectId   string        `json:"atlasProjectId"`
-	AtlasClusterName string        `json:"atlasClusterName"`
-}
-
-type DatabaseIntegrationProvisioningCompleted struct {
-	IntegrationId            IntegrationId `json:"integrationId"`
-	ConnectionStringTemplate string        `json:"connectionStringTemplate"`
-}
-
-type DatabaseIntegrationProvisioningFailed struct {
-	IntegrationId IntegrationId `json:"integrationId"`
-	Reason        string        `json:"reason"`
-	Retryable     bool          `json:"retryable,omitempty"`
-}
-
-type DatabaseIntegrationDeprovisioned struct {
-	IntegrationId    IntegrationId `json:"integrationId"`
-	AtlasProjectId   string        `json:"atlasProjectId"`
-	AtlasClusterName string        `json:"atlasClusterName"`
-}
-
-type ProjectStatusChanged struct {
-	Status ProjectStatus `json:"status,omitempty"`
-}
-
-type SchemaCreated struct {
-	Schema Schema `json:"schema"`
-}
-
-type SchemaMirrored struct {
-	Schema Schema `json:"schema"`
-}
-
-type SchemaDraftUpdated struct {
-	Id    SchemaId    `json:"id"`
-	Draft SchemaDraft `json:"draft"`
-	Env   Env         `json:"env"`
-}
-
-type SchemaDraftDiscarded struct {
-	Id  SchemaId `json:"id"`
-	Env Env      `json:"env"`
-}
-
-type SchemaVersionPublished struct {
-	Id      SchemaId               `json:"id"`
-	Version PublishedSchemaVersion `json:"version"`
-	Diff    SchemaDiff             `json:"diff"`
-	Env     Env                    `json:"env"`
-}
-
-type SchemaSettingsUpdated struct {
-	Id       SchemaId       `json:"id"`
-	Settings SchemaSettings `json:"settings"`
-	Env      Env            `json:"env"`
-}
-
-type SchemaDeleted struct {
-	Id  SchemaId `json:"id"`
-	Env Env      `json:"env"`
-}
-
-type SchemaRenamed struct {
-	SchemaId         SchemaId   `json:"schemaId"`
-	NewName          SchemaName `json:"newName"`
-	RenameUniqueName bool       `json:"renameUniqueName,omitempty"`
-	Env              Env        `json:"env"`
-}
-
-type SchemaDataCleared struct {
-	Id           SchemaId        `json:"id"`
-	Integrations []IntegrationId `json:"integrations"`
-	Env          Env             `json:"env"`
-}
-
-type TaxonomyCreated struct {
-	Taxonomy Taxonomy `json:"taxonomy"`
-}
-
-type TaxonomyUpdated struct {
-	Taxonomy Taxonomy `json:"taxonomy"`
-}
-
-type TaxonomyDeleted struct {
-	TaxonomyId TaxonomyId `json:"taxonomyId"`
-}
-
-type TaxonomyDataCleared struct {
-	TaxonomyId   TaxonomyId      `json:"taxonomyId"`
-	Integrations []IntegrationId `json:"integrations"`
-}
-
-type SchemaTriggerSaved struct {
-	Trigger SchemaTrigger `json:"trigger"`
-}
-
-type DatabaseTriggerMirrored struct {
-	Trigger Trigger `json:"trigger"`
-}
-
-type SchemaTriggerEnabled struct {
-	TriggerByIdEventBase
-	SchemaId SchemaId `json:"schemaId"`
-	Env      Env      `json:"env"`
-}
-
-type SchemaTriggerDisabled struct {
-	TriggerByIdEventBase
-	SchemaId SchemaId `json:"schemaId"`
-	Env      Env      `json:"env"`
-}
-
-type SchemaTriggerDeleted struct {
-	TriggerByIdEventBase
-	SchemaId SchemaId `json:"schemaId"`
-	Env      Env      `json:"env"`
-}
+func (TestDatabaseAggregateRequest) CreateResponse() (r TestDatabaseAggregateResponse) { return }
+func (TestDatabaseAggregateRequest) HttpMethod() string                                { return "POST" }
 
 type ProcessCollectionImport struct {
 	ImportId              string  `json:"importId"`
@@ -12098,162 +11119,24 @@ type ProcessCollectionImport struct {
 	Env                   *string `json:"env,omitempty"`
 }
 
-type RecordInserted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	Id                    string        `json:"id"`
-	Document              Object        `json:"document"`
-}
-
-type RecordUpdated struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	Id                    string        `json:"id"`
-	From                  Object        `json:"from"`
-	To                    Object        `json:"to"`
-}
-
-type RecordDeleted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	Id                    string        `json:"id"`
-	Document              Object        `json:"document"`
-}
-
-type RecordReplaced struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	Id                    string        `json:"id"`
-	From                  Object        `json:"from"`
-	To                    Object        `json:"to"`
-}
-
-type RecordResponsibilityChanged struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	Id                    string        `json:"id"`
-	FromOwner             AuthId        `json:"fromOwner"`
-	ToOwner               AuthId        `json:"toOwner"`
-}
-
-type RecordsInserted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	Ids                   IReadOnlyList `json:"ids"`
-	Documents             IReadOnlyList `json:"documents"`
-}
-
-type RecordsUpdated struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	MatchedCount          int64         `json:"matchedCount,omitempty"`
-	ModifiedCount         int64         `json:"modifiedCount,omitempty"`
-	Update                Object        `json:"update"`
-}
-
-type RecordsDeleted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	SchemaName            SchemaName    `json:"schemaName"`
-	DeletedCount          int64         `json:"deletedCount,omitempty"`
-	Filter                Object        `json:"filter"`
-}
-
-type EmailVerificationCodeRequested struct {
-	Email        string    `json:"email"`
-	ProjectId    string    `json:"projectId,omitempty"`
-	Code         string    `json:"code"`
-	ExpiresAtUtc time.Time `json:"expiresAtUtc,omitempty"`
-}
-
-type MagicLinkRequested struct {
-	Email        string    `json:"email"`
-	ProjectId    string    `json:"projectId,omitempty"`
-	Token        string    `json:"token"`
-	ExpiresAtUtc time.Time `json:"expiresAtUtc,omitempty"`
-}
-
-type PasswordResetRequested struct {
-	Email        string    `json:"email"`
-	ProjectId    string    `json:"projectId,omitempty"`
-	Token        string    `json:"token"`
-	ExpiresAtUtc time.Time `json:"expiresAtUtc,omitempty"`
-}
-
-type PasswordChanged struct {
-	Email     string `json:"email"`
-	ProjectId string `json:"projectId,omitempty"`
-}
-
-type SseCallTriggered struct {
-	ProjectId        ProjectId            `json:"projectId"`
-	AccountId        AccountId            `json:"accountId"`
-	TriggerId        TriggerId            `json:"triggerId"`
-	TriggerType      TriggerType          `json:"triggerType,omitempty"`
-	SourceEvent      string               `json:"sourceEvent"`
-	TargetUserAuthId *string              `json:"targetUserAuthId,omitempty"`
-	SchemaId         *string              `json:"schemaId,omitempty"`
-	TokenMappings    *IReadOnlyDictionary `json:"tokenMappings,omitempty"`
-	CorrelationId    *string              `json:"correlationId,omitempty"`
-}
-
-type UserRegistered struct {
-	Auth       Auth    `json:"auth"`
-	LinkToUser *UserId `json:"linkToUser,omitempty"`
-}
-
-type UserCreated struct {
-	UserId    UserId    `json:"userId"`
-	ProjectId ProjectId `json:"projectId"`
-	AuthId    *AuthId   `json:"authId,omitempty"`
-}
-
-type UserUpdated struct {
-	AuthId AuthId          `json:"authId"`
-	From   UserGeneralInfo `json:"from"`
-	To     UserGeneralInfo `json:"to"`
-}
-
-type UserBlocked struct {
-	User   *UserGeneralInfo `json:"user,omitempty"`
-	AuthId AuthId           `json:"authId"`
-}
-
-type UserUnblocked struct {
-	User   *UserGeneralInfo `json:"user,omitempty"`
-	AuthId AuthId           `json:"authId"`
-}
-
-type UserInvited struct {
-	EmailAddress EmailAddress `json:"emailAddress"`
-}
-
-type UserVerified struct {
-	AuthId AuthId           `json:"authId"`
-	User   *UserGeneralInfo `json:"user,omitempty"`
-}
-
-type UserDeleted struct {
-	User   *UserGeneralInfo `json:"user,omitempty"`
-	AuthId AuthId           `json:"authId"`
-}
+func (ProcessCollectionImport) CreateResponseVoid() {}
+func (ProcessCollectionImport) HttpMethod() string  { return "POST" }
 
 // @Route("/{version}/files/disable", "GET")
 type DisableFiles struct {
 	CodeMashRequestBase
 }
 
+func (DisableFiles) CreateResponse() (r EmptyResponse) { return }
+func (DisableFiles) HttpMethod() string                { return "GET" }
+
 // @Route("/{version}/files/enable", "GET")
 type EnableFiles struct {
 	CodeMashRequestBase
 }
+
+func (EnableFiles) CreateResponse() (r EmptyResponse) { return }
+func (EnableFiles) HttpMethod() string                { return "GET" }
 
 // @Route("/{version}/files/triggers/{triggerId}", "DELETE")
 // @DataContract
@@ -12261,17 +11144,26 @@ type DeleteFilesTrigger struct {
 	DeleteTrigger
 }
 
+func (DeleteFilesTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DeleteFilesTrigger) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/files/triggers/{triggerId}/disable", "PATCH")
 // @DataContract
 type DisableFilesTrigger struct {
 	DisableTrigger
 }
 
+func (DisableFilesTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DisableFilesTrigger) HttpMethod() string                { return "PATCH" }
+
 // @Route("/{version}/files/triggers/{triggerId}/enable", "PATCH")
 // @DataContract
 type EnableFilesTrigger struct {
 	EnableTrigger
 }
+
+func (EnableFilesTrigger) CreateResponse() (r EmptyResponse) { return }
+func (EnableFilesTrigger) HttpMethod() string                { return "PATCH" }
 
 /** @description Gets files trigger by specified Id */
 // @Route("/{version}/files/triggers/{id}", "GET")
@@ -12280,6 +11172,9 @@ type GetFilesTrigger struct {
 	GetTrigger
 }
 
+func (GetFilesTrigger) CreateResponse() (r GetFilesTriggerResponse) { return }
+func (GetFilesTrigger) HttpMethod() string                          { return "GET" }
+
 /** @description Gets files triggers */
 // @Route("/{version}/files/triggers", "GET")
 // @Api(Description="Gets files triggers")
@@ -12287,11 +11182,73 @@ type GetFilesTriggers struct {
 	GetTriggers
 }
 
+func (GetFilesTriggers) CreateResponse() (r GetFilesTriggersResponse) { return }
+func (GetFilesTriggers) HttpMethod() string                           { return "GET" }
+
 // @Route("/{version}/files/triggers", "POST")
 // @DataContract
 type SaveFilesTrigger struct {
 	SaveTrigger
 }
+
+func (SaveFilesTrigger) CreateResponse() (r IdResponse) { return }
+func (SaveFilesTrigger) HttpMethod() string             { return "POST" }
+
+// @Route("/{version}/files/item/private", "POST")
+type MakeFilePrivateRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the file lives on. */
+	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Path of the file, relative to the integration. */
+	// @ApiMember(Description="Path of the file, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFilePrivateRequest) CreateResponse() (r EmptyResponse) { return }
+func (MakeFilePrivateRequest) HttpMethod() string                { return "POST" }
+
+// @Route("/{version}/files/item/public", "POST")
+type MakeFilePublicRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the file lives on. */
+	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Path of the file to publish, relative to the integration. */
+	// @ApiMember(Description="Path of the file to publish, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFilePublicRequest) CreateResponse() (r IdResponse) { return }
+func (MakeFilePublicRequest) HttpMethod() string             { return "POST" }
+
+// @Route("/{version}/files/folder/private", "POST")
+type MakeFolderPrivateRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the folder lives on. */
+	// @ApiMember(Description="The files integration the folder lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Folder prefix, relative to the integration. */
+	// @ApiMember(Description="Folder prefix, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFolderPrivateRequest) CreateResponse() (r EmptyResponse) { return }
+func (MakeFolderPrivateRequest) HttpMethod() string                { return "POST" }
+
+// @Route("/{version}/files/folder/public", "POST")
+type MakeFolderPublicRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the folder lives on. */
+	// @ApiMember(Description="The files integration the folder lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Folder prefix to publish, relative to the integration. */
+	// @ApiMember(Description="Folder prefix to publish, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFolderPublicRequest) CreateResponse() (r IdResponse) { return }
+func (MakeFolderPublicRequest) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/files/integrations/{Id}", "DELETE")
 type DeleteFilesIntegrationRequest struct {
@@ -12301,6 +11258,9 @@ type DeleteFilesIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DeleteFilesIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteFilesIntegrationRequest) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/files/integrations/{Id}/disable", "PUT")
 type DisableFilesIntegrationRequest struct {
 	CodeMashRequestBase
@@ -12309,6 +11269,9 @@ type DisableFilesIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisableFilesIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableFilesIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/files/integrations/{Id}/enable", "PUT")
 type EnableFilesIntegrationRequest struct {
 	CodeMashRequestBase
@@ -12316,6 +11279,9 @@ type EnableFilesIntegrationRequest struct {
 	// @ApiMember(Description="Files integration id to enable, from get_files_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnableFilesIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableFilesIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Gets integration by specified Id */
 // @Route("/{version}/files/integrations/{id}", "GET")
@@ -12327,6 +11293,9 @@ type GetFilesIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetFilesIntegration) CreateResponse() (r GetFilesIntegrationResponse) { return }
+func (GetFilesIntegration) HttpMethod() string                              { return "GET" }
+
 /** @description Gets integrations */
 // @Route("/{version}/files/integrations", "GET")
 // @Api(Description="Gets integrations")
@@ -12334,13 +11303,19 @@ type GetFilesIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
 
+func (GetFilesIntegrations) CreateResponse() (r GetFilesIntegrationsResponse) { return }
+func (GetFilesIntegrations) HttpMethod() string                               { return "GET" }
+
 // @Route("/{version}/files/integrations", "POST")
 // @DataContract
 type SaveFilesIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration FilesIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveFilesIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveFilesIntegration) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/files/integrations/{Id}/default", "PUT")
 type SetFilesIntegrationAsDefaultRequest struct {
@@ -12350,6 +11325,9 @@ type SetFilesIntegrationAsDefaultRequest struct {
 	Id string `json:"id"`
 }
 
+func (SetFilesIntegrationAsDefaultRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetFilesIntegrationAsDefaultRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/files/integrations/test", "POST")
 type TestFilesIntegration struct {
 	CodeMashRequestBase
@@ -12357,6 +11335,9 @@ type TestFilesIntegration struct {
 	// @ApiMember(Description="Integration id, from get_files_integrations.", IsRequired=true)
 	IntegrationId string `json:"integrationId"`
 }
+
+func (TestFilesIntegration) CreateResponse() (r TestFilesIntegrationResponse) { return }
+func (TestFilesIntegration) HttpMethod() string                               { return "POST" }
 
 // @Route("/{version}/files/item", "GET")
 type GetFile struct {
@@ -12369,6 +11350,9 @@ type GetFile struct {
 	Path string `json:"path"`
 }
 
+func (GetFile) CreateResponse() (r GetFileResponse) { return }
+func (GetFile) HttpMethod() string                  { return "GET" }
+
 // @Route("/{version}/files/folder", "GET")
 type GetFolderFiles struct {
 	CodeMashListPaginationRequestBase
@@ -12380,87 +11364,8 @@ type GetFolderFiles struct {
 	Path *string `json:"path,omitempty"`
 }
 
-type FilesEstablished struct {
-}
-
-type FilesEnabled struct {
-}
-
-type FilesDisabled struct {
-}
-
-type FilesIntegrationSaved struct {
-	Integration FileIntegration `json:"integration"`
-}
-
-type FilesIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type FilesIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type FilesIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type FilesIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type FilesIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type FilesIntegrationSetAsDefault struct {
-	Env Env           `json:"env"`
-	Id  IntegrationId `json:"id"`
-}
-
-type FilesTriggerSaved struct {
-	Trigger FileTrigger `json:"trigger"`
-}
-
-type FilesTriggerMirrored struct {
-	Trigger Trigger `json:"trigger"`
-}
-
-type FilesTriggerEnabled struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type FilesTriggerDisabled struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type FilesTriggerDeleted struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type FileUploaded struct {
-	ProjectId     ProjectId       `json:"projectId"`
-	IntegrationId IntegrationId   `json:"integrationId"`
-	FileRef       FileResourceRef `json:"fileRef"`
-}
-
-type FileDeleted struct {
-	ProjectId     ProjectId     `json:"projectId"`
-	IntegrationId IntegrationId `json:"integrationId"`
-	Path          string        `json:"path"`
-}
+func (GetFolderFiles) CreateResponse() (r GetFolderFilesResponse) { return }
+func (GetFolderFiles) HttpMethod() string                         { return "GET" }
 
 /** @description Disable email service */
 // @Route("/{version}/notifications/email/disable", "GET")
@@ -12469,6 +11374,9 @@ type DisableEmail struct {
 	CodeMashRequestBase
 }
 
+func (DisableEmail) CreateResponse() (r EmptyResponse) { return }
+func (DisableEmail) HttpMethod() string                { return "GET" }
+
 /** @description Get email disable dependencies */
 // @Route("/{version}/notifications/email/disable-dependencies", "GET")
 // @Api(Description="Get email disable dependencies")
@@ -12476,12 +11384,20 @@ type GetEmailDisableDependencies struct {
 	CodeMashRequestBase
 }
 
+func (GetEmailDisableDependencies) CreateResponse() (r GetNotificationModuleDisableDependenciesResponse) {
+	return
+}
+func (GetEmailDisableDependencies) HttpMethod() string { return "GET" }
+
 /** @description Enable email service */
 // @Route("/{version}/notifications/email/enable", "GET")
 // @Api(Description="Enable email service")
 type EnableEmail struct {
 	CodeMashRequestBase
 }
+
+func (EnableEmail) CreateResponse() (r EmptyResponse) { return }
+func (EnableEmail) HttpMethod() string                { return "GET" }
 
 // @Route("/{version}/notifications/email/validation/integrations", "POST")
 // @DataContract
@@ -12491,11 +11407,19 @@ type SaveEmailValidationIntegration struct {
 	Integration EmailValidationIntegrationRequest `json:"integration"`
 }
 
+func (SaveEmailValidationIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveEmailValidationIntegration) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/notifications/email/validation/integrations/test", "POST")
 type TestEmailValidationIntegration struct {
 	CodeMashRequestBase
 	IntegrationId string `json:"integrationId"`
 }
+
+func (TestEmailValidationIntegration) CreateResponse() (r TestEmailValidationIntegrationResponse) {
+	return
+}
+func (TestEmailValidationIntegration) HttpMethod() string { return "POST" }
 
 /** @description Attach a file to an email template */
 // @Route("/{version}/notifications/email/templates/attachments", "POST")
@@ -12513,12 +11437,18 @@ type AttachFileToTemplateRequest struct {
 	FileRef FileResourceRefDto `json:"fileRef"`
 }
 
+func (AttachFileToTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (AttachFileToTemplateRequest) HttpMethod() string                { return "POST" }
+
 /** @description Create an email template */
 // @Route("/{version}/notifications/email/templates", "POST")
 // @Api(Description="Create an email template")
 type CreateEmailTemplateRequest struct {
 	SaveEmailTemplate
 }
+
+func (CreateEmailTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (CreateEmailTemplateRequest) HttpMethod() string             { return "POST" }
 
 /** @description Delete an email template */
 // @Route("/{version}/notifications/email/templates/{Id}", "DELETE")
@@ -12530,6 +11460,9 @@ type DeleteEmailTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (DeleteEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEmailTemplateRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Get an email template */
 // @Route("/{version}/notifications/email/templates/{id}", "GET")
 // @Api(Description="Get an email template")
@@ -12539,6 +11472,9 @@ type GetEmailTemplate struct {
 	// @ApiMember(Description="The email template id to fetch. Get it from get_email_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (GetEmailTemplate) CreateResponse() (r GetEmailTemplateResponse) { return }
+func (GetEmailTemplate) HttpMethod() string                           { return "GET" }
 
 /** @description Gets email templates */
 // @Route("/{version}/notifications/email/templates", "GET")
@@ -12552,6 +11488,9 @@ type GetEmailTemplates struct {
 	// @ApiMember(Description="Optional: return only the template with this id.")
 	TemplateId *string `json:"templateId,omitempty"`
 }
+
+func (GetEmailTemplates) CreateResponse() (r GetEmailTemplatesResponse) { return }
+func (GetEmailTemplates) HttpMethod() string                            { return "GET" }
 
 /** @description Render MJML email template */
 // @Route("/{version}/notifications/email/templates/mjml", "POST")
@@ -12569,6 +11508,9 @@ type GetMjml struct {
 	IsForPreview bool `json:"isForPreview,omitempty"`
 }
 
+func (GetMjml) CreateResponse() (r GetHtmlFromMjmlResponse) { return }
+func (GetMjml) HttpMethod() string                          { return "POST" }
+
 /** @description Get a system email template */
 // @Route("/{version}/notifications/email/system-templates/{id}", "GET")
 // @Api(Description="Get a system email template")
@@ -12578,6 +11520,9 @@ type GetSystemEmailTemplate struct {
 	// @ApiMember(Description="The system email template id to fetch. Get it from get_system_email_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (GetSystemEmailTemplate) CreateResponse() (r GetSystemEmailTemplateResponse) { return }
+func (GetSystemEmailTemplate) HttpMethod() string                                 { return "GET" }
 
 /** @description Get system email templates */
 // @Route("/{version}/notifications/email/system-templates", "GET")
@@ -12598,6 +11543,9 @@ type GetSystemEmailTemplates struct {
 	ForTrigger *TriggerType `json:"forTrigger,omitempty"`
 }
 
+func (GetSystemEmailTemplates) CreateResponse() (r GetSystemEmailTemplatesResponse) { return }
+func (GetSystemEmailTemplates) HttpMethod() string                                  { return "GET" }
+
 /** @description Gets the tokens used by an email template */
 // @Route("/{version}/notifications/email/templates/{id}/tokens", "GET")
 // @Api(Description="Gets the tokens used by an email template")
@@ -12607,6 +11555,11 @@ type GetEmailTemplateAvailableTokens struct {
 	// @ApiMember(Description="Template id from get_email_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (GetEmailTemplateAvailableTokens) CreateResponse() (r GetEmailTemplateAvailableTokensResponse) {
+	return
+}
+func (GetEmailTemplateAvailableTokens) HttpMethod() string { return "GET" }
 
 /** @description Update an email template */
 // @Route("/{version}/notifications/email/templates", "PUT")
@@ -12618,6 +11571,9 @@ type UpdateEmailTemplateRequest struct {
 	ViewId string `json:"viewId"`
 }
 
+func (UpdateEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateEmailTemplateRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Delete an email signature */
 // @Route("/{version}/notifications/email/signatures/{id}", "DELETE")
 // @Api(Description="Delete an email signature")
@@ -12627,6 +11583,9 @@ type DeleteEmailSignature struct {
 	// @ApiMember(Description="The email signature id to delete. Get it from get_email_signatures.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteEmailSignature) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEmailSignature) HttpMethod() string                { return "DELETE" }
 
 /** @description Get an email signature */
 // @Route("/{version}/notifications/email/signatures/{id}", "GET")
@@ -12638,12 +11597,18 @@ type GetEmailSignature struct {
 	Id string `json:"id"`
 }
 
+func (GetEmailSignature) CreateResponse() (r GetEmailSignatureResponse) { return }
+func (GetEmailSignature) HttpMethod() string                            { return "GET" }
+
 /** @description Get email signatures */
 // @Route("/{version}/notifications/email/signatures", "GET")
 // @Api(Description="Get email signatures")
 type GetEmailSignatures struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetEmailSignatures) CreateResponse() (r GetEmailSignaturesResponse) { return }
+func (GetEmailSignatures) HttpMethod() string                             { return "GET" }
 
 /** @description Save an email signature */
 // @Route("/{version}/notifications/email/signatures", "POST")
@@ -12661,6 +11626,9 @@ type SaveEmailSignatureRequest struct {
 	Translations []TranslationDto `json:"translations"`
 }
 
+func (SaveEmailSignatureRequest) CreateResponse() (r IdResponse) { return }
+func (SaveEmailSignatureRequest) HttpMethod() string             { return "POST" }
+
 /** @description Get email settings */
 // @Route("/{version}/notifications/email/settings", "GET")
 // @Api(Description="Get email settings")
@@ -12670,6 +11638,9 @@ type GetEmailSettings struct {
 	// @ApiMember(Description="Unused legacy field; leave empty.")
 	Id string `json:"id"`
 }
+
+func (GetEmailSettings) CreateResponse() (r GetEmailSettingsResponse) { return }
+func (GetEmailSettings) HttpMethod() string                           { return "GET" }
 
 /** @description Confirm human delivery of a test email */
 // @Route("/{version}/notifications/email/integrations/confirm-human-delivery", "POST")
@@ -12683,6 +11654,9 @@ type ConfirmEmailIntegrationHumanDeliveryRequest struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (ConfirmEmailIntegrationHumanDeliveryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ConfirmEmailIntegrationHumanDeliveryRequest) HttpMethod() string                { return "POST" }
+
 /** @description Delete an email integration */
 // @Route("/{version}/notifications/email/integrations/{Id}", "DELETE")
 // @Api(Description="Delete an email integration")
@@ -12693,6 +11667,9 @@ type DeleteEmailIntegration struct {
 	Id string `json:"id"`
 }
 
+func (DeleteEmailIntegration) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEmailIntegration) HttpMethod() string                { return "DELETE" }
+
 /** @description Disable an email integration */
 // @Route("/{version}/notifications/email/integrations/{Id}/disable", "PUT")
 // @Api(Description="Disable an email integration")
@@ -12702,6 +11679,9 @@ type DisableEmailIntegration struct {
 	// @ApiMember(Description="The email integration id to disable. Get it from get_email_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DisableEmailIntegration) CreateResponse() (r EmptyResponse) { return }
+func (DisableEmailIntegration) HttpMethod() string                { return "PUT" }
 
 /** @description Check email integration domain health */
 // @Route("/{version}/notifications/email/integrations/domain-health", "POST")
@@ -12715,6 +11695,11 @@ type CheckEmailIntegrationDomainHealthRequest struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (CheckEmailIntegrationDomainHealthRequest) CreateResponse() (r CheckEmailIntegrationDomainHealthResponse) {
+	return
+}
+func (CheckEmailIntegrationDomainHealthRequest) HttpMethod() string { return "POST" }
+
 /** @description Enable an email integration */
 // @Route("/{version}/notifications/email/integrations/{Id}/enable", "PUT")
 // @Api(Description="Enable an email integration")
@@ -12724,6 +11709,9 @@ type EnableEmailIntegration struct {
 	// @ApiMember(Description="The email integration id to enable. Get it from get_email_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnableEmailIntegration) CreateResponse() (r EmptyResponse) { return }
+func (EnableEmailIntegration) HttpMethod() string                { return "PUT" }
 
 /** @description Get an email integration */
 // @Route("/{version}/notifications/email/integrations/{id}", "GET")
@@ -12735,6 +11723,9 @@ type GetEmailIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetEmailIntegration) CreateResponse() (r GetEmailIntegrationResponse) { return }
+func (GetEmailIntegration) HttpMethod() string                              { return "GET" }
+
 /** @description Gets email integrations */
 // @Route("/{version}/notifications/email/integrations", "GET")
 // @Api(Description="Gets email integrations")
@@ -12742,13 +11733,19 @@ type GetEmailIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
 
+func (GetEmailIntegrations) CreateResponse() (r GetEmailIntegrationsResponse) { return }
+func (GetEmailIntegrations) HttpMethod() string                               { return "GET" }
+
 // @Route("/{version}/notifications/email/integrations", "POST")
 // @DataContract
 type SaveEmailIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration EmailIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveEmailIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveEmailIntegration) HttpMethod() string             { return "POST" }
 
 /** @description Set an email integration as default */
 // @Route("/{version}/notifications/email/integrations/{Id}/default", "PUT")
@@ -12759,6 +11756,9 @@ type SetEmailsIntegrationAsDefault struct {
 	// @ApiMember(Description="The email integration id to set as default. Get it from get_email_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (SetEmailsIntegrationAsDefault) CreateResponse() (r EmptyResponse) { return }
+func (SetEmailsIntegrationAsDefault) HttpMethod() string                { return "PUT" }
 
 /** @description Test an email integration */
 // @Route("/{version}/notifications/email/integrations/test", "POST")
@@ -12773,6 +11773,9 @@ type TestEmailIntegration struct {
 	To string `json:"to"`
 }
 
+func (TestEmailIntegration) CreateResponse() (r TestEmailIntegrationResponse) { return }
+func (TestEmailIntegration) HttpMethod() string                               { return "POST" }
+
 /** @description Archive an email template */
 // @Route("/{version}/notifications/email/templates/{Id}/archive", "PUT")
 // @Api(Description="Archive an email template")
@@ -12782,6 +11785,9 @@ type ArchiveEmailTemplateRequest struct {
 	// @ApiMember(Description="The email template id to archive. Get it from get_email_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (ArchiveEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (ArchiveEmailTemplateRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Clone an email template */
 // @Route("/{version}/notifications/email/templates/{Id}/clone", "POST")
@@ -12793,6 +11799,9 @@ type CloneEmailTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (CloneEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (CloneEmailTemplateRequest) HttpMethod() string                { return "POST" }
+
 /** @description Un-archive an email template */
 // @Route("/{version}/notifications/email/templates/{Id}/unarchive", "PUT")
 // @Api(Description="Un-archive an email template")
@@ -12802,6 +11811,9 @@ type UnArchiveEmailTemplateRequest struct {
 	// @ApiMember(Description="The email template id to unarchive. Get it from get_email_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (UnArchiveEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (UnArchiveEmailTemplateRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Delete an email footer */
 // @Route("/{version}/notifications/email/footers/{id}", "DELETE")
@@ -12813,6 +11825,9 @@ type DeleteEmailFooter struct {
 	Id string `json:"id"`
 }
 
+func (DeleteEmailFooter) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEmailFooter) HttpMethod() string                { return "DELETE" }
+
 /** @description Get an email footer */
 // @Route("/{version}/notifications/email/footers/{id}", "GET")
 // @Api(Description="Get an email footer")
@@ -12823,12 +11838,18 @@ type GetEmailFooter struct {
 	Id string `json:"id"`
 }
 
+func (GetEmailFooter) CreateResponse() (r GetEmailFooterResponse) { return }
+func (GetEmailFooter) HttpMethod() string                         { return "GET" }
+
 /** @description Get email footers */
 // @Route("/{version}/notifications/email/footers", "GET")
 // @Api(Description="Get email footers")
 type GetEmailFooters struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetEmailFooters) CreateResponse() (r GetEmailFootersResponse) { return }
+func (GetEmailFooters) HttpMethod() string                          { return "GET" }
 
 /** @description Save an email footer */
 // @Route("/{version}/notifications/email/footers", "POST")
@@ -12846,6 +11867,9 @@ type SaveEmailFooterRequest struct {
 	Translations []TranslationDto `json:"translations"`
 }
 
+func (SaveEmailFooterRequest) CreateResponse() (r IdResponse) { return }
+func (SaveEmailFooterRequest) HttpMethod() string             { return "POST" }
+
 /** @description This endpoint implements the RFC 8058 one-click unsubscribe flow used by mailbox providers. */
 // @Route("/{version}/email/one-click-unsubscribe", "POST")
 // @Api(Description="This endpoint implements the RFC 8058 one-click unsubscribe flow used by mailbox providers.")
@@ -12858,6 +11882,9 @@ type OneClickUnsubscribeRequest struct {
 	Token string `json:"token"`
 }
 
+func (OneClickUnsubscribeRequest) CreateResponse() (r EmptyResponse) { return }
+func (OneClickUnsubscribeRequest) HttpMethod() string                { return "POST" }
+
 /** @description Create email campaign */
 // @Route("/{version}/notifications/email/campaigns", "POST")
 // @Api(Description="Create email campaign")
@@ -12865,10 +11892,17 @@ type OneClickUnsubscribeRequest struct {
 type CreateEmailCampaignRequest struct {
 	CodeMashRequestBase
 	// @DataMember
-	Campaign EmailCampaignRequest `json:"campaign"`
+	Campaign interface{} `json:"campaign"`
 	// @DataMember
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-016. Set it only when the user explicitly asked to send now. */
+	// @DataMember
+	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-016. Set it only when the user explicitly asked to send now.")
+	SendNow *bool `json:"sendNow,omitempty"`
 }
+
+func (CreateEmailCampaignRequest) CreateResponse() (r IdResponse) { return }
+func (CreateEmailCampaignRequest) HttpMethod() string             { return "POST" }
 
 /** @description Deletes emails campaign from queue */
 // @Route("/{version}/notifications/email/campaigns/{Id}", "DELETE")
@@ -12876,7 +11910,14 @@ type CreateEmailCampaignRequest struct {
 // @DataContract
 type DeleteEmailCampaignRequest struct {
 	CodeMashRequestBase
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (DeleteEmailCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEmailCampaignRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Gets email campaign by id */
 // @Route("/{version}/notifications/email/campaigns/{id}", "GET")
@@ -12890,6 +11931,9 @@ type GetEmailCampaign struct {
 	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetEmailCampaign) CreateResponse() (r GetEmailCampaignResponse) { return }
+func (GetEmailCampaign) HttpMethod() string                           { return "GET" }
 
 /** @description Gets email campaigns */
 // @Route("/{version}/notifications/email/campaigns", "GET")
@@ -12916,6 +11960,9 @@ type GetEmailCampaigns struct {
 	To *int64 `json:"to,omitempty"`
 }
 
+func (GetEmailCampaigns) CreateResponse() (r GetEmailCampaignsResponse) { return }
+func (GetEmailCampaigns) HttpMethod() string                            { return "GET" }
+
 /** @description Get email campaign batches */
 // @Route("/{version}/notifications/email/campaigns/{id}/batches", "GET")
 // @Api(Description="Get email campaign batches")
@@ -12934,6 +11981,9 @@ type GetEmailCampaignBatches struct {
 	// @ApiMember(Description="Optional recipient email address to filter batches by.")
 	EmailAddress *string `json:"emailAddress,omitempty"`
 }
+
+func (GetEmailCampaignBatches) CreateResponse() (r GetEmailCampaignBatchesResponse) { return }
+func (GetEmailCampaignBatches) HttpMethod() string                                  { return "GET" }
 
 /** @description Get an email campaign batch notification */
 // @Route("/{version}/notifications/email/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
@@ -12954,6 +12004,11 @@ type GetEmailCampaignBatchNotification struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetEmailCampaignBatchNotification) CreateResponse() (r GetEmailCampaignBatchNotificationResponse) {
+	return
+}
+func (GetEmailCampaignBatchNotification) HttpMethod() string { return "GET" }
+
 /** @description Get email campaign batch notifications */
 // @Route("/{version}/notifications/email/campaigns/{id}/batches/{batchId}", "GET")
 // @Api(Description="Get email campaign batch notifications")
@@ -12970,6 +12025,11 @@ type GetEmailCampaignBatchNotifications struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetEmailCampaignBatchNotifications) CreateResponse() (r GetEmailCampaignBatchNotificationsResponse) {
+	return
+}
+func (GetEmailCampaignBatchNotifications) HttpMethod() string { return "GET" }
+
 /** @description Get email campaign statistics */
 // @Route("/{version}/notifications/email/campaigns/{id}/stats", "GET")
 // @Api(Description="Get email campaign statistics")
@@ -12983,15 +12043,27 @@ type GetEmailCampaignStatistics struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetEmailCampaignStatistics) CreateResponse() (r GetEmailCampaignStatisticsResponse) { return }
+func (GetEmailCampaignStatistics) HttpMethod() string                                     { return "GET" }
+
 /** @description Preview an email notification */
 // @Route("/{version}/notifications/email/preview", "GET")
 // @Api(Description="Preview an email notification")
 type PreviewEmailNotification struct {
 	RequestBase
-	/** @description The opaque, pre-signed preview hash identifying the project and notification to preview. */
-	// @ApiMember(Description="The opaque, pre-signed preview hash identifying the project and notification to preview.", IsRequired=true)
+	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
+	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
 	Hash string `json:"hash"`
+	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
+	ProjectId *string `json:"projectId,omitempty"`
+	/** @description Signed-in preview by id: the notification id (needs email:read). With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the notification id (needs email:read). With a hash it must match the hash.")
+	NotificationId *string `json:"notificationId,omitempty"`
 }
+
+func (PreviewEmailNotification) CreateResponse() (r PreviewEmailNotificationResponse) { return }
+func (PreviewEmailNotification) HttpMethod() string                                   { return "GET" }
 
 /** @description Stops a running email campaign */
 // @Route("/{version}/notifications/email/campaigns/{Id}/stop", "POST")
@@ -13009,8 +12081,11 @@ type StopEmailCampaignRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (StopEmailCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (StopEmailCampaignRequest) HttpMethod() string                { return "POST" }
+
 /** @description Get an email campaign message */
-// @Route("/{version}/notifications/emails/campaigns/{campaignId}/messages/{id}", "GET")
+// @Route("/{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId}", "GET")
 // @Api(Description="Get an email campaign message")
 type GetEmailCampaignMessage struct {
 	CodeMashRequestBase
@@ -13028,6 +12103,9 @@ type GetEmailCampaignMessage struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetEmailCampaignMessage) CreateResponse() (r GetEmailCampaignMessageResponse) { return }
+func (GetEmailCampaignMessage) HttpMethod() string                                  { return "GET" }
+
 /** @description Get email campaign messages */
 // @Route("/{version}/notifications/emails/campaigns/{campaignId}/messages", "GET")
 // @Api(Description="Get email campaign messages")
@@ -13044,232 +12122,8 @@ type GetEmailCampaignMessagesRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-type EmailServiceEstablished struct {
-}
-
-type ProjectDatabaseConnected struct {
-	Env Env `json:"env"`
-}
-
-type EmailServiceEnabled struct {
-}
-
-type EmailServiceDisabled struct {
-}
-
-type EmailFooterSaved struct {
-	Id           EmailFooterId        `json:"id"`
-	Name         DisplayName          `json:"name"`
-	Translations []MessageTranslation `json:"translations"`
-	Env          *Env                 `json:"env,omitempty"`
-}
-
-type EmailFooterMirrored struct {
-	Footer EmailFooter `json:"footer"`
-}
-
-type EmailFooterDeleted struct {
-	Id  EmailFooterId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailIntegrationSaved struct {
-	Integration EmailIntegration `json:"integration"`
-}
-
-type EmailIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type EmailIntegrationHumanDeliveryConfirmed struct {
-	Id             IntegrationId `json:"id"`
-	ConfirmedAtUtc time.Time     `json:"confirmedAtUtc,omitempty"`
-}
-
-type EmailIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type EmailIntegrationSetAsDefault struct {
-	Env Env           `json:"env"`
-	Id  IntegrationId `json:"id"`
-}
-
-type EmailIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailSignatureSaved struct {
-	Id           EmailSignatureId     `json:"id"`
-	Name         DisplayName          `json:"name"`
-	Translations []MessageTranslation `json:"translations"`
-	Env          *Env                 `json:"env,omitempty"`
-}
-
-type EmailSignatureMirrored struct {
-	Signature EmailSignature `json:"signature"`
-}
-
-type EmailSignatureDeleted struct {
-	Id  EmailSignatureId `json:"id"`
-	Env *Env             `json:"env,omitempty"`
-}
-
-type EmailTemplateCreated struct {
-	TemplateId                  TemplateId           `json:"templateId"`
-	DisplayName                 DisplayName          `json:"displayName"`
-	Translations                []MessageTranslation `json:"translations"`
-	Channel                     CommunicationChannel `json:"channel,omitempty"`
-	Description                 *string              `json:"description,omitempty"`
-	Tags                        []Tag                `json:"tags,omitempty"`
-	LanguageAgnosticAttachments []FileResourceRef    `json:"languageAgnosticAttachments,omitempty"`
-	Env                         *Env                 `json:"env,omitempty"`
-}
-
-type EmailTemplateUpdated struct {
-	TemplateId                  TemplateId           `json:"templateId"`
-	DisplayName                 DisplayName          `json:"displayName"`
-	Translations                []MessageTranslation `json:"translations"`
-	Channel                     CommunicationChannel `json:"channel,omitempty"`
-	Description                 *string              `json:"description,omitempty"`
-	Tags                        []Tag                `json:"tags,omitempty"`
-	LanguageAgnosticAttachments []FileResourceRef    `json:"languageAgnosticAttachments,omitempty"`
-	AttachmentsToBeDeleted      []FileResourceRef    `json:"attachmentsToBeDeleted,omitempty"`
-	Env                         *Env                 `json:"env,omitempty"`
-}
-
-type EmailTemplateMirrored struct {
-	Template EmailTemplate `json:"template"`
-}
-
-type EmailTemplateBackfilled struct {
-	Template EmailTemplate `json:"template"`
-}
-
-type EmailTemplateDeleted struct {
-	TemplateId        TemplateId        `json:"templateId"`
-	FilesToBeDeleted  []FileResourceRef `json:"filesToBeDeleted,omitempty"`
-	FileIntegrationId *IntegrationId    `json:"fileIntegrationId,omitempty"`
-	Env               *Env              `json:"env,omitempty"`
-}
-
-type EmailTemplateArchived struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type EmailTemplateUnArchived struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type EmailValidationIntegrationSaved struct {
-	Integration EmailValidationIntegration `json:"integration"`
-}
-
-type EmailValidationIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailValidationIntegrationSecretsConfigured struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailValidationIntegrationSecretsConfigurationFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type EmailValidationIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type EmailBatchRegistered struct {
-	ProjectId       ProjectId       `json:"projectId"`
-	CampaignId      CampaignId      `json:"campaignId"`
-	CampaignBatchId CampaignBatchId `json:"campaignBatchId"`
-	StartingAfter   *string         `json:"startingAfter,omitempty"`
-}
-
-type EmailNotificationRead struct {
-	ProjectId       ProjectId       `json:"projectId"`
-	CampaignId      CampaignId      `json:"campaignId"`
-	CampaignBatchId CampaignBatchId `json:"campaignBatchId"`
-	NotificationId  NotificationId  `json:"notificationId"`
-}
-
-type EmailNotificationClicked struct {
-	ProjectId       ProjectId       `json:"projectId"`
-	CampaignId      CampaignId      `json:"campaignId"`
-	CampaignBatchId CampaignBatchId `json:"campaignBatchId"`
-	NotificationId  NotificationId  `json:"notificationId"`
-	SourceId        *string         `json:"sourceId,omitempty"`
-}
-
-type EmailCampaignStarted struct {
-	ProjectId  ProjectId  `json:"projectId"`
-	CampaignId CampaignId `json:"campaignId"`
-}
-
-type EmailCampaignStopped struct {
-	ProjectId  ProjectId           `json:"projectId"`
-	CampaignId CampaignId          `json:"campaignId"`
-	Reason     *CampaignStopReason `json:"reason,omitempty"`
-}
-
-type EmailCampaignCompleted struct {
-	ProjectId  ProjectId  `json:"projectId"`
-	CampaignId CampaignId `json:"campaignId"`
-	Errors     []ErrorDto `json:"errors,omitempty"`
-}
-
-type EmailCampaignFailed struct {
-	ProjectId  ProjectId  `json:"projectId"`
-	CampaignId CampaignId `json:"campaignId"`
-	Errors     []ErrorDto `json:"errors"`
-}
-
-type EmailCampaignTriggered struct {
-	ProjectId     ProjectId            `json:"projectId"`
-	TriggerId     TriggerId            `json:"triggerId"`
-	TriggerType   TriggerType          `json:"triggerType,omitempty"`
-	SourceEvent   string               `json:"sourceEvent"`
-	SchemaId      *string              `json:"schemaId,omitempty"`
-	TokenMappings *IReadOnlyDictionary `json:"tokenMappings,omitempty"`
-}
-
-type EmailDeliveryEventReceived struct {
-	ProjectId         ProjectId              `json:"projectId"`
-	IntegrationId     IntegrationId          `json:"integrationId"`
-	Recipient         EmailAddress           `json:"recipient"`
-	Type              EmailDeliveryEventType `json:"type,omitempty"`
-	OccurredAt        time.Time              `json:"occurredAt,omitempty"`
-	ProviderMessageId *string                `json:"providerMessageId,omitempty"`
-	Reason            *string                `json:"reason,omitempty"`
-}
+func (GetEmailCampaignMessagesRequest) CreateResponse() (r GetEmailCampaignMessagesResponse) { return }
+func (GetEmailCampaignMessagesRequest) HttpMethod() string                                   { return "GET" }
 
 /** @description Disable SMS service */
 // @Route("/{version}/notifications/sms/disable", "GET")
@@ -13278,6 +12132,9 @@ type DisableSms struct {
 	CodeMashRequestBase
 }
 
+func (DisableSms) CreateResponse() (r EmptyResponse) { return }
+func (DisableSms) HttpMethod() string                { return "GET" }
+
 /** @description Lists SMS-module dependencies shown before disable */
 // @Route("/{version}/notifications/sms/disable-dependencies", "GET")
 // @Api(Description="Lists SMS-module dependencies shown before disable")
@@ -13285,12 +12142,20 @@ type GetSmsDisableDependencies struct {
 	CodeMashRequestBase
 }
 
+func (GetSmsDisableDependencies) CreateResponse() (r GetNotificationModuleDisableDependenciesResponse) {
+	return
+}
+func (GetSmsDisableDependencies) HttpMethod() string { return "GET" }
+
 /** @description Enable SMS service */
 // @Route("/{version}/notifications/sms/enable", "GET")
 // @Api(Description="Enable SMS service")
 type EnableSms struct {
 	CodeMashRequestBase
 }
+
+func (EnableSms) CreateResponse() (r EmptyResponse) { return }
+func (EnableSms) HttpMethod() string                { return "GET" }
 
 /** @description Archives sms template */
 // @Route("/{version}/notifications/sms/templates/{Id}/archive", "PUT")
@@ -13302,6 +12167,9 @@ type ArchiveSmsTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (ArchiveSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (ArchiveSmsTemplateRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Clones sms template */
 // @Route("/{version}/notifications/sms/templates/{Id}/clone", "POST")
 // @Api(Description="Clones sms template")
@@ -13312,12 +12180,18 @@ type CloneSmsTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (CloneSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (CloneSmsTemplateRequest) HttpMethod() string                { return "POST" }
+
 /** @description Create SMS template */
 // @Route("/{version}/notifications/sms/templates", "POST")
 // @Api(Description="Create SMS template")
 type CreateSmsTemplateRequest struct {
 	SaveSmsTemplate
 }
+
+func (CreateSmsTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (CreateSmsTemplateRequest) HttpMethod() string             { return "POST" }
 
 /** @description Delete Sms Template for particular project */
 // @Route("/{version}/notifications/sms/templates/{Id}", "DELETE")
@@ -13329,6 +12203,9 @@ type DeleteSmsTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (DeleteSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteSmsTemplateRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Gets sms template by id */
 // @Route("/{version}/notifications/sms/templates/{id}", "GET")
 // @Api(Description="Gets sms template by id")
@@ -13338,6 +12215,9 @@ type GetSmsTemplate struct {
 	// @ApiMember(Description="The SMS template id to fetch. Get it from get_sms_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (GetSmsTemplate) CreateResponse() (r GetSmsTemplateResponse) { return }
+func (GetSmsTemplate) HttpMethod() string                         { return "GET" }
 
 /** @description Gets sms templates */
 // @Route("/{version}/notifications/sms/templates", "GET")
@@ -13352,6 +12232,9 @@ type GetSmsTemplates struct {
 	TemplateId *string `json:"templateId,omitempty"`
 }
 
+func (GetSmsTemplates) CreateResponse() (r GetSmsTemplatesResponse) { return }
+func (GetSmsTemplates) HttpMethod() string                          { return "GET" }
+
 /** @description Goes through the Sms template and returns all the tokens that are used in the template translations */
 // @Route("/{version}/notifications/sms/templates/{id}/tokens", "GET")
 // @Api(Description="Goes through the Sms template and returns all the tokens that are used in the template translations")
@@ -13361,6 +12244,9 @@ type GetSmsMessageContentTokens struct {
 	// @ApiMember(Description="The SMS template id. Get it from get_sms_templates.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (GetSmsMessageContentTokens) CreateResponse() (r GetSmsMessageContentTokensResponse) { return }
+func (GetSmsMessageContentTokens) HttpMethod() string                                     { return "GET" }
 
 /** @description Runs the SMS Razor template, returns the bound text or the list of unresolved tokens. */
 // @Route("/{version}/notifications/sms/templates/render", "POST")
@@ -13378,6 +12264,9 @@ type RenderSms struct {
 	IsForPreview bool `json:"isForPreview,omitempty"`
 }
 
+func (RenderSms) CreateResponse() (r RenderSmsTextResponse) { return }
+func (RenderSms) HttpMethod() string                        { return "POST" }
+
 /** @description Un-archives sms template */
 // @Route("/{version}/notifications/sms/templates/{Id}/unarchive", "PUT")
 // @Api(Description="Un-archives sms template")
@@ -13387,6 +12276,9 @@ type UnArchiveSmsTemplateRequest struct {
 	// @ApiMember(Description="The SMS template id to unarchive.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (UnArchiveSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (UnArchiveSmsTemplateRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Edit sms template */
 // @Route("/{version}/notifications/sms/templates", "PUT")
@@ -13398,6 +12290,9 @@ type UpdateSmsTemplateRequest struct {
 	ViewId string `json:"viewId"`
 }
 
+func (UpdateSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateSmsTemplateRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Gets SMS settings */
 // @Route("/{version}/notifications/sms/settings", "GET")
 // @Api(Description="Gets SMS settings")
@@ -13407,6 +12302,9 @@ type GetSmsSettings struct {
 	// @ApiMember(Description="Unused legacy parameter; leave empty.")
 	Id string `json:"id"`
 }
+
+func (GetSmsSettings) CreateResponse() (r GetSmsSettingsResponse) { return }
+func (GetSmsSettings) HttpMethod() string                         { return "GET" }
 
 /** @description Confirm that you received the test SMS delivery. */
 // @Route("/{version}/notifications/sms/integrations/confirm-human-delivery", "POST")
@@ -13420,6 +12318,9 @@ type ConfirmSmsIntegrationHumanDeliveryRequest struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (ConfirmSmsIntegrationHumanDeliveryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ConfirmSmsIntegrationHumanDeliveryRequest) HttpMethod() string                { return "POST" }
+
 /** @description Delete integration for particular project */
 // @Route("/{version}/notifications/sms/integrations/{Id}", "DELETE")
 // @Api(Description="Delete integration for particular project")
@@ -13429,6 +12330,9 @@ type DeleteSmsIntegrationRequest struct {
 	// @ApiMember(Description="The SMS integration id to delete. Get it from get_sms_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeleteSmsIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteSmsIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Disable integration for particular project */
 // @Route("/{version}/notifications/sms/integrations/{Id}/disable", "PUT")
@@ -13440,6 +12344,9 @@ type DisableSmsIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisableSmsIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableSmsIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Enable integration for particular project */
 // @Route("/{version}/notifications/sms/integrations/{Id}/enable", "PUT")
 // @Api(Description="Enable integration for particular project")
@@ -13449,6 +12356,9 @@ type EnableSmsIntegrationRequest struct {
 	// @ApiMember(Description="The SMS integration id to enable. Get it from get_sms_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnableSmsIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableSmsIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Gets integration by specified Id */
 // @Route("/{version}/notifications/sms/integrations/{id}", "GET")
@@ -13460,12 +12370,18 @@ type GetSmsIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetSmsIntegration) CreateResponse() (r GetSmsIntegrationResponse) { return }
+func (GetSmsIntegration) HttpMethod() string                            { return "GET" }
+
 /** @description Gets sms integrations */
 // @Route("/{version}/notifications/sms/integrations", "GET")
 // @Api(Description="Gets sms integrations")
 type GetSmsIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetSmsIntegrations) CreateResponse() (r GetSmsIntegrationsResponse) { return }
+func (GetSmsIntegrations) HttpMethod() string                             { return "GET" }
 
 // @Route("/{version}/notifications/sms/integrations", "POST")
 // @DataContract
@@ -13474,6 +12390,9 @@ type SaveSmsIntegration struct {
 	// @DataMember(Name="integration")
 	Integration SmsIntegrationRequest `json:"integration"`
 }
+
+func (SaveSmsIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveSmsIntegration) HttpMethod() string             { return "POST" }
 
 /** @description Sets integration as default */
 // @Route("/{version}/notifications/sms/integrations/{Id}/default", "PUT")
@@ -13484,6 +12403,9 @@ type SetSmsIntegrationAsDefaultRequest struct {
 	// @ApiMember(Description="The SMS integration id to set as default. Get it from get_sms_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (SetSmsIntegrationAsDefaultRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetSmsIntegrationAsDefaultRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Test SMS integration */
 // @Route("/{version}/notifications/sms/integrations/test", "POST")
@@ -13497,6 +12419,9 @@ type TestSmsIntegration struct {
 	// @ApiMember(Description="Optional phone number (international format) to send the test SMS to.")
 	To *string `json:"to,omitempty"`
 }
+
+func (TestSmsIntegration) CreateResponse() (r TestSmsIntegrationResponse) { return }
+func (TestSmsIntegration) HttpMethod() string                             { return "POST" }
 
 /** @description Create SMS campaign */
 // @Route("/{version}/notifications/sms/campaigns", "POST")
@@ -13536,7 +12461,14 @@ type CreateSmsCampaignRequest struct {
 	// @DataMember
 	// @ApiMember(Description="For deliveryType 'PhoneNumbers'. JSON object: {\"recipientsSourceType\":\"PhoneNumbers\",\"phoneNumbers\":[\"+37060000000\"],\"campaignTime\":<unix seconds UTC>}. Numbers in international format.")
 	PhoneNumbers *SmsToPhoneNumbersDeliverySettingsDto `json:"phoneNumbers,omitempty"`
+	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-016. Set it only when the user explicitly asked to send now. */
+	// @DataMember
+	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-016. Set it only when the user explicitly asked to send now.")
+	SendNow *bool `json:"sendNow,omitempty"`
 }
+
+func (CreateSmsCampaignRequest) CreateResponse() (r IdResponse) { return }
+func (CreateSmsCampaignRequest) HttpMethod() string             { return "POST" }
 
 /** @description Deletes sms campaign from queue */
 // @Route("/{version}/notifications/sms/campaigns/{id}", "DELETE")
@@ -13551,6 +12483,9 @@ type DeleteSmsCampaign struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (DeleteSmsCampaign) CreateResponse() (r EmptyResponse) { return }
+func (DeleteSmsCampaign) HttpMethod() string                { return "DELETE" }
+
 /** @description Get sms campaign by id */
 // @Route("/{version}/notifications/sms/campaigns/{id}", "GET")
 // @Api(Description="Get sms campaign by id")
@@ -13563,6 +12498,9 @@ type GetSmsCampaign struct {
 	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetSmsCampaign) CreateResponse() (r GetSmsCampaignResponse) { return }
+func (GetSmsCampaign) HttpMethod() string                         { return "GET" }
 
 /** @description Gets sms campaigns */
 // @Route("/{version}/notifications/sms/campaigns", "GET")
@@ -13583,6 +12521,9 @@ type GetSmsCampaigns struct {
 	To *int64 `json:"to,omitempty"`
 }
 
+func (GetSmsCampaigns) CreateResponse() (r GetSmsCampaignsResponse) { return }
+func (GetSmsCampaigns) HttpMethod() string                          { return "GET" }
+
 /** @description Gets sms campaign batches */
 // @Route("/{version}/notifications/sms/campaigns/{id}/batches", "GET")
 // @Api(Description="Gets sms campaign batches")
@@ -13595,6 +12536,9 @@ type GetSmsCampaignBatches struct {
 	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetSmsCampaignBatches) CreateResponse() (r GetSmsCampaignBatchesResponse) { return }
+func (GetSmsCampaignBatches) HttpMethod() string                                { return "GET" }
 
 /** @description Gets sms campaign batch notification */
 // @Route("/{version}/notifications/sms/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
@@ -13615,6 +12559,11 @@ type GetSmsCampaignBatchNotification struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetSmsCampaignBatchNotification) CreateResponse() (r GetSmsCampaignBatchNotificationResponse) {
+	return
+}
+func (GetSmsCampaignBatchNotification) HttpMethod() string { return "GET" }
+
 /** @description Gets sms campaign batch notifications */
 // @Route("/{version}/notifications/sms/campaigns/{id}/batches/{batchId}", "GET")
 // @Api(Description="Gets sms campaign batch notifications")
@@ -13631,6 +12580,11 @@ type GetSmsCampaignBatchNotifications struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetSmsCampaignBatchNotifications) CreateResponse() (r GetSmsCampaignBatchNotificationsResponse) {
+	return
+}
+func (GetSmsCampaignBatchNotifications) HttpMethod() string { return "GET" }
+
 /** @description Get sms campaign statistics */
 // @Route("/{version}/notifications/sms/campaigns/{id}/stats", "GET")
 // @Api(Description="Get sms campaign statistics")
@@ -13644,15 +12598,27 @@ type GetSmsCampaignStatistics struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetSmsCampaignStatistics) CreateResponse() (r GetSmsCampaignStatisticsResponse) { return }
+func (GetSmsCampaignStatistics) HttpMethod() string                                   { return "GET" }
+
 /** @description Returns SMS preview notification body */
 // @Route("/{version}/notifications/sms/preview", "GET")
 // @Api(Description="Returns SMS preview notification body")
 type PreviewSmsNotification struct {
 	RequestBase
-	/** @description Signed preview hash identifying the notification to render. */
-	// @ApiMember(Description="Signed preview hash identifying the notification to render.")
+	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
+	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
 	Hash string `json:"hash"`
+	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
+	ProjectId *string `json:"projectId,omitempty"`
+	/** @description Signed-in preview by id: the notification id (needs sms:read). With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the notification id (needs sms:read). With a hash it must match the hash.")
+	NotificationId *string `json:"notificationId,omitempty"`
 }
+
+func (PreviewSmsNotification) CreateResponse() (r PreviewSmsNotificationResponse) { return }
+func (PreviewSmsNotification) HttpMethod() string                                 { return "GET" }
 
 /** @description Stops a running SMS campaign */
 // @Route("/{version}/notifications/sms/campaigns/{Id}/stop", "POST")
@@ -13667,8 +12633,11 @@ type StopSmsCampaignRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (StopSmsCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (StopSmsCampaignRequest) HttpMethod() string                { return "POST" }
+
 /** @description Gets campaign sms message details */
-// @Route("/{version}/notifications/sms/campaigns/{campaignId}/messages/{id}", "GET")
+// @Route("/{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId}", "GET")
 // @Api(Description="Gets campaign sms message details")
 type GetSmsCampaignMessage struct {
 	CodeMashRequestBase
@@ -13686,6 +12655,9 @@ type GetSmsCampaignMessage struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetSmsCampaignMessage) CreateResponse() (r GetSmsCampaignMessageResponse) { return }
+func (GetSmsCampaignMessage) HttpMethod() string                                { return "GET" }
+
 /** @description Gets the sms notifications */
 // @Route("/{version}/notifications/sms/campaigns/{campaignId}/messages", "GET")
 // @Api(Description="Gets the sms notifications")
@@ -13702,144 +12674,8 @@ type GetSmsCampaignMessagesRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-type SmsIntegrationSaved struct {
-	Integration SmsIntegration `json:"integration"`
-}
-
-type SmsIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type SmsIntegrationHumanDeliveryConfirmed struct {
-	Id             IntegrationId `json:"id"`
-	ConfirmedAtUtc time.Time     `json:"confirmedAtUtc,omitempty"`
-}
-
-type SmsIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type SmsIntegrationSetAsDefault struct {
-	Env Env           `json:"env"`
-	Id  IntegrationId `json:"id"`
-}
-
-type SmsIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type SmsIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type SmsIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type SmsServiceEstablished struct {
-	DefaultTemplates []SmsTemplate `json:"defaultTemplates,omitempty"`
-}
-
-type SmsServiceEnabled struct {
-}
-
-type SmsServiceDisabled struct {
-}
-
-type SmsTemplateCreated struct {
-	TemplateId   TemplateId           `json:"templateId"`
-	DisplayName  DisplayName          `json:"displayName"`
-	Translations []MessageTranslation `json:"translations"`
-	Channel      CommunicationChannel `json:"channel,omitempty"`
-	Description  *string              `json:"description,omitempty"`
-	Tags         []Tag                `json:"tags,omitempty"`
-	Env          *Env                 `json:"env,omitempty"`
-}
-
-type SmsTemplateUpdated struct {
-	TemplateId   TemplateId           `json:"templateId"`
-	DisplayName  DisplayName          `json:"displayName"`
-	Translations []MessageTranslation `json:"translations"`
-	Channel      CommunicationChannel `json:"channel,omitempty"`
-	Description  *string              `json:"description,omitempty"`
-	Tags         []Tag                `json:"tags,omitempty"`
-	Env          *Env                 `json:"env,omitempty"`
-}
-
-type SmsTemplateMirrored struct {
-	Template SmsTemplate `json:"template"`
-}
-
-type SmsTemplateDeleted struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type SmsTemplateArchived struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type SmsTemplateUnArchived struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type SmsBatchRegistered struct {
-	CampaignId      CampaignId      `json:"campaignId"`
-	CampaignBatchId CampaignBatchId `json:"campaignBatchId"`
-	StartingAfter   *string         `json:"startingAfter,omitempty"`
-}
-
-type SmsNotificationRead struct {
-	CampaignId      CampaignId      `json:"campaignId"`
-	CampaignBatchId CampaignBatchId `json:"campaignBatchId"`
-	NotificationId  NotificationId  `json:"notificationId"`
-}
-
-type SmsNotificationClicked struct {
-	CampaignId      CampaignId      `json:"campaignId"`
-	CampaignBatchId CampaignBatchId `json:"campaignBatchId"`
-	NotificationId  NotificationId  `json:"notificationId"`
-	SourceId        *string         `json:"sourceId,omitempty"`
-}
-
-type SmsCampaignStarted struct {
-	CampaignId CampaignId `json:"campaignId"`
-}
-
-type SmsCampaignStopped struct {
-	CampaignId CampaignId          `json:"campaignId"`
-	Reason     *CampaignStopReason `json:"reason,omitempty"`
-}
-
-type SmsCampaignCompleted struct {
-	CampaignId CampaignId `json:"campaignId"`
-	Errors     []ErrorDto `json:"errors,omitempty"`
-}
-
-type SmsCampaignFailed struct {
-	CampaignId CampaignId `json:"campaignId"`
-	Errors     []ErrorDto `json:"errors"`
-}
-
-type SmsCampaignTriggered struct {
-	ProjectId     ProjectId            `json:"projectId"`
-	TriggerId     TriggerId            `json:"triggerId"`
-	TriggerType   TriggerType          `json:"triggerType,omitempty"`
-	SourceEvent   string               `json:"sourceEvent"`
-	SchemaId      *string              `json:"schemaId,omitempty"`
-	TokenMappings *IReadOnlyDictionary `json:"tokenMappings,omitempty"`
-}
+func (GetSmsCampaignMessagesRequest) CreateResponse() (r GetSmsCampaignMessagesResponse) { return }
+func (GetSmsCampaignMessagesRequest) HttpMethod() string                                 { return "GET" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/secrets", "PUT")
 // @DataContract
@@ -13853,6 +12689,11 @@ type ReplaceMarketplaceIntegrationSecretsRequest struct {
 	Secrets map[string]string `json:"secrets"`
 }
 
+func (ReplaceMarketplaceIntegrationSecretsRequest) CreateResponse() (r EmptyMarketplaceSecretsResponse) {
+	return
+}
+func (ReplaceMarketplaceIntegrationSecretsRequest) HttpMethod() string { return "PUT" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/secrets/reveal", "POST")
 // @DataContract
 type RevealMarketplaceIntegrationSecretsRequest struct {
@@ -13862,6 +12703,11 @@ type RevealMarketplaceIntegrationSecretsRequest struct {
 	// @ApiMember(Description="Integration view id (int_…).", IsRequired=true)
 	IntegrationViewId string `json:"integrationViewId"`
 }
+
+func (RevealMarketplaceIntegrationSecretsRequest) CreateResponse() (r RevealMarketplaceIntegrationSecretsResponse) {
+	return
+}
+func (RevealMarketplaceIntegrationSecretsRequest) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/token-mappings", "PUT")
 // @DataContract
@@ -13875,6 +12721,11 @@ type SetMarketplaceIntegrationTokenMappingsRequest struct {
 	TokenMappings []MarketplaceTokenMappingDto `json:"tokenMappings"`
 }
 
+func (SetMarketplaceIntegrationTokenMappingsRequest) CreateResponse() (r SetMarketplaceIntegrationTokenMappingsResponse) {
+	return
+}
+func (SetMarketplaceIntegrationTokenMappingsRequest) HttpMethod() string { return "PUT" }
+
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/catalog", "GET")
 type GetMarketplaceFunctionCatalog struct {
 	CodeMashRequestBase
@@ -13883,109 +12734,10 @@ type GetMarketplaceFunctionCatalog struct {
 	IntegrationViewId string `json:"integrationViewId"`
 }
 
-type CodeIntegrationSaved struct {
-	Integration CodeIntegration `json:"integration"`
+func (GetMarketplaceFunctionCatalog) CreateResponse() (r GetMarketplaceFunctionCatalogResponse) {
+	return
 }
-
-type CodeIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type CodeIntegrationHumanDeliveryConfirmed struct {
-	Id             IntegrationId `json:"id"`
-	ConfirmedAtUtc time.Time     `json:"confirmedAtUtc,omitempty"`
-}
-
-type CodeIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type CodeIntegrationSetAsDefault struct {
-	Id IntegrationId `json:"id"`
-}
-
-type CodeIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type CodeIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type CodeIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceIntegrationSaved struct {
-	Integration MarketplaceIntegration `json:"integration"`
-}
-
-type MarketplaceIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceIntegrationSecretsConfigured struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceIntegrationSecretsConfigurationFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type MarketplaceFunctionSaved struct {
-	Function MarketplaceFunction `json:"function"`
-}
-
-type MarketplaceFunctionDeleted struct {
-	IntegrationId IntegrationId         `json:"integrationId"`
-	FunctionId    MarketplaceFunctionId `json:"functionId"`
-}
-
-type MarketplaceFunctionEnabled struct {
-	IntegrationId IntegrationId         `json:"integrationId"`
-	FunctionId    MarketplaceFunctionId `json:"functionId"`
-}
-
-type MarketplaceFunctionDisabled struct {
-	IntegrationId IntegrationId         `json:"integrationId"`
-	FunctionId    MarketplaceFunctionId `json:"functionId"`
-}
-
-type ServerlessEnabled struct {
-}
-
-type ServerlessDisabled struct {
-}
+func (GetMarketplaceFunctionCatalog) HttpMethod() string { return "GET" }
 
 /** @description Disable push service */
 // @Route("/{version}/notifications/push/disable", "GET")
@@ -13994,6 +12746,9 @@ type DisablePush struct {
 	CodeMashRequestBase
 }
 
+func (DisablePush) CreateResponse() (r EmptyResponse) { return }
+func (DisablePush) HttpMethod() string                { return "GET" }
+
 /** @description Lists push disable dependencies */
 // @Route("/{version}/notifications/push/disable-dependencies", "GET")
 // @Api(Description="Lists push disable dependencies")
@@ -14001,12 +12756,20 @@ type GetPushDisableDependencies struct {
 	CodeMashRequestBase
 }
 
+func (GetPushDisableDependencies) CreateResponse() (r GetNotificationModuleDisableDependenciesResponse) {
+	return
+}
+func (GetPushDisableDependencies) HttpMethod() string { return "GET" }
+
 /** @description Enable push service */
 // @Route("/{version}/notifications/push/enable", "GET")
 // @Api(Description="Enable push service")
 type EnablePush struct {
 	CodeMashRequestBase
 }
+
+func (EnablePush) CreateResponse() (r EmptyResponse) { return }
+func (EnablePush) HttpMethod() string                { return "GET" }
 
 /** @description Archives push template */
 // @Route("/{version}/notifications/push/templates/{Id}/archive", "PUT")
@@ -14018,6 +12781,9 @@ type ArchivePushTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (ArchivePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (ArchivePushTemplateRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Clones push template */
 // @Route("/{version}/notifications/push/templates/{Id}/clone", "POST")
 // @Api(Description="Clones push template")
@@ -14028,12 +12794,18 @@ type ClonePushTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (ClonePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (ClonePushTemplateRequest) HttpMethod() string                { return "POST" }
+
 /** @description Create push template */
 // @Route("/{version}/notifications/push/templates", "POST")
 // @Api(Description="Create push template")
 type CreatePushTemplateRequest struct {
 	SavePushTemplate
 }
+
+func (CreatePushTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (CreatePushTemplateRequest) HttpMethod() string             { return "POST" }
 
 /** @description Delete push template */
 // @Route("/{version}/notifications/push/templates/{Id}", "DELETE")
@@ -14045,6 +12817,9 @@ type DeletePushTemplateRequest struct {
 	Id string `json:"id"`
 }
 
+func (DeletePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeletePushTemplateRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Gets a push template */
 // @Route("/{version}/notifications/push/templates/{id}", "GET")
 // @Api(Description="Gets a push template")
@@ -14054,6 +12829,9 @@ type GetPushTemplate struct {
 	// @ApiMember(Description="The push template id to fetch. Get it from get_push_templates.")
 	Id string `json:"id"`
 }
+
+func (GetPushTemplate) CreateResponse() (r GetPushTemplateResponse) { return }
+func (GetPushTemplate) HttpMethod() string                          { return "GET" }
 
 /** @description Gets push templates */
 // @Route("/{version}/notifications/push/templates", "GET")
@@ -14068,6 +12846,9 @@ type GetPushTemplates struct {
 	TemplateId *string `json:"templateId,omitempty"`
 }
 
+func (GetPushTemplates) CreateResponse() (r GetPushTemplatesResponse) { return }
+func (GetPushTemplates) HttpMethod() string                           { return "GET" }
+
 /** @description Gets push template content tokens */
 // @Route("/{version}/notifications/push/templates/{id}/tokens", "GET")
 // @Api(Description="Gets push template content tokens")
@@ -14077,6 +12858,9 @@ type GetPushMessageContentTokens struct {
 	// @ApiMember(Description="The push template id to scan for tokens. Get it from get_push_templates.")
 	Id string `json:"id"`
 }
+
+func (GetPushMessageContentTokens) CreateResponse() (r GetPushMessageContentTokensResponse) { return }
+func (GetPushMessageContentTokens) HttpMethod() string                                      { return "GET" }
 
 /** @description Renders a push template field */
 // @Route("/{version}/notifications/push/templates/render", "POST")
@@ -14094,6 +12878,9 @@ type RenderPush struct {
 	IsForPreview bool `json:"isForPreview,omitempty"`
 }
 
+func (RenderPush) CreateResponse() (r RenderPushResponse) { return }
+func (RenderPush) HttpMethod() string                     { return "POST" }
+
 /** @description Un-archives push template */
 // @Route("/{version}/notifications/push/templates/{Id}/unarchive", "PUT")
 // @Api(Description="Un-archives push template")
@@ -14103,6 +12890,9 @@ type UnArchivePushTemplateRequest struct {
 	// @ApiMember(Description="The push template id to unarchive.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (UnArchivePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (UnArchivePushTemplateRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Edit push template */
 // @Route("/{version}/notifications/push/templates", "PUT")
@@ -14114,6 +12904,9 @@ type UpdatePushTemplateRequest struct {
 	ViewId string `json:"viewId"`
 }
 
+func (UpdatePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdatePushTemplateRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Gets push settings */
 // @Route("/{version}/notifications/push/settings", "GET")
 // @Api(Description="Gets push settings")
@@ -14123,6 +12916,9 @@ type GetPushSettings struct {
 	// @ApiMember(Description="The push settings id to fetch.")
 	Id string `json:"id"`
 }
+
+func (GetPushSettings) CreateResponse() (r GetPushSettingsResponse) { return }
+func (GetPushSettings) HttpMethod() string                          { return "GET" }
 
 /** @description Confirm human delivery of a test push */
 // @Route("/{version}/notifications/push/integrations/confirm-human-delivery", "POST")
@@ -14136,6 +12932,9 @@ type ConfirmPushIntegrationHumanDeliveryRequest struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (ConfirmPushIntegrationHumanDeliveryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ConfirmPushIntegrationHumanDeliveryRequest) HttpMethod() string                { return "POST" }
+
 /** @description Delete push integration */
 // @Route("/{version}/notifications/push/integrations/{Id}", "DELETE")
 // @Api(Description="Delete push integration")
@@ -14145,6 +12944,9 @@ type DeletePushIntegrationRequest struct {
 	// @ApiMember(Description="The push integration id to delete. Get it from get_push_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeletePushIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeletePushIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Disable push integration */
 // @Route("/{version}/notifications/push/integrations/{Id}/disable", "PUT")
@@ -14156,6 +12958,9 @@ type DisablePushIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisablePushIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisablePushIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Enable push integration */
 // @Route("/{version}/notifications/push/integrations/{Id}/enable", "PUT")
 // @Api(Description="Enable push integration")
@@ -14165,6 +12970,9 @@ type EnablePushIntegrationRequest struct {
 	// @ApiMember(Description="The push integration id to enable. Get it from get_push_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnablePushIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnablePushIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Gets a push integration */
 // @Route("/{version}/notifications/push/integrations/{id}", "GET")
@@ -14176,6 +12984,9 @@ type GetPushIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetPushIntegration) CreateResponse() (r GetPushIntegrationResponse) { return }
+func (GetPushIntegration) HttpMethod() string                             { return "GET" }
+
 /** @description Gets push integrations */
 // @Route("/{version}/notifications/push/integrations", "GET")
 // @Api(Description="Gets push integrations")
@@ -14183,13 +12994,19 @@ type GetPushIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
 
+func (GetPushIntegrations) CreateResponse() (r GetPushIntegrationsResponse) { return }
+func (GetPushIntegrations) HttpMethod() string                              { return "GET" }
+
 // @Route("/{version}/notifications/push/integrations", "POST")
 // @DataContract
 type SavePushIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration PushIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SavePushIntegration) CreateResponse() (r IdResponse) { return }
+func (SavePushIntegration) HttpMethod() string             { return "POST" }
 
 /** @description Sets push integration as default */
 // @Route("/{version}/notifications/push/integrations/{Id}/default", "PUT")
@@ -14200,6 +13017,9 @@ type SetPushIntegrationAsDefaultRequest struct {
 	// @ApiMember(Description="The push integration id to set as default. Get it from get_push_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (SetPushIntegrationAsDefaultRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetPushIntegrationAsDefaultRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Test push integration */
 // @Route("/{version}/notifications/push/integrations/test", "POST")
@@ -14220,16 +13040,8 @@ type TestPushIntegration struct {
 	DeliveryFamily *string `json:"deliveryFamily,omitempty"`
 }
 
-// @Route("/{version}/notifications/push/integrations/app/request", "POST")
-type RegisterCodeMashAppPushIntegration struct {
-	CodeMashRequestBase
-	AccountId string    `json:"accountId"`
-	UserId    string    `json:"userId"`
-	RequestId string    `json:"requestId"`
-	Pin       int       `json:"pin,omitempty"`
-	ValidTill time.Time `json:"validTill,omitempty"`
-	PublicKey string    `json:"publicKey"`
-}
+func (TestPushIntegration) CreateResponse() (r TestEmailIntegrationResponse) { return }
+func (TestPushIntegration) HttpMethod() string                               { return "POST" }
 
 /** @description Registers a device for push notifications */
 // @Route("/{version}/notifications/push/devices", "POST")
@@ -14257,6 +13069,47 @@ type RegisterDevice struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (RegisterDevice) CreateResponse() (r IdResponse) { return }
+func (RegisterDevice) HttpMethod() string             { return "POST" }
+
+/** @description Gets a registered push device */
+// @Route("/{version}/notifications/push/devices/{id}", "GET")
+// @Api(Description="Gets a registered push device")
+type GetPushDevice struct {
+	CodeMashRequestBase
+	/** @description The device id to fetch. Get it from get_push_devices. */
+	// @ApiMember(Description="The device id to fetch. Get it from get_push_devices.")
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushDevice) CreateResponse() (r GetPushDeviceResponse) { return }
+func (GetPushDevice) HttpMethod() string                        { return "GET" }
+
+/** @description Gets registered push devices */
+// @Route("/{version}/notifications/push/devices", "GET")
+// @Api(Description="Gets registered push devices")
+type GetPushDevices struct {
+	CodeMashListPaginationRequestBase
+	/** @description Optional: only the devices of this user. */
+	// @ApiMember(Description="Optional: only the devices of this user.")
+	UserId *string `json:"userId,omitempty"`
+	/** @description Optional: only the device registered with this provider token. */
+	// @ApiMember(Description="Optional: only the device registered with this provider token.")
+	DeviceKey *string `json:"deviceKey,omitempty"`
+	/** @description Optional: only devices of this platform — ios, android, chrome, safari or expo. */
+	// @ApiMember(Description="Optional: only devices of this platform — ios, android, chrome, safari or expo.")
+	Platform *string `json:"platform,omitempty"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushDevices) CreateResponse() (r GetPushDevicesResponse) { return }
+func (GetPushDevices) HttpMethod() string                         { return "GET" }
+
 /** @description Create push campaign */
 // @Route("/{version}/notifications/push/campaigns", "POST")
 // @Api(Description="Create push campaign")
@@ -14267,7 +13120,14 @@ type CreatePushCampaignRequest struct {
 	Campaign PushCampaignRequest `json:"campaign"`
 	// @DataMember
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-016. Set it only when the user explicitly asked to send now. */
+	// @DataMember
+	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-016. Set it only when the user explicitly asked to send now.")
+	SendNow *bool `json:"sendNow,omitempty"`
 }
+
+func (CreatePushCampaignRequest) CreateResponse() (r IdResponse) { return }
+func (CreatePushCampaignRequest) HttpMethod() string             { return "POST" }
 
 /** @description Deletes push campaign from queue */
 // @Route("/{version}/notifications/push/campaigns/{Id}", "DELETE")
@@ -14275,7 +13135,18 @@ type CreatePushCampaignRequest struct {
 // @DataContract
 type DeletePushCampaignRequest struct {
 	CodeMashRequestBase
+	/** @description The push campaign id to delete. Get it from get_push_campaigns. */
+	// @DataMember
+	// @ApiMember(Description="The push campaign id to delete. Get it from get_push_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @DataMember
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (DeletePushCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeletePushCampaignRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Gets push campaign by id */
 // @Route("/{version}/notifications/push/campaigns/{id}", "GET")
@@ -14289,6 +13160,9 @@ type GetPushCampaign struct {
 	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
+
+func (GetPushCampaign) CreateResponse() (r GetPushCampaignResponse) { return }
+func (GetPushCampaign) HttpMethod() string                          { return "GET" }
 
 /** @description Gets push campaigns */
 // @Route("/{version}/notifications/push/campaigns", "GET")
@@ -14309,6 +13183,9 @@ type GetPushCampaigns struct {
 	To *int64 `json:"to,omitempty"`
 }
 
+func (GetPushCampaigns) CreateResponse() (r GetPushCampaignsResponse) { return }
+func (GetPushCampaigns) HttpMethod() string                           { return "GET" }
+
 /** @description Gets push campaign batches */
 // @Route("/{version}/notifications/push/campaigns/{id}/batches", "GET")
 // @Api(Description="Gets push campaign batches")
@@ -14324,6 +13201,9 @@ type GetPushCampaignBatches struct {
 	// @ApiMember(Description="Optional: only return the batch with this id.")
 	BatchId *string `json:"batchId,omitempty"`
 }
+
+func (GetPushCampaignBatches) CreateResponse() (r GetPushCampaignBatchesResponse) { return }
+func (GetPushCampaignBatches) HttpMethod() string                                 { return "GET" }
 
 /** @description Gets a push campaign batch notification */
 // @Route("/{version}/notifications/push/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
@@ -14344,6 +13224,11 @@ type GetPushCampaignBatchNotification struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetPushCampaignBatchNotification) CreateResponse() (r GetPushCampaignBatchNotificationResponse) {
+	return
+}
+func (GetPushCampaignBatchNotification) HttpMethod() string { return "GET" }
+
 /** @description Gets push campaign batch notifications */
 // @Route("/{version}/notifications/push/campaigns/{id}/batches/{batchId}", "GET")
 // @Api(Description="Gets push campaign batch notifications")
@@ -14360,6 +13245,11 @@ type GetPushCampaignBatchNotifications struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetPushCampaignBatchNotifications) CreateResponse() (r GetPushCampaignBatchNotificationsResponse) {
+	return
+}
+func (GetPushCampaignBatchNotifications) HttpMethod() string { return "GET" }
+
 /** @description Get push campaign statistics */
 // @Route("/{version}/notifications/push/campaigns/{id}/stats", "GET")
 // @Api(Description="Get push campaign statistics")
@@ -14373,15 +13263,27 @@ type GetPushCampaignStatistics struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetPushCampaignStatistics) CreateResponse() (r GetPushCampaignStatisticsResponse) { return }
+func (GetPushCampaignStatistics) HttpMethod() string                                    { return "GET" }
+
 /** @description Returns push preview notification */
 // @Route("/{version}/notifications/push/preview", "GET")
 // @Api(Description="Returns push preview notification")
 type PreviewPushNotification struct {
 	RequestBase
-	/** @description The encrypted preview hash identifying the project and notification. */
-	// @ApiMember(Description="The encrypted preview hash identifying the project and notification.")
+	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
+	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
 	Hash string `json:"hash"`
+	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
+	ProjectId *string `json:"projectId,omitempty"`
+	/** @description Signed-in preview by id: the notification id (needs push:read). With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the notification id (needs push:read). With a hash it must match the hash.")
+	NotificationId *string `json:"notificationId,omitempty"`
 }
+
+func (PreviewPushNotification) CreateResponse() (r PreviewPushNotificationResponse) { return }
+func (PreviewPushNotification) HttpMethod() string                                  { return "GET" }
 
 /** @description Stops a running push campaign */
 // @Route("/{version}/notifications/push/campaigns/{Id}/stop", "POST")
@@ -14389,10 +13291,21 @@ type PreviewPushNotification struct {
 // @DataContract
 type StopPushCampaignRequest struct {
 	CodeMashRequestBase
+	/** @description The campaign id to stop. */
+	// @DataMember
+	// @ApiMember(Description="The campaign id to stop.")
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @DataMember
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (StopPushCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (StopPushCampaignRequest) HttpMethod() string                { return "POST" }
+
 /** @description Gets campaign push notification details */
-// @Route("/{version}/notifications/push/campaigns/{campaignId}/messages/{id}", "GET")
+// @Route("/{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId}", "GET")
 // @Api(Description="Gets campaign push notification details")
 type GetPushCampaignMessage struct {
 	CodeMashRequestBase
@@ -14410,6 +13323,9 @@ type GetPushCampaignMessage struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
+func (GetPushCampaignMessage) CreateResponse() (r GetPushCampaignMessageResponse) { return }
+func (GetPushCampaignMessage) HttpMethod() string                                 { return "GET" }
+
 /** @description Gets push campaign messages */
 // @Route("/{version}/notifications/push/campaigns/{campaignId}/messages", "GET")
 // @Api(Description="Gets push campaign messages")
@@ -14426,107 +13342,8 @@ type GetPushCampaignMessagesRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-type PushIntegrationSaved struct {
-	Integration PushIntegration `json:"integration"`
-}
-
-type PushIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type PushIntegrationHumanDeliveryConfirmed struct {
-	Id             IntegrationId `json:"id"`
-	ConfirmedAtUtc time.Time     `json:"confirmedAtUtc,omitempty"`
-}
-
-type PushIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type PushIntegrationSetAsDefault struct {
-	Env Env           `json:"env"`
-	Id  IntegrationId `json:"id"`
-}
-
-type PushIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type PushIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type PushIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type PushServiceEstablished struct {
-	DefaultTemplates []PushTemplate `json:"defaultTemplates,omitempty"`
-}
-
-type PushServiceEnabled struct {
-}
-
-type PushServiceDisabled struct {
-}
-
-type PushModuleTagSaved struct {
-	Tag                  TagDefinition        `json:"tag"`
-	CommunicationChannel CommunicationChannel `json:"communicationChannel,omitempty"`
-}
-
-type PushModuleTagDeleted struct {
-	Tag                  Tag                  `json:"tag"`
-	CommunicationChannel CommunicationChannel `json:"communicationChannel,omitempty"`
-}
-
-type PushTemplateCreated struct {
-	TemplateId   TemplateId           `json:"templateId"`
-	DisplayName  DisplayName          `json:"displayName"`
-	Translations []MessageTranslation `json:"translations"`
-	Channel      CommunicationChannel `json:"channel,omitempty"`
-	Description  *string              `json:"description,omitempty"`
-	Tags         []Tag                `json:"tags,omitempty"`
-	Env          *Env                 `json:"env,omitempty"`
-}
-
-type PushTemplateUpdated struct {
-	TemplateId   TemplateId           `json:"templateId"`
-	DisplayName  DisplayName          `json:"displayName"`
-	Translations []MessageTranslation `json:"translations"`
-	Channel      CommunicationChannel `json:"channel,omitempty"`
-	Description  *string              `json:"description,omitempty"`
-	Tags         []Tag                `json:"tags,omitempty"`
-	Env          *Env                 `json:"env,omitempty"`
-}
-
-type PushTemplateMirrored struct {
-	Template PushTemplate `json:"template"`
-}
-
-type PushTemplateDeleted struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type PushTemplateArchived struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
-
-type PushTemplateUnArchived struct {
-	TemplateId TemplateId `json:"templateId"`
-	Env        *Env       `json:"env,omitempty"`
-}
+func (GetPushCampaignMessagesRequest) CreateResponse() (r GetPushCampaignMessagesResponse) { return }
+func (GetPushCampaignMessagesRequest) HttpMethod() string                                  { return "GET" }
 
 /** @description Disable payments service */
 // @Route("/{version}/payments/disable", "GET")
@@ -14535,12 +13352,18 @@ type DisablePayments struct {
 	CodeMashRequestBase
 }
 
+func (DisablePayments) CreateResponse() (r EmptyResponse) { return }
+func (DisablePayments) HttpMethod() string                { return "GET" }
+
 /** @description Enable payments service */
 // @Route("/{version}/payments/enable", "GET")
 // @Api(Description="Enable payments service")
 type EnablePayments struct {
 	CodeMashRequestBase
 }
+
+func (EnablePayments) CreateResponse() (r EmptyResponse) { return }
+func (EnablePayments) HttpMethod() string                { return "GET" }
 
 /** @description Gets the received payment webhooks log */
 // @Route("/{version}/payments/webhooks/log", "GET")
@@ -14555,6 +13378,9 @@ type GetPaymentsWebhookLog struct {
 	Limit *int `json:"limit,omitempty"`
 }
 
+func (GetPaymentsWebhookLog) CreateResponse() (r GetPaymentsWebhookLogResponse) { return }
+func (GetPaymentsWebhookLog) HttpMethod() string                                { return "GET" }
+
 /** @description Delete payments trigger */
 // @Route("/{version}/payments/triggers/{triggerId}", "DELETE")
 // @Api(Description="Delete payments trigger")
@@ -14562,6 +13388,9 @@ type GetPaymentsWebhookLog struct {
 type DeletePaymentsTrigger struct {
 	DeleteTrigger
 }
+
+func (DeletePaymentsTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DeletePaymentsTrigger) HttpMethod() string                { return "DELETE" }
 
 /** @description Disable payments trigger */
 // @Route("/{version}/payments/triggers/{triggerId}/disable", "PATCH")
@@ -14571,6 +13400,9 @@ type DisablePaymentsTrigger struct {
 	DisableTrigger
 }
 
+func (DisablePaymentsTrigger) CreateResponse() (r EmptyResponse) { return }
+func (DisablePaymentsTrigger) HttpMethod() string                { return "PATCH" }
+
 /** @description Enable payments trigger */
 // @Route("/{version}/payments/triggers/{triggerId}/enable", "PATCH")
 // @Api(Description="Enable payments trigger")
@@ -14579,12 +13411,18 @@ type EnablePaymentsTrigger struct {
 	EnableTrigger
 }
 
+func (EnablePaymentsTrigger) CreateResponse() (r EmptyResponse) { return }
+func (EnablePaymentsTrigger) HttpMethod() string                { return "PATCH" }
+
 /** @description Gets payments trigger by specified Id */
 // @Route("/{version}/payments/triggers/{id}", "GET")
 // @Api(Description="Gets payments trigger by specified Id")
 type GetPaymentsTrigger struct {
 	GetTrigger
 }
+
+func (GetPaymentsTrigger) CreateResponse() (r GetPaymentsTriggerResponse) { return }
+func (GetPaymentsTrigger) HttpMethod() string                             { return "GET" }
 
 /** @description Gets payments triggers */
 // @Route("/{version}/payments/triggers", "GET")
@@ -14593,11 +13431,17 @@ type GetPaymentsTriggers struct {
 	GetTriggers
 }
 
+func (GetPaymentsTriggers) CreateResponse() (r GetPaymentsTriggersResponse) { return }
+func (GetPaymentsTriggers) HttpMethod() string                              { return "GET" }
+
 // @Route("/{version}/payments/triggers", "POST")
 // @DataContract
 type SavePaymentsTrigger struct {
 	SaveTrigger
 }
+
+func (SavePaymentsTrigger) CreateResponse() (r IdResponse) { return }
+func (SavePaymentsTrigger) HttpMethod() string             { return "POST" }
 
 /** @description Confirm that you received or verified the test payment integration outcome. */
 // @Route("/{version}/payments/integrations/confirm-human-delivery", "POST")
@@ -14611,6 +13455,9 @@ type ConfirmPaymentsIntegrationHumanDeliveryRequest struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (ConfirmPaymentsIntegrationHumanDeliveryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ConfirmPaymentsIntegrationHumanDeliveryRequest) HttpMethod() string                { return "POST" }
+
 /** @description Delete integration for particular project */
 // @Route("/{version}/payments/integrations/{Id}", "DELETE")
 // @Api(Description="Delete integration for particular project")
@@ -14620,6 +13467,9 @@ type DeletePaymentsIntegrationRequest struct {
 	// @ApiMember(Description="Payments integration id to delete, from get_payments_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DeletePaymentsIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeletePaymentsIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 /** @description Disable integration for particular project */
 // @Route("/{version}/payments/integrations/{Id}/disable", "PUT")
@@ -14631,6 +13481,9 @@ type DisablePaymentsIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisablePaymentsIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisablePaymentsIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Enable integration for particular project */
 // @Route("/{version}/payments/integrations/{Id}/enable", "PUT")
 // @Api(Description="Enable integration for particular project")
@@ -14640,6 +13493,9 @@ type EnablePaymentsIntegrationRequest struct {
 	// @ApiMember(Description="Payments integration id to enable, from get_payments_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (EnablePaymentsIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnablePaymentsIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Gets integration by specified Id */
 // @Route("/{version}/payments/integrations/{id}", "GET")
@@ -14651,12 +13507,18 @@ type GetPaymentsIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetPaymentsIntegration) CreateResponse() (r GetPaymentsIntegrationResponse) { return }
+func (GetPaymentsIntegration) HttpMethod() string                                 { return "GET" }
+
 /** @description Gets integrations */
 // @Route("/{version}/payments/integrations", "GET")
 // @Api(Description="Gets integrations")
 type GetPaymentsIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetPaymentsIntegrations) CreateResponse() (r GetPaymentsIntegrationsResponse) { return }
+func (GetPaymentsIntegrations) HttpMethod() string                                  { return "GET" }
 
 /** @description Saves payments integration */
 // @Route("/{version}/payments/integrations", "POST")
@@ -14665,8 +13527,11 @@ type GetPaymentsIntegrations struct {
 type SavePaymentsIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration PaymentIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SavePaymentsIntegration) CreateResponse() (r IdResponse) { return }
+func (SavePaymentsIntegration) HttpMethod() string             { return "POST" }
 
 /** @description Test payments integration */
 // @Route("/{version}/payments/integrations/test", "POST")
@@ -14678,75 +13543,8 @@ type TestPaymentsIntegration struct {
 	IntegrationId string `json:"integrationId"`
 }
 
-type PaymentsIntegrationSaved struct {
-	Integration PaymentIntegration `json:"integration"`
-}
-
-type PaymentsIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type PaymentsIntegrationHumanDeliveryConfirmed struct {
-	Id             IntegrationId `json:"id"`
-	ConfirmedAtUtc time.Time     `json:"confirmedAtUtc,omitempty"`
-}
-
-type PaymentsIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type PaymentsIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type PaymentsIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type PaymentsIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type PaymentsEstablished struct {
-}
-
-type PaymentsEnabled struct {
-}
-
-type PaymentsDisabled struct {
-}
-
-type PaymentsTriggerSaved struct {
-	Trigger PaymentTrigger `json:"trigger"`
-}
-
-type PaymentTriggerMirrored struct {
-	Trigger Trigger `json:"trigger"`
-}
-
-type PaymentsTriggerEnabled struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type PaymentsTriggerDisabled struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
-
-type PaymentsTriggerDeleted struct {
-	TriggerByIdEventBase
-	Env Env `json:"env"`
-}
+func (TestPaymentsIntegration) CreateResponse() (r TestPaymentsIntegrationResponse) { return }
+func (TestPaymentsIntegration) HttpMethod() string                                  { return "POST" }
 
 /** @description Disable logging service */
 // @Route("/{version}/logs/disable", "GET")
@@ -14755,6 +13553,9 @@ type DisableLogging struct {
 	CodeMashRequestBase
 }
 
+func (DisableLogging) CreateResponse() (r EmptyResponse) { return }
+func (DisableLogging) HttpMethod() string                { return "GET" }
+
 // @Route("/{version}/logs/enable", "GET")
 type EnableLogging struct {
 	CodeMashRequestBase
@@ -14762,6 +13563,9 @@ type EnableLogging struct {
 	// @ApiMember(DataType="boolean", Description="When true, also create a Norbix Logging integration backed by the project's default database.", Name="createNorbixLogging", ParameterType="query")
 	CreateNorbixLogging bool `json:"createNorbixLogging,omitempty"`
 }
+
+func (EnableLogging) CreateResponse() (r EmptyResponse) { return }
+func (EnableLogging) HttpMethod() string                { return "GET" }
 
 /** @description Delete integration for particular project */
 // @Route("/{version}/logs/integrations/{Id}", "DELETE")
@@ -14776,6 +13580,9 @@ type DeleteLoggingIntegrationRequest struct {
 	WipeLogs bool `json:"wipeLogs,omitempty"`
 }
 
+func (DeleteLoggingIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteLoggingIntegrationRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Disable integration for particular project */
 // @Route("/{version}/logs/integrations/{Id}/disable", "PUT")
 // @Api(Description="Disable integration for particular project")
@@ -14785,6 +13592,9 @@ type DisableLoggingIntegrationRequest struct {
 	// @ApiMember(Description="Logging integration id to disable, from get_logging_integrations.", IsRequired=true)
 	Id string `json:"id"`
 }
+
+func (DisableLoggingIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableLoggingIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 /** @description Enable integration for particular project */
 // @Route("/{version}/logs/integrations/{Id}/enable", "PUT")
@@ -14796,6 +13606,9 @@ type EnableLoggingIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (EnableLoggingIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableLoggingIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 /** @description Gets integration by specified Id */
 // @Route("/{version}/logs/integrations/{id}", "GET")
 // @Api(Description="Gets integration by specified Id")
@@ -14806,12 +13619,18 @@ type GetLoggingIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetLoggingIntegration) CreateResponse() (r GetLoggingIntegrationResponse) { return }
+func (GetLoggingIntegration) HttpMethod() string                                { return "GET" }
+
 /** @description Gets integrations */
 // @Route("/{version}/logs/integrations", "GET")
 // @Api(Description="Gets integrations")
 type GetLoggingIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetLoggingIntegrations) CreateResponse() (r GetLoggingIntegrationsResponse) { return }
+func (GetLoggingIntegrations) HttpMethod() string                                 { return "GET" }
 
 /** @description Saves logging integration */
 // @Route("/{version}/logs/integrations", "POST")
@@ -14820,8 +13639,11 @@ type GetLoggingIntegrations struct {
 type SaveLoggingIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration LoggingIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveLoggingIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveLoggingIntegration) HttpMethod() string             { return "POST" }
 
 /** @description Test logging integration */
 // @Route("/{version}/logs/integrations/test", "POST")
@@ -14833,12 +13655,18 @@ type TestLoggingIntegration struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (TestLoggingIntegration) CreateResponse() (r TestLoggingIntegrationResponse) { return }
+func (TestLoggingIntegration) HttpMethod() string                                 { return "POST" }
+
 /** @description Delete every log entry stored in the project's Norbix Logging integration */
 // @Route("/{version}/logs/clean", "POST")
 // @Api(Description="Delete every log entry stored in the project's Norbix Logging integration")
 type CleanLogs struct {
 	CodeMashRequestBase
 }
+
+func (CleanLogs) CreateResponse() (r CleanLogsResponse) { return }
+func (CleanLogs) HttpMethod() string                    { return "POST" }
 
 /** @description Fetch the audit trail for a correlation id */
 // @Route("/{version}/logs/audit", "GET")
@@ -14849,6 +13677,9 @@ type GetLogsByCorrelationId struct {
 	// @ApiMember(DataType="string", Description="The correlation id whose full request trail you want.", IsRequired=true, Name="correlationId", ParameterType="query")
 	TargetCorrelationId string `json:"targetCorrelationId"`
 }
+
+func (GetLogsByCorrelationId) CreateResponse() (r GetLogsByCorrelationIdResponse) { return }
+func (GetLogsByCorrelationId) HttpMethod() string                                 { return "GET" }
 
 /** @description Fetch a filtered, cursor-paged list of tenant log entries */
 // @Route("/{version}/logs", "GET")
@@ -14878,12 +13709,18 @@ type GetLogs struct {
 	ToUtc *time.Time `json:"toUtc,omitempty"`
 }
 
+func (GetLogs) CreateResponse() (r GetLogsResponse) { return }
+func (GetLogs) HttpMethod() string                  { return "GET" }
+
 /** @description Fetch the per-project log settings (flags) */
 // @Route("/{version}/logs/settings", "GET")
 // @Api(Description="Fetch the per-project log settings (flags)")
 type GetLogSettings struct {
 	CodeMashRequestBase
 }
+
+func (GetLogSettings) CreateResponse() (r GetLogSettingsResponse) { return }
+func (GetLogSettings) HttpMethod() string                         { return "GET" }
 
 /** @description Update the per-project log settings (flags) */
 // @Route("/{version}/logs/settings", "POST")
@@ -14901,76 +13738,18 @@ type SaveLogSettings struct {
 	AiChatLoggingEnabled bool `json:"aiChatLoggingEnabled,omitempty"`
 }
 
-type LoggingIntegrationSaved struct {
-	Integration LoggingIntegration `json:"integration"`
+func (SaveLogSettings) CreateResponse() (r SaveLogSettingsResponse) { return }
+func (SaveLogSettings) HttpMethod() string                          { return "POST" }
+
+/** @description Paste-ready prompt and client snippets to connect an AI tool to this installation. */
+// @Route("/{version}/account/agent/onboarding", "GET")
+// @Api(Description="Paste-ready prompt and client snippets to connect an AI tool to this installation.")
+type GetAgentOnboardingRequest struct {
+	RequestBase
 }
 
-type LoggingIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationRenamed struct {
-	Id   IntegrationId `json:"id"`
-	Name DisplayName   `json:"name"`
-	Env  *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationSecretsConfigured struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationSecretsConfigurationFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationSecretsCleared struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationSecretsClearingFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LoggingIntegrationSetAsDefault struct {
-	Id IntegrationId `json:"id"`
-}
-
-type NorbixLoggingLogsWipeRequested struct {
-	DeletedIntegrationId  IntegrationId `json:"deletedIntegrationId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-}
-
-type LoggingEstablished struct {
-}
-
-type LoggingEnabled struct {
-}
-
-type LoggingDisabled struct {
-}
+func (GetAgentOnboardingRequest) CreateResponse() (r GetAgentOnboardingResponse) { return }
+func (GetAgentOnboardingRequest) HttpMethod() string                             { return "GET" }
 
 /** @description Lists the AI tools this host exposes (external-agent bridge). */
 // @Route("/{version}/account/ai/tools", "GET")
@@ -14979,6 +13758,9 @@ type GetAiToolsRequest struct {
 	RequestBase
 	Toolset *string `json:"toolset,omitempty"`
 }
+
+func (GetAiToolsRequest) CreateResponse() (r GetAiToolsResponse) { return }
+func (GetAiToolsRequest) HttpMethod() string                     { return "GET" }
 
 /** @description Invokes one AI tool directly (external-agent bridge). */
 // @Route("/{version}/account/ai/tools/{ToolName}", "POST")
@@ -14989,14 +13771,8 @@ type InvokeAiToolRequest struct {
 	ArgumentsJson *string `json:"argumentsJson,omitempty"`
 }
 
-/** @description Gets account info. */
-// @Route("/{version}/account/chat/complete", "POST")
-// @Api(Description="Gets account info.")
-type AskChatRequest struct {
-	RequestBase
-	Prompt  string  `json:"prompt"`
-	Profile *string `json:"profile,omitempty"`
-}
+func (InvokeAiToolRequest) CreateResponse() (r InvokeAiToolResponse) { return }
+func (InvokeAiToolRequest) HttpMethod() string                       { return "POST" }
 
 /** @description Uploads a file into an AI chat session. */
 // @Route("/{version}/account/chat/attachments", "POST")
@@ -15013,6 +13789,9 @@ type UploadChatAttachmentRequest struct {
 	Env           *string `json:"env,omitempty"`
 }
 
+func (UploadChatAttachmentRequest) CreateResponse() (r UploadChatAttachmentResponse) { return }
+func (UploadChatAttachmentRequest) HttpMethod() string                               { return "POST" }
+
 /** @description Reports AI chat availability and the model-picker menu. */
 // @Route("/{version}/account/chat/availability", "GET")
 // @Api(Description="Reports AI chat availability and the model-picker menu.")
@@ -15022,6 +13801,9 @@ type ChatAvailabilityRequest struct {
 	Env       *string `json:"env,omitempty"`
 }
 
+func (ChatAvailabilityRequest) CreateResponse() (r ChatAvailabilityResponse) { return }
+func (ChatAvailabilityRequest) HttpMethod() string                           { return "GET" }
+
 /** @description Lists what the AI assistant remembers about this account. */
 // @Route("/{version}/account/chat/memory", "GET")
 // @Api(Description="Lists what the AI assistant remembers about this account.")
@@ -15029,6 +13811,9 @@ type GetChatMemoryRequest struct {
 	RequestBase
 	ProjectId *string `json:"projectId,omitempty"`
 }
+
+func (GetChatMemoryRequest) CreateResponse() (r GetChatMemoryResponse) { return }
+func (GetChatMemoryRequest) HttpMethod() string                        { return "GET" }
 
 /** @description Deletes one AI memory note ('forget this'). */
 // @Route("/{version}/account/chat/memory/{NoteId}", "DELETE")
@@ -15038,6 +13823,9 @@ type ForgetChatMemoryRequest struct {
 	NoteId string `json:"noteId"`
 }
 
+func (ForgetChatMemoryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ForgetChatMemoryRequest) HttpMethod() string                { return "DELETE" }
+
 /** @description Deletes an AI chat session (soft delete). */
 // @Route("/{version}/account/chat/sessions/{SessionId}", "DELETE")
 // @Api(Description="Deletes an AI chat session (soft delete).")
@@ -15045,6 +13833,9 @@ type DeleteChatSessionRequest struct {
 	RequestBase
 	SessionId string `json:"sessionId"`
 }
+
+func (DeleteChatSessionRequest) CreateResponse() (r IdResponse) { return }
+func (DeleteChatSessionRequest) HttpMethod() string             { return "DELETE" }
 
 /** @description Archives or unarchives an AI chat session. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/archive", "PATCH")
@@ -15055,6 +13846,9 @@ type SetChatSessionArchivedRequest struct {
 	Archived  bool   `json:"archived,omitempty"`
 }
 
+func (SetChatSessionArchivedRequest) CreateResponse() (r IdResponse) { return }
+func (SetChatSessionArchivedRequest) HttpMethod() string             { return "PATCH" }
+
 /** @description Pins or unpins an AI chat session. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/pin", "PATCH")
 // @Api(Description="Pins or unpins an AI chat session.")
@@ -15063,6 +13857,9 @@ type SetChatSessionPinnedRequest struct {
 	SessionId string `json:"sessionId"`
 	Pinned    bool   `json:"pinned,omitempty"`
 }
+
+func (SetChatSessionPinnedRequest) CreateResponse() (r IdResponse) { return }
+func (SetChatSessionPinnedRequest) HttpMethod() string             { return "PATCH" }
 
 /** @description Marks or unmarks an AI chat session as "do not share". */
 // @Route("/{version}/account/chat/sessions/{SessionId}/sharing", "PATCH")
@@ -15073,6 +13870,9 @@ type SetChatSessionSharingRequest struct {
 	DoNotShare bool   `json:"doNotShare,omitempty"`
 }
 
+func (SetChatSessionSharingRequest) CreateResponse() (r IdResponse) { return }
+func (SetChatSessionSharingRequest) HttpMethod() string             { return "PATCH" }
+
 /** @description Lists the account's recent AI chat sessions. */
 // @Route("/{version}/account/chat/sessions", "GET")
 // @Api(Description="Lists the account's recent AI chat sessions.")
@@ -15082,6 +13882,9 @@ type GetChatSessionsRequest struct {
 	IncludeArchived *bool `json:"includeArchived,omitempty"`
 }
 
+func (GetChatSessionsRequest) CreateResponse() (r GetChatSessionsResponse) { return }
+func (GetChatSessionsRequest) HttpMethod() string                          { return "GET" }
+
 /** @description Returns one AI chat session's conversation entries — the transcript. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/entries", "GET")
 // @Api(Description="Returns one AI chat session's conversation entries — the transcript.")
@@ -15090,6 +13893,9 @@ type GetChatSessionEntriesRequest struct {
 	SessionId string `json:"sessionId"`
 	SinceSeq  *int64 `json:"sinceSeq,omitempty"`
 }
+
+func (GetChatSessionEntriesRequest) CreateResponse() (r GetChatSessionEntriesResponse) { return }
+func (GetChatSessionEntriesRequest) HttpMethod() string                                { return "GET" }
 
 /** @description Records like / dislike feedback on one AI chat entry, or clears it. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/entries/{EntryId}/feedback", "POST")
@@ -15101,6 +13907,9 @@ type SetChatEntryFeedbackRequest struct {
 	Feedback  *string `json:"feedback,omitempty"`
 }
 
+func (SetChatEntryFeedbackRequest) CreateResponse() (r IdResponse) { return }
+func (SetChatEntryFeedbackRequest) HttpMethod() string             { return "POST" }
+
 /** @description Answers one open AI chat question — or a prepared change's Apply / Skip — and continues the conversation. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/questions/{EntryId}/answer", "POST")
 // @Api(Description="Answers one open AI chat question — or a prepared change's Apply / Skip — and continues the conversation.")
@@ -15110,6 +13919,9 @@ type AnswerChatQuestionRequest struct {
 	EntryId   string            `json:"entryId"`
 	Answers   map[string]string `json:"answers,omitempty"`
 }
+
+func (AnswerChatQuestionRequest) CreateResponse() (r IdResponse) { return }
+func (AnswerChatQuestionRequest) HttpMethod() string             { return "POST" }
 
 /** @description Approves or rejects a proposed AI chat plan. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/plans/{EntryId}/decision", "POST")
@@ -15122,6 +13934,9 @@ type DecideChatPlanRequest struct {
 	Comment   *string `json:"comment,omitempty"`
 }
 
+func (DecideChatPlanRequest) CreateResponse() (r IdResponse) { return }
+func (DecideChatPlanRequest) HttpMethod() string             { return "POST" }
+
 /** @description Stops one running step of an AI chat plan run. */
 // @Route("/{version}/account/chat/sessions/{SessionId}/steps/{EntryId}/stop", "POST")
 // @Api(Description="Stops one running step of an AI chat plan run.")
@@ -15130,6 +13945,9 @@ type StopChatRunStepRequest struct {
 	SessionId string `json:"sessionId"`
 	EntryId   string `json:"entryId"`
 }
+
+func (StopChatRunStepRequest) CreateResponse() (r IdResponse) { return }
+func (StopChatRunStepRequest) HttpMethod() string             { return "POST" }
 
 /** @description Runs one AI chat conversation turn. */
 // @Route("/{version}/account/chat/turn", "POST")
@@ -15147,6 +13965,9 @@ type ChatTurnRequest struct {
 	ScreenContext    *ChatScreenContextDto `json:"screenContext,omitempty"`
 }
 
+func (ChatTurnRequest) CreateResponse() (r ChatTurnResponse) { return }
+func (ChatTurnRequest) HttpMethod() string                   { return "POST" }
+
 /** @description MCP server endpoint — JSON-RPC 2.0 over HTTP POST exposing the AI tool catalog. */
 // @Route("/{version}/account/mcp", "POST")
 // @Api(Description="MCP server endpoint — JSON-RPC 2.0 over HTTP POST exposing the AI tool catalog.")
@@ -15154,6 +13975,9 @@ type McpRequest struct {
 	Version       *string `json:"version,omitempty"`
 	RequestStream []byte  `json:"requestStream"`
 }
+
+func (McpRequest) CreateResponse() (r string) { return }
+func (McpRequest) HttpMethod() string         { return "POST" }
 
 /** @description Reads a project's AI Brief: the requirements, decisions and assumptions the assistant recorded from conversations, each with the chat turn, user and time it came from. */
 // @Route("/{version}/projects/{projectId}/ai/brief", "GET")
@@ -15165,6 +13989,9 @@ type GetProjectBriefRequest struct {
 	SinceSeq *int64 `json:"sinceSeq,omitempty"`
 }
 
+func (GetProjectBriefRequest) CreateResponse() (r GetProjectBriefResponse) { return }
+func (GetProjectBriefRequest) HttpMethod() string                          { return "GET" }
+
 /** @description Lists a project's AI work items: one serious ask each, with its goal, plans, changes, moved-out items, needs-you list and open questions. */
 // @Route("/{version}/projects/{projectId}/ai/work-items", "GET")
 // @Api(Description="Lists a project's AI work items: one serious ask each, with its goal, plans, changes, moved-out items, needs-you list and open questions.")
@@ -15175,6 +14002,9 @@ type GetWorkItemsRequest struct {
 	Status *string `json:"status,omitempty"`
 }
 
+func (GetWorkItemsRequest) CreateResponse() (r GetWorkItemsResponse) { return }
+func (GetWorkItemsRequest) HttpMethod() string                       { return "GET" }
+
 /** @description Reads one AI work item: the six long-task sections and the definition-of-done verdict. */
 // @Route("/{version}/projects/{projectId}/ai/work-items/{WorkItemId}", "GET")
 // @Api(Description="Reads one AI work item: the six long-task sections and the definition-of-done verdict.")
@@ -15183,6 +14013,9 @@ type GetWorkItemRequest struct {
 	WorkItemId string `json:"workItemId"`
 }
 
+func (GetWorkItemRequest) CreateResponse() (r GetWorkItemResponse) { return }
+func (GetWorkItemRequest) HttpMethod() string                      { return "GET" }
+
 /** @description Exports one AI work item as markdown in the long-task shape: Goal, Plan, Changes, Rejected / moved out, Needs you, Open questions. */
 // @Route("/{version}/projects/{projectId}/ai/work-items/{WorkItemId}/export.md", "GET")
 // @Api(Description="Exports one AI work item as markdown in the long-task shape: Goal, Plan, Changes, Rejected / moved out, Needs you, Open questions.")
@@ -15190,6 +14023,9 @@ type ExportWorkItemRequest struct {
 	CodeMashRequestBase
 	WorkItemId string `json:"workItemId"`
 }
+
+func (ExportWorkItemRequest) CreateResponse() (r ExportWorkItemResponse) { return }
+func (ExportWorkItemRequest) HttpMethod() string                         { return "GET" }
 
 /** @description Ticks one manual line of a work item's "Needs you" checklist — the one write a human makes to a work item directly. */
 // @Route("/{version}/projects/{projectId}/ai/work-items/{WorkItemId}/needs-you/{Index}/done", "POST")
@@ -15203,6 +14039,9 @@ type MarkNeedsYouDoneRequest struct {
 	Done *bool `json:"done,omitempty"`
 }
 
+func (MarkNeedsYouDoneRequest) CreateResponse() (r IdResponse) { return }
+func (MarkNeedsYouDoneRequest) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/ai/integrations/llms/{Id}", "DELETE")
 type DeleteLlmIntegrationRequest struct {
 	CodeMashRequestBase
@@ -15210,6 +14049,9 @@ type DeleteLlmIntegrationRequest struct {
 	// @ApiMember(Description="Id of the LLM integration to delete.")
 	Id string `json:"id"`
 }
+
+func (DeleteLlmIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteLlmIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/ai/integrations/llms/{Id}/disable", "PUT")
 type DisableLlmIntegrationRequest struct {
@@ -15219,6 +14061,9 @@ type DisableLlmIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisableLlmIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableLlmIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/ai/integrations/llms/{Id}/enable", "PUT")
 type EnableLlmIntegrationRequest struct {
 	CodeMashRequestBase
@@ -15226,6 +14071,9 @@ type EnableLlmIntegrationRequest struct {
 	// @ApiMember(Description="Id of the LLM integration to enable.")
 	Id string `json:"id"`
 }
+
+func (EnableLlmIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableLlmIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/ai/integrations/llms/{id}", "GET")
 type GetLlmIntegration struct {
@@ -15235,18 +14083,27 @@ type GetLlmIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetLlmIntegration) CreateResponse() (r GetLlmIntegrationResponse) { return }
+func (GetLlmIntegration) HttpMethod() string                            { return "GET" }
+
 // @Route("/{version}/ai/integrations/llms/integrations", "GET")
 type GetLlmIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetLlmIntegrations) CreateResponse() (r GetLlmIntegrationsResponse) { return }
+func (GetLlmIntegrations) HttpMethod() string                             { return "GET" }
 
 // @Route("/{version}/ai/integrations/llms/", "POST")
 // @DataContract
 type SaveLlmIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration LlmIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveLlmIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveLlmIntegration) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/ai/integrations/llms/test", "POST")
 type TestLlmIntegration struct {
@@ -15256,6 +14113,9 @@ type TestLlmIntegration struct {
 	IntegrationId string `json:"integrationId"`
 }
 
+func (TestLlmIntegration) CreateResponse() (r TestLlmIntegrationResponse) { return }
+func (TestLlmIntegration) HttpMethod() string                             { return "POST" }
+
 // @Route("/{version}/ai/integrations/mcp/{Id}", "DELETE")
 type DeleteMcpIntegrationRequest struct {
 	CodeMashRequestBase
@@ -15263,6 +14123,9 @@ type DeleteMcpIntegrationRequest struct {
 	// @ApiMember(Description="Id of the MCP integration to delete.")
 	Id string `json:"id"`
 }
+
+func (DeleteMcpIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteMcpIntegrationRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/ai/integrations/mcp/{Id}/disable", "PUT")
 type DisableMcpIntegrationRequest struct {
@@ -15272,6 +14135,9 @@ type DisableMcpIntegrationRequest struct {
 	Id string `json:"id"`
 }
 
+func (DisableMcpIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableMcpIntegrationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/ai/integrations/mcp/{Id}/enable", "PUT")
 type EnableMcpIntegrationRequest struct {
 	CodeMashRequestBase
@@ -15279,6 +14145,9 @@ type EnableMcpIntegrationRequest struct {
 	// @ApiMember(Description="Id of the MCP integration to enable.")
 	Id string `json:"id"`
 }
+
+func (EnableMcpIntegrationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableMcpIntegrationRequest) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/ai/integrations/mcp/{id}", "GET")
 type GetMcpIntegration struct {
@@ -15288,18 +14157,27 @@ type GetMcpIntegration struct {
 	Id string `json:"id"`
 }
 
+func (GetMcpIntegration) CreateResponse() (r GetMcpIntegrationResponse) { return }
+func (GetMcpIntegration) HttpMethod() string                            { return "GET" }
+
 // @Route("/{version}/ai/integrations/mcp/integrations", "GET")
 type GetMcpIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
+
+func (GetMcpIntegrations) CreateResponse() (r GetMcpIntegrationsResponse) { return }
+func (GetMcpIntegrations) HttpMethod() string                             { return "GET" }
 
 // @Route("/{version}/ai/integrations/mcp/", "POST")
 // @DataContract
 type SaveMcpIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration McpIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
+
+func (SaveMcpIntegration) CreateResponse() (r IdResponse) { return }
+func (SaveMcpIntegration) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/ai/integrations/mcp/test", "POST")
 type TestMcpIntegration struct {
@@ -15309,123 +14187,8 @@ type TestMcpIntegration struct {
 	IntegrationId string `json:"integrationId"`
 }
 
-type LlmIntegrationSaved struct {
-	LlmIntegration LlmIntegration `json:"llmIntegration"`
-}
-
-type LlmIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LlmIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LlmIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LlmIntegrationSecretsConfigured struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LlmIntegrationSecretsConfigurationFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type LlmIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type McpIntegrationSaved struct {
-	McpIntegration McpIntegration `json:"mcpIntegration"`
-}
-
-type McpIntegrationDeleted struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type McpIntegrationEnabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type McpIntegrationDisabled struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type McpIntegrationSecretsConfigured struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type McpIntegrationSecretsConfigurationFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type McpIntegrationTested struct {
-	Id            IntegrationId `json:"id"`
-	Succeeded     bool          `json:"succeeded,omitempty"`
-	ErrorMessages IReadOnlyList `json:"errorMessages"`
-	TestedAtUtc   time.Time     `json:"testedAtUtc,omitempty"`
-	Env           *Env          `json:"env,omitempty"`
-}
-
-type WebhookIntegrationSaved struct {
-	Integration WebhookIntegration `json:"integration"`
-}
-
-type WebhookIntegrationExtraHeadersChanged struct {
-	Id           IntegrationId        `json:"id"`
-	ExtraHeaders *IReadOnlyDictionary `json:"extraHeaders,omitempty"`
-}
-
-type WebhookIntegrationSecretsConfigured struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type WebhookIntegrationSecretsConfigurationFailed struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type WebhookIntegrationSecretsCleared struct {
-	Id  IntegrationId `json:"id"`
-	Env *Env          `json:"env,omitempty"`
-}
-
-type WebhookDestinationSaved struct {
-	IntegrationId IntegrationId      `json:"integrationId"`
-	Destination   WebhookDestination `json:"destination"`
-}
-
-type WebhookDestinationRemoved struct {
-	IntegrationId IntegrationId        `json:"integrationId"`
-	DestinationId WebhookDestinationId `json:"destinationId"`
-}
-
-type WebhookDestinationEnabled struct {
-	IntegrationId IntegrationId        `json:"integrationId"`
-	DestinationId WebhookDestinationId `json:"destinationId"`
-}
-
-type WebhookDestinationDisabled struct {
-	IntegrationId IntegrationId        `json:"integrationId"`
-	DestinationId WebhookDestinationId `json:"destinationId"`
-}
+func (TestMcpIntegration) CreateResponse() (r TestLlmIntegrationResponse) { return }
+func (TestMcpIntegration) HttpMethod() string                             { return "POST" }
 
 /** @description Gets the project's webhook integration */
 // @Route("/{version}/webhooks/integration", "GET")
@@ -15434,15 +14197,28 @@ type GetWebhookIntegration struct {
 	CodeMashRequestBase
 }
 
+func (GetWebhookIntegration) CreateResponse() (r GetWebhookIntegrationResponse) { return }
+func (GetWebhookIntegration) HttpMethod() string                                { return "GET" }
+
 // @Route("/{version}/webhooks/integration/secret", "GET")
 type RevealWebhookIntegrationSecretRequest struct {
 	CodeMashRequestBase
 }
 
+func (RevealWebhookIntegrationSecretRequest) CreateResponse() (r RevealWebhookIntegrationSecretResponse) {
+	return
+}
+func (RevealWebhookIntegrationSecretRequest) HttpMethod() string { return "GET" }
+
 // @Route("/{version}/webhooks/integration/secret/rotate", "POST")
 type RotateWebhookIntegrationSecretRequest struct {
 	CodeMashRequestBase
 }
+
+func (RotateWebhookIntegrationSecretRequest) CreateResponse() (r RotateWebhookIntegrationSecretResponse) {
+	return
+}
+func (RotateWebhookIntegrationSecretRequest) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/webhooks/integration/extra-headers", "PUT")
 type UpdateWebhookIntegrationExtraHeadersRequest struct {
@@ -15452,12 +14228,18 @@ type UpdateWebhookIntegrationExtraHeadersRequest struct {
 	ExtraHeaders map[string]string `json:"extraHeaders,omitempty"`
 }
 
+func (UpdateWebhookIntegrationExtraHeadersRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateWebhookIntegrationExtraHeadersRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/webhooks/{source}/{integrationInstanceId}", "POST")
 type ReceiveWebhook struct {
 	Source                string `json:"source"`
 	IntegrationInstanceId string `json:"integrationInstanceId"`
 	RequestStream         []byte `json:"requestStream"`
 }
+
+func (ReceiveWebhook) CreateResponseVoid() {}
+func (ReceiveWebhook) HttpMethod() string  { return "POST" }
 
 // @Route("/{version}/webhooks/destinations/{DestinationId}/disable", "PUT")
 type DisableWebhookDestinationRequest struct {
@@ -15467,6 +14249,9 @@ type DisableWebhookDestinationRequest struct {
 	DestinationId string `json:"destinationId"`
 }
 
+func (DisableWebhookDestinationRequest) CreateResponse() (r EmptyResponse) { return }
+func (DisableWebhookDestinationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/webhooks/destinations/{DestinationId}/enable", "PUT")
 type EnableWebhookDestinationRequest struct {
 	CodeMashRequestBase
@@ -15475,6 +14260,9 @@ type EnableWebhookDestinationRequest struct {
 	DestinationId string `json:"destinationId"`
 }
 
+func (EnableWebhookDestinationRequest) CreateResponse() (r EmptyResponse) { return }
+func (EnableWebhookDestinationRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/webhooks/destinations/{DestinationId}", "DELETE")
 type RemoveWebhookDestinationRequest struct {
 	CodeMashRequestBase
@@ -15482,6 +14270,9 @@ type RemoveWebhookDestinationRequest struct {
 	// @ApiMember(Description="The webhook destination id to remove, from get_webhook_integration.", IsRequired=true)
 	DestinationId string `json:"destinationId"`
 }
+
+func (RemoveWebhookDestinationRequest) CreateResponse() (r EmptyResponse) { return }
+func (RemoveWebhookDestinationRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/webhooks/destinations", "POST")
 type SaveWebhookDestinationRequest struct {
@@ -15506,15 +14297,24 @@ type SaveWebhookDestinationRequest struct {
 	IsEnabled bool `json:"isEnabled,omitempty"`
 }
 
+func (SaveWebhookDestinationRequest) CreateResponse() (r SaveWebhookDestinationResponse) { return }
+func (SaveWebhookDestinationRequest) HttpMethod() string                                 { return "POST" }
+
 // @Route("/{version}/scheduler/disable", "GET")
 type DisableScheduler struct {
 	CodeMashRequestBase
 }
 
+func (DisableScheduler) CreateResponse() (r EmptyResponse) { return }
+func (DisableScheduler) HttpMethod() string                { return "GET" }
+
 // @Route("/{version}/scheduler/enable", "GET")
 type EnableScheduler struct {
 	CodeMashRequestBase
 }
+
+func (EnableScheduler) CreateResponse() (r EmptyResponse) { return }
+func (EnableScheduler) HttpMethod() string                { return "GET" }
 
 // @Route("/{version}/scheduler/tasks/{Id}", "DELETE")
 type DeleteSchedulerTask struct {
@@ -15522,17 +14322,26 @@ type DeleteSchedulerTask struct {
 	Id string `json:"id"`
 }
 
+func (DeleteSchedulerTask) CreateResponse() (r EmptyResponse) { return }
+func (DeleteSchedulerTask) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/scheduler/tasks/{Id}/disable", "PUT")
 type DisableSchedulerTask struct {
 	CodeMashRequestBase
 	Id string `json:"id"`
 }
 
+func (DisableSchedulerTask) CreateResponse() (r EmptyResponse) { return }
+func (DisableSchedulerTask) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/scheduler/tasks/{Id}/enable", "PUT")
 type EnableSchedulerTask struct {
 	CodeMashRequestBase
 	Id string `json:"id"`
 }
+
+func (EnableSchedulerTask) CreateResponse() (r EmptyResponse) { return }
+func (EnableSchedulerTask) HttpMethod() string                { return "PUT" }
 
 /** @description Gets a scheduled task by id */
 // @Route("/{version}/scheduler/tasks/{id}", "GET")
@@ -15541,6 +14350,9 @@ type GetSchedulerTask struct {
 	CodeMashRequestBase
 	Id string `json:"id"`
 }
+
+func (GetSchedulerTask) CreateResponse() (r GetSchedulerTaskResponse) { return }
+func (GetSchedulerTask) HttpMethod() string                           { return "GET" }
 
 /** @description Gets scheduled tasks */
 // @Route("/{version}/scheduler/tasks", "GET")
@@ -15554,6 +14366,9 @@ type GetSchedulerTasks struct {
 	// @ApiMember(Description="Optional filter — only return tasks whose enabled state matches this value.")
 	Enabled *bool `json:"enabled,omitempty"`
 }
+
+func (GetSchedulerTasks) CreateResponse() (r GetSchedulerTasksResponse) { return }
+func (GetSchedulerTasks) HttpMethod() string                            { return "GET" }
 
 /** @description Save scheduled task */
 // @Route("/{version}/scheduler/tasks", "POST")
@@ -15579,33 +14394,17 @@ type SaveSchedulerTaskRequest struct {
 	Task SchedulerTaskRequest `json:"task"`
 }
 
-type SchedulerEnabled struct {
-}
-
-type SchedulerDisabled struct {
-}
-
-type SchedulerTaskSaved struct {
-	Task SchedulerTask `json:"task"`
-}
-
-type SchedulerTaskEnabled struct {
-	TaskId TaskId `json:"taskId"`
-}
-
-type SchedulerTaskDisabled struct {
-	TaskId TaskId `json:"taskId"`
-}
-
-type SchedulerTaskDeleted struct {
-	TaskId TaskId `json:"taskId"`
-}
+func (SaveSchedulerTaskRequest) CreateResponse() (r IdResponse) { return }
+func (SaveSchedulerTaskRequest) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/resources/resolve", "POST")
 type ResolveResources struct {
 	CodeMashRequestBase
-	Refs IReadOnlyList `json:"refs"`
+	Refs IReadOnlyList[ResourceRefDto] `json:"refs"`
 }
+
+func (ResolveResources) CreateResponse() (r ResolveResourcesResponse) { return }
+func (ResolveResources) HttpMethod() string                           { return "POST" }
 
 /** @description Create a contact */
 // @Route("/{version}/membership/users", "POST")
@@ -15629,6 +14428,9 @@ type CreateContactRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
+func (CreateContactRequest) CreateResponse() (r EmptyResponse) { return }
+func (CreateContactRequest) HttpMethod() string                { return "POST" }
+
 /** @description Archive a contact */
 // @Route("/{version}/membership/users/{contactId}", "DELETE")
 // @Api(Description="Archive a contact")
@@ -15639,6 +14441,9 @@ type DeleteContact struct {
 	ContactId string `json:"contactId"`
 }
 
+func (DeleteContact) CreateResponse() (r EmptyResponse) { return }
+func (DeleteContact) HttpMethod() string                { return "DELETE" }
+
 /** @description Get a contact */
 // @Route("/{version}/membership/users/{contactId}", "GET")
 // @Api(Description="Get a contact")
@@ -15648,6 +14453,9 @@ type GetContact struct {
 	// @ApiMember(Description="The contact id (ct_…) to fetch. Get it from get_all_contacts.", IsRequired=true)
 	ContactId string `json:"contactId"`
 }
+
+func (GetContact) CreateResponse() (r GetContactResponse) { return }
+func (GetContact) HttpMethod() string                     { return "GET" }
 
 /** @description List contacts */
 // @Route("/{version}/membership/users", "GET")
@@ -15662,6 +14470,9 @@ type GetAllContacts struct {
 	PageSize *int `json:"pageSize,omitempty"`
 }
 
+func (GetAllContacts) CreateResponse() (r GetAllContactsResponse) { return }
+func (GetAllContacts) HttpMethod() string                         { return "GET" }
+
 /** @description Merge contacts */
 // @Route("/{version}/membership/users/merge", "POST")
 // @Api(Description="Merge contacts")
@@ -15674,6 +14485,9 @@ type MergeContactsRequest struct {
 	// @ApiMember(Description="The contact ids (ct_…) to merge into the survivor and archive. At least one.", IsRequired=true)
 	MergedIds []string `json:"mergedIds"`
 }
+
+func (MergeContactsRequest) CreateResponse() (r EmptyResponse) { return }
+func (MergeContactsRequest) HttpMethod() string                { return "POST" }
 
 /** @description Update a contact */
 // @Route("/{version}/membership/users/{contactId}", "PATCH")
@@ -15733,6 +14547,9 @@ type UpdateContactRequest struct {
 	PostalCode *string `json:"postalCode,omitempty"`
 }
 
+func (UpdateContactRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateContactRequest) HttpMethod() string                { return "PATCH" }
+
 /** @description Link a login to a contact */
 // @Route("/{version}/membership/users/{contactId}/identities", "POST")
 // @Api(Description="Link a login to a contact")
@@ -15745,6 +14562,9 @@ type AddContactIdentityRequest struct {
 	// @ApiMember(Description="The login (identity) id (usr_…) to link to the contact.", IsRequired=true)
 	AuthId string `json:"authId"`
 }
+
+func (AddContactIdentityRequest) CreateResponse() (r EmptyResponse) { return }
+func (AddContactIdentityRequest) HttpMethod() string                { return "POST" }
 
 /** @description Make a login the contact's primary */
 // @Route("/{version}/membership/users/{contactId}/identities/{authId}/promote", "POST")
@@ -15759,6 +14579,9 @@ type PromoteContactIdentityRequest struct {
 	AuthId string `json:"authId"`
 }
 
+func (PromoteContactIdentityRequest) CreateResponse() (r EmptyResponse) { return }
+func (PromoteContactIdentityRequest) HttpMethod() string                { return "POST" }
+
 /** @description Unlink a login from a contact */
 // @Route("/{version}/membership/users/{contactId}/identities/{authId}", "DELETE")
 // @Api(Description="Unlink a login from a contact")
@@ -15772,16 +14595,25 @@ type RemoveContactIdentityRequest struct {
 	AuthId string `json:"authId"`
 }
 
+func (RemoveContactIdentityRequest) CreateResponse() (r EmptyResponse) { return }
+func (RemoveContactIdentityRequest) HttpMethod() string                { return "DELETE" }
+
 // @Route("/{version}/compliance/settings", "GET")
 type GetComplianceSettings struct {
 	CodeMashRequestBase
 }
+
+func (GetComplianceSettings) CreateResponse() (r GetComplianceSettingsResponse) { return }
+func (GetComplianceSettings) HttpMethod() string                                { return "GET" }
 
 // @Route("/{version}/compliance/retention", "DELETE")
 type RemoveRetentionWindowRequest struct {
 	CodeMashRequestBase
 	DataKind string `json:"dataKind"`
 }
+
+func (RemoveRetentionWindowRequest) CreateResponse() (r EmptyResponse) { return }
+func (RemoveRetentionWindowRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/compliance/retention", "POST")
 type SaveRetentionWindowRequest struct {
@@ -15791,17 +14623,26 @@ type SaveRetentionWindowRequest struct {
 	Action   string `json:"action"`
 }
 
+func (SaveRetentionWindowRequest) CreateResponse() (r EmptyResponse) { return }
+func (SaveRetentionWindowRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/regimes", "POST")
 type AssignRegimeRequest struct {
 	CodeMashRequestBase
 	Regime string `json:"regime"`
 }
 
+func (AssignRegimeRequest) CreateResponse() (r EmptyResponse) { return }
+func (AssignRegimeRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/regimes", "DELETE")
 type ClearRegimeRequest struct {
 	CodeMashRequestBase
 	Regime string `json:"regime"`
 }
+
+func (ClearRegimeRequest) CreateResponse() (r EmptyResponse) { return }
+func (ClearRegimeRequest) HttpMethod() string                { return "DELETE" }
 
 // @Route("/{version}/compliance/purposes", "POST")
 type DefineConsentPurposeRequest struct {
@@ -15814,16 +14655,25 @@ type DefineConsentPurposeRequest struct {
 	Description     *string  `json:"description,omitempty"`
 }
 
+func (DefineConsentPurposeRequest) CreateResponse() (r EmptyResponse) { return }
+func (DefineConsentPurposeRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/purposes/deprecate", "POST")
 type DeprecateConsentPurposeRequest struct {
 	CodeMashRequestBase
 	Key string `json:"key"`
 }
 
+func (DeprecateConsentPurposeRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeprecateConsentPurposeRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/holds", "GET")
 type GetLegalHolds struct {
 	CodeMashRequestBase
 }
+
+func (GetLegalHolds) CreateResponse() (r GetLegalHoldsResponse) { return }
+func (GetLegalHolds) HttpMethod() string                        { return "GET" }
 
 // @Route("/{version}/compliance/holds", "POST")
 type PlaceLegalHoldRequest struct {
@@ -15833,17 +14683,26 @@ type PlaceLegalHoldRequest struct {
 	Reason      string `json:"reason"`
 }
 
+func (PlaceLegalHoldRequest) CreateResponse() (r EmptyResponse) { return }
+func (PlaceLegalHoldRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/holds/release", "POST")
 type ReleaseLegalHoldRequest struct {
 	CodeMashRequestBase
 	HoldId string `json:"holdId"`
 }
 
+func (ReleaseLegalHoldRequest) CreateResponse() (r EmptyResponse) { return }
+func (ReleaseLegalHoldRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/dsar/approve", "POST")
 type ApproveDsarRequestRequest struct {
 	CodeMashRequestBase
 	RequestId string `json:"requestId"`
 }
+
+func (ApproveDsarRequestRequest) CreateResponse() (r EmptyResponse) { return }
+func (ApproveDsarRequestRequest) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/compliance/dsar/reject", "POST")
 type RejectDsarRequestRequest struct {
@@ -15852,10 +14711,16 @@ type RejectDsarRequestRequest struct {
 	Reason    string `json:"reason"`
 }
 
+func (RejectDsarRequestRequest) CreateResponse() (r EmptyResponse) { return }
+func (RejectDsarRequestRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/dsar", "GET")
 type GetDsarRequests struct {
 	CodeMashRequestBase
 }
+
+func (GetDsarRequests) CreateResponse() (r GetDsarRequestsResponse) { return }
+func (GetDsarRequests) HttpMethod() string                          { return "GET" }
 
 // @Route("/{version}/compliance/dsar", "POST")
 type OpenDsarRequestRequest struct {
@@ -15863,6 +14728,9 @@ type OpenDsarRequestRequest struct {
 	SubjectKind string `json:"subjectKind"`
 	SubjectId   string `json:"subjectId"`
 }
+
+func (OpenDsarRequestRequest) CreateResponse() (r EmptyResponse) { return }
+func (OpenDsarRequestRequest) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/compliance/audit", "GET")
 type GetComplianceAuditLog struct {
@@ -15874,10 +14742,16 @@ type GetComplianceAuditLog struct {
 	Limit       int        `json:"limit,omitempty"`
 }
 
+func (GetComplianceAuditLog) CreateResponse() (r GetComplianceAuditLogResponse) { return }
+func (GetComplianceAuditLog) HttpMethod() string                                { return "GET" }
+
 // @Route("/{version}/compliance/account", "GET")
 type GetAccountCompliance struct {
 	RequestBase
 }
+
+func (GetAccountCompliance) CreateResponse() (r GetAccountComplianceResponse) { return }
+func (GetAccountCompliance) HttpMethod() string                               { return "GET" }
 
 // @Route("/{version}/compliance/account/dsar-policy", "POST")
 type SaveDsarPolicyRequest struct {
@@ -15886,6 +14760,9 @@ type SaveDsarPolicyRequest struct {
 	DelayDays int    `json:"delayDays,omitempty"`
 }
 
+func (SaveDsarPolicyRequest) CreateResponse() (r EmptyResponse) { return }
+func (SaveDsarPolicyRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/compliance/account/incident-routing", "POST")
 type SaveIncidentRoutingRequest struct {
 	RequestBase
@@ -15893,11 +14770,17 @@ type SaveIncidentRoutingRequest struct {
 	SecurityContact       *string `json:"securityContact,omitempty"`
 }
 
+func (SaveIncidentRoutingRequest) CreateResponse() (r EmptyResponse) { return }
+func (SaveIncidentRoutingRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/support/cases/{CaseId}/close", "POST")
 type CloseSupportCaseRequest struct {
 	RequestBase
 	CaseId string `json:"caseId"`
 }
+
+func (CloseSupportCaseRequest) CreateResponse() (r EmptyResponse) { return }
+func (CloseSupportCaseRequest) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/support/cases/{CaseId}/reopen", "POST")
 type ReopenSupportCaseRequest struct {
@@ -15906,12 +14789,18 @@ type ReopenSupportCaseRequest struct {
 	Reason string `json:"reason"`
 }
 
+func (ReopenSupportCaseRequest) CreateResponse() (r EmptyResponse) { return }
+func (ReopenSupportCaseRequest) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/support/cases/{CaseId}/resolve", "POST")
 type ResolveSupportCaseRequest struct {
 	RequestBase
 	CaseId     string             `json:"caseId"`
 	Resolution *CaseResolutionDto `json:"resolution,omitempty"`
 }
+
+func (ResolveSupportCaseRequest) CreateResponse() (r EmptyResponse) { return }
+func (ResolveSupportCaseRequest) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/support/cases/{CaseId}/messages", "POST")
 type AppendSupportCaseMessageRequest struct {
@@ -15920,17 +14809,26 @@ type AppendSupportCaseMessageRequest struct {
 	Message string `json:"message"`
 }
 
+func (AppendSupportCaseMessageRequest) CreateResponse() (r IdResponse) { return }
+func (AppendSupportCaseMessageRequest) HttpMethod() string             { return "POST" }
+
 // @Route("/{version}/support/cases/{CaseId}", "GET")
 type GetSupportCase struct {
 	RequestBase
 	CaseId string `json:"caseId"`
 }
 
+func (GetSupportCase) CreateResponse() (r GetSupportCaseResponse) { return }
+func (GetSupportCase) HttpMethod() string                         { return "GET" }
+
 // @Route("/{version}/support/cases", "GET")
 type GetSupportCases struct {
 	RequestBase
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
 }
+
+func (GetSupportCases) CreateResponse() (r GetSupportCasesResponse) { return }
+func (GetSupportCases) HttpMethod() string                          { return "GET" }
 
 // @Route("/{version}/support/cases", "POST")
 type OpenSupportCaseRequest struct {
@@ -15942,78 +14840,16 @@ type OpenSupportCaseRequest struct {
 	ProjectId *string `json:"projectId,omitempty"`
 }
 
-type SupportCaseOpened struct {
-	CaseId         SupportCaseId       `json:"caseId"`
-	AccountId      AccountId           `json:"accountId"`
-	ProjectId      *ProjectId          `json:"projectId,omitempty"`
-	ReporterId     *string             `json:"reporterId,omitempty"`
-	Kind           SupportCaseKind     `json:"kind,omitempty"`
-	Severity       SupportCaseSeverity `json:"severity,omitempty"`
-	Subject        string              `json:"subject"`
-	DeploymentMode DeploymentMode      `json:"deploymentMode,omitempty"`
-	GatewayVersion *string             `json:"gatewayVersion,omitempty"`
-	Region         *string             `json:"region,omitempty"`
-	PlanTier       *string             `json:"planTier,omitempty"`
-	OpenedOn       UtcDateTime         `json:"openedOn"`
-}
-
-type SupportCaseTriaged struct {
-	CaseId         SupportCaseId       `json:"caseId"`
-	Kind           SupportCaseKind     `json:"kind,omitempty"`
-	Severity       SupportCaseSeverity `json:"severity,omitempty"`
-	AffectedModule *string             `json:"affectedModule,omitempty"`
-	TriagedBy      *string             `json:"triagedBy,omitempty"`
-	TriagedOn      UtcDateTime         `json:"triagedOn"`
-}
-
-type SupportCaseMessageAppended struct {
-	CaseId  SupportCaseId     `json:"caseId"`
-	Message SupportMessageRef `json:"message"`
-}
-
-type SupportCaseStatusChanged struct {
-	CaseId    SupportCaseId     `json:"caseId"`
-	From      SupportCaseStatus `json:"from,omitempty"`
-	To        SupportCaseStatus `json:"to,omitempty"`
-	ChangedOn UtcDateTime       `json:"changedOn"`
-}
-
-type SupportCaseResolved struct {
-	CaseId     SupportCaseId  `json:"caseId"`
-	Resolution CaseResolution `json:"resolution"`
-	ResolvedOn UtcDateTime    `json:"resolvedOn"`
-}
-
-type SupportCaseClosed struct {
-	CaseId   SupportCaseId          `json:"caseId"`
-	ClosedBy *string                `json:"closedBy,omitempty"`
-	ClosedOn UtcDateTime            `json:"closedOn"`
-	Reason   SupportCaseCloseReason `json:"reason,omitempty"`
-}
-
-type SupportCaseReopened struct {
-	CaseId     SupportCaseId `json:"caseId"`
-	Reason     string        `json:"reason"`
-	ReopenedOn UtcDateTime   `json:"reopenedOn"`
-}
-
-type SupportCaseWaitingReminderSent struct {
-	CaseId   SupportCaseId `json:"caseId"`
-	TierDays int           `json:"tierDays,omitempty"`
-	SentOn   UtcDateTime   `json:"sentOn"`
-}
-
-type SupportCaseAttachmentLinked struct {
-	CaseId        SupportCaseId `json:"caseId"`
-	AttachmentRef string        `json:"attachmentRef"`
-	FileName      *string       `json:"fileName,omitempty"`
-	LinkedOn      UtcDateTime   `json:"linkedOn"`
-}
+func (OpenSupportCaseRequest) CreateResponse() (r IdResponse) { return }
+func (OpenSupportCaseRequest) HttpMethod() string             { return "POST" }
 
 // @Route("/{version}/diagnostics/packs", "GET")
 type GetDiagnosticPacks struct {
 	CodeMashRequestBase
 }
+
+func (GetDiagnosticPacks) CreateResponse() (r GetDiagnosticPacksResponse) { return }
+func (GetDiagnosticPacks) HttpMethod() string                             { return "GET" }
 
 // @Route("/{version}/diagnostics/packs/{PackName}/run", "POST")
 type RunDiagnosticPackRequest struct {
@@ -16023,11 +14859,17 @@ type RunDiagnosticPackRequest struct {
 	CaseId      *string `json:"caseId,omitempty"`
 }
 
+func (RunDiagnosticPackRequest) CreateResponse() (r RunDiagnosticPackResponse) { return }
+func (RunDiagnosticPackRequest) HttpMethod() string                            { return "POST" }
+
 // @Route("/{version}/diagnostics/echo", "GET")
 type GetDiagnosticEcho struct {
 	CodeMashRequestBase
 	CaseId *string `json:"caseId,omitempty"`
 }
+
+func (GetDiagnosticEcho) CreateResponse() (r GetDiagnosticEchoResponse) { return }
+func (GetDiagnosticEcho) HttpMethod() string                            { return "GET" }
 
 // @Route("/{version}/diagnostics/events", "GET")
 type ReadDiagnosticEventsRequest struct {
@@ -16037,6 +14879,9 @@ type ReadDiagnosticEventsRequest struct {
 	Count  int     `json:"count,omitempty"`
 	CaseId *string `json:"caseId,omitempty"`
 }
+
+func (ReadDiagnosticEventsRequest) CreateResponse() (r ReadDiagnosticEventsResponse) { return }
+func (ReadDiagnosticEventsRequest) HttpMethod() string                               { return "GET" }
 
 // @Route("/{version}/diagnostics/logs", "GET")
 type QueryDiagnosticLogsRequest struct {
@@ -16051,12 +14896,18 @@ type QueryDiagnosticLogsRequest struct {
 	CaseId           *string    `json:"caseId,omitempty"`
 }
 
+func (QueryDiagnosticLogsRequest) CreateResponse() (r QueryDiagnosticLogsResponse) { return }
+func (QueryDiagnosticLogsRequest) HttpMethod() string                              { return "GET" }
+
 // @Route("/{version}/diagnostics/redis", "GET")
 type InspectDiagnosticRedisRequest struct {
 	CodeMashRequestBase
 	KeyPattern string  `json:"keyPattern"`
 	CaseId     *string `json:"caseId,omitempty"`
 }
+
+func (InspectDiagnosticRedisRequest) CreateResponse() (r InspectDiagnosticRedisResponse) { return }
+func (InspectDiagnosticRedisRequest) HttpMethod() string                                 { return "GET" }
 
 // @Route("/{version}/diagnostics/health/{CheckId}", "POST")
 type RunDiagnosticHealthCheckRequest struct {
@@ -16065,42 +14916,5 @@ type RunDiagnosticHealthCheckRequest struct {
 	CaseId  *string `json:"caseId,omitempty"`
 }
 
-/** @description Sign In */
-// @Route("/auth", "GET,POST")
-// @Route("/auth/{provider}", "GET,POST")
-// @Route("/v3/auth", "POST,GET,OPTIONS")
-// @Route("/v3/auth/{provider}", "POST,GET,OPTIONS")
-// @Route("/v3/staff/auth", "POST,GET,OPTIONS")
-// @Route("/v3/staff/auth/{provider}", "POST,GET,OPTIONS")
-// @Api(Description="Sign In")
-// @DataContract
-type Authenticate struct {
-	/** @description AuthProvider, e.g. credentials */
-	// @DataMember(Order=1)
-	Provider *string `json:"provider,omitempty"`
-	// @DataMember(Order=2)
-	UserName *string `json:"userName,omitempty"`
-	// @DataMember(Order=3)
-	Password *string `json:"password,omitempty"`
-	// @DataMember(Order=4)
-	RememberMe *bool `json:"rememberMe,omitempty"`
-	// @DataMember(Order=5)
-	AccessToken *string `json:"accessToken,omitempty"`
-	// @DataMember(Order=6)
-	AccessTokenSecret *string `json:"accessTokenSecret,omitempty"`
-	// @DataMember(Order=7)
-	ReturnUrl *string `json:"returnUrl,omitempty"`
-	// @DataMember(Order=8)
-	ErrorView *string `json:"errorView,omitempty"`
-	// @DataMember(Order=9)
-	Meta map[string]string `json:"meta,omitempty"`
-}
-
-// @Route("/access-token")
-// @DataContract
-type GetAccessToken struct {
-	// @DataMember(Order=1)
-	RefreshToken *string `json:"refreshToken,omitempty"`
-	// @DataMember(Order=2)
-	Meta map[string]string `json:"meta,omitempty"`
-}
+func (RunDiagnosticHealthCheckRequest) CreateResponse() (r RunDiagnosticHealthCheckResponse) { return }
+func (RunDiagnosticHealthCheckRequest) HttpMethod() string                                   { return "POST" }
