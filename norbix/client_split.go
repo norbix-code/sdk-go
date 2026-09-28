@@ -9,7 +9,7 @@ import (
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
-// APIClient is an API-only client with flat module access (c.Database, c.Chat, ...).
+// APIClient is an API-only client with flat module access (c.Database, c.Files, ...).
 type APIClient struct {
 	auth
 	*api.Namespace

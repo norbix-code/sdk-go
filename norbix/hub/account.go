@@ -505,15 +505,3 @@ func (m *AccountModule) GetLicenses(ctx context.Context, req map[string]any, out
 		Scope:      transport.ScopeAccount,
 	}, out)
 }
-
-// AskChat performs POST /{version}/account/chat/complete (scope: account).
-func (m *AccountModule) AskChat(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/account/chat/complete",
-		Method:     "POST",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeAccount,
-	}, out)
-}
