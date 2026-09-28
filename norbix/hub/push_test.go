@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/norbix-code/sdk-go/norbix/internal/transport"
+	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
 // Every Push endpoint the gateway exposes, and the module method that calls

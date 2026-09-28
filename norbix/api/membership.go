@@ -5,7 +5,7 @@ package api
 import (
 	"context"
 
-	"github.com/norbix-code/sdk-go/norbix/internal/transport"
+	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
 // MembershipModule groups the membership endpoints on the API.

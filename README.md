@@ -12,7 +12,7 @@ generated DTO structs, and an inbound webhook receiver with HMAC verification.
 ## Install
 
 ```bash
-go get github.com/norbix-code/sdk-go/norbix
+go get github.com/norbix-code/sdk-go/v2/norbix
 ```
 
 Requires Go 1.22+.
@@ -26,8 +26,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/norbix-code/sdk-go/norbix"
-	"github.com/norbix-code/sdk-go/norbix/hub/dtos"
+	"github.com/norbix-code/sdk-go/v2/norbix"
+	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 )
 
 func main() {
@@ -97,7 +97,7 @@ Per-request env/region/token overrides and switching at runtime are available vi
 Failures return `*errors.Error` or a typed variant. Use `errors.As`:
 
 ```go
-import norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
+import norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
 
 var e *norbixerr.Error
 if errors.As(err, &e) {

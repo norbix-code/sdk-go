@@ -14,7 +14,7 @@ package api
 import (
 	"context"
 
-	"github.com/norbix-code/sdk-go/norbix/internal/transport"
+	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
 // TestFilesIntegration performs POST /{version}/files/{filesIntegrationId}/test (scope: project).

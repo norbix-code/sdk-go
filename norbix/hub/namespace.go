@@ -3,7 +3,7 @@
 // Package hub exposes the Norbix HUB endpoint modules.
 package hub
 
-import "github.com/norbix-code/sdk-go/norbix/internal/transport"
+import "github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 
 // Namespace bundles every HUB module.
 type Namespace struct {

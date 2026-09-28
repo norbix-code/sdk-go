@@ -14,8 +14,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/norbix-code/sdk-go/norbix/hub/dtos"
-	"github.com/norbix-code/sdk-go/norbix/webhooks"
+	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
+	"github.com/norbix-code/sdk-go/v2/norbix/webhooks"
 )
 
 func buildReceiver() *webhooks.Receiver {
