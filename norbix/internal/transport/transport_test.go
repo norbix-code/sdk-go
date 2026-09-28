@@ -191,3 +191,61 @@ func asNorbix[T error](err error, target *T) bool {
 	}
 	return false
 }
+
+// ScopeOptional sends auth when the client has a token and never requires one
+// — the signed notification preview links open without sign-in.
+func TestOptionalScopeSendsAuthOnlyWhenPresent(t *testing.T) {
+	cases := []struct {
+		name     string
+		apiKey   string
+		wantAuth string
+	}{
+		{"no credentials", "", ""},
+		{"api key", "key_1", "Bearer key_1"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var gotAuth string
+			var sawAuth bool
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotAuth = r.Header.Get("Authorization")
+				_, sawAuth = r.Header["Authorization"]
+				w.WriteHeader(http.StatusNoContent)
+			}))
+			defer srv.Close()
+
+			tr := newTestTransport(srv.URL)
+			tr.Cfg.APIKey = c.apiKey
+			err := tr.Send(context.Background(), Request{
+				Target: TargetHub,
+				Path:   "/{version}/notifications/push/preview",
+				Method: http.MethodGet,
+				Body:   map[string]any{"hash": "signed-link"},
+				Scope:  ScopeOptional,
+			}, nil)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if gotAuth != c.wantAuth {
+				t.Errorf("authorization: got %q want %q", gotAuth, c.wantAuth)
+			}
+			if c.wantAuth == "" && sawAuth {
+				t.Error("authorization header was sent, want none")
+			}
+		})
+	}
+}
+
+// ScopeProject still refuses to send without a token — only ScopeOptional
+// relaxes the check.
+func TestProjectScopeStillRequiresAuth(t *testing.T) {
+	tr := newTestTransport("http://example.invalid")
+	tr.Cfg.APIKey = ""
+	err := tr.Send(context.Background(), Request{
+		Target: TargetHub, Path: "/{version}/notifications/push/templates", Method: http.MethodGet, Scope: ScopeProject,
+	}, nil)
+	var ne *norbixerr.Error
+	if !asNorbix(err, &ne) || ne.Code != norbixerr.CodeNotAuthenticated {
+		t.Errorf("expected CodeNotAuthenticated, got %v", err)
+	}
+}
