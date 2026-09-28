@@ -69,7 +69,7 @@ _, err := c.Login(ctx, norbix.LoginCredentials{UserName: "alice", Password: "...
 | Constructor | Access |
 |-------------|--------|
 | `norbix.New(opts)` | `c.API.<Module>.<Method>` / `c.Hub.<Module>.<Method>` |
-| `norbix.NewAPI(opts)` | flat: `c.Database`, `c.Membership`, `c.Chat`, ... |
+| `norbix.NewAPI(opts)` | flat: `c.Database`, `c.Membership`, `c.Files`, ... |
 | `norbix.NewHub(opts)` | flat: `c.Account`, `c.Email`, `c.Webhooks`, ... |
 
 ### Configuration
