@@ -511,6 +511,15 @@ read a saved contract export instead of a live gateway. Two runs on the same
 gateway give byte-identical files, so a non-empty `git diff` after a run is a
 real contract change — read it before committing.
 
+## Versioning
+
+The major version is frozen at **v2** until the public launch.
+
+- A breaking change is released as a **minor** (for example v2.2.0 → v2.3.0), never as a new major.
+- Write it as `feat(<scope>): <what>` and add a line `Breaking: <what changed and what callers must do>` in plain words, in the pull-request body and in the commit message.
+- Never mark it the conventional-commits way: no `!` in the title (`feat!:`), no BREAKING CHANGE footer. The `PR title` check fails a pull request that does.
+- As a safety net, the release config (`.releaserc.json` → `releaseRules`) maps breaking commits to a minor, so one that slips through still does not bump the major.
+
 ## License
 
 MIT
