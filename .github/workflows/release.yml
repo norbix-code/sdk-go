@@ -3,7 +3,8 @@ name: Release
 # Go modules have no registry: the Go module proxy serves whatever is tagged in
 # git, so a release is the `vX.Y.Z` tag plus its GitHub Release, both created by
 # semantic-release from conventional commits since the last tag:
-# `feat:` → minor, `fix:` → patch, `feat!:` / `BREAKING CHANGE:` → major.
+# `feat:` → minor, `fix:` → patch. Breaking changes → minor too until the
+# public launch (major frozen; see README "Versioning").
 # `chore:`, `ci:`, `test:` don't release.
 #
 # Note for majors: from v2 on, Go requires the module path to end in /v2
