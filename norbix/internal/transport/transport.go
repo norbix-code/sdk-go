@@ -37,6 +37,9 @@ const (
 	ScopeProject         Scope = "project"
 	ScopeAccount         Scope = "account"
 	ScopeUnauthenticated Scope = "unauthenticated"
+	// ScopeOptional: auth is sent when the client has a token, never
+	// required — used by the signed notification preview links.
+	ScopeOptional Scope = "optional"
 )
 
 const (
@@ -150,13 +153,15 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 		if token == "" {
 			token = t.Cfg.APIKey
 		}
-		if token == "" {
+		if token == "" && req.Scope != ScopeOptional {
 			return norbixerr.New(
 				"Not authenticated. Provide APIKey / BearerToken or login first.",
 				norbixerr.CodeNotAuthenticated,
 			)
 		}
-		headers["Authorization"] = "Bearer " + token
+		if token != "" {
+			headers["Authorization"] = "Bearer " + token
+		}
 	}
 
 	headers["X-CM-ProjectId"] = t.Cfg.ProjectID
