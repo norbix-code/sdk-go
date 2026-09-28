@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/norbix-code/sdk-go/norbix/internal/transport"
+	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
 // Defaults applied when neither an explicit option nor an env var is set.

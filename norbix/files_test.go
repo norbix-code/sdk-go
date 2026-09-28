@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/norbix-code/sdk-go/norbix/api/dtos"
-	norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
+	"github.com/norbix-code/sdk-go/v2/norbix/api/dtos"
+	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
 )
 
 // Files endpoints, one case per endpoint: 12 on the hub (the dashboard API)

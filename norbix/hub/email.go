@@ -5,7 +5,7 @@ package hub
 import (
 	"context"
 
-	"github.com/norbix-code/sdk-go/norbix/internal/transport"
+	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
 // EmailModule groups the email endpoints on the HUB.

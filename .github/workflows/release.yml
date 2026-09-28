@@ -6,9 +6,11 @@ name: Release
 # `feat:` → minor, `fix:` → patch, `feat!:` / `BREAKING CHANGE:` → major.
 # `chore:`, `ci:`, `test:` don't release.
 #
-# Note for majors: from v2 on, Go requires the module path to end in /v2
-# (go.mod `module github.com/norbix-code/sdk-go/v2`), so a breaking release
-# needs that change in the same pull request.
+# Note for majors: from v2 on, Go requires the module path to end in the major
+# (go.mod `module github.com/norbix-code/sdk-go/v2` today). The major is frozen
+# at v2 until the public launch; the first major after it needs the next /vN —
+# in go.mod, every import and the `go list -m` check below — in the same pull
+# request.
 #
 # `main` is protected (changes only through pull requests), so the release does
 # NOT commit back; release notes live on GitHub Releases.
@@ -84,7 +86,7 @@ jobs:
         run: |
           TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
           if [ -n "$TAG" ] && [ "$TAG" != "v0.0.0" ]; then
-            GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod go list -m "github.com/norbix-code/sdk-go@${TAG}" || true
+            GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod go list -m "github.com/norbix-code/sdk-go/v2@${TAG}" || true
           fi
 
       - name: Summary

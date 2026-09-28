@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
+	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
 )
 
 func newTestTransport(base string) *Transport {

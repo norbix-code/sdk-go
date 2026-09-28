@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
+	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
 )
 
 // Target selects which base URL a request goes to.

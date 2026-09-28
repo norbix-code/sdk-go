@@ -12,10 +12,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/norbix-code/sdk-go/norbix/api"
-	norbixerr "github.com/norbix-code/sdk-go/norbix/errors"
-	"github.com/norbix-code/sdk-go/norbix/hub"
-	"github.com/norbix-code/sdk-go/norbix/internal/transport"
+	"github.com/norbix-code/sdk-go/v2/norbix/api"
+	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
+	"github.com/norbix-code/sdk-go/v2/norbix/hub"
+	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
 func errProjectIDRequired(clientName string) error {

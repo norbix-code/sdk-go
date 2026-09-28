@@ -3,7 +3,7 @@
 // Package api exposes the Norbix API endpoint modules.
 package api
 
-import "github.com/norbix-code/sdk-go/norbix/internal/transport"
+import "github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 
 // Namespace bundles every API module.
 type Namespace struct {
