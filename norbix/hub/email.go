@@ -22,3 +22,16 @@ func (m *EmailModule) OneClickUnsubscribe(ctx context.Context, req map[string]an
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// GetEmailPreferencesByLink performs GET /{version}/email/preferences (scope: optional — the signed unsubscribe-link token in "token" opens it without sign-in).
+// It reads the marketing e-mail preferences of the person the link belongs to.
+func (m *EmailModule) GetEmailPreferencesByLink(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/email/preferences",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
+	}, out)
+}

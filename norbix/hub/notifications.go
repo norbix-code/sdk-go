@@ -47,6 +47,19 @@ func (m *NotificationsModule) DisableEmail(ctx context.Context, req map[string]a
 	}, out)
 }
 
+// GetEmailDisableDependencies performs GET /{version}/notifications/email/disable-dependencies (scope: project).
+// It lists what still depends on the Email module (campaigns, triggers) before you turn it off.
+func (m *NotificationsModule) GetEmailDisableDependencies(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/disable-dependencies",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // EnableEmail performs GET /{version}/notifications/email/enable (scope: project).
 func (m *NotificationsModule) EnableEmail(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -262,6 +275,20 @@ func (m *NotificationsModule) ConfirmEmailIntegrationHumanDelivery(ctx context.C
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/email/integrations/confirm-human-delivery",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CheckEmailIntegrationDomainHealth performs POST /{version}/notifications/email/integrations/domain-health (scope: project).
+// Informational only: it returns the SPF / DMARC / DKIM records found in DNS for the
+// integration's sender domain (pass "integrationId"). It never blocks the integration.
+func (m *NotificationsModule) CheckEmailIntegrationDomainHealth(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/integrations/domain-health",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -500,6 +527,22 @@ func (m *NotificationsModule) DeleteEmailCampaign(ctx context.Context, id string
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/email/campaigns/{Id}",
 		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// StopEmailCampaign performs POST /{version}/notifications/email/campaigns/{Id}/stop (scope: project).
+// The campaign stops at its next batch; batches already sent stay sent.
+func (m *NotificationsModule) StopEmailCampaign(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/campaigns/{Id}/stop",
+		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
