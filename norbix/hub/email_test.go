@@ -353,3 +353,28 @@ func TestEmailPreferencesByLinkNeedsNoSignIn(t *testing.T) {
 		})
 	}
 }
+
+// POST /{version}/email/one-click-unsubscribe is public too (the gateway does
+// not authenticate it): with no API key the request is still sent, with no
+// Authorization header.
+func TestOneClickUnsubscribeNeedsNoSignIn(t *testing.T) {
+	var gotPath string
+	var sawAuth bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		_, sawAuth = r.Header["Authorization"]
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	e := &EmailModule{t: newEmailTestTransport(srv.URL, "")}
+	if err := e.OneClickUnsubscribe(context.Background(), map[string]any{"token": "signed-link-abc"}, nil); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotPath != "/v2/email/one-click-unsubscribe" {
+		t.Errorf("path: got %q", gotPath)
+	}
+	if sawAuth {
+		t.Error("authorization header sent without credentials")
+	}
+}
