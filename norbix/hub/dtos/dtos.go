@@ -583,6 +583,14 @@ const (
 	DeviceTypeTv      DeviceType = "Tv"
 )
 
+// EmbeddingProvider enum.
+type EmbeddingProvider string
+
+const (
+	EmbeddingProviderVoyage EmbeddingProvider = "Voyage"
+	EmbeddingProviderOpenAI EmbeddingProvider = "OpenAI"
+)
+
 // ResourceKindDto enum.
 type ResourceKindDto string
 
@@ -1649,14 +1657,22 @@ type GoogleCloudFunctionsCodeIntegrationRequest struct {
 	ServiceAccountJsonKey string       `json:"serviceAccountJsonKey,omitempty"`
 }
 
+// LlmModelOptionRequest DTO.
+type LlmModelOptionRequest struct {
+	Id          string `json:"id,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
+}
+
 // LlmIntegrationRequest DTO.
 type LlmIntegrationRequest struct {
-	IntegrationId   string      `json:"integrationId,omitempty"`
-	Provider        LlmProvider `json:"provider,omitempty"`
-	IntegrationName string      `json:"integrationName,omitempty"`
-	IsEnabled       bool        `json:"isEnabled,omitempty"`
-	Endpoint        string      `json:"endpoint,omitempty"`
-	DefaultModel    string      `json:"defaultModel,omitempty"`
+	IntegrationId   string                   `json:"integrationId,omitempty"`
+	Provider        LlmProvider              `json:"provider,omitempty"`
+	IntegrationName string                   `json:"integrationName,omitempty"`
+	IsEnabled       bool                     `json:"isEnabled,omitempty"`
+	Endpoint        string                   `json:"endpoint,omitempty"`
+	DefaultModel    string                   `json:"defaultModel,omitempty"`
+	IsDefault       bool                     `json:"isDefault,omitempty"`
+	Models          []*LlmModelOptionRequest `json:"models,omitempty"`
 }
 
 // OllamaLlmIntegrationRequest DTO.
@@ -2088,8 +2104,9 @@ type EmailToCollectionRecordsDeliverySettingsDto struct {
 // PushToAllUsersDeliverySettingsDto DTO.
 type PushToAllUsersDeliverySettingsDto struct {
 	PushCampaignDeliverySettingsDto
-	RolesNames []string `json:"rolesNames,omitempty"`
-	UserTags   []string `json:"userTags,omitempty"`
+	RolesNames []string                   `json:"rolesNames,omitempty"`
+	UserTags   []string                   `json:"userTags,omitempty"`
+	Platforms  []PushDeviceDeliveryFamily `json:"platforms,omitempty"`
 }
 
 // PushToUsersDeliverySettingsDto DTO.
@@ -2101,7 +2118,8 @@ type PushToUsersDeliverySettingsDto struct {
 // PushToAccountUsersDeliverySettingsDto DTO.
 type PushToAccountUsersDeliverySettingsDto struct {
 	PushCampaignDeliverySettingsDto
-	Recipients []string `json:"recipients,omitempty"`
+	Recipients []string                   `json:"recipients,omitempty"`
+	Platforms  []PushDeviceDeliveryFamily `json:"platforms,omitempty"`
 }
 
 // PushToCollectionRecordsDeliverySettingsDto DTO.
@@ -2168,14 +2186,24 @@ type IntegrationDto struct {
 	RequiresHumanDeliveryConfirmation bool     `json:"requiresHumanDeliveryConfirmation,omitempty"`
 }
 
+// LlmModelOptionDto DTO.
+type LlmModelOptionDto struct {
+	Id               string  `json:"id,omitempty"`
+	DisplayName      string  `json:"displayName,omitempty"`
+	InputCreditRate  float64 `json:"inputCreditRate,omitempty"`
+	OutputCreditRate float64 `json:"outputCreditRate,omitempty"`
+}
+
 // LlmIntegrationDto DTO.
 type LlmIntegrationDto struct {
 	IntegrationDto
-	Provider      LlmProvider `json:"provider,omitempty"`
-	BaseUrl       string      `json:"baseUrl,omitempty"`
-	DefaultModel  string      `json:"defaultModel,omitempty"`
-	IsConfigured  bool        `json:"isConfigured,omitempty"`
-	IsSystemOwned bool        `json:"isSystemOwned,omitempty"`
+	Provider      LlmProvider          `json:"provider,omitempty"`
+	BaseUrl       string               `json:"baseUrl,omitempty"`
+	DefaultModel  string               `json:"defaultModel,omitempty"`
+	IsConfigured  bool                 `json:"isConfigured,omitempty"`
+	IsSystemOwned bool                 `json:"isSystemOwned,omitempty"`
+	IsDefault     bool                 `json:"isDefault,omitempty"`
+	Models        []*LlmModelOptionDto `json:"models,omitempty"`
 }
 
 // OpenAiLlmIntegrationDto DTO.
@@ -3248,6 +3276,21 @@ type TagDefinitionDto struct {
 	DefaultDelivery map[string]bool `json:"defaultDelivery,omitempty"`
 }
 
+// ProjectAiAssistantRequestBase DTO.
+type ProjectAiAssistantRequestBase struct {
+	CodeMashRequestBase
+	Name             string   `json:"name,omitempty"`
+	WelcomeMessage   string   `json:"welcomeMessage,omitempty"`
+	SystemPrompt     string   `json:"systemPrompt,omitempty"`
+	Toolsets         []string `json:"toolsets,omitempty"`
+	LlmIntegrationId string   `json:"llmIntegrationId,omitempty"`
+	Model            string   `json:"model,omitempty"`
+	MemoryEnabled    bool     `json:"memoryEnabled,omitempty"`
+	RagSourceIds     []string `json:"ragSourceIds,omitempty"`
+	PlanId           string   `json:"planId,omitempty"`
+	IsDefault        bool     `json:"isDefault,omitempty"`
+}
+
 // CursorArgs DTO.
 type CursorArgs struct {
 	Field string  `json:"field,omitempty"`
@@ -3345,6 +3388,26 @@ type ImportColumnMappingDto struct {
 	DontImportOnError bool    `json:"dontImportOnError,omitempty"`
 }
 
+// AggregateId DTO.
+type AggregateId struct {
+	Value string `json:"value,omitempty"`
+}
+
+// ProjectId DTO.
+type ProjectId struct {
+	AggregateId
+}
+
+// IntegrationId DTO.
+type IntegrationId struct {
+	AggregateId
+}
+
+// TaxonomyId DTO.
+type TaxonomyId struct {
+	AggregateId
+}
+
 // EmailValidationIntegrationRequest DTO.
 type EmailValidationIntegrationRequest struct {
 	IntegrationId   string                  `json:"integrationId,omitempty"`
@@ -3431,6 +3494,18 @@ type ChatScreenContextDto struct {
 	ViewId string `json:"viewId,omitempty"`
 }
 
+// EmbeddingIntegrationRequest DTO.
+type EmbeddingIntegrationRequest struct {
+	IntegrationId   string            `json:"integrationId,omitempty"`
+	Provider        EmbeddingProvider `json:"provider,omitempty"`
+	IntegrationName string            `json:"integrationName,omitempty"`
+	IsEnabled       bool              `json:"isEnabled,omitempty"`
+	Endpoint        string            `json:"endpoint,omitempty"`
+	Model           string            `json:"model,omitempty"`
+	Dimension       float64           `json:"dimension,omitempty"`
+	ApiKey          string            `json:"apiKey,omitempty"`
+}
+
 // SchedulerTaskRequest DTO.
 type SchedulerTaskRequest struct {
 	Type SchedulerTaskType `json:"type,omitempty"`
@@ -3507,6 +3582,19 @@ type PublicAuthDto struct {
 	Passkey         bool                     `json:"passkey,omitempty"`
 	Methods         []string                 `json:"methods,omitempty"`
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
+}
+
+// PublicAiAssistantDto DTO.
+type PublicAiAssistantDto struct {
+	Id      string `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Welcome string `json:"welcome,omitempty"`
+}
+
+// PublicAiChatDto DTO.
+type PublicAiChatDto struct {
+	Enabled    bool                    `json:"enabled,omitempty"`
+	Assistants []*PublicAiAssistantDto `json:"assistants,omitempty"`
 }
 
 // AccountOwnerDto DTO.
@@ -3646,6 +3734,29 @@ type AuthenticationFlowSummaryDto struct {
 	PasswordComplexity *AuthenticationFlowPasswordPolicyDto `json:"passwordComplexity,omitempty"`
 }
 
+// AiAssistantDto DTO.
+type AiAssistantDto struct {
+	Id               string   `json:"id,omitempty"`
+	Name             string   `json:"name,omitempty"`
+	WelcomeMessage   string   `json:"welcomeMessage,omitempty"`
+	SystemPrompt     string   `json:"systemPrompt,omitempty"`
+	Toolsets         []string `json:"toolsets,omitempty"`
+	LlmIntegrationId string   `json:"llmIntegrationId,omitempty"`
+	Model            string   `json:"model,omitempty"`
+	MemoryEnabled    bool     `json:"memoryEnabled,omitempty"`
+	RagSourceIds     []string `json:"ragSourceIds,omitempty"`
+	PlanId           string   `json:"planId,omitempty"`
+	IsDefault        bool     `json:"isDefault,omitempty"`
+}
+
+// ProjectAiSettingsDto DTO.
+type ProjectAiSettingsDto struct {
+	Enabled                 bool              `json:"enabled,omitempty"`
+	DefaultLlmIntegrationId string            `json:"defaultLlmIntegrationId,omitempty"`
+	DefaultModel            string            `json:"defaultModel,omitempty"`
+	Assistants              []*AiAssistantDto `json:"assistants,omitempty"`
+}
+
 // TriggerDto DTO.
 type TriggerDto struct {
 	Type           TriggerType       `json:"type,omitempty"`
@@ -3681,8 +3792,9 @@ type EmailDto struct {
 
 // AiDto DTO.
 type AiDto struct {
-	IsEnabled                bool   `json:"isEnabled,omitempty"`
-	DefaultIntegrationViewId string `json:"defaultIntegrationViewId,omitempty"`
+	IsEnabled                 bool              `json:"isEnabled,omitempty"`
+	DefaultIntegrationViewIds map[string]string `json:"defaultIntegrationViewIds,omitempty"`
+	DefaultIntegrationViewId  string            `json:"defaultIntegrationViewId,omitempty"`
 }
 
 // MembershipTriggerDto DTO.
@@ -3827,6 +3939,7 @@ type ProjectDto struct {
 	AdminPortalServiceUserId      string                          `json:"adminPortalServiceUserId,omitempty"`
 	MembershipAuthenticationFlows []*AuthenticationFlowSummaryDto `json:"membershipAuthenticationFlows,omitempty"`
 	ExposeLegalToAdminPortal      bool                            `json:"exposeLegalToAdminPortal,omitempty"`
+	AiChat                        *ProjectAiSettingsDto           `json:"aiChat,omitempty"`
 	LegalTermsMarkdown            string                          `json:"legalTermsMarkdown,omitempty"`
 	LegalPrivacyMarkdown          string                          `json:"legalPrivacyMarkdown,omitempty"`
 	Environments                  []string                        `json:"environments,omitempty"`
@@ -3867,6 +3980,28 @@ type ProjectListItemDto struct {
 	UniqueName        string              `json:"uniqueName,omitempty"`
 	PrimaryRegion     *ProjectRegionDto   `json:"primaryRegion,omitempty"`
 	AdditionalRegions []*ProjectRegionDto `json:"additionalRegions,omitempty"`
+}
+
+// AiUsageGroupDto DTO.
+type AiUsageGroupDto struct {
+	Id                    string  `json:"id,omitempty"`
+	LlmInputTokens        float64 `json:"llmInputTokens,omitempty"`
+	LlmOutputTokens       float64 `json:"llmOutputTokens,omitempty"`
+	EmbeddingTokens       float64 `json:"embeddingTokens,omitempty"`
+	RerankCalls           float64 `json:"rerankCalls,omitempty"`
+	TotalTokens           float64 `json:"totalTokens,omitempty"`
+	ChargeableTokens      float64 `json:"chargeableTokens,omitempty"`
+	ChargeableRerankCalls float64 `json:"chargeableRerankCalls,omitempty"`
+	Credits               float64 `json:"credits,omitempty"`
+}
+
+// ProjectAiUsageDto DTO.
+type ProjectAiUsageDto struct {
+	Period     string             `json:"period,omitempty"`
+	Totals     *AiUsageGroupDto   `json:"totals,omitempty"`
+	Assistants []*AiUsageGroupDto `json:"assistants,omitempty"`
+	TopUsers   []*AiUsageGroupDto `json:"topUsers,omitempty"`
+	Models     []*AiUsageGroupDto `json:"models,omitempty"`
 }
 
 // PaginatedResponse DTO.
@@ -4856,6 +4991,14 @@ type PushDeviceListProjection struct {
 	PlatformApiLevel float64 `json:"platformApiLevel,omitempty"`
 }
 
+// PushAudienceCountDto DTO.
+type PushAudienceCountDto struct {
+	Devices        float64 `json:"devices,omitempty"`
+	Recipients     float64 `json:"recipients,omitempty"`
+	SkippedUserIds float64 `json:"skippedUserIds,omitempty"`
+	IsCapped       bool    `json:"isCapped,omitempty"`
+}
+
 // PushCampaignDto DTO.
 type PushCampaignDto struct {
 	CampaignDto
@@ -4943,6 +5086,7 @@ type TenantLogEntryDto struct {
 type AgentOnboardingSnippet struct {
 	Client string `json:"client,omitempty"`
 	Config string `json:"config,omitempty"`
+	Auth   string `json:"auth,omitempty"`
 }
 
 // AiToolManifestParameter DTO.
@@ -4993,6 +5137,60 @@ type ChatSessionListItem struct {
 	UpdatedAtUtc string `json:"updatedAtUtc,omitempty"`
 	IsArchived   bool   `json:"isArchived,omitempty"`
 	IsPinned     bool   `json:"isPinned,omitempty"`
+}
+
+// ScaffoldStep DTO.
+type ScaffoldStep struct {
+	Order       float64 `json:"order,omitempty"`
+	Kind        string  `json:"kind,omitempty"`
+	Title       string  `json:"title,omitempty"`
+	Tool        string  `json:"tool,omitempty"`
+	Arguments   any     `json:"arguments,omitempty"`
+	CheckTool   string  `json:"checkTool,omitempty"`
+	TemplateRef string  `json:"templateRef,omitempty"`
+}
+
+// ScaffoldIssue DTO.
+type ScaffoldIssue struct {
+	Where   string `json:"where,omitempty"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// ScaffoldStepReportWithLink DTO.
+type ScaffoldStepReportWithLink struct {
+	Order        float64  `json:"order,omitempty"`
+	Title        string   `json:"title,omitempty"`
+	Tool         string   `json:"tool,omitempty"`
+	Status       string   `json:"status,omitempty"`
+	Id           string   `json:"id,omitempty"`
+	DashboardUrl string   `json:"dashboardUrl,omitempty"`
+	Note         string   `json:"note,omitempty"`
+	Errors       []string `json:"errors,omitempty"`
+}
+
+// ScaffoldApplyReport DTO.
+type ScaffoldApplyReport struct {
+	Completed  bool                          `json:"completed,omitempty"`
+	ProjectId  string                        `json:"projectId,omitempty"`
+	ProjectUrl string                        `json:"projectUrl,omitempty"`
+	Summary    string                        `json:"summary,omitempty"`
+	Steps      []*ScaffoldStepReportWithLink `json:"steps,omitempty"`
+}
+
+// TemplatePreviewPartResult DTO.
+type TemplatePreviewPartResult struct {
+	Name     string   `json:"name,omitempty"`
+	Rendered string   `json:"rendered,omitempty"`
+	Errors   []string `json:"errors,omitempty"`
+}
+
+// TemplatePreview DTO.
+type TemplatePreview struct {
+	Channel string                       `json:"channel,omitempty"`
+	Ok      bool                         `json:"ok,omitempty"`
+	Parts   []*TemplatePreviewPartResult `json:"parts,omitempty"`
+	Errors  []string                     `json:"errors,omitempty"`
 }
 
 // ProjectBriefSourceWireDto DTO.
@@ -5158,12 +5356,33 @@ type WorkItemWireDto struct {
 	DoneConditions      []*WorkItemDoneConditionWireDto `json:"doneConditions,omitempty"`
 }
 
+// EmbeddingIntegrationDto DTO.
+type EmbeddingIntegrationDto struct {
+	IntegrationDto
+	Provider     EmbeddingProvider `json:"provider,omitempty"`
+	Model        string            `json:"model,omitempty"`
+	Dimension    float64           `json:"dimension,omitempty"`
+	BaseUrl      string            `json:"baseUrl,omitempty"`
+	IsConfigured bool              `json:"isConfigured,omitempty"`
+}
+
+// EmbeddingIntegrationListProjection DTO.
+type EmbeddingIntegrationListProjection struct {
+	IntegrationListProjection
+	EmbeddingProvider EmbeddingProvider `json:"embeddingProvider,omitempty"`
+	Model             string            `json:"model,omitempty"`
+	Dimension         float64           `json:"dimension,omitempty"`
+	IsConfigured      bool              `json:"isConfigured,omitempty"`
+}
+
 // LlmIntegrationListProjection DTO.
 type LlmIntegrationListProjection struct {
 	IntegrationListProjection
-	LlmProvider  LlmProvider `json:"llmProvider,omitempty"`
-	BaseUrl      string      `json:"baseUrl,omitempty"`
-	DefaultModel string      `json:"defaultModel,omitempty"`
+	LlmProvider  LlmProvider          `json:"llmProvider,omitempty"`
+	BaseUrl      string               `json:"baseUrl,omitempty"`
+	DefaultModel string               `json:"defaultModel,omitempty"`
+	IsDefault    bool                 `json:"isDefault,omitempty"`
+	Models       []*LlmModelOptionDto `json:"models,omitempty"`
 }
 
 // McpIntegrationListProjection DTO.
@@ -5526,6 +5745,10 @@ type IBindableContract struct {
 type IHasRazorTemplateCode struct {
 }
 
+// IHasDomainEntityId DTO.
+type IHasDomainEntityId struct {
+}
+
 // IHasResponsibleUserId DTO.
 type IHasResponsibleUserId struct {
 }
@@ -5657,10 +5880,11 @@ type EchoResponse struct {
 
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
-	DisplayName        string          `json:"displayName,omitempty"`
-	AdminPortalEnabled bool            `json:"adminPortalEnabled,omitempty"`
-	Branding           *PublicBrandDto `json:"branding,omitempty"`
-	Auth               *PublicAuthDto  `json:"auth,omitempty"`
+	DisplayName        string           `json:"displayName,omitempty"`
+	AdminPortalEnabled bool             `json:"adminPortalEnabled,omitempty"`
+	Branding           *PublicBrandDto  `json:"branding,omitempty"`
+	Auth               *PublicAuthDto   `json:"auth,omitempty"`
+	AiChat             *PublicAiChatDto `json:"aiChat,omitempty"`
 }
 
 // PublicLegalDocumentDto DTO.
@@ -5768,6 +5992,18 @@ type AdminPortalStructureDto struct {
 	AdminPortalEnabled bool                    `json:"adminPortalEnabled,omitempty"`
 	DisplayName        string                  `json:"displayName,omitempty"`
 	Modules            []*AdminPortalModuleDto `json:"modules,omitempty"`
+}
+
+// GetProjectAiSettingsResponse DTO.
+type GetProjectAiSettingsResponse struct {
+	ResponseBase
+	Result *ProjectAiSettingsDto `json:"result,omitempty"`
+}
+
+// GetProjectAiUsageResponse DTO.
+type GetProjectAiUsageResponse struct {
+	ResponseBase
+	Result *ProjectAiUsageDto `json:"result,omitempty"`
 }
 
 // CreateAccountResponse DTO.
@@ -6665,6 +6901,12 @@ type GetPushDevicesResponse struct {
 	List PaginatedResponse[*PushDeviceListProjection] `json:"list,omitempty"`
 }
 
+// GetPushCampaignAudienceCountResponse DTO.
+type GetPushCampaignAudienceCountResponse struct {
+	ResponseBase
+	Result *PushAudienceCountDto `json:"result,omitempty"`
+}
+
 // GetPushCampaignResponse DTO.
 type GetPushCampaignResponse struct {
 	ResponseBase
@@ -6880,6 +7122,32 @@ type ChatTurnResponse struct {
 	ToolTrace   []string              `json:"toolTrace,omitempty"`
 }
 
+// ScaffoldProjectResponse DTO.
+type ScaffoldProjectResponse struct {
+	ResponseBase
+	Mode     string               `json:"mode,omitempty"`
+	Env      string               `json:"env,omitempty"`
+	Valid    bool                 `json:"valid,omitempty"`
+	Plan     []*ScaffoldStep      `json:"plan,omitempty"`
+	Defaults []string             `json:"defaults,omitempty"`
+	Issues   []*ScaffoldIssue     `json:"issues,omitempty"`
+	Report   *ScaffoldApplyReport `json:"report,omitempty"`
+}
+
+// ValidateSchemaResponse DTO.
+type ValidateSchemaResponse struct {
+	ResponseBase
+	Valid       bool             `json:"valid,omitempty"`
+	Issues      []*ScaffoldIssue `json:"issues,omitempty"`
+	Collections []string         `json:"collections,omitempty"`
+}
+
+// RenderTemplatePreviewResponse DTO.
+type RenderTemplatePreviewResponse struct {
+	ResponseBase
+	Preview *TemplatePreview `json:"preview,omitempty"`
+}
+
 // GetProjectBriefResponse DTO.
 type GetProjectBriefResponse struct {
 	ResponseBase
@@ -6909,6 +7177,26 @@ type ExportWorkItemResponse struct {
 	ResponseBase
 	WorkItemId string `json:"workItemId,omitempty"`
 	Markdown   string `json:"markdown,omitempty"`
+}
+
+// GetEmbeddingIntegrationResponse DTO.
+type GetEmbeddingIntegrationResponse struct {
+	ResponseBase
+	Item *EmbeddingIntegrationDto `json:"item,omitempty"`
+}
+
+// GetEmbeddingIntegrationsResponse DTO.
+type GetEmbeddingIntegrationsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*EmbeddingIntegrationListProjection] `json:"list,omitempty"`
+}
+
+// TestEmbeddingIntegrationResponse DTO.
+type TestEmbeddingIntegrationResponse struct {
+	ResponseBase
+	Dimension   float64 `json:"dimension,omitempty"`
+	LatencyMs   float64 `json:"latencyMs,omitempty"`
+	TotalTokens float64 `json:"totalTokens,omitempty"`
 }
 
 // GetLlmIntegrationResponse DTO.
@@ -7765,6 +8053,12 @@ type GetProjectTokens struct {
 	MembershipTriggerNewUserId string `json:"membershipTriggerNewUserId,omitempty"`
 }
 
+// SetAdminPortalEnabledRequest DTO.
+type SetAdminPortalEnabledRequest struct {
+	CodeMashRequestBase
+	Enabled bool `json:"enabled,omitempty"`
+}
+
 // AssignAdminPortalServiceUserRequest DTO.
 type AssignAdminPortalServiceUserRequest struct {
 	CodeMashRequestBase
@@ -7780,6 +8074,42 @@ type GetAdminPortalStructure struct {
 type UpdateProjectAdminUrl struct {
 	CodeMashRequestBase
 	Url string `json:"url,omitempty"`
+}
+
+// GetProjectAiSettings DTO.
+type GetProjectAiSettings struct {
+	CodeMashRequestBase
+}
+
+// UpdateProjectAiSettings DTO.
+type UpdateProjectAiSettings struct {
+	CodeMashRequestBase
+	Enabled                 bool   `json:"enabled,omitempty"`
+	DefaultLlmIntegrationId string `json:"defaultLlmIntegrationId,omitempty"`
+	DefaultModel            string `json:"defaultModel,omitempty"`
+}
+
+// CreateProjectAiAssistant DTO.
+type CreateProjectAiAssistant struct {
+	ProjectAiAssistantRequestBase
+}
+
+// UpdateProjectAiAssistant DTO.
+type UpdateProjectAiAssistant struct {
+	ProjectAiAssistantRequestBase
+	AssistantId string `json:"assistantId,omitempty"`
+}
+
+// DeleteProjectAiAssistant DTO.
+type DeleteProjectAiAssistant struct {
+	CodeMashRequestBase
+	AssistantId string `json:"assistantId,omitempty"`
+}
+
+// GetProjectAiUsage DTO.
+type GetProjectAiUsage struct {
+	CodeMashRequestBase
+	Top float64 `json:"top,omitempty"`
 }
 
 // UpdateProjectAccentColor DTO.
@@ -8925,6 +9255,43 @@ type ProcessCollectionImport struct {
 	Env                   string `json:"env,omitempty"`
 }
 
+// TermInserted DTO.
+type TermInserted struct {
+	ProjectId             *ProjectId     `json:"projectId,omitempty"`
+	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
+	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
+	Id                    string         `json:"id,omitempty"`
+	Document              map[string]any `json:"document,omitempty"`
+}
+
+// TermUpdated DTO.
+type TermUpdated struct {
+	ProjectId             *ProjectId     `json:"projectId,omitempty"`
+	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
+	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
+	Id                    string         `json:"id,omitempty"`
+	From                  map[string]any `json:"from,omitempty"`
+	To                    map[string]any `json:"to,omitempty"`
+}
+
+// TermDeleted DTO.
+type TermDeleted struct {
+	ProjectId             *ProjectId     `json:"projectId,omitempty"`
+	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
+	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
+	Id                    string         `json:"id,omitempty"`
+	Document              map[string]any `json:"document,omitempty"`
+}
+
+// TermsDeleted DTO.
+type TermsDeleted struct {
+	ProjectId             *ProjectId     `json:"projectId,omitempty"`
+	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
+	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
+	DeletedCount          float64        `json:"deletedCount,omitempty"`
+	Filter                map[string]any `json:"filter,omitempty"`
+}
+
 // DisableFiles DTO.
 type DisableFiles struct {
 	CodeMashRequestBase
@@ -9814,6 +10181,13 @@ type GetPushDevices struct {
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
+// GetPushCampaignAudienceCountRequest DTO.
+type GetPushCampaignAudienceCountRequest struct {
+	CodeMashRequestBase
+	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId string               `json:"databaseIntegrationId,omitempty"`
+}
+
 // CreatePushCampaignRequest DTO.
 type CreatePushCampaignRequest struct {
 	CodeMashRequestBase
@@ -10229,9 +10603,36 @@ type ChatTurnRequest struct {
 	ScreenContext    *ChatScreenContextDto `json:"screenContext,omitempty"`
 }
 
+// ScaffoldProjectRequest DTO.
+type ScaffoldProjectRequest struct {
+	RequestBase
+	Spec string `json:"spec,omitempty"`
+	Mode string `json:"mode,omitempty"`
+	Env  string `json:"env,omitempty"`
+}
+
+// ValidateSchemaRequest DTO.
+type ValidateSchemaRequest struct {
+	RequestBase
+	SchemaJson string `json:"schemaJson,omitempty"`
+}
+
+// RenderTemplatePreviewRequest DTO.
+type RenderTemplatePreviewRequest struct {
+	RequestBase
+	ProjectId  string `json:"projectId,omitempty"`
+	Env        string `json:"env,omitempty"`
+	Channel    string `json:"channel,omitempty"`
+	TemplateId string `json:"templateId,omitempty"`
+	Body       string `json:"body,omitempty"`
+	Subject    string `json:"subject,omitempty"`
+	SampleData string `json:"sampleData,omitempty"`
+}
+
 // McpRequest DTO.
 type McpRequest struct {
 	Version       string `json:"version,omitempty"`
+	Toolsets      string `json:"toolsets,omitempty"`
 	RequestStream string `json:"requestStream,omitempty"`
 }
 
@@ -10267,6 +10668,71 @@ type MarkNeedsYouDoneRequest struct {
 	Done       bool    `json:"done,omitempty"`
 }
 
+// OAuthProtectedResourceMetadataRequest DTO.
+type OAuthProtectedResourceMetadataRequest struct {
+	Path string `json:"path,omitempty"`
+}
+
+// OAuthAuthorizationServerMetadataRequest DTO.
+type OAuthAuthorizationServerMetadataRequest struct {
+	Path string `json:"path,omitempty"`
+}
+
+// OAuthRegisterRequest DTO.
+type OAuthRegisterRequest struct {
+	Version       string `json:"version,omitempty"`
+	RequestStream string `json:"requestStream,omitempty"`
+}
+
+// OAuthAuthorizeRequest DTO.
+type OAuthAuthorizeRequest struct {
+	Version string `json:"version,omitempty"`
+}
+
+// OAuthAuthorizeDecisionRequest DTO.
+type OAuthAuthorizeDecisionRequest struct {
+	Version string `json:"version,omitempty"`
+}
+
+// OAuthTokenRequest DTO.
+type OAuthTokenRequest struct {
+	Version string `json:"version,omitempty"`
+}
+
+// OAuthRevokeRequest DTO.
+type OAuthRevokeRequest struct {
+	Version string `json:"version,omitempty"`
+}
+
+// DeleteEmbeddingIntegrationRequest DTO.
+type DeleteEmbeddingIntegrationRequest struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetEmbeddingIntegration DTO.
+type GetEmbeddingIntegration struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetEmbeddingIntegrations DTO.
+type GetEmbeddingIntegrations struct {
+	CodeMashListPaginationRequestBase
+}
+
+// SaveEmbeddingIntegration DTO.
+type SaveEmbeddingIntegration struct {
+	CodeMashRequestBase
+	Integration *EmbeddingIntegrationRequest `json:"integration,omitempty"`
+}
+
+// TestEmbeddingIntegration DTO.
+type TestEmbeddingIntegration struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
 // DeleteLlmIntegrationRequest DTO.
 type DeleteLlmIntegrationRequest struct {
 	CodeMashRequestBase
@@ -10300,6 +10766,12 @@ type GetLlmIntegrations struct {
 type SaveLlmIntegration struct {
 	CodeMashRequestBase
 	Integration *LlmIntegrationRequest `json:"integration,omitempty"`
+}
+
+// SetLlmIntegrationAsDefaultRequest DTO.
+type SetLlmIntegrationAsDefaultRequest struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
 }
 
 // TestLlmIntegration DTO.
