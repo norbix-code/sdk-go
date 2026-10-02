@@ -72,6 +72,10 @@ _, err := c.Login(ctx, norbix.LoginCredentials{UserName: "alice", Password: "...
 | `norbix.NewAPI(opts)` | flat: `c.Database`, `c.Membership`, `c.Files`, ... |
 | `norbix.NewHub(opts)` | flat: `c.Account`, `c.Email`, `c.Webhooks`, ... |
 
+The notification modules (Email, Push, Sms) live on `c.Hub.Notifications`; every
+Sms Hub route (35) has a method there, each proven against a local fake server in
+`norbix/hub/sms_test.go` (verb + resolved path, no provider is ever contacted).
+
 ### Configuration
 
 Every `Options` field falls back to an environment variable, then a default:
