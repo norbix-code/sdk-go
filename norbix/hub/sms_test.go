@@ -14,7 +14,7 @@ import (
 // Every Sms endpoint the gateway exposes, and the module method that calls
 // it. Each case asserts the verb and the fully-resolved path — version
 // substituted, route tokens filled — so a wrong path or a swapped verb fails
-// here instead of at runtime. The 35 routes are the Sms rows of the gateway's
+// here instead of at runtime. The 34 routes are the Sms rows of the gateway's
 // endpoint manifest (typegen coverage/endpoints.hub.json).
 //
 // Nothing leaves the process: every call goes to a local test server, so no
@@ -174,10 +174,6 @@ func smsCases() []smsCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.GetSmsCampaignMessages(ctx, testCampaignID, nil, nil)
 			}},
-		{"GetSmsCampaignMessage", http.MethodGet, "/v2/notifications/sms/campaigns/" + testCampaignID + "/messages/" + testNotificationID,
-			func(ctx context.Context, m *NotificationsModule) error {
-				return m.GetSmsCampaignMessage(ctx, testCampaignID, testNotificationID, nil, nil)
-			}},
 	}
 }
 
@@ -219,13 +215,13 @@ func TestSmsEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Sms surface is 35 routes — the Sms rows of the gateway's endpoint
+// The whole Sms surface is 34 routes — the Sms rows of the gateway's endpoint
 // manifest. If the gateway grows one and the module gains a method, this
 // count changes and the test says so, so a new endpoint cannot arrive untested.
 // (The old SmsRazorSyntaxCheck is not among them: the gateway never served
 // POST /{version}/notifications/sms/templates/razor-syntax-check.)
 func TestSmsSurfaceSize(t *testing.T) {
-	const want = 35
+	const want = 34
 	if got := len(smsCases()); got != want {
 		t.Errorf("sms endpoint count: got %d want %d", got, want)
 	}
@@ -248,33 +244,6 @@ func TestSmsEndpointsSendAuthAndProjectHeaders(t *testing.T) {
 	}
 	if project != "proj_1" {
 		t.Errorf("project header: got %q", project)
-	}
-}
-
-// The gateway route is /campaigns/{campaignId}/messages/{notificationId}: the
-// request type has no Id property, so a path written with {id} bound nothing
-// on the server. The method must put the notification id in the PATH, and the
-// batch id (required by the gateway, not part of the route) must travel in the
-// query string of the GET.
-func TestGetSmsCampaignMessageFillsThePathAndSendsTheBatchInTheQuery(t *testing.T) {
-	var gotPath, gotBatch string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotPath = r.URL.Path
-		gotBatch = r.URL.Query().Get("campaignBatchId")
-		w.WriteHeader(http.StatusNoContent)
-	}))
-	defer srv.Close()
-
-	err := newSmsTestModule(srv.URL).GetSmsCampaignMessage(context.Background(),
-		testCampaignID, testNotificationID, map[string]any{"campaignBatchId": testBatchID}, nil)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if want := "/v2/notifications/sms/campaigns/" + testCampaignID + "/messages/" + testNotificationID; gotPath != want {
-		t.Errorf("path: got %q want %q", gotPath, want)
-	}
-	if gotBatch != testBatchID {
-		t.Errorf("campaignBatchId query: got %q want %q", gotBatch, testBatchID)
 	}
 }
 

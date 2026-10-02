@@ -4741,6 +4741,13 @@ type EmailIntegrationListProjection struct {
 	SenderDisplayName  string        `json:"senderDisplayName,omitempty"`
 }
 
+// EmailLinkPreferencesDto DTO.
+type EmailLinkPreferencesDto struct {
+	EmailAddress              string   `json:"emailAddress,omitempty"`
+	UnsubscribedFromMarketing bool     `json:"unsubscribedFromMarketing,omitempty"`
+	BlockReasons              []string `json:"blockReasons,omitempty"`
+}
+
 // CampaignStatusChangeEntryDto DTO.
 type CampaignStatusChangeEntryDto struct {
 	Time   string         `json:"time,omitempty"`
@@ -6585,6 +6592,12 @@ type GetEmailFootersResponse struct {
 	List PaginatedResponse[*ListItemWithTranslationsProjection] `json:"list,omitempty"`
 }
 
+// GetEmailPreferencesByLinkResponse DTO.
+type GetEmailPreferencesByLinkResponse struct {
+	ResponseBase
+	Item *EmailLinkPreferencesDto `json:"item,omitempty"`
+}
+
 // GetEmailCampaignResponse DTO.
 type GetEmailCampaignResponse struct {
 	ResponseBase
@@ -6627,12 +6640,6 @@ type PreviewEmailNotificationResponse struct {
 	ResponseBase
 	Subject string `json:"subject,omitempty"`
 	Body    string `json:"body,omitempty"`
-}
-
-// GetEmailCampaignMessageResponse DTO.
-type GetEmailCampaignMessageResponse struct {
-	ResponseBase
-	EmailMessageEntity *EmailCampaignBatchNotificationDto `json:"emailMessageEntity,omitempty"`
 }
 
 // GetEmailCampaignMessagesResponse DTO.
@@ -6732,12 +6739,6 @@ type GetSmsCampaignStatisticsResponse struct {
 type PreviewSmsNotificationResponse struct {
 	ResponseBase
 	Body string `json:"body,omitempty"`
-}
-
-// GetSmsCampaignMessageResponse DTO.
-type GetSmsCampaignMessageResponse struct {
-	ResponseBase
-	SmsMessageEntity *SmsCampaignBatchNotificationDto `json:"smsMessageEntity,omitempty"`
 }
 
 // GetSmsCampaignMessagesResponse DTO.
@@ -6950,12 +6951,6 @@ type PreviewPushNotificationResponse struct {
 	Title    string `json:"title,omitempty"`
 	Body     string `json:"body,omitempty"`
 	Subtitle string `json:"subtitle,omitempty"`
-}
-
-// GetPushCampaignMessageResponse DTO.
-type GetPushCampaignMessageResponse struct {
-	ResponseBase
-	PushMessageEntity *PushCampaignBatchNotificationDto `json:"pushMessageEntity,omitempty"`
 }
 
 // GetPushCampaignMessagesResponse DTO.
@@ -9655,6 +9650,12 @@ type OneClickUnsubscribeRequest struct {
 	Token string `json:"token,omitempty"`
 }
 
+// GetEmailPreferencesByLinkRequest DTO.
+type GetEmailPreferencesByLinkRequest struct {
+	RequestBase
+	Token string `json:"token,omitempty"`
+}
+
 // CreateEmailCampaignRequest DTO.
 type CreateEmailCampaignRequest struct {
 	CodeMashRequestBase
@@ -9733,15 +9734,6 @@ type PreviewEmailNotification struct {
 type StopEmailCampaignRequest struct {
 	CodeMashRequestBase
 	Id                    string `json:"id,omitempty"`
-	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
-}
-
-// GetEmailCampaignMessage DTO.
-type GetEmailCampaignMessage struct {
-	CodeMashRequestBase
-	CampaignId            string `json:"campaignId,omitempty"`
-	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
-	NotificationId        string `json:"notificationId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
@@ -9971,15 +9963,6 @@ type PreviewSmsNotification struct {
 type StopSmsCampaignRequest struct {
 	CodeMashRequestBase
 	Id                    string `json:"id,omitempty"`
-	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
-}
-
-// GetSmsCampaignMessage DTO.
-type GetSmsCampaignMessage struct {
-	CodeMashRequestBase
-	CampaignId            string `json:"campaignId,omitempty"`
-	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
-	NotificationId        string `json:"notificationId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
@@ -10263,15 +10246,6 @@ type PreviewPushNotification struct {
 type StopPushCampaignRequest struct {
 	CodeMashRequestBase
 	Id                    string `json:"id,omitempty"`
-	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
-}
-
-// GetPushCampaignMessage DTO.
-type GetPushCampaignMessage struct {
-	CodeMashRequestBase
-	CampaignId            string `json:"campaignId,omitempty"`
-	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
-	NotificationId        string `json:"notificationId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 

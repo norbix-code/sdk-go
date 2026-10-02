@@ -608,22 +608,6 @@ func (m *NotificationsModule) PreviewEmailNotification(ctx context.Context, req 
 	}, out)
 }
 
-// GetEmailCampaignMessage performs GET /{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId} (scope: project).
-func (m *NotificationsModule) GetEmailCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"campaignId":     campaignId,
-		"notificationId": notificationId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId}",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // GetEmailCampaignMessages performs GET /{version}/notifications/emails/campaigns/{campaignId}/messages (scope: project).
 func (m *NotificationsModule) GetEmailCampaignMessages(ctx context.Context, campaignId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1228,22 +1212,6 @@ func (m *NotificationsModule) GetPushCampaignMessages(ctx context.Context, campa
 	}, out)
 }
 
-// GetPushCampaignMessage performs GET /{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId} (scope: project).
-func (m *NotificationsModule) GetPushCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"campaignId":     campaignId,
-		"notificationId": notificationId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId}",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // GetPushCampaign performs GET /{version}/notifications/push/campaigns/{id} (scope: project).
 func (m *NotificationsModule) GetPushCampaign(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1395,22 +1363,6 @@ func (m *NotificationsModule) GetSmsCampaignMessages(ctx context.Context, campai
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/sms/campaigns/{campaignId}/messages",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetSmsCampaignMessage performs GET /{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId} (scope: project).
-func (m *NotificationsModule) GetSmsCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"campaignId":     campaignId,
-		"notificationId": notificationId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
