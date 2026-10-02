@@ -608,15 +608,15 @@ func (m *NotificationsModule) PreviewEmailNotification(ctx context.Context, req 
 	}, out)
 }
 
-// GetEmailCampaignMessage performs GET /{version}/notifications/emails/campaigns/{campaignId}/messages/{id} (scope: project).
-func (m *NotificationsModule) GetEmailCampaignMessage(ctx context.Context, campaignId string, id string, req map[string]any, out any) error {
+// GetEmailCampaignMessage performs GET /{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId} (scope: project).
+func (m *NotificationsModule) GetEmailCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"campaignId": campaignId,
-		"id":         id,
+		"campaignId":     campaignId,
+		"notificationId": notificationId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/emails/campaigns/{campaignId}/messages/{id}",
+		Path:       "/{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
@@ -1228,15 +1228,15 @@ func (m *NotificationsModule) GetPushCampaignMessages(ctx context.Context, campa
 	}, out)
 }
 
-// GetPushCampaignMessage performs GET /{version}/notifications/push/campaigns/{campaignId}/messages/{id} (scope: project).
-func (m *NotificationsModule) GetPushCampaignMessage(ctx context.Context, campaignId string, id string, req map[string]any, out any) error {
+// GetPushCampaignMessage performs GET /{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId} (scope: project).
+func (m *NotificationsModule) GetPushCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"campaignId": campaignId,
-		"id":         id,
+		"campaignId":     campaignId,
+		"notificationId": notificationId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/push/campaigns/{campaignId}/messages/{id}",
+		Path:       "/{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
@@ -1370,6 +1370,23 @@ func (m *NotificationsModule) CreateSmsCampaign(ctx context.Context, req map[str
 	}, out)
 }
 
+// StopSmsCampaign performs POST /{version}/notifications/sms/campaigns/{Id}/stop (scope: project).
+// A running campaign stops at its next batch; messages already handed to the
+// provider are not recalled.
+func (m *NotificationsModule) StopSmsCampaign(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/sms/campaigns/{Id}/stop",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetSmsCampaignMessages performs GET /{version}/notifications/sms/campaigns/{campaignId}/messages (scope: project).
 func (m *NotificationsModule) GetSmsCampaignMessages(ctx context.Context, campaignId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1385,15 +1402,15 @@ func (m *NotificationsModule) GetSmsCampaignMessages(ctx context.Context, campai
 	}, out)
 }
 
-// GetSmsCampaignMessage performs GET /{version}/notifications/sms/campaigns/{campaignId}/messages/{id} (scope: project).
-func (m *NotificationsModule) GetSmsCampaignMessage(ctx context.Context, campaignId string, id string, req map[string]any, out any) error {
+// GetSmsCampaignMessage performs GET /{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId} (scope: project).
+func (m *NotificationsModule) GetSmsCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"campaignId": campaignId,
-		"id":         id,
+		"campaignId":     campaignId,
+		"notificationId": notificationId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/sms/campaigns/{campaignId}/messages/{id}",
+		Path:       "/{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
@@ -1499,6 +1516,20 @@ func (m *NotificationsModule) DisableSms(ctx context.Context, req map[string]any
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/sms/disable",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetSmsDisableDependencies performs GET /{version}/notifications/sms/disable-dependencies (scope: project).
+// Lists what still depends on the Sms module (triggers, running campaigns)
+// so a caller can show it before DisableSms.
+func (m *NotificationsModule) GetSmsDisableDependencies(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/sms/disable-dependencies",
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
@@ -1701,11 +1732,13 @@ func (m *NotificationsModule) UpdateSmsTemplate(ctx context.Context, req map[str
 	}, out)
 }
 
-// SmsRazorSyntaxCheck performs POST /{version}/notifications/sms/templates/razor-syntax-check (scope: project).
-func (m *NotificationsModule) SmsRazorSyntaxCheck(ctx context.Context, req map[string]any, out any) error {
+// RenderSms performs POST /{version}/notifications/sms/templates/render (scope: project).
+// Runs a Razor Sms template ("code") with the given token mappings and
+// returns the bound text, or the list of tokens still unresolved.
+func (m *NotificationsModule) RenderSms(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/sms/templates/razor-syntax-check",
+		Path:       "/{version}/notifications/sms/templates/render",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
