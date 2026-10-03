@@ -16,7 +16,7 @@ gateway or TS SDK change.
 2. feat(project): Hub methods — `UpdateProjectAdminUrl`, `UpdateProjectLegalDocuments`,
    `UpdateProjectExposeLegal`, `GetAdminPortalStructure`, `AssignAdminPortalServiceUser`,
    AI service users (create / list / delete / rotate key / revoke key), developer MCP
-   endpoint (POST / GET / DELETE) — todo, `norbix/hub/account.go`
+   endpoint (POST / GET / DELETE) — done, `norbix/hub/account.go`
 3. feat(project): API `PublicModule` — `GetPublicProjectConfig`, `GetPublicProjectLegal`
    (served by the API host, no sign-in) — todo, `norbix/api/public.go`
 4. test(project): route tests for every Project-module method (new and existing) and
