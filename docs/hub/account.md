@@ -66,6 +66,8 @@ All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope account.
 | `UpdateProjectAdminUrl` | `admin-url` |
 | `UpdateProjectLegalDocuments` | `legal` |
 | `UpdateProjectExposeLegal` | `legal/expose` |
+| `UpdateProjectExposeBrand` | `brand/expose` |
+| `UpdateProjectExposeAuth` | `auth/expose` |
 
 ### CORS
 
@@ -91,6 +93,19 @@ _ = client.Hub.Account.UpdateProjectExposeLegal(ctx, "proj_123", map[string]any{
 
 var terms map[string]any
 _ = client.API.Public.GetPublicProjectLegal(ctx, "proj_123", "terms", &terms)
+```
+
+### What the public Admin Portal config shows
+
+`api.PublicModule.GetPublicProjectConfig` (no sign-in) returns the brand by
+default and hides the sign-in methods and password policy. Two switches change
+that:
+
+```go
+// Hide the brand (name, colors, logo, icon) from the public config.
+_ = client.Hub.Account.UpdateProjectExposeBrand(ctx, "proj_123", map[string]any{"exposed": false}, nil)
+// Show the sign-in methods (email / phone / username) and the password policy.
+_ = client.Hub.Account.UpdateProjectExposeAuth(ctx, "proj_123", map[string]any{"exposed": true}, nil)
 ```
 
 ## Admin Portal

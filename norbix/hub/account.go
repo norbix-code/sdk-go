@@ -658,6 +658,34 @@ func (m *AccountModule) UpdateProjectExposeLegal(ctx context.Context, projectId 
 	}, out)
 }
 
+// UpdateProjectExposeBrand performs PATCH /{version}/account/projects/{projectId}/settings/brand/expose (scope: account).
+// It sets whether the brand (name, colors, logo, icon) is returned by the public
+// Admin Portal config (api.PublicModule.GetPublicProjectConfig). On by default.
+func (m *AccountModule) UpdateProjectExposeBrand(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/brand/expose",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// UpdateProjectExposeAuth performs PATCH /{version}/account/projects/{projectId}/settings/auth/expose (scope: account).
+// It sets whether the sign-in methods and password policy are returned by the public
+// Admin Portal config (api.PublicModule.GetPublicProjectConfig). Off by default.
+func (m *AccountModule) UpdateProjectExposeAuth(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/auth/expose",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
 // AssignAdminPortalServiceUser performs PUT /{version}/account/projects/{projectId}/settings/admin-portal/service-user (scope: account).
 // It makes an existing service user the project's Admin Portal service user.
 func (m *AccountModule) AssignAdminPortalServiceUser(ctx context.Context, projectId string, req map[string]any, out any) error {
