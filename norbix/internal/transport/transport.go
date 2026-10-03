@@ -97,6 +97,11 @@ type Request struct {
 	// Body is sent as JSON for write verbs and as the query string for GET/DELETE.
 	Body  map[string]any
 	Scope Scope
+	// Headers are extra request headers for this call only (for example
+	// Mcp-Session-Id on the developer MCP endpoint). They are applied after
+	// DefaultHeaders and before the auth / scope headers, so they never
+	// replace Authorization or X-CM-ProjectId.
+	Headers map[string]string
 
 	// Per-call overrides (empty means "use client default").
 	Timeout     time.Duration
@@ -142,6 +147,9 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 
 	headers := map[string]string{"Accept": "application/json"}
 	for k, v := range t.Cfg.DefaultHeaders {
+		headers[k] = v
+	}
+	for k, v := range req.Headers {
 		headers[k] = v
 	}
 

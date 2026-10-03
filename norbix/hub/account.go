@@ -612,3 +612,234 @@ func (m *AccountModule) SetAdminPortalEnabled(ctx context.Context, projectId str
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// ---------------------------------------------------------------------------
+// Project settings and Admin Portal (project audit, item E1). Hand-added.
+// ---------------------------------------------------------------------------
+
+// UpdateProjectAdminUrl performs PATCH /{version}/account/projects/{projectId}/settings/admin-url (scope: account).
+// It overrides the project's Admin Portal address; an empty value restores the
+// canonical one.
+func (m *AccountModule) UpdateProjectAdminUrl(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/admin-url",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// UpdateProjectLegalDocuments performs PATCH /{version}/account/projects/{projectId}/settings/legal (scope: account).
+// It saves the project's Terms and Privacy Policy as Markdown; an empty value
+// clears that document.
+func (m *AccountModule) UpdateProjectLegalDocuments(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/legal",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// UpdateProjectExposeLegal performs PATCH /{version}/account/projects/{projectId}/settings/legal/expose (scope: account).
+// It turns the public legal links (api.PublicModule.GetPublicProjectLegal) on or off.
+func (m *AccountModule) UpdateProjectExposeLegal(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/legal/expose",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// UpdateProjectExposeBrand performs PATCH /{version}/account/projects/{projectId}/settings/brand/expose (scope: account).
+// It sets whether the brand (name, colors, logo, icon) is returned by the public
+// Admin Portal config (api.PublicModule.GetPublicProjectConfig). On by default.
+func (m *AccountModule) UpdateProjectExposeBrand(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/brand/expose",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// UpdateProjectExposeAuth performs PATCH /{version}/account/projects/{projectId}/settings/auth/expose (scope: account).
+// It sets whether the sign-in methods and password policy are returned by the public
+// Admin Portal config (api.PublicModule.GetPublicProjectConfig). Off by default.
+func (m *AccountModule) UpdateProjectExposeAuth(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/auth/expose",
+		Method:     "PATCH",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// AssignAdminPortalServiceUser performs PUT /{version}/account/projects/{projectId}/settings/admin-portal/service-user (scope: account).
+// It makes an existing service user the project's Admin Portal service user.
+func (m *AccountModule) AssignAdminPortalServiceUser(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/admin-portal/service-user",
+		Method:     "PUT",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// GetAdminPortalStructure performs GET /{version}/account/projects/{projectId}/admin-portal/structure (scope: project).
+// It returns the Admin Portal layout for the project's service user.
+func (m *AccountModule) GetAdminPortalStructure(ctx context.Context, projectId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/admin-portal/structure",
+		Method:     "GET",
+		PathParams: map[string]string{"projectId": projectId},
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ---------------------------------------------------------------------------
+// AI service users (project audit, item E1). Hand-added.
+//
+// A service user is a scoped identity for an AI agent (Claude Code, Cursor, …).
+// Its API key is shown ONCE, in the answer of CreateAiServiceUser and
+// RotateAiServiceUserKey; later reads show only a key id and a hint.
+// ---------------------------------------------------------------------------
+
+// CreateAiServiceUser performs POST /{version}/account/ai/service-users (scope: account).
+func (m *AccountModule) CreateAiServiceUser(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target: transport.TargetHub,
+		Path:   "/{version}/account/ai/service-users",
+		Method: "POST",
+		Body:   req,
+		Scope:  transport.ScopeAccount,
+	}, out)
+}
+
+// ListAiServiceUsers performs GET /{version}/account/ai/service-users (scope: account).
+func (m *AccountModule) ListAiServiceUsers(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target: transport.TargetHub,
+		Path:   "/{version}/account/ai/service-users",
+		Method: "GET",
+		Body:   req,
+		Scope:  transport.ScopeAccount,
+	}, out)
+}
+
+// DeleteAiServiceUser performs DELETE /{version}/account/ai/service-users/{Id} (scope: account).
+// It deletes the service user and every one of its keys.
+func (m *AccountModule) DeleteAiServiceUser(ctx context.Context, id string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/ai/service-users/{Id}",
+		Method:     "DELETE",
+		PathParams: map[string]string{"Id": id},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// RotateAiServiceUserKey performs POST /{version}/account/ai/service-users/{Id}/keys (scope: account).
+// It issues a new key; with "revokeKeyId" in req it also revokes that old key.
+func (m *AccountModule) RotateAiServiceUserKey(ctx context.Context, id string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/ai/service-users/{Id}/keys",
+		Method:     "POST",
+		PathParams: map[string]string{"Id": id},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// RevokeAiServiceUserKey performs DELETE /{version}/account/ai/service-users/{Id}/keys/{KeyId} (scope: account).
+func (m *AccountModule) RevokeAiServiceUserKey(ctx context.Context, id string, keyId string, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/ai/service-users/{Id}/keys/{KeyId}",
+		Method:     "DELETE",
+		PathParams: map[string]string{"Id": id, "KeyId": keyId},
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
+// ---------------------------------------------------------------------------
+// Developer MCP endpoint (project audit, item E1). Hand-added.
+//
+// /{version}/account/mcp is the Hub's Model Context Protocol server. Most
+// callers are MCP clients (Claude, Cursor) and never use these methods; they
+// exist for tests and scripts that speak JSON-RPC directly.
+//
+// Limits of this transport: the answer is read in full before the call
+// returns, and response headers are not returned — so the Mcp-Session-Id the
+// server sends back on "initialize" cannot be read here, and McpOpenStream
+// returns only when the server closes the stream or the timeout is reached.
+// ---------------------------------------------------------------------------
+
+// McpSessionHeader is the header that names an MCP session.
+const McpSessionHeader = "Mcp-Session-Id"
+
+func mcpHeaders(sessionId string) map[string]string {
+	h := map[string]string{"Accept": "application/json, text/event-stream"}
+	if sessionId != "" {
+		h[McpSessionHeader] = sessionId
+	}
+	return h
+}
+
+// Mcp performs POST /{version}/account/mcp (scope: project).
+// msg is one JSON-RPC message, e.g.
+// {"jsonrpc":"2.0","id":1,"method":"tools/list"}. sessionId may be empty
+// (for "initialize"). Pass a *[]byte as out when the server may answer with an
+// SSE stream instead of JSON.
+func (m *AccountModule) Mcp(ctx context.Context, sessionId string, msg map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:  transport.TargetHub,
+		Path:    "/{version}/account/mcp",
+		Method:  "POST",
+		Body:    msg,
+		Scope:   transport.ScopeProject,
+		Headers: mcpHeaders(sessionId),
+	}, out)
+}
+
+// McpOpenStream performs GET /{version}/account/mcp (scope: project).
+// It opens the server-to-client SSE stream of a session. Pass a *[]byte as out.
+func (m *AccountModule) McpOpenStream(ctx context.Context, sessionId string, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:  transport.TargetHub,
+		Path:    "/{version}/account/mcp",
+		Method:  "GET",
+		Scope:   transport.ScopeProject,
+		Headers: mcpHeaders(sessionId),
+	}, out)
+}
+
+// McpEndSession performs DELETE /{version}/account/mcp (scope: project).
+// It ends the session named by sessionId.
+func (m *AccountModule) McpEndSession(ctx context.Context, sessionId string, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:  transport.TargetHub,
+		Path:    "/{version}/account/mcp",
+		Method:  "DELETE",
+		Scope:   transport.ScopeProject,
+		Headers: mcpHeaders(sessionId),
+	}, out)
+}

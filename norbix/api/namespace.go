@@ -12,6 +12,7 @@ type Namespace struct {
 	Echo       *EchoModule
 	Files      *FilesModule
 	Membership *MembershipModule
+	Public     *PublicModule
 }
 
 // NewNamespace wires every module to the shared transport.
@@ -22,5 +23,6 @@ func NewNamespace(t *transport.Transport) *Namespace {
 		Echo:       &EchoModule{t: t},
 		Files:      &FilesModule{t: t},
 		Membership: &MembershipModule{t: t},
+		Public:     &PublicModule{t: t},
 	}
 }
