@@ -22,7 +22,7 @@ gateway or TS SDK change.
 4. test(project): route tests for every Project-module method (new and existing) and
    every LLM + MCP integration method in `ai.go` — done
 5. docs(project): `docs/hub/account.md`, `docs/hub/ai.md`, README links — done
-6. check: `go build ./...`, `go vet ./...`, `go test ./...`, gofmt — todo
+6. check: `go build ./...`, `go vet ./...`, `go test ./...`, gofmt — done (build ok, vet ok, gofmt clean; test: 5 packages ok, 0 failures, 259 passing subtests in `./norbix/...`)
 7. push branch and open one pull request to `main` — todo
 
 Decisions (taken, not open):
