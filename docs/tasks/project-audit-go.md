@@ -18,7 +18,7 @@ gateway or TS SDK change.
    AI service users (create / list / delete / rotate key / revoke key), developer MCP
    endpoint (POST / GET / DELETE) — done, `norbix/hub/account.go`
 3. feat(project): API `PublicModule` — `GetPublicProjectConfig`, `GetPublicProjectLegal`
-   (served by the API host, no sign-in) — todo, `norbix/api/public.go`
+   (served by the API host, no sign-in) — done, `norbix/api/public.go`
 4. test(project): route tests for every Project-module method (new and existing) and
    every LLM + MCP integration method in `ai.go` — todo
 5. docs(project): `docs/hub/account.md`, `docs/hub/ai.md`, README links — todo
