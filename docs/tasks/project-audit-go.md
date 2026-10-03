@@ -23,7 +23,7 @@ gateway or TS SDK change.
    every LLM + MCP integration method in `ai.go` — done
 5. docs(project): `docs/hub/account.md`, `docs/hub/ai.md`, README links — done
 6. check: `go build ./...`, `go vet ./...`, `go test ./...`, gofmt — done (build ok, vet ok, gofmt clean; test: 5 packages ok, 0 failures, 259 passing subtests in `./norbix/...`)
-7. push branch and open one pull request to `main` — todo
+7. push branch and open one pull request to `main` — done, https://github.com/norbix-code/sdk-go/pull/20
 
 Decisions (taken, not open):
 
@@ -82,7 +82,7 @@ Decisions (taken, not open):
 
 ## Needs you
 
-- [ ] Review and merge the pull request (not merged by the agent).
+- [ ] Review and merge https://github.com/norbix-code/sdk-go/pull/20 (not merged by the agent).
 
 ## Open questions
 
