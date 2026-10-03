@@ -20,7 +20,7 @@ gateway or TS SDK change.
 3. feat(project): API `PublicModule` — `GetPublicProjectConfig`, `GetPublicProjectLegal`
    (served by the API host, no sign-in) — done, `norbix/api/public.go`
 4. test(project): route tests for every Project-module method (new and existing) and
-   every LLM + MCP integration method in `ai.go` — todo
+   every LLM + MCP integration method in `ai.go` — done
 5. docs(project): `docs/hub/account.md`, `docs/hub/ai.md`, README links — todo
 6. check: `go build ./...`, `go vet ./...`, `go test ./...`, gofmt — todo
 7. push branch and open one pull request to `main` — todo
@@ -46,9 +46,9 @@ Decisions (taken, not open):
 | `norbix/hub/account.go` | 13 new methods (5 project settings / admin portal, 5 AI service users, 3 MCP) | 2 |
 | `norbix/api/public.go` | new `PublicModule` with 2 methods | 3 |
 | `norbix/api/namespace.go` | wire `Public` | 3 |
-| `norbix/hub/account_project_test.go` | route tests: 32 Project-module routes + MCP session header | 4 |
-| `norbix/hub/ai_integrations_test.go` | route tests: 15 LLM + MCP integration routes | 4 |
-| `norbix/api/public_test.go` | route tests: 2 public routes, no auth header | 4 |
+| `norbix/hub/account_project_test.go` | route tests: 31 Project-module routes (verb, path, auth / project / account headers), account-scope refusal without AccountID, MCP session header + JSON-RPC body | 4 |
+| `norbix/hub/ai_integrations_test.go` | route tests: 14 LLM + MCP integration routes (`SetLlmIntegrationAsDefault` was already in `ai_embeddings_test.go`) | 4 |
+| `norbix/api/public_test.go` | route tests: 2 public routes, no auth header even with a key | 4 |
 | `docs/hub/account.md`, `docs/hub/ai.md` | module docs | 5 |
 | `README.md` | "Module guides" links | 5 |
 
