@@ -1,0 +1,188 @@
+# Account and projects — Go
+
+[← Back to project README](../../README.md)
+
+The project endpoints on the Hub, and the `hub.AccountModule` method that
+calls each one: create and read projects, project settings (name, brand,
+CORS, languages, regions, legal documents), the Admin Portal, project AI
+settings, AI service users and the developer MCP endpoint. The two public
+project routes live on the API as `api.PublicModule`.
+
+Every route here is covered by a test that asserts the verb and the
+fully-resolved path: `norbix/hub/account_project_test.go`,
+`norbix/hub/account_ai_test.go` and `norbix/api/public_test.go`.
+
+Each method takes a context, any route ids as plain arguments, an untyped
+request body, and a pointer to decode the response into (pass `nil` to discard
+it).
+
+**Scope.** Methods marked *account* need `AccountID` on the client (or
+`NORBIX_ACCOUNT_ID`); without it the SDK refuses the call before it is sent.
+Methods marked *project* need only a key or a bearer token.
+
+```go
+client, err := norbix.New(norbix.Options{
+    ProjectID: "proj_123",
+    AccountID: "acct_123",
+    APIKey:    "sk_live_...",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+var project map[string]any
+err = client.Hub.Account.GetProject(ctx, "proj_123", nil, &project)
+```
+
+## Projects
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `GetProjects(ctx, req, out)` | `GET` | `/account/projects` | account |
+| `CreateProject(ctx, req, out)` | `POST` | `/account/projects` | account |
+| `GetProject(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}` | account |
+| `DeleteProject(ctx, projectId, req, out)` | `DELETE` | `/account/projects/{projectId}` | account |
+| `EnableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/enable` | account |
+| `DisableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/disable` | account |
+| `GetProjectTokens(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/tokens` | account |
+
+## Project settings
+
+All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope account.
+
+| method | segment |
+|---|---|
+| `UpdateProjectName` | `name` |
+| `UpdateProjectDescription` | `description` |
+| `UpdateProjectLogo` | `logo` |
+| `UpdateProjectIcon` | `icon` |
+| `UpdateProjectMainColor` | `main-color` |
+| `UpdateProjectAccentColor` | `accent-color` |
+| `UpdateProjectUrl` | `url` |
+| `UpdateProjectLanguages` | `languages` |
+| `UpdateProjectDefaultLanguage` | `default-language` |
+| `UpdateProjectRegions` | `regions` |
+| `UpdateProjectAllowedOrigins` | `origins` (CORS) |
+| `UpdateProjectAdminUrl` | `admin-url` |
+| `UpdateProjectLegalDocuments` | `legal` |
+| `UpdateProjectExposeLegal` | `legal/expose` |
+
+### CORS
+
+The browser origins allowed to call the project:
+
+```go
+err := client.Hub.Account.UpdateProjectAllowedOrigins(ctx, "proj_123", map[string]any{
+    "origins": []string{"https://app.example.com"},
+}, nil)
+```
+
+### Legal documents
+
+Save the Terms and Privacy Policy as Markdown, then make them public. Once
+exposed, anyone can read them without signing in:
+
+```go
+_ = client.Hub.Account.UpdateProjectLegalDocuments(ctx, "proj_123", map[string]any{
+    "termsMarkdown":   "# Terms\n...",
+    "privacyMarkdown": "# Privacy\n...",
+}, nil)
+_ = client.Hub.Account.UpdateProjectExposeLegal(ctx, "proj_123", map[string]any{"exposed": true}, nil)
+
+var terms map[string]any
+_ = client.API.Public.GetPublicProjectLegal(ctx, "proj_123", "terms", &terms)
+```
+
+## Admin Portal
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `SetAdminPortalEnabled(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/admin-portal/enabled` | project |
+| `GetAdminPortalStructure(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/admin-portal/structure` | project |
+| `AssignAdminPortalServiceUser(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/settings/admin-portal/service-user` | account |
+| `UpdateProjectAdminUrl(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/settings/admin-url` | account |
+
+### Public project config (API, no sign-in)
+
+`api.PublicModule` sends no `Authorization` header, even when the client has
+a key — these links must work for anyone. An unknown project answers an empty
+document, not an error.
+
+| method | verb | path |
+|---|---|---|
+| `GetPublicProjectConfig(ctx, projectId, out)` | `GET` | `/public/projects/{ProjectId}/config` |
+| `GetPublicProjectLegal(ctx, projectId, kind, out)` | `GET` | `/public/projects/{ProjectId}/legal/{Kind}` (`terms` or `privacy`) |
+
+```go
+var cfg map[string]any
+err := client.API.Public.GetPublicProjectConfig(ctx, "proj_123", &cfg)
+```
+
+## Project AI settings
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `GetProjectAiSettings(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/settings` | project |
+| `UpdateProjectAiSettings(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/settings` | project |
+| `CreateProjectAiAssistant(ctx, projectId, req, out)` | `POST` | `/account/projects/{projectId}/ai/assistants` | project |
+| `UpdateProjectAiAssistant(ctx, projectId, assistantId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/assistants/{assistantId}` | project |
+| `DeleteProjectAiAssistant(ctx, projectId, assistantId, req, out)` | `DELETE` | `/account/projects/{projectId}/ai/assistants/{assistantId}` | project |
+| `GetProjectAiUsage(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/usage` | project |
+
+```go
+var settings map[string]any
+err := client.Hub.Account.GetProjectAiSettings(ctx, "proj_123", nil, &settings)
+```
+
+## AI service users
+
+A service user is a scoped identity for an AI agent (Claude Code, Cursor, …).
+Its API key is shown **once** — in the answer of `CreateAiServiceUser` and
+`RotateAiServiceUserKey` (pass `"revokeKeyId"` to retire the old key in the
+same call). Later reads show only a key id and a hint.
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `CreateAiServiceUser(ctx, req, out)` | `POST` | `/account/ai/service-users` | account |
+| `ListAiServiceUsers(ctx, req, out)` | `GET` | `/account/ai/service-users` | account |
+| `DeleteAiServiceUser(ctx, id, req, out)` | `DELETE` | `/account/ai/service-users/{Id}` | account |
+| `RotateAiServiceUserKey(ctx, id, req, out)` | `POST` | `/account/ai/service-users/{Id}/keys` | account |
+| `RevokeAiServiceUserKey(ctx, id, keyId, req, out)` | `DELETE` | `/account/ai/service-users/{Id}/keys/{KeyId}` | account |
+
+```go
+var created map[string]any
+err := client.Hub.Account.CreateAiServiceUser(ctx, map[string]any{
+    "name": "Claude Code on my laptop",
+    "scope": map[string]any{
+        "reach": "project", "projectId": "proj_123",
+        "rights": "read", "envs": []string{"TEST"},
+    },
+}, &created)
+// Store created's key now; it is not shown again.
+```
+
+## Developer MCP endpoint
+
+`/account/mcp` is the Hub's Model Context Protocol server. MCP clients
+(Claude, Cursor) talk to it on their own; these methods are for tests and
+scripts that speak JSON-RPC directly. The session travels in the
+`Mcp-Session-Id` header (`hub.McpSessionHeader`).
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `Mcp(ctx, sessionId, msg, out)` | `POST` | `/account/mcp` | project |
+| `McpOpenStream(ctx, sessionId, out)` | `GET` | `/account/mcp` | project |
+| `McpEndSession(ctx, sessionId, out)` | `DELETE` | `/account/mcp` | project |
+
+```go
+var tools map[string]any
+err := client.Hub.Account.Mcp(ctx, sessionID, map[string]any{
+    "jsonrpc": "2.0", "id": 1, "method": "tools/list",
+}, &tools)
+```
+
+Limits: the SDK reads the whole answer before it returns, and it does not
+return response headers. So the `Mcp-Session-Id` that `initialize` answers
+with cannot be read through the SDK, and `McpOpenStream` returns only when the
+server closes the stream or the client timeout is reached. Pass a `*[]byte` as
+`out` when the answer may be an SSE stream rather than JSON.
