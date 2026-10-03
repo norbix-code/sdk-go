@@ -47,6 +47,19 @@ func (m *NotificationsModule) DisableEmail(ctx context.Context, req map[string]a
 	}, out)
 }
 
+// GetEmailDisableDependencies performs GET /{version}/notifications/email/disable-dependencies (scope: project).
+// It lists what still depends on the Email module (campaigns, triggers) before you turn it off.
+func (m *NotificationsModule) GetEmailDisableDependencies(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/disable-dependencies",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // EnableEmail performs GET /{version}/notifications/email/enable (scope: project).
 func (m *NotificationsModule) EnableEmail(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -262,6 +275,20 @@ func (m *NotificationsModule) ConfirmEmailIntegrationHumanDelivery(ctx context.C
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/email/integrations/confirm-human-delivery",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CheckEmailIntegrationDomainHealth performs POST /{version}/notifications/email/integrations/domain-health (scope: project).
+// Informational only: it returns the SPF / DMARC / DKIM records found in DNS for the
+// integration's sender domain (pass "integrationId"). It never blocks the integration.
+func (m *NotificationsModule) CheckEmailIntegrationDomainHealth(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/integrations/domain-health",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -506,6 +533,22 @@ func (m *NotificationsModule) DeleteEmailCampaign(ctx context.Context, id string
 	}, out)
 }
 
+// StopEmailCampaign performs POST /{version}/notifications/email/campaigns/{Id}/stop (scope: project).
+// The campaign stops at its next batch; batches already sent stay sent.
+func (m *NotificationsModule) StopEmailCampaign(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/campaigns/{Id}/stop",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetEmailCampaign performs GET /{version}/notifications/email/campaigns/{id} (scope: project).
 func (m *NotificationsModule) GetEmailCampaign(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -605,22 +648,6 @@ func (m *NotificationsModule) PreviewEmailNotification(ctx context.Context, req 
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeOptional,
-	}, out)
-}
-
-// GetEmailCampaignMessage performs GET /{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId} (scope: project).
-func (m *NotificationsModule) GetEmailCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"campaignId":     campaignId,
-		"notificationId": notificationId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/emails/campaigns/{campaignId}/messages/{notificationId}",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
 	}, out)
 }
 
@@ -1228,22 +1255,6 @@ func (m *NotificationsModule) GetPushCampaignMessages(ctx context.Context, campa
 	}, out)
 }
 
-// GetPushCampaignMessage performs GET /{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId} (scope: project).
-func (m *NotificationsModule) GetPushCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"campaignId":     campaignId,
-		"notificationId": notificationId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/push/campaigns/{campaignId}/messages/{notificationId}",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // GetPushCampaign performs GET /{version}/notifications/push/campaigns/{id} (scope: project).
 func (m *NotificationsModule) GetPushCampaign(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1395,22 +1406,6 @@ func (m *NotificationsModule) GetSmsCampaignMessages(ctx context.Context, campai
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/sms/campaigns/{campaignId}/messages",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetSmsCampaignMessage performs GET /{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId} (scope: project).
-func (m *NotificationsModule) GetSmsCampaignMessage(ctx context.Context, campaignId string, notificationId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"campaignId":     campaignId,
-		"notificationId": notificationId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/sms/campaigns/{campaignId}/messages/{notificationId}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,

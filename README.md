@@ -136,6 +136,10 @@ instead. Endpoints that answer with raw bytes rather than a document (file
 download, the public file link — the ones you pass a `*[]byte` to) are not JSON
 and are unchanged.
 
+### Email: stop a campaign, check a domain, read preferences from a link
+
+`c.Hub.Notifications.StopEmailCampaign`, `GetEmailDisableDependencies` and `CheckEmailIntegrationDomainHealth` cover the Email campaign, module and integration checks; `c.Hub.Email.GetEmailPreferencesByLink(ctx, map[string]any{"token": t}, &out)` reads the preferences behind a signed unsubscribe link and needs no API key. To read one campaign message use `GetEmailCampaignBatchNotification(ctx, campaignID, batchID, notificationID, …)` (the `…/messages/{id}` methods were removed with their gateway route).
+
 ## Working with terms
 
 A **taxonomy** is a named tree of **terms** (labels). A term can have one parent (a clean hierarchy) or several parents (the same item under many categories). Pick the call that matches what you want:

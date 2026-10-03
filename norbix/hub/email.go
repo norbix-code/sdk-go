@@ -11,7 +11,7 @@ import (
 // EmailModule groups the email endpoints on the HUB.
 type EmailModule struct{ t *transport.Transport }
 
-// OneClickUnsubscribe performs POST /{version}/email/one-click-unsubscribe (scope: project).
+// OneClickUnsubscribe performs POST /{version}/email/one-click-unsubscribe (scope: optional — public; the signed link in the e-mail is the key, so no API key is needed).
 func (m *EmailModule) OneClickUnsubscribe(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -19,6 +19,19 @@ func (m *EmailModule) OneClickUnsubscribe(ctx context.Context, req map[string]an
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
+	}, out)
+}
+
+// GetEmailPreferencesByLink performs GET /{version}/email/preferences (scope: optional — the signed unsubscribe-link token in "token" opens it without sign-in).
+// It reads the marketing e-mail preferences of the person the link belongs to.
+func (m *EmailModule) GetEmailPreferencesByLink(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/email/preferences",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }

@@ -75,7 +75,6 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 | `DeletePushCampaign(ctx, id, req, out)` | `DELETE` | `/notifications/push/campaigns/{Id}` |
 | `StopPushCampaign(ctx, id, req, out)` | `POST` | `/notifications/push/campaigns/{Id}/stop` |
 | `GetPushCampaignMessages(ctx, campaignId, req, out)` | `GET` | `/notifications/push/campaigns/{campaignId}/messages` |
-| `GetPushCampaignMessage(ctx, campaignId, id, req, out)` | `GET` | `/notifications/push/campaigns/{campaignId}/messages/{id}` |
 | `GetPushCampaign(ctx, id, req, out)` | `GET` | `/notifications/push/campaigns/{id}` |
 | `GetPushCampaignBatches(ctx, id, req, out)` | `GET` | `/notifications/push/campaigns/{id}/batches` |
 | `GetPushCampaignBatchNotifications(ctx, id, batchId, req, out)` | `GET` | `/notifications/push/campaigns/{id}/batches/{batchId}` |
