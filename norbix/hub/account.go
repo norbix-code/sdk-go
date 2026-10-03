@@ -505,3 +505,110 @@ func (m *AccountModule) GetLicenses(ctx context.Context, req map[string]any, out
 		Scope:      transport.ScopeAccount,
 	}, out)
 }
+
+// GetProjectAiSettings performs GET /{version}/account/projects/{projectId}/ai/settings (scope: project).
+func (m *AccountModule) GetProjectAiSettings(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/settings",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateProjectAiSettings performs PUT /{version}/account/projects/{projectId}/ai/settings (scope: project).
+func (m *AccountModule) UpdateProjectAiSettings(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/settings",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CreateProjectAiAssistant performs POST /{version}/account/projects/{projectId}/ai/assistants (scope: project).
+func (m *AccountModule) CreateProjectAiAssistant(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/assistants",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateProjectAiAssistant performs PUT /{version}/account/projects/{projectId}/ai/assistants/{assistantId} (scope: project).
+func (m *AccountModule) UpdateProjectAiAssistant(ctx context.Context, projectId string, assistantId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId":   projectId,
+		"assistantId": assistantId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/assistants/{assistantId}",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteProjectAiAssistant performs DELETE /{version}/account/projects/{projectId}/ai/assistants/{assistantId} (scope: project).
+func (m *AccountModule) DeleteProjectAiAssistant(ctx context.Context, projectId string, assistantId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId":   projectId,
+		"assistantId": assistantId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/assistants/{assistantId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetProjectAiUsage performs GET /{version}/account/projects/{projectId}/ai/usage (scope: project).
+func (m *AccountModule) GetProjectAiUsage(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/usage",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetAdminPortalEnabled performs PUT /{version}/account/projects/{projectId}/admin-portal/enabled (scope: project).
+func (m *AccountModule) SetAdminPortalEnabled(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/admin-portal/enabled",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

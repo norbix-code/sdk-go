@@ -202,3 +202,85 @@ func (m *AiModule) TestMcpIntegration(ctx context.Context, req map[string]any, o
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// GetEmbeddingIntegrations performs GET /{version}/ai/integrations/embeddings (scope: project).
+func (m *AiModule) GetEmbeddingIntegrations(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target: transport.TargetHub,
+		Path:   "/{version}/ai/integrations/embeddings",
+		Method: "GET",
+		Body:   req,
+		Scope:  transport.ScopeProject,
+	}, out)
+}
+
+// SaveEmbeddingIntegration performs POST /{version}/ai/integrations/embeddings (scope: project).
+func (m *AiModule) SaveEmbeddingIntegration(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target: transport.TargetHub,
+		Path:   "/{version}/ai/integrations/embeddings",
+		Method: "POST",
+		Body:   req,
+		Scope:  transport.ScopeProject,
+	}, out)
+}
+
+// GetEmbeddingIntegration performs GET /{version}/ai/integrations/embeddings/{Id} (scope: project).
+func (m *AiModule) GetEmbeddingIntegration(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/integrations/embeddings/{Id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteEmbeddingIntegration performs DELETE /{version}/ai/integrations/embeddings/{Id} (scope: project).
+func (m *AiModule) DeleteEmbeddingIntegration(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/integrations/embeddings/{Id}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// TestEmbeddingIntegration performs POST /{version}/ai/integrations/embeddings/{Id}/test (scope: project).
+func (m *AiModule) TestEmbeddingIntegration(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/integrations/embeddings/{Id}/test",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetLlmIntegrationAsDefault performs PUT /{version}/ai/integrations/llms/{Id}/default (scope: project).
+func (m *AiModule) SetLlmIntegrationAsDefault(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/integrations/llms/{Id}/default",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

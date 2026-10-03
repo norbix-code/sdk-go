@@ -469,6 +469,31 @@ Normalisation matches the JS SDK: entity events hand you the entity, mutation
 events `{from, to}`, batch events the array; wrapper ids (record id, schema,
 user id) are lifted onto `event.Metadata`.
 
+## End-user AI chat and project AI settings
+
+`client.API.Ai` is the end-user AI chat for a signed-in project user:
+availability, sessions, entries, feedback, attachments, memory and
+`StartEndUserChatTurn`, which answers at once with a `turnId`. The answer
+streams over the gateway's SSE endpoint on the user's own channel
+`ai-chat:{projectId}:{authId}` (events `ai.chat.turn.*`, `ai.chat.session.*`);
+a subscription to another user's channel is refused with 403 and
+`responseStatus.errorCode = "AiChatChannelRefused"` before the stream starts —
+do not retry it. This SDK has no SSE client; decode the events with the
+`dtos` package.
+
+```go
+var out dtos.StartEndUserChatTurnResponse
+err := client.API.Ai.StartEndUserChatTurn(ctx, map[string]any{"sessionId": id, "message": "Hi"}, &out)
+```
+
+Project owners configure the assistant on the Hub: `client.Hub.Account`
+(`GetProjectAiSettings`, `UpdateProjectAiSettings`, `CreateProjectAiAssistant`,
+`UpdateProjectAiAssistant`, `DeleteProjectAiAssistant`, `GetProjectAiUsage`,
+`SetAdminPortalEnabled`) and `client.Hub.Ai` (`GetEmbeddingIntegrations`,
+`SaveEmbeddingIntegration`, `GetEmbeddingIntegration`,
+`DeleteEmbeddingIntegration`, `TestEmbeddingIntegration`,
+`SetLlmIntegrationAsDefault`).
+
 ## Package layout
 
 ```
