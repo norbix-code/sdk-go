@@ -97,6 +97,10 @@ func projectCases() []projectCase {
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectLanguages(ctx, "projectId_1", body, nil)
 			}},
+		{"CheckProjectLanguages", http.MethodPost, "/v2/account/projects/projectId_1/settings/languages/check", "account",
+			func(ctx context.Context, m *AccountModule) error {
+				return m.CheckProjectLanguages(ctx, "projectId_1", body, nil)
+			}},
 		{"UpdateProjectDefaultLanguage", http.MethodPatch, "/v2/account/projects/projectId_1/settings/default-language", "account",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectDefaultLanguage(ctx, "projectId_1", body, nil)
@@ -287,10 +291,10 @@ func TestMcpSendsSessionHeaderAndJsonRpcBody(t *testing.T) {
 	}
 }
 
-// The Project-module surface tested here is 33 routes; a changed count
+// The Project-module surface tested here is 34 routes; a changed count
 // means a route arrived or left untested.
 func TestProjectSurfaceSize(t *testing.T) {
-	const want = 33
+	const want = 34
 	if got := len(projectCases()); got != want {
 		t.Errorf("project endpoint count: got %d want %d", got, want)
 	}
