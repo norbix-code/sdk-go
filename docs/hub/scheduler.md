@@ -78,8 +78,9 @@ err := client.Hub.Scheduler.SaveSchedulerTask(ctx, map[string]any{
 	"task": dtos.EmailCampaignSchedulerTaskRequest{
 		Type: dtos.SchedulerTaskTypeEmailCampaign,
 		Campaign: &dtos.EmailCampaignRequest{
-			Source:     dtos.EmailCampaignRecipientsSourceTypesAllUsers,
-			TemplateId: "etpl_123",
+			Source:        dtos.EmailCampaignRecipientsSourceTypesAllUsers,
+			TemplateId:    "etpl_123",
+			IntegrationId: "eint_123", // the email provider, required
 		},
 	},
 }, &saved)

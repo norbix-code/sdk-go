@@ -413,6 +413,28 @@ func (m *AccountModule) UpdateProjectLanguages(ctx context.Context, projectId st
 	}, out)
 }
 
+// CheckProjectLanguages performs POST /{version}/account/projects/{projectId}/settings/languages/check (scope: account).
+//
+// It lists the Email, Push and SMS templates that miss a project language.
+// Send the proposed "defaultLanguage" and/or "languages" to check a change
+// before UpdateProjectLanguages saves it; send neither to check the current
+// settings. The response carries "templates": one entry per template with
+// its "module", "templateId", "templateName" and "missingLanguages"
+// (dtos.CheckProjectLanguagesResponse).
+func (m *AccountModule) CheckProjectLanguages(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/settings/languages/check",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeAccount,
+	}, out)
+}
+
 // UpdateProjectUrl performs PATCH /{version}/account/projects/{projectId}/settings/url (scope: account).
 func (m *AccountModule) UpdateProjectUrl(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{

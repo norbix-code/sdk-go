@@ -23,6 +23,7 @@ type Namespace struct {
 	Regions       *RegionsModule
 	Resources     *ResourcesModule
 	Scheduler     *SchedulerModule
+	Triggers      *TriggersModule
 	Webhooks      *WebhooksModule
 }
 
@@ -45,6 +46,7 @@ func NewNamespace(t *transport.Transport) *Namespace {
 		Regions:       &RegionsModule{t: t},
 		Resources:     &ResourcesModule{t: t},
 		Scheduler:     &SchedulerModule{t: t},
+		Triggers:      &TriggersModule{t: t},
 		Webhooks:      &WebhooksModule{t: t},
 	}
 }
