@@ -104,17 +104,18 @@ fields:
 | rows of a database collection | `collection` | `schemaName`, `fields` (the record fields that hold the recipient), `fieldType` (`User` or `Email`), optional `roleNames`, `languages` |
 | raw device tokens | `devices` | `devices`: a list of `{ token, deliveryFamily }`, `deliveryFamily` one of `Ios`, `Android`, `Chrome`, `Safari`, `Expo` |
 
-Every target also takes `templateId` (required) and the optional `integrationId`,
-`language`, `notes`, `campaignTime` (Unix seconds) and `mappedTokens`. Note the
+Every target also takes `templateId` and `integrationId` (the push provider —
+both required by the server) and the optional `language`, `notes`, `campaignTime` (Unix seconds) and `mappedTokens`. Note the
 spelling: `rolesNames` on `allUsers`, but `roleNames` on `collection` — the
 gateway names them differently.
 
 ```go
 req := map[string]any{
     "campaign": map[string]any{
-        "source":     "allUsers",
-        "templateId": "tpl_123",
-        "userTags":   []string{"beta"},
+        "source":        "allUsers",
+        "templateId":    "tpl_123",
+        "integrationId": "int_123", // the push provider, required
+        "userTags":      []string{"beta"},
     },
 }
 err := client.Hub.Notifications.CreatePushCampaign(ctx, req, nil)

@@ -69,6 +69,24 @@ All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope account.
 | `UpdateProjectExposeBrand` | `brand/expose` |
 | `UpdateProjectExposeAuth` | `auth/expose` |
 
+### Check template languages
+
+`CheckProjectLanguages(ctx, projectId, req, out)` — `POST
+/account/projects/{projectId}/settings/languages/check`, scope account. It
+lists the Email, Push and SMS templates that miss a project language. Send the
+proposed `defaultLanguage` and/or `languages` before you save them with
+`UpdateProjectLanguages`; send neither to check the current settings.
+
+```go
+var gaps dtos.CheckProjectLanguagesResponse
+err := client.Hub.Account.CheckProjectLanguages(ctx, "proj_123", map[string]any{
+    "languages": []string{"en", "de"},
+}, &gaps)
+for _, g := range gaps.Templates {
+    fmt.Println(g.Module, g.TemplateName, g.MissingLanguages)
+}
+```
+
 ### CORS
 
 The browser origins allowed to call the project:

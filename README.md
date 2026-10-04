@@ -140,6 +140,33 @@ and are unchanged.
 
 `c.Hub.Notifications.StopEmailCampaign`, `GetEmailDisableDependencies` and `CheckEmailIntegrationDomainHealth` cover the Email campaign, module and integration checks; `c.Hub.Email.GetEmailPreferencesByLink(ctx, map[string]any{"token": t}, &out)` reads the preferences behind a signed unsubscribe link and needs no API key. To read one campaign message use `GetEmailCampaignBatchNotification(ctx, campaignID, batchID, notificationID, …)` (the `…/messages/{id}` methods were removed with their gateway route).
 
+### Notifications: provider id, languages, triggers that need attention
+
+The gateway now **requires the provider integration id** when it creates a
+campaign or saves a notification trigger. Email and Push campaigns take it
+inside `campaign` (`"campaign": {"integrationId": …}`); an SMS campaign takes it
+at the top level (`"integrationId"`, distinct from `"databaseIntegrationId"`):
+
+```go
+err := client.Hub.Notifications.CreateSmsCampaign(ctx, map[string]any{
+    "templateId":    "stpl_123",
+    "integrationId": "sms_int_123", // the SMS provider, required
+    "deliveryType":  "PhoneNumbers",
+    "phoneNumbers":  map[string]any{"recipientsSourceType": "PhoneNumbers", "phoneNumbers": []string{"+37060000000"}},
+}, nil)
+```
+
+A trigger action (`dtos.TriggerActionEmailDto` / `PushDto` / `SmsDto`) carries
+`integrationId` (required) and the optional `language` and `initiatorId`.
+
+`client.Hub.Account.CheckProjectLanguages(ctx, projectId, req, &out)` lists the
+templates that miss a project language — send a proposed `defaultLanguage` /
+`languages` to check before `UpdateProjectLanguages`, or nothing to check the
+current settings. `client.Hub.Triggers.GetTriggersNeedingAttention(ctx,
+map[string]any{"triggerType": "Schema"}, &out)` lists the triggers whose last
+run was stopped before sending (for example a template that misses a
+language).
+
 ## Working with terms
 
 A **taxonomy** is a named tree of **terms** (labels). A term can have one parent (a clean hierarchy) or several parents (the same item under many categories). Pick the call that matches what you want:
