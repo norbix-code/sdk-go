@@ -82,6 +82,7 @@ const (
 	TriggerTypeSchema     TriggerType = "Schema"
 	TriggerTypeFiles      TriggerType = "Files"
 	TriggerTypePayments   TriggerType = "Payments"
+	TriggerTypeAi         TriggerType = "Ai"
 )
 
 // TriggerActionType enum.
@@ -323,6 +324,91 @@ type ResponseBase struct {
 	ResponseStatus *CodeMashResponseStatus `json:"responseStatus,omitempty"`
 }
 
+// EndUserChatAttachment DTO.
+type EndUserChatAttachment struct {
+	Id           string  `json:"id,omitempty"`
+	SessionId    string  `json:"sessionId,omitempty"`
+	FileName     string  `json:"fileName,omitempty"`
+	ContentType  string  `json:"contentType,omitempty"`
+	Kind         string  `json:"kind,omitempty"`
+	Size         float64 `json:"size,omitempty"`
+	Summary      string  `json:"summary,omitempty"`
+	CreatedAtUtc string  `json:"createdAtUtc,omitempty"`
+}
+
+// EndUserChatMemoryNote DTO.
+type EndUserChatMemoryNote struct {
+	Id           string `json:"id,omitempty"`
+	SessionId    string `json:"sessionId,omitempty"`
+	Kind         string `json:"kind,omitempty"`
+	Text         string `json:"text,omitempty"`
+	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
+}
+
+// EndUserChatAssistant DTO.
+type EndUserChatAssistant struct {
+	Id             string `json:"id,omitempty"`
+	Name           string `json:"name,omitempty"`
+	WelcomeMessage string `json:"welcomeMessage,omitempty"`
+	IsDefault      bool   `json:"isDefault,omitempty"`
+	MemoryEnabled  bool   `json:"memoryEnabled,omitempty"`
+}
+
+// EndUserChatPlan DTO.
+type EndUserChatPlan struct {
+	Id           string  `json:"id,omitempty"`
+	Name         string  `json:"name,omitempty"`
+	QuotaUnit    string  `json:"quotaUnit,omitempty"`
+	MonthlyQuota float64 `json:"monthlyQuota,omitempty"`
+	Used         float64 `json:"used,omitempty"`
+	Remaining    float64 `json:"remaining,omitempty"`
+	Attachments  bool    `json:"attachments,omitempty"`
+	Rag          bool    `json:"rag,omitempty"`
+	Memory       bool    `json:"memory,omitempty"`
+}
+
+// EndUserChatSession DTO.
+type EndUserChatSession struct {
+	Id           string  `json:"id,omitempty"`
+	AssistantId  string  `json:"assistantId,omitempty"`
+	Title        string  `json:"title,omitempty"`
+	IsPinned     bool    `json:"isPinned,omitempty"`
+	IsArchived   bool    `json:"isArchived,omitempty"`
+	LastSeq      float64 `json:"lastSeq,omitempty"`
+	CreatedAtUtc string  `json:"createdAtUtc,omitempty"`
+	UpdatedAtUtc string  `json:"updatedAtUtc,omitempty"`
+}
+
+// AiChatEntryWireDto DTO.
+type AiChatEntryWireDto struct {
+	Kind                 string  `json:"kind,omitempty"`
+	Id                   string  `json:"id,omitempty"`
+	Seq                  float64 `json:"seq,omitempty"`
+	AtUtc                string  `json:"atUtc,omitempty"`
+	RefEntryId           string  `json:"refEntryId,omitempty"`
+	WorkItemId           string  `json:"workItemId,omitempty"`
+	Feedback             string  `json:"feedback,omitempty"`
+	FeedbackAtUtc        string  `json:"feedbackAtUtc,omitempty"`
+	FeedbackByUserAuthId string  `json:"feedbackByUserAuthId,omitempty"`
+}
+
+// EndUserAiToolParameter DTO.
+type EndUserAiToolParameter struct {
+	Name        string `json:"name,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Required    bool   `json:"required,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// EndUserAiTool DTO.
+type EndUserAiTool struct {
+	Name                 string                    `json:"name,omitempty"`
+	Description          string                    `json:"description,omitempty"`
+	Toolsets             []string                  `json:"toolsets,omitempty"`
+	RequiresConfirmation bool                      `json:"requiresConfirmation,omitempty"`
+	Parameters           []*EndUserAiToolParameter `json:"parameters,omitempty"`
+}
+
 // AccessInformationDto DTO.
 type AccessInformationDto struct {
 	Ip       string `json:"ip,omitempty"`
@@ -455,6 +541,14 @@ type SchemaSettingsDto struct {
 	Description    string `json:"description,omitempty"`
 }
 
+// SchemaEmbedSettingsDto DTO.
+type SchemaEmbedSettingsDto struct {
+	Enabled                bool     `json:"enabled,omitempty"`
+	Fields                 []string `json:"fields,omitempty"`
+	EmbeddingIntegrationId string   `json:"embeddingIntegrationId,omitempty"`
+	PerUser                bool     `json:"perUser,omitempty"`
+}
+
 // TriggerActionDto DTO.
 type TriggerActionDto struct {
 	Type          TriggerActionType `json:"type,omitempty"`
@@ -475,16 +569,17 @@ type TriggerDto struct {
 
 // SchemaDto DTO.
 type SchemaDto struct {
-	ViewId            string             `json:"viewId,omitempty"`
-	SchemaName        string             `json:"schemaName,omitempty"`
-	SchemaSlug        string             `json:"schemaSlug,omitempty"`
-	Version           float64            `json:"version,omitempty"`
-	MetaSchemaVersion float64            `json:"metaSchemaVersion,omitempty"`
-	DataSchema        *DataSchemaDto     `json:"dataSchema,omitempty"`
-	VisualSchema      *VisualSchemaDto   `json:"visualSchema,omitempty"`
-	PublishedAt       string             `json:"publishedAt,omitempty"`
-	Settings          *SchemaSettingsDto `json:"settings,omitempty"`
-	Triggers          []*TriggerDto      `json:"triggers,omitempty"`
+	ViewId            string                  `json:"viewId,omitempty"`
+	SchemaName        string                  `json:"schemaName,omitempty"`
+	SchemaSlug        string                  `json:"schemaSlug,omitempty"`
+	Version           float64                 `json:"version,omitempty"`
+	MetaSchemaVersion float64                 `json:"metaSchemaVersion,omitempty"`
+	DataSchema        *DataSchemaDto          `json:"dataSchema,omitempty"`
+	VisualSchema      *VisualSchemaDto        `json:"visualSchema,omitempty"`
+	PublishedAt       string                  `json:"publishedAt,omitempty"`
+	Settings          *SchemaSettingsDto      `json:"settings,omitempty"`
+	Embed             *SchemaEmbedSettingsDto `json:"embed,omitempty"`
+	Triggers          []*TriggerDto           `json:"triggers,omitempty"`
 }
 
 // SchemaListProjection DTO.
@@ -537,78 +632,6 @@ type IntegrationTestResultItemDto struct {
 	Operation string   `json:"operation,omitempty"`
 	Result    string   `json:"result,omitempty"`
 	Errors    []string `json:"errors,omitempty"`
-}
-
-// EndUserChatAttachment DTO.
-type EndUserChatAttachment struct {
-	Id           string  `json:"id,omitempty"`
-	SessionId    string  `json:"sessionId,omitempty"`
-	FileName     string  `json:"fileName,omitempty"`
-	ContentType  string  `json:"contentType,omitempty"`
-	Kind         string  `json:"kind,omitempty"`
-	Size         float64 `json:"size,omitempty"`
-	Summary      string  `json:"summary,omitempty"`
-	CreatedAtUtc string  `json:"createdAtUtc,omitempty"`
-}
-
-// EndUserChatMemoryNote DTO.
-type EndUserChatMemoryNote struct {
-	Id           string `json:"id,omitempty"`
-	SessionId    string `json:"sessionId,omitempty"`
-	Kind         string `json:"kind,omitempty"`
-	Text         string `json:"text,omitempty"`
-	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
-}
-
-// EndUserChatAssistant DTO.
-type EndUserChatAssistant struct {
-	Id             string `json:"id,omitempty"`
-	Name           string `json:"name,omitempty"`
-	WelcomeMessage string `json:"welcomeMessage,omitempty"`
-	IsDefault      bool   `json:"isDefault,omitempty"`
-	MemoryEnabled  bool   `json:"memoryEnabled,omitempty"`
-}
-
-// EndUserChatSession DTO.
-type EndUserChatSession struct {
-	Id           string  `json:"id,omitempty"`
-	AssistantId  string  `json:"assistantId,omitempty"`
-	Title        string  `json:"title,omitempty"`
-	IsPinned     bool    `json:"isPinned,omitempty"`
-	IsArchived   bool    `json:"isArchived,omitempty"`
-	LastSeq      float64 `json:"lastSeq,omitempty"`
-	CreatedAtUtc string  `json:"createdAtUtc,omitempty"`
-	UpdatedAtUtc string  `json:"updatedAtUtc,omitempty"`
-}
-
-// AiChatEntryWireDto DTO.
-type AiChatEntryWireDto struct {
-	Kind                 string  `json:"kind,omitempty"`
-	Id                   string  `json:"id,omitempty"`
-	Seq                  float64 `json:"seq,omitempty"`
-	AtUtc                string  `json:"atUtc,omitempty"`
-	RefEntryId           string  `json:"refEntryId,omitempty"`
-	WorkItemId           string  `json:"workItemId,omitempty"`
-	Feedback             string  `json:"feedback,omitempty"`
-	FeedbackAtUtc        string  `json:"feedbackAtUtc,omitempty"`
-	FeedbackByUserAuthId string  `json:"feedbackByUserAuthId,omitempty"`
-}
-
-// EndUserAiToolParameter DTO.
-type EndUserAiToolParameter struct {
-	Name        string `json:"name,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Required    bool   `json:"required,omitempty"`
-	Description string `json:"description,omitempty"`
-}
-
-// EndUserAiTool DTO.
-type EndUserAiTool struct {
-	Name                 string                    `json:"name,omitempty"`
-	Description          string                    `json:"description,omitempty"`
-	Toolsets             []string                  `json:"toolsets,omitempty"`
-	RequiresConfirmation bool                      `json:"requiresConfirmation,omitempty"`
-	Parameters           []*EndUserAiToolParameter `json:"parameters,omitempty"`
 }
 
 // ResponseError DTO.
@@ -778,16 +801,80 @@ type PublicLegalDocumentDto struct {
 	Available bool   `json:"available,omitempty"`
 }
 
-// EmptyResponse DTO.
-type EmptyResponse struct {
-	ResponseBase
-}
-
 // IdResponse DTO.
 type IdResponse struct {
 	ResponseBase
 	Id     string `json:"id,omitempty"`
 	Status string `json:"status,omitempty"`
+}
+
+// ListEndUserChatAttachmentsResponse DTO.
+type ListEndUserChatAttachmentsResponse struct {
+	ResponseBase
+	Attachments []*EndUserChatAttachment `json:"attachments,omitempty"`
+}
+
+// EmptyResponse DTO.
+type EmptyResponse struct {
+	ResponseBase
+}
+
+// ListEndUserChatMemoryResponse DTO.
+type ListEndUserChatMemoryResponse struct {
+	ResponseBase
+	Notes []*EndUserChatMemoryNote `json:"notes,omitempty"`
+}
+
+// GetEndUserChatAvailabilityResponse DTO.
+type GetEndUserChatAvailabilityResponse struct {
+	ResponseBase
+	Enabled            bool                    `json:"enabled,omitempty"`
+	Available          bool                    `json:"available,omitempty"`
+	Reason             string                  `json:"reason,omitempty"`
+	DefaultAssistantId string                  `json:"defaultAssistantId,omitempty"`
+	Assistants         []*EndUserChatAssistant `json:"assistants,omitempty"`
+	Plan               *EndUserChatPlan        `json:"plan,omitempty"`
+}
+
+// ListEndUserChatSessionsResponse DTO.
+type ListEndUserChatSessionsResponse struct {
+	ResponseBase
+	Sessions []*EndUserChatSession `json:"sessions,omitempty"`
+}
+
+// GetEndUserChatSessionResponse DTO.
+type GetEndUserChatSessionResponse struct {
+	ResponseBase
+	Session *EndUserChatSession `json:"session,omitempty"`
+}
+
+// GetEndUserChatEntriesResponse DTO.
+type GetEndUserChatEntriesResponse struct {
+	ResponseBase
+	SessionId string                `json:"sessionId,omitempty"`
+	Entries   []*AiChatEntryWireDto `json:"entries,omitempty"`
+	LastSeq   float64               `json:"lastSeq,omitempty"`
+	HasMore   bool                  `json:"hasMore,omitempty"`
+}
+
+// StartEndUserChatTurnResponse DTO.
+type StartEndUserChatTurnResponse struct {
+	ResponseBase
+	TurnId    string `json:"turnId,omitempty"`
+	SessionId string `json:"sessionId,omitempty"`
+	Channel   string `json:"channel,omitempty"`
+}
+
+// GetEndUserAiToolsResponse DTO.
+type GetEndUserAiToolsResponse struct {
+	ResponseBase
+	Tools []*EndUserAiTool `json:"tools,omitempty"`
+}
+
+// InvokeEndUserAiToolResponse DTO.
+type InvokeEndUserAiToolResponse struct {
+	ResponseBase
+	Result string `json:"result,omitempty"`
 }
 
 // GetUserResponse DTO.
@@ -962,69 +1049,6 @@ type TestFilesIntegrationResponse struct {
 	Items []*IntegrationTestResultItemDto `json:"items,omitempty"`
 }
 
-// ListEndUserChatAttachmentsResponse DTO.
-type ListEndUserChatAttachmentsResponse struct {
-	ResponseBase
-	Attachments []*EndUserChatAttachment `json:"attachments,omitempty"`
-}
-
-// ListEndUserChatMemoryResponse DTO.
-type ListEndUserChatMemoryResponse struct {
-	ResponseBase
-	Notes []*EndUserChatMemoryNote `json:"notes,omitempty"`
-}
-
-// GetEndUserChatAvailabilityResponse DTO.
-type GetEndUserChatAvailabilityResponse struct {
-	ResponseBase
-	Enabled            bool                    `json:"enabled,omitempty"`
-	Available          bool                    `json:"available,omitempty"`
-	Reason             string                  `json:"reason,omitempty"`
-	DefaultAssistantId string                  `json:"defaultAssistantId,omitempty"`
-	Assistants         []*EndUserChatAssistant `json:"assistants,omitempty"`
-}
-
-// ListEndUserChatSessionsResponse DTO.
-type ListEndUserChatSessionsResponse struct {
-	ResponseBase
-	Sessions []*EndUserChatSession `json:"sessions,omitempty"`
-}
-
-// GetEndUserChatSessionResponse DTO.
-type GetEndUserChatSessionResponse struct {
-	ResponseBase
-	Session *EndUserChatSession `json:"session,omitempty"`
-}
-
-// GetEndUserChatEntriesResponse DTO.
-type GetEndUserChatEntriesResponse struct {
-	ResponseBase
-	SessionId string                `json:"sessionId,omitempty"`
-	Entries   []*AiChatEntryWireDto `json:"entries,omitempty"`
-	LastSeq   float64               `json:"lastSeq,omitempty"`
-	HasMore   bool                  `json:"hasMore,omitempty"`
-}
-
-// StartEndUserChatTurnResponse DTO.
-type StartEndUserChatTurnResponse struct {
-	ResponseBase
-	TurnId    string `json:"turnId,omitempty"`
-	SessionId string `json:"sessionId,omitempty"`
-	Channel   string `json:"channel,omitempty"`
-}
-
-// GetEndUserAiToolsResponse DTO.
-type GetEndUserAiToolsResponse struct {
-	ResponseBase
-	Tools []*EndUserAiTool `json:"tools,omitempty"`
-}
-
-// InvokeEndUserAiToolResponse DTO.
-type InvokeEndUserAiToolResponse struct {
-	ResponseBase
-	Result string `json:"result,omitempty"`
-}
-
 // AuthenticateResponse DTO.
 type AuthenticateResponse struct {
 	UserId             string            `json:"userId,omitempty"`
@@ -1055,6 +1079,14 @@ type Echo struct {
 	RequestBase
 }
 
+// GetPublicProjectBrandAsset DTO.
+type GetPublicProjectBrandAsset struct {
+	RequestBase
+	ProjectId string `json:"projectId,omitempty"`
+	Kind      string `json:"kind,omitempty"`
+	V         string `json:"v,omitempty"`
+}
+
 // GetPublicProjectConfig DTO.
 type GetPublicProjectConfig struct {
 	RequestBase
@@ -1066,6 +1098,127 @@ type GetPublicProjectLegal struct {
 	RequestBase
 	ProjectId string `json:"projectId,omitempty"`
 	Kind      string `json:"kind,omitempty"`
+}
+
+// UploadEndUserChatAttachmentRequest DTO.
+type UploadEndUserChatAttachmentRequest struct {
+	CodeMashRequestBase
+	SessionId     string `json:"sessionId,omitempty"`
+	FileName      string `json:"fileName,omitempty"`
+	ContentType   string `json:"contentType,omitempty"`
+	Base64Content string `json:"base64Content,omitempty"`
+}
+
+// ListEndUserChatAttachmentsRequest DTO.
+type ListEndUserChatAttachmentsRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+}
+
+// DeleteEndUserChatAttachmentRequest DTO.
+type DeleteEndUserChatAttachmentRequest struct {
+	CodeMashRequestBase
+	AttachmentId string `json:"attachmentId,omitempty"`
+}
+
+// SetEndUserChatEntryFeedbackRequest DTO.
+type SetEndUserChatEntryFeedbackRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+	EntryId   string `json:"entryId,omitempty"`
+	Feedback  string `json:"feedback,omitempty"`
+}
+
+// ListEndUserChatMemoryRequest DTO.
+type ListEndUserChatMemoryRequest struct {
+	CodeMashRequestBase
+	Take float64 `json:"take,omitempty"`
+}
+
+// ForgetEndUserChatMemoryRequest DTO.
+type ForgetEndUserChatMemoryRequest struct {
+	CodeMashRequestBase
+	NoteId string `json:"noteId,omitempty"`
+}
+
+// GetEndUserChatAvailabilityRequest DTO.
+type GetEndUserChatAvailabilityRequest struct {
+	CodeMashRequestBase
+}
+
+// ListEndUserChatSessionsRequest DTO.
+type ListEndUserChatSessionsRequest struct {
+	CodeMashRequestBase
+	Take            float64 `json:"take,omitempty"`
+	IncludeArchived bool    `json:"includeArchived,omitempty"`
+}
+
+// CreateEndUserChatSessionRequest DTO.
+type CreateEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	AssistantId string `json:"assistantId,omitempty"`
+	Title       string `json:"title,omitempty"`
+}
+
+// GetEndUserChatSessionRequest DTO.
+type GetEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+}
+
+// RenameEndUserChatSessionRequest DTO.
+type RenameEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+	Title     string `json:"title,omitempty"`
+}
+
+// PinEndUserChatSessionRequest DTO.
+type PinEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+	Pinned    bool   `json:"pinned,omitempty"`
+}
+
+// ArchiveEndUserChatSessionRequest DTO.
+type ArchiveEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+	Archived  bool   `json:"archived,omitempty"`
+}
+
+// DeleteEndUserChatSessionRequest DTO.
+type DeleteEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+}
+
+// GetEndUserChatEntriesRequest DTO.
+type GetEndUserChatEntriesRequest struct {
+	CodeMashRequestBase
+	SessionId string  `json:"sessionId,omitempty"`
+	AfterSeq  float64 `json:"afterSeq,omitempty"`
+	Take      float64 `json:"take,omitempty"`
+}
+
+// StartEndUserChatTurnRequest DTO.
+type StartEndUserChatTurnRequest struct {
+	CodeMashRequestBase
+	SessionId   string `json:"sessionId,omitempty"`
+	AssistantId string `json:"assistantId,omitempty"`
+	Message     string `json:"message,omitempty"`
+}
+
+// GetEndUserAiToolsRequest DTO.
+type GetEndUserAiToolsRequest struct {
+	RequestBase
+}
+
+// InvokeEndUserAiToolRequest DTO.
+type InvokeEndUserAiToolRequest struct {
+	RequestBase
+	ToolName      string `json:"toolName,omitempty"`
+	ArgumentsJson string `json:"argumentsJson,omitempty"`
 }
 
 // BlockUserRequest DTO.
@@ -1645,127 +1798,6 @@ type RequestUploadUrlRequest struct {
 type TestFilesIntegrationRequest struct {
 	CodeMashRequestBase
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
-}
-
-// UploadEndUserChatAttachmentRequest DTO.
-type UploadEndUserChatAttachmentRequest struct {
-	CodeMashRequestBase
-	SessionId     string `json:"sessionId,omitempty"`
-	FileName      string `json:"fileName,omitempty"`
-	ContentType   string `json:"contentType,omitempty"`
-	Base64Content string `json:"base64Content,omitempty"`
-}
-
-// ListEndUserChatAttachmentsRequest DTO.
-type ListEndUserChatAttachmentsRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-}
-
-// DeleteEndUserChatAttachmentRequest DTO.
-type DeleteEndUserChatAttachmentRequest struct {
-	CodeMashRequestBase
-	AttachmentId string `json:"attachmentId,omitempty"`
-}
-
-// SetEndUserChatEntryFeedbackRequest DTO.
-type SetEndUserChatEntryFeedbackRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	EntryId   string `json:"entryId,omitempty"`
-	Feedback  string `json:"feedback,omitempty"`
-}
-
-// ListEndUserChatMemoryRequest DTO.
-type ListEndUserChatMemoryRequest struct {
-	CodeMashRequestBase
-	Take float64 `json:"take,omitempty"`
-}
-
-// ForgetEndUserChatMemoryRequest DTO.
-type ForgetEndUserChatMemoryRequest struct {
-	CodeMashRequestBase
-	NoteId string `json:"noteId,omitempty"`
-}
-
-// GetEndUserChatAvailabilityRequest DTO.
-type GetEndUserChatAvailabilityRequest struct {
-	CodeMashRequestBase
-}
-
-// ListEndUserChatSessionsRequest DTO.
-type ListEndUserChatSessionsRequest struct {
-	CodeMashRequestBase
-	Take            float64 `json:"take,omitempty"`
-	IncludeArchived bool    `json:"includeArchived,omitempty"`
-}
-
-// CreateEndUserChatSessionRequest DTO.
-type CreateEndUserChatSessionRequest struct {
-	CodeMashRequestBase
-	AssistantId string `json:"assistantId,omitempty"`
-	Title       string `json:"title,omitempty"`
-}
-
-// GetEndUserChatSessionRequest DTO.
-type GetEndUserChatSessionRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-}
-
-// RenameEndUserChatSessionRequest DTO.
-type RenameEndUserChatSessionRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	Title     string `json:"title,omitempty"`
-}
-
-// PinEndUserChatSessionRequest DTO.
-type PinEndUserChatSessionRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	Pinned    bool   `json:"pinned,omitempty"`
-}
-
-// ArchiveEndUserChatSessionRequest DTO.
-type ArchiveEndUserChatSessionRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	Archived  bool   `json:"archived,omitempty"`
-}
-
-// DeleteEndUserChatSessionRequest DTO.
-type DeleteEndUserChatSessionRequest struct {
-	CodeMashRequestBase
-	SessionId string `json:"sessionId,omitempty"`
-}
-
-// GetEndUserChatEntriesRequest DTO.
-type GetEndUserChatEntriesRequest struct {
-	CodeMashRequestBase
-	SessionId string  `json:"sessionId,omitempty"`
-	AfterSeq  float64 `json:"afterSeq,omitempty"`
-	Take      float64 `json:"take,omitempty"`
-}
-
-// StartEndUserChatTurnRequest DTO.
-type StartEndUserChatTurnRequest struct {
-	CodeMashRequestBase
-	SessionId   string `json:"sessionId,omitempty"`
-	AssistantId string `json:"assistantId,omitempty"`
-	Message     string `json:"message,omitempty"`
-}
-
-// GetEndUserAiToolsRequest DTO.
-type GetEndUserAiToolsRequest struct {
-	RequestBase
-}
-
-// InvokeEndUserAiToolRequest DTO.
-type InvokeEndUserAiToolRequest struct {
-	RequestBase
-	ToolName      string `json:"toolName,omitempty"`
-	ArgumentsJson string `json:"argumentsJson,omitempty"`
 }
 
 // Authenticate DTO.
