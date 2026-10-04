@@ -282,15 +282,24 @@ func TestCreateSmsCampaignSendsEachTargetShape(t *testing.T) {
 		t.Run(target.deliveryType, func(t *testing.T) {
 			got := sendAndCapture(t, func(m *NotificationsModule) error {
 				return m.CreateSmsCampaign(context.Background(), map[string]any{
-					"templateId":   testTemplateID,
-					"deliveryType": target.deliveryType,
-					target.block:   target.fields,
+					"templateId":            testTemplateID,
+					"integrationId":         testIntegrationID,
+					"databaseIntegrationId": "db_int_1",
+					"deliveryType":          target.deliveryType,
+					target.block:            target.fields,
 				}, nil)
 			})
 
 			// The discriminator and the template reach the wire as names, not
-			// numbers: the gateway maps `deliveryType` by its enum name.
-			assertFields(t, got, map[string]any{"templateId": testTemplateID, "deliveryType": target.deliveryType})
+			// numbers: the gateway maps `deliveryType` by its enum name. The
+			// SMS provider (`integrationId`, required by the gateway) sits at
+			// the top level, next to and distinct from `databaseIntegrationId`.
+			assertFields(t, got, map[string]any{
+				"templateId":            testTemplateID,
+				"integrationId":         testIntegrationID,
+				"databaseIntegrationId": "db_int_1",
+				"deliveryType":          target.deliveryType,
+			})
 			sent, ok := got[target.block].(map[string]any)
 			if !ok {
 				t.Fatalf("%s block missing from body: %v", target.block, got)
