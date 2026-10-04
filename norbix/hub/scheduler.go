@@ -11,24 +11,24 @@ import (
 // SchedulerModule groups the scheduler endpoints on the HUB.
 type SchedulerModule struct{ t *transport.Transport }
 
-// DisableScheduler performs GET /{version}/scheduler/disable (scope: project).
+// DisableScheduler performs PUT /{version}/scheduler/disable (scope: project).
 func (m *SchedulerModule) DisableScheduler(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/scheduler/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnableScheduler performs GET /{version}/scheduler/enable (scope: project).
+// EnableScheduler performs PUT /{version}/scheduler/enable (scope: project).
 func (m *SchedulerModule) EnableScheduler(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/scheduler/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -108,6 +108,12 @@ func (m *SchedulerModule) GetSchedulerTasks(ctx context.Context, req map[string]
 }
 
 // SaveSchedulerTask performs POST /{version}/scheduler/tasks (scope: project).
+//
+// req carries initiatorUserId, name, cron (5 fields, UTC), isEnabled,
+// stopOnError, an optional taskId (update) and task. "task" may be a
+// dtos.EmailCampaignSchedulerTaskRequest (type "EmailCampaign", the only task
+// type the gateway runs today) or the same shape as a map. See
+// docs/hub/scheduler.md for a full example.
 func (m *SchedulerModule) SaveSchedulerTask(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
