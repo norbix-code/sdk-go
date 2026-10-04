@@ -509,6 +509,7 @@ Project owners configure the assistant on the Hub: `client.Hub.Account`
   service users, developer MCP endpoint
 - [AI integrations](docs/hub/ai.md) — LLM and MCP integrations
 - [Push](docs/hub/push.md) — push integrations, templates, campaigns, devices
+- [Scheduler](docs/hub/scheduler.md) — cron tasks (email campaigns), module enable / disable (PUT)
 
 ## Package layout
 
