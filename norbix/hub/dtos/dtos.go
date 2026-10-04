@@ -692,6 +692,29 @@ const (
 	PermissionEffectDeny  PermissionEffect = "Deny"
 )
 
+// ApplicationModule enum.
+type ApplicationModule string
+
+const (
+	ApplicationModuleAccount      ApplicationModule = "Account"
+	ApplicationModuleMembership   ApplicationModule = "Membership"
+	ApplicationModuleDatabase     ApplicationModule = "Database"
+	ApplicationModuleFiles        ApplicationModule = "Files"
+	ApplicationModuleCode         ApplicationModule = "Code"
+	ApplicationModuleEmail        ApplicationModule = "Email"
+	ApplicationModulePush         ApplicationModule = "Push"
+	ApplicationModulePayment      ApplicationModule = "Payment"
+	ApplicationModuleScheduler    ApplicationModule = "Scheduler"
+	ApplicationModuleLogging      ApplicationModule = "Logging"
+	ApplicationModuleServerEvents ApplicationModule = "ServerEvents"
+	ApplicationModuleAi           ApplicationModule = "Ai"
+	ApplicationModuleSms          ApplicationModule = "Sms"
+	ApplicationModuleProject      ApplicationModule = "Project"
+	ApplicationModuleCompliance   ApplicationModule = "Compliance"
+	ApplicationModuleContacts     ApplicationModule = "Contacts"
+	ApplicationModuleMarketplace  ApplicationModule = "Marketplace"
+)
+
 // AuthType enum.
 type AuthType string
 
@@ -1946,6 +1969,8 @@ type TriggerActionEmailDto struct {
 	TriggerActionDto
 	TemplateId       string                            `json:"templateId,omitempty"`
 	DeliverySettings *EmailCampaignDeliverySettingsDto `json:"deliverySettings,omitempty"`
+	Language         string                            `json:"language,omitempty"`
+	InitiatorId      string                            `json:"initiatorId,omitempty"`
 }
 
 // PushCampaignDeliverySettingsDto DTO.
@@ -1961,6 +1986,8 @@ type TriggerActionPushDto struct {
 	TriggerActionDto
 	TemplateId       string                           `json:"templateId,omitempty"`
 	DeliverySettings *PushCampaignDeliverySettingsDto `json:"deliverySettings,omitempty"`
+	Language         string                           `json:"language,omitempty"`
+	InitiatorId      string                           `json:"initiatorId,omitempty"`
 }
 
 // CodeDeliverySettingsDto DTO.
@@ -2003,6 +2030,8 @@ type TriggerActionSmsDto struct {
 	TriggerActionDto
 	TemplateId       string                          `json:"templateId,omitempty"`
 	DeliverySettings *SmsCampaignDeliverySettingsDto `json:"deliverySettings,omitempty"`
+	Language         string                          `json:"language,omitempty"`
+	InitiatorId      string                          `json:"initiatorId,omitempty"`
 }
 
 // SseDeliverySettingsDto DTO.
@@ -3266,10 +3295,6 @@ type IVersionBasedRequest struct {
 type IHasCorrelationIdRequest struct {
 }
 
-// IHasAccountId DTO.
-type IHasAccountId struct {
-}
-
 // CodeMashRequestBase DTO.
 type CodeMashRequestBase struct {
 	RequestBase
@@ -3283,6 +3308,10 @@ type IHasProjectId struct {
 
 // IHasEnv DTO.
 type IHasEnv struct {
+}
+
+// IHasAccountId DTO.
+type IHasAccountId struct {
 }
 
 // TagDescriptionDto DTO.
@@ -3668,6 +3697,14 @@ type PublicAiAssistantDto struct {
 type PublicAiChatDto struct {
 	Enabled    bool                    `json:"enabled,omitempty"`
 	Assistants []*PublicAiAssistantDto `json:"assistants,omitempty"`
+}
+
+// TriggerAttentionDto DTO.
+type TriggerAttentionDto struct {
+	TriggerId   string      `json:"triggerId,omitempty"`
+	TriggerType TriggerType `json:"triggerType,omitempty"`
+	Reason      string      `json:"reason,omitempty"`
+	AtUtc       string      `json:"atUtc,omitempty"`
 }
 
 // AccountOwnerDto DTO.
@@ -4131,6 +4168,14 @@ type ProjectAiUsageDto struct {
 	TopUsers   []*AiUsageGroupDto  `json:"topUsers,omitempty"`
 	Models     []*AiUsageGroupDto  `json:"models,omitempty"`
 	Wallet     *ProjectAiWalletDto `json:"wallet,omitempty"`
+}
+
+// TemplateLanguageGapDto DTO.
+type TemplateLanguageGapDto struct {
+	Module           ApplicationModule `json:"module,omitempty"`
+	TemplateId       string            `json:"templateId,omitempty"`
+	TemplateName     string            `json:"templateName,omitempty"`
+	MissingLanguages []string          `json:"missingLanguages,omitempty"`
 }
 
 // PaginatedResponse DTO.
@@ -5000,6 +5045,7 @@ type CampaignStatsDto struct {
 // SmsTemplateListProjection DTO.
 type SmsTemplateListProjection struct {
 	TemplateListProjection
+	Languages []string `json:"languages,omitempty"`
 }
 
 // SmsSettings DTO.
@@ -5098,6 +5144,7 @@ type CodeIntegrationListProjection struct {
 // PushTemplateListProjection DTO.
 type PushTemplateListProjection struct {
 	TemplateListProjection
+	Languages []string `json:"languages,omitempty"`
 }
 
 // PushSettings DTO.
@@ -6044,6 +6091,12 @@ type PublicLegalDocumentDto struct {
 	Available bool   `json:"available,omitempty"`
 }
 
+// GetTriggersNeedingAttentionResponse DTO.
+type GetTriggersNeedingAttentionResponse struct {
+	ResponseBase
+	Items []*TriggerAttentionDto `json:"items,omitempty"`
+}
+
 // GetAccountProfileResponse DTO.
 type GetAccountProfileResponse struct {
 	ResponseBase
@@ -6177,6 +6230,12 @@ type GetProjectAiSettingsResponse struct {
 type GetProjectAiUsageResponse struct {
 	ResponseBase
 	Result *ProjectAiUsageDto `json:"result,omitempty"`
+}
+
+// CheckProjectLanguagesResponse DTO.
+type CheckProjectLanguagesResponse struct {
+	ResponseBase
+	Templates []*TemplateLanguageGapDto `json:"templates,omitempty"`
 }
 
 // CreateAccountResponse DTO.
@@ -8053,6 +8112,12 @@ type GetPublicProjectLegal struct {
 	Kind      string `json:"kind,omitempty"`
 }
 
+// GetTriggersNeedingAttention DTO.
+type GetTriggersNeedingAttention struct {
+	CodeMashRequestBase
+	TriggerType TriggerType `json:"triggerType,omitempty"`
+}
+
 // GetAccountProfile DTO.
 type GetAccountProfile struct {
 	RequestBase
@@ -8399,6 +8464,13 @@ type EnableProject struct {
 type UpdateProjectLanguages struct {
 	CodeMashRequestBase
 	Languages []string `json:"languages,omitempty"`
+}
+
+// CheckProjectLanguages DTO.
+type CheckProjectLanguages struct {
+	CodeMashRequestBase
+	DefaultLanguage string   `json:"defaultLanguage,omitempty"`
+	Languages       []string `json:"languages,omitempty"`
 }
 
 // UpdateProjectLegalDocuments DTO.
@@ -10129,6 +10201,7 @@ type CreateSmsCampaignRequest struct {
 	CodeMashRequestBase
 	TemplateId            string                                     `json:"templateId,omitempty"`
 	DatabaseIntegrationId string                                     `json:"databaseIntegrationId,omitempty"`
+	IntegrationId         string                                     `json:"integrationId,omitempty"`
 	Language              string                                     `json:"language,omitempty"`
 	InitiatorId           string                                     `json:"initiatorId,omitempty"`
 	DeliveryType          SmsCampaignRecipientsSourceTypes           `json:"deliveryType,omitempty"`
