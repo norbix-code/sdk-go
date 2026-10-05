@@ -311,3 +311,37 @@ func (m *DatabaseModule) UpdateOne(ctx context.Context, collectionName string, i
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// FindOwn performs GET /{version}/database/collections/{collectionName}/own (scope: project).
+//
+// It lists the records the signed-in user is responsible for ("filter", "pageSize", "startingAfter", "endingBefore", "schemaVersion" go in the query string).
+func (m *DatabaseModule) FindOwn(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/database/collections/{collectionName}/own",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// FindMergedTermTree performs GET /{version}/database/taxonomies/{taxonomyName}/merged-tree (scope: project).
+//
+// It returns the terms of a taxonomy merged with the terms of the taxonomies it depends on.
+func (m *DatabaseModule) FindMergedTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"taxonomyName": taxonomyName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/database/taxonomies/{taxonomyName}/merged-tree",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
