@@ -492,7 +492,11 @@ func (m *AccountModule) CreateAccount(ctx context.Context, req map[string]any, o
 	}, out)
 }
 
-// GetAccountCollaborators performs GET /{version}/account/collaborators (scope: account).
+// GetAccountCollaborators performs GET /{version}/account/collaborators (scope: project).
+// It lists the account owner and team members. The gateway takes the account
+// from the signed-in session, so AccountID is not needed. Page with the flat
+// fields "pageSize" (default 20), "startingAfter" and "endingBefore"; set
+// "projectId" (without "includeAccountOwner") for one project's collaborators.
 func (m *AccountModule) GetAccountCollaborators(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -500,7 +504,36 @@ func (m *AccountModule) GetAccountCollaborators(ctx context.Context, req map[str
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMyAccountUserProfile performs GET /{version}/account/me (scope: project).
+// It reads the signed-in account user's own profile (dtos.GetMyAccountUserProfileResponse),
+// including the phone saved with UpdateMyAccountUserPhone.
+func (m *AccountModule) GetMyAccountUserProfile(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/me",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateMyAccountUserPhone performs PUT /{version}/account/me/phone (scope: project).
+// It saves the signed-in account user's phone ("phone", E.164 format such as
+// "+37060000000"; an empty value clears it). "Account users" SMS campaigns
+// send to this number.
+func (m *AccountModule) UpdateMyAccountUserPhone(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/me/phone",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
