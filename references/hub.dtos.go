@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 16:13:59
+Date: 2026-10-05 20:53:15
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:54938
+BaseUrl: http://localhost:64964
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -1165,6 +1165,8 @@ type TemplateDto struct {
 	IsActive bool `json:"isActive,omitempty"`
 	// @DataMember
 	Tags []string `json:"tags,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 type EmailTemplateEngine string
@@ -2189,7 +2191,8 @@ type LocalFilesIntegrationDto struct {
 
 type DatabaseIntegrationDto struct {
 	IntegrationDto
-	Provider DatabaseProvider `json:"provider,omitempty"`
+	Provider      DatabaseProvider `json:"provider,omitempty"`
+	IsSystemOwned bool             `json:"isSystemOwned,omitempty"`
 }
 
 type MongoDbConnectionStringIntegrationDto struct {
@@ -2434,6 +2437,8 @@ type SchedulerTaskDto struct {
 	// @DataMember
 	StopOnError bool `json:"stopOnError,omitempty"`
 	// @DataMember
+	Env *string `json:"env,omitempty"`
+	// @DataMember
 	CreatedAtUnix *int64 `json:"createdAtUnix,omitempty"`
 	// @DataMember
 	UpdatedAtUnix *int64 `json:"updatedAtUnix,omitempty"`
@@ -2565,6 +2570,8 @@ type MongoDbAggregateDto struct {
 	SchemaViewId string `json:"schemaViewId"`
 	// @DataMember
 	Pipeline string `json:"pipeline"`
+	// @DataMember
+	JoinedCollections []string `json:"joinedCollections,omitempty"`
 }
 
 type MarketplaceTransport string
@@ -3266,22 +3273,6 @@ type ImportColumnMappingDto struct {
 	DontImportOnError bool `json:"dontImportOnError,omitempty"`
 }
 
-type AggregateId struct {
-	Value string `json:"value,omitempty"`
-}
-
-type ProjectId struct {
-	AggregateId
-}
-
-type IntegrationId struct {
-	AggregateId
-}
-
-type TaxonomyId struct {
-	AggregateId
-}
-
 // @DataContract
 type EmailValidationProvider string
 
@@ -3706,6 +3697,8 @@ type PromotionResultDto struct {
 	// @DataMember
 	IntegrationsSeeded []PromotionItemDto `json:"integrationsSeeded"`
 	// @DataMember
+	IntegrationsToProvision []PromotionItemDto `json:"integrationsToProvision"`
+	// @DataMember
 	IntegrationsSkipped []PromotionItemDto `json:"integrationsSkipped"`
 	// @DataMember
 	Blockers []PromotionBlockerDto `json:"blockers"`
@@ -3884,6 +3877,8 @@ type SchemaTriggerDto struct {
 	When SchemaTriggerType `json:"when,omitempty"`
 	// @DataMember
 	ConfigurationCode *string `json:"configurationCode,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 // @DataContract
@@ -4824,6 +4819,8 @@ type SchemaTriggerProjectionList struct {
 	TriggerProjectionList
 	// @DataMember
 	Type SchemaTriggerType `json:"type,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 type JsonSchemaFieldDto struct {
@@ -4862,6 +4859,13 @@ type TaxonomyDto struct {
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 
+type TaxonomyRef struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name *string `json:"name,omitempty"`
+}
+
 type TaxonomyListProjection struct {
 	// @DataMember
 	ViewId string `json:"viewId"`
@@ -4878,7 +4882,7 @@ type TaxonomyListProjection struct {
 	// @DataMember
 	ParentName *string `json:"parentName,omitempty"`
 	// @DataMember
-	DependencyNames []string `json:"dependencyNames,omitempty"`
+	DependencyRefs []TaxonomyRef `json:"dependencyRefs,omitempty"`
 }
 
 type TermMultiParentDto struct {
@@ -5110,6 +5114,8 @@ type DatabaseIntegrationListProjection struct {
 	IntegrationListProjection
 	// @DataMember
 	Provider DatabaseProvider `json:"provider,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 // @DataContract
@@ -5288,6 +5294,8 @@ type TemplateListProjection struct {
 	Type CommunicationChannel `json:"type,omitempty"`
 	// @DataMember
 	Tags []string `json:"tags,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 type EmailTemplateListProjection struct {
@@ -10978,9 +10986,9 @@ func (GetDatabaseTaxonomyTreeRequest) HttpMethod() string                       
 // @DataContract
 type SaveDatabaseTaxonomyRequest struct {
 	CodeMashRequestBase
-	/** @description Empty to create a new taxonomy; set to an existing taxonomy id (from get_database_taxonomies) to update it. */
+	/** @description Empty to create a new taxonomy; set to an existing taxonomy id (from get_database_taxonomies) to update it. An update replaces the whole taxonomy: send every field you want to keep (parentId, dependencies, description, schemas). */
 	// @DataMember
-	// @ApiMember(Description="Empty to create a new taxonomy; set to an existing taxonomy id (from get_database_taxonomies) to update it.")
+	// @ApiMember(Description="Empty to create a new taxonomy; set to an existing taxonomy id (from get_database_taxonomies) to update it. An update replaces the whole taxonomy: send every field you want to keep (parentId, dependencies, description, schemas).")
 	ViewId *string `json:"viewId,omitempty"`
 	/** @description Human-entered taxonomy title (e.g. "Countries"); a slug is derived server-side. */
 	// @DataMember
@@ -11368,10 +11376,6 @@ type RenameDatabaseSchemaRequest struct {
 	// @DataMember
 	// @ApiMember(Description="New human-entered title (e.g. \"Company Employees\"); the slug is derived server-side.", IsRequired=true)
 	Title string `json:"title"`
-	/** @description When true (default), rejects the rename if another schema already owns the derived slug. Leave true unless explicitly asked to bypass the uniqueness check. */
-	// @DataMember
-	// @ApiMember(Description="When true (default), rejects the rename if another schema already owns the derived slug. Leave true unless explicitly asked to bypass the uniqueness check.")
-	RenameUniqueName bool `json:"renameUniqueName,omitempty"`
 }
 
 func (RenameDatabaseSchemaRequest) CreateResponse() (r EmptyResponse) { return }
@@ -11420,9 +11424,9 @@ type UpdateDatabaseSchemaDraftRequest struct {
 	// @DataMember
 	// @ApiMember(Description="Raw JSON string matching the Norbix data meta-schema (https://norbix.ai/schemas/meta/v1.json) for the draft's data schema.")
 	DataSchema *string `json:"dataSchema,omitempty"`
-	/** @description Raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. */
+	/** @description OPTIONAL raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. If omitted or invalid, the backend auto-generates a flat-list form from the data schema. */
 	// @DataMember
-	// @ApiMember(Description="Raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form.")
+	// @ApiMember(Description="OPTIONAL raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. If omitted or invalid, the backend auto-generates a flat-list form from the data schema.")
 	VisualSchema *string `json:"visualSchema,omitempty"`
 }
 
@@ -11550,9 +11554,12 @@ type DeleteManyRecords struct {
 	// @ApiMember(Description="The collection (schema) name the records live in.", IsRequired=true)
 	CollectionName        string  `json:"collectionName"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description The match filter as a MongoDB extended-JSON document. Required. */
-	// @ApiMember(Description="The match filter as a MongoDB extended-JSON document. Required.", IsRequired=true)
+	/** @description The match filter as a MongoDB extended-JSON document. Required. An empty object ({}) matches every record and is refused unless AllRecords is true. */
+	// @ApiMember(Description="The match filter as a MongoDB extended-JSON document. Required. An empty object ({}) matches every record and is refused unless AllRecords is true.", IsRequired=true)
 	Filter string `json:"filter"`
+	/** @description Set to true to delete EVERY record of the collection with an empty filter ({}). Without it an empty filter is refused (CM-ERRORS-DATABASE-037). */
+	// @ApiMember(Description="Set to true to delete EVERY record of the collection with an empty filter ({}). Without it an empty filter is refused (CM-ERRORS-DATABASE-037).")
+	AllRecords *bool `json:"allRecords,omitempty"`
 }
 
 func (DeleteManyRecords) CreateResponse() (r EmptyResponse) { return }
@@ -11754,9 +11761,12 @@ type UpdateManyRecords struct {
 	// @ApiMember(Description="The collection (schema) name the records live in.", IsRequired=true)
 	CollectionName        string  `json:"collectionName"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description The match filter as a MongoDB extended-JSON document. Empty object means match all. */
-	// @ApiMember(Description="The match filter as a MongoDB extended-JSON document. Empty object means match all.", IsRequired=true)
+	/** @description The match filter as a MongoDB extended-JSON document. An empty object ({}) matches every record and is refused unless AllRecords is true. */
+	// @ApiMember(Description="The match filter as a MongoDB extended-JSON document. An empty object ({}) matches every record and is refused unless AllRecords is true.", IsRequired=true)
 	Filter string `json:"filter"`
+	/** @description Set to true to update EVERY record of the collection with an empty filter ({}). Without it an empty filter is refused (CM-ERRORS-DATABASE-037). */
+	// @ApiMember(Description="Set to true to update EVERY record of the collection with an empty filter ({}). Without it an empty filter is refused (CM-ERRORS-DATABASE-037).")
+	AllRecords *bool `json:"allRecords,omitempty"`
 	/** @description The partial update document (applied with $set), as MongoDB extended-JSON. */
 	// @ApiMember(Description="The partial update document (applied with $set), as MongoDB extended-JSON.", IsRequired=true)
 	Update string `json:"update"`
@@ -12113,62 +12123,6 @@ type TestDatabaseAggregateRequest struct {
 
 func (TestDatabaseAggregateRequest) CreateResponse() (r TestDatabaseAggregateResponse) { return }
 func (TestDatabaseAggregateRequest) HttpMethod() string                                { return "POST" }
-
-type ProcessCollectionImport struct {
-	ImportId              string  `json:"importId"`
-	ProjectId             string  `json:"projectId"`
-	AccountId             string  `json:"accountId"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId"`
-	Env                   *string `json:"env,omitempty"`
-}
-
-func (ProcessCollectionImport) CreateResponseVoid() {}
-func (ProcessCollectionImport) HttpMethod() string  { return "POST" }
-
-type TermInserted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	TaxonomyId            TaxonomyId    `json:"taxonomyId"`
-	Id                    string        `json:"id"`
-	Document              interface{}   `json:"document"`
-}
-
-func (TermInserted) CreateResponseVoid() {}
-func (TermInserted) HttpMethod() string  { return "POST" }
-
-type TermUpdated struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	TaxonomyId            TaxonomyId    `json:"taxonomyId"`
-	Id                    string        `json:"id"`
-	From                  interface{}   `json:"from"`
-	To                    interface{}   `json:"to"`
-}
-
-func (TermUpdated) CreateResponseVoid() {}
-func (TermUpdated) HttpMethod() string  { return "POST" }
-
-type TermDeleted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	TaxonomyId            TaxonomyId    `json:"taxonomyId"`
-	Id                    string        `json:"id"`
-	Document              interface{}   `json:"document"`
-}
-
-func (TermDeleted) CreateResponseVoid() {}
-func (TermDeleted) HttpMethod() string  { return "POST" }
-
-type TermsDeleted struct {
-	ProjectId             ProjectId     `json:"projectId"`
-	DatabaseIntegrationId IntegrationId `json:"databaseIntegrationId"`
-	TaxonomyId            TaxonomyId    `json:"taxonomyId"`
-	DeletedCount          int64         `json:"deletedCount,omitempty"`
-	Filter                interface{}   `json:"filter"`
-}
-
-func (TermsDeleted) CreateResponseVoid() {}
-func (TermsDeleted) HttpMethod() string  { return "POST" }
 
 // @Route("/{version}/files/disable", "PUT")
 type DisableFiles struct {
@@ -13033,8 +12987,8 @@ func (GetEmailCampaigns) HttpMethod() string                            { return
 // @Api(Description="Get email campaign batches")
 type GetEmailCampaignBatches struct {
 	CodeMashListPaginationRequestBase
-	/** @description The email campaign id to list batches for. Get it from get_all_email_campaigns. */
-	// @ApiMember(Description="The email campaign id to list batches for. Get it from get_all_email_campaigns.", IsRequired=true)
+	/** @description The email campaign id to list batches for. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id to list batches for. Get it from get_email_campaigns.", IsRequired=true)
 	Id string `json:"id"`
 	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
 	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
@@ -13055,8 +13009,8 @@ func (GetEmailCampaignBatches) HttpMethod() string                              
 // @Api(Description="Get an email campaign batch notification")
 type GetEmailCampaignBatchNotification struct {
 	CodeMashListPaginationRequestBase
-	/** @description The email campaign id. Get it from get_all_email_campaigns. */
-	// @ApiMember(Description="The email campaign id. Get it from get_all_email_campaigns.", IsRequired=true)
+	/** @description The email campaign id. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
 	Id string `json:"id"`
 	/** @description The campaign batch id. Get it from get_email_campaign_batches. */
 	// @ApiMember(Description="The campaign batch id. Get it from get_email_campaign_batches.", IsRequired=true)
@@ -13079,8 +13033,8 @@ func (GetEmailCampaignBatchNotification) HttpMethod() string { return "GET" }
 // @Api(Description="Get email campaign batch notifications")
 type GetEmailCampaignBatchNotifications struct {
 	CodeMashListPaginationRequestBase
-	/** @description The email campaign id. Get it from get_all_email_campaigns. */
-	// @ApiMember(Description="The email campaign id. Get it from get_all_email_campaigns.", IsRequired=true)
+	/** @description The email campaign id. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
 	Id string `json:"id"`
 	/** @description The campaign batch id to list notifications for. Get it from get_email_campaign_batches. */
 	// @ApiMember(Description="The campaign batch id to list notifications for. Get it from get_email_campaign_batches.", IsRequired=true)
@@ -13100,8 +13054,8 @@ func (GetEmailCampaignBatchNotifications) HttpMethod() string { return "GET" }
 // @Api(Description="Get email campaign statistics")
 type GetEmailCampaignStatistics struct {
 	CodeMashRequestBase
-	/** @description The email campaign id to get statistics for. Get it from get_all_email_campaigns. */
-	// @ApiMember(Description="The email campaign id to get statistics for. Get it from get_all_email_campaigns.", IsRequired=true)
+	/** @description The email campaign id to get statistics for. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id to get statistics for. Get it from get_email_campaigns.", IsRequired=true)
 	Id string `json:"id"`
 	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
 	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
@@ -13154,8 +13108,8 @@ func (StopEmailCampaignRequest) HttpMethod() string                { return "POS
 // @Api(Description="Get email campaign messages")
 type GetEmailCampaignMessagesRequest struct {
 	CodeMashListPaginationRequestBase
-	/** @description The email campaign id. Get it from get_all_email_campaigns. */
-	// @ApiMember(Description="The email campaign id. Get it from get_all_email_campaigns.", IsRequired=true)
+	/** @description The email campaign id. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
 	CampaignId string `json:"campaignId"`
 	/** @description The campaign batch id to list messages for. Get it from get_email_campaign_batches. */
 	// @ApiMember(Description="The campaign batch id to list messages for. Get it from get_email_campaign_batches.", IsRequired=true)
@@ -15427,24 +15381,6 @@ type TestMcpIntegration struct {
 
 func (TestMcpIntegration) CreateResponse() (r TestLlmIntegrationResponse) { return }
 func (TestMcpIntegration) HttpMethod() string                             { return "POST" }
-
-type IngestSourceMessage struct {
-	ProjectId              string            `json:"projectId"`
-	Env                    *string           `json:"env,omitempty"`
-	OwnerAuthId            *string           `json:"ownerAuthId,omitempty"`
-	SourceKind             string            `json:"sourceKind"`
-	SourceId               string            `json:"sourceId"`
-	Title                  *string           `json:"title,omitempty"`
-	ContentType            *string           `json:"contentType,omitempty"`
-	Content                *string           `json:"content,omitempty"`
-	EmbeddingIntegrationId *string           `json:"embeddingIntegrationId,omitempty"`
-	Removed                bool              `json:"removed,omitempty"`
-	Metadata               map[string]string `json:"metadata,omitempty"`
-	OwnerRequired          bool              `json:"ownerRequired,omitempty"`
-}
-
-func (IngestSourceMessage) CreateResponseVoid() {}
-func (IngestSourceMessage) HttpMethod() string  { return "POST" }
 
 /** @description Gets the project's webhook integration */
 // @Route("/{version}/webhooks/integration", "GET")

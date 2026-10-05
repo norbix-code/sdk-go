@@ -1608,6 +1608,7 @@ type DeleteManyRequest struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
+	AllRecords            bool   `json:"allRecords,omitempty"`
 }
 
 // DeleteOneRequest DTO.
@@ -1698,6 +1699,7 @@ type UpdateManyRequest struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
+	AllRecords            bool   `json:"allRecords,omitempty"`
 	Update                string `json:"update,omitempty"`
 }
 

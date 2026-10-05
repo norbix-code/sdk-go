@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 16:13:59
+Date: 2026-10-05 20:53:15
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:54946
+BaseUrl: http://localhost:64965
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -2228,6 +2228,8 @@ type DeleteManyRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 	// @DataMember
 	Filter string `json:"filter"`
+	// @DataMember
+	AllRecords *bool `json:"allRecords,omitempty"`
 }
 
 func (DeleteManyRequest) CreateResponse() (r EmptyResponse) { return }
@@ -2418,6 +2420,8 @@ type UpdateManyRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 	// @DataMember
 	Filter string `json:"filter"`
+	// @DataMember
+	AllRecords *bool `json:"allRecords,omitempty"`
 	// @DataMember
 	Update string `json:"update"`
 }

@@ -1853,6 +1853,7 @@ type TemplateDto struct {
 	Medium               NotificationMedium   `json:"medium,omitempty"`
 	IsActive             bool                 `json:"isActive,omitempty"`
 	Tags                 []string             `json:"tags,omitempty"`
+	Env                  string               `json:"env,omitempty"`
 }
 
 // EmailBodyDto DTO.
@@ -2732,7 +2733,8 @@ type LocalFilesIntegrationDto struct {
 // DatabaseIntegrationDto DTO.
 type DatabaseIntegrationDto struct {
 	IntegrationDto
-	Provider DatabaseProvider `json:"provider,omitempty"`
+	Provider      DatabaseProvider `json:"provider,omitempty"`
+	IsSystemOwned bool             `json:"isSystemOwned,omitempty"`
 }
 
 // MongoDbConnectionStringIntegrationDto DTO.
@@ -2955,6 +2957,7 @@ type SchedulerTaskDto struct {
 	InitiatorId   string            `json:"initiatorId,omitempty"`
 	IsEnabled     bool              `json:"isEnabled,omitempty"`
 	StopOnError   bool              `json:"stopOnError,omitempty"`
+	Env           string            `json:"env,omitempty"`
 	CreatedAtUnix float64           `json:"createdAtUnix,omitempty"`
 	UpdatedAtUnix float64           `json:"updatedAtUnix,omitempty"`
 }
@@ -3033,11 +3036,12 @@ type PushCampaignSchedulerTaskRequest struct {
 
 // MongoDbAggregateDto DTO.
 type MongoDbAggregateDto struct {
-	ViewId       string `json:"viewId,omitempty"`
-	DisplayName  string `json:"displayName,omitempty"`
-	Description  string `json:"description,omitempty"`
-	SchemaViewId string `json:"schemaViewId,omitempty"`
-	Pipeline     string `json:"pipeline,omitempty"`
+	ViewId            string   `json:"viewId,omitempty"`
+	DisplayName       string   `json:"displayName,omitempty"`
+	Description       string   `json:"description,omitempty"`
+	SchemaViewId      string   `json:"schemaViewId,omitempty"`
+	Pipeline          string   `json:"pipeline,omitempty"`
+	JoinedCollections []string `json:"joinedCollections,omitempty"`
 }
 
 // MarketplaceIntegrationDto DTO.
@@ -3552,26 +3556,6 @@ type ImportColumnMappingDto struct {
 	DontImportOnError bool    `json:"dontImportOnError,omitempty"`
 }
 
-// AggregateId DTO.
-type AggregateId struct {
-	Value string `json:"value,omitempty"`
-}
-
-// ProjectId DTO.
-type ProjectId struct {
-	AggregateId
-}
-
-// IntegrationId DTO.
-type IntegrationId struct {
-	AggregateId
-}
-
-// TaxonomyId DTO.
-type TaxonomyId struct {
-	AggregateId
-}
-
 // EmailValidationIntegrationRequest DTO.
 type EmailValidationIntegrationRequest struct {
 	IntegrationId   string                  `json:"integrationId,omitempty"`
@@ -3823,13 +3807,14 @@ type PromotionBlockerDto struct {
 
 // PromotionResultDto DTO.
 type PromotionResultDto struct {
-	ContentMirrored     []*PromotionItemDto    `json:"contentMirrored,omitempty"`
-	ContentDeleted      []*PromotionItemDto    `json:"contentDeleted,omitempty"`
-	IntegrationsSeeded  []*PromotionItemDto    `json:"integrationsSeeded,omitempty"`
-	IntegrationsSkipped []*PromotionItemDto    `json:"integrationsSkipped,omitempty"`
-	Blockers            []*PromotionBlockerDto `json:"blockers,omitempty"`
-	FromVersion         float64                `json:"fromVersion,omitempty"`
-	WasDryRun           bool                   `json:"wasDryRun,omitempty"`
+	ContentMirrored         []*PromotionItemDto    `json:"contentMirrored,omitempty"`
+	ContentDeleted          []*PromotionItemDto    `json:"contentDeleted,omitempty"`
+	IntegrationsSeeded      []*PromotionItemDto    `json:"integrationsSeeded,omitempty"`
+	IntegrationsToProvision []*PromotionItemDto    `json:"integrationsToProvision,omitempty"`
+	IntegrationsSkipped     []*PromotionItemDto    `json:"integrationsSkipped,omitempty"`
+	Blockers                []*PromotionBlockerDto `json:"blockers,omitempty"`
+	FromVersion             float64                `json:"fromVersion,omitempty"`
+	WasDryRun               bool                   `json:"wasDryRun,omitempty"`
 }
 
 // ProjectEnvironmentsDto DTO.
@@ -3935,6 +3920,7 @@ type SchemaTriggerDto struct {
 	SchemaId          string            `json:"schemaId,omitempty"`
 	When              SchemaTriggerType `json:"when,omitempty"`
 	ConfigurationCode string            `json:"configurationCode,omitempty"`
+	Env               string            `json:"env,omitempty"`
 }
 
 // DatabaseDto DTO.
@@ -4575,6 +4561,7 @@ type MembershipAuthenticationViewDto struct {
 type SchemaTriggerProjectionList struct {
 	TriggerProjectionList
 	Type SchemaTriggerType `json:"type,omitempty"`
+	Env  string            `json:"env,omitempty"`
 }
 
 // JsonSchemaFieldDto DTO.
@@ -4605,16 +4592,22 @@ type TaxonomyDto struct {
 	Dependencies          []string         `json:"dependencies,omitempty"`
 }
 
+// TaxonomyRef DTO.
+type TaxonomyRef struct {
+	Id   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 // TaxonomyListProjection DTO.
 type TaxonomyListProjection struct {
-	ViewId          string   `json:"viewId,omitempty"`
-	TaxonomyName    string   `json:"taxonomyName,omitempty"`
-	TaxonomySlug    string   `json:"taxonomySlug,omitempty"`
-	ParentId        string   `json:"parentId,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	Dependencies    []string `json:"dependencies,omitempty"`
-	ParentName      string   `json:"parentName,omitempty"`
-	DependencyNames []string `json:"dependencyNames,omitempty"`
+	ViewId         string         `json:"viewId,omitempty"`
+	TaxonomyName   string         `json:"taxonomyName,omitempty"`
+	TaxonomySlug   string         `json:"taxonomySlug,omitempty"`
+	ParentId       string         `json:"parentId,omitempty"`
+	Description    string         `json:"description,omitempty"`
+	Dependencies   []string       `json:"dependencies,omitempty"`
+	ParentName     string         `json:"parentName,omitempty"`
+	DependencyRefs []*TaxonomyRef `json:"dependencyRefs,omitempty"`
 }
 
 // TermMultiParentDto DTO.
@@ -4769,6 +4762,7 @@ type SeedCollectionRecordsResultDto struct {
 type DatabaseIntegrationListProjection struct {
 	IntegrationListProjection
 	Provider DatabaseProvider `json:"provider,omitempty"`
+	Env      string           `json:"env,omitempty"`
 }
 
 // FlexTierDto DTO.
@@ -4892,6 +4886,7 @@ type TemplateListProjection struct {
 	IsActive     bool                 `json:"isActive,omitempty"`
 	Type         CommunicationChannel `json:"type,omitempty"`
 	Tags         []string             `json:"tags,omitempty"`
+	Env          string               `json:"env,omitempty"`
 }
 
 // EmailTemplateListProjection DTO.
@@ -5992,10 +5987,6 @@ type IBindableContract struct {
 
 // IHasRazorTemplateCode DTO.
 type IHasRazorTemplateCode struct {
-}
-
-// IHasDomainEntityId DTO.
-type IHasDomainEntityId struct {
 }
 
 // IHasResponsibleUserId DTO.
@@ -9293,9 +9284,8 @@ type PublishDatabaseSchemaRequest struct {
 // RenameDatabaseSchemaRequest DTO.
 type RenameDatabaseSchemaRequest struct {
 	CodeMashRequestBase
-	Id               string `json:"id,omitempty"`
-	Title            string `json:"title,omitempty"`
-	RenameUniqueName bool   `json:"renameUniqueName,omitempty"`
+	Id    string `json:"id,omitempty"`
+	Title string `json:"title,omitempty"`
 }
 
 // SaveDatabaseSchemaRequest DTO.
@@ -9369,6 +9359,7 @@ type DeleteManyRecords struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
+	AllRecords            bool   `json:"allRecords,omitempty"`
 }
 
 // DeleteRecord DTO.
@@ -9465,6 +9456,7 @@ type UpdateManyRecords struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
+	AllRecords            bool   `json:"allRecords,omitempty"`
 	Update                string `json:"update,omitempty"`
 }
 
@@ -9621,52 +9613,6 @@ type TestDatabaseAggregateRequest struct {
 	CollectionName        string            `json:"collectionName,omitempty"`
 	Pipeline              string            `json:"pipeline,omitempty"`
 	Tokens                map[string]string `json:"tokens,omitempty"`
-}
-
-// ProcessCollectionImport DTO.
-type ProcessCollectionImport struct {
-	ImportId              string `json:"importId,omitempty"`
-	ProjectId             string `json:"projectId,omitempty"`
-	AccountId             string `json:"accountId,omitempty"`
-	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
-	Env                   string `json:"env,omitempty"`
-}
-
-// TermInserted DTO.
-type TermInserted struct {
-	ProjectId             *ProjectId     `json:"projectId,omitempty"`
-	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
-	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
-	Id                    string         `json:"id,omitempty"`
-	Document              map[string]any `json:"document,omitempty"`
-}
-
-// TermUpdated DTO.
-type TermUpdated struct {
-	ProjectId             *ProjectId     `json:"projectId,omitempty"`
-	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
-	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
-	Id                    string         `json:"id,omitempty"`
-	From                  map[string]any `json:"from,omitempty"`
-	To                    map[string]any `json:"to,omitempty"`
-}
-
-// TermDeleted DTO.
-type TermDeleted struct {
-	ProjectId             *ProjectId     `json:"projectId,omitempty"`
-	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
-	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
-	Id                    string         `json:"id,omitempty"`
-	Document              map[string]any `json:"document,omitempty"`
-}
-
-// TermsDeleted DTO.
-type TermsDeleted struct {
-	ProjectId             *ProjectId     `json:"projectId,omitempty"`
-	DatabaseIntegrationId *IntegrationId `json:"databaseIntegrationId,omitempty"`
-	TaxonomyId            *TaxonomyId    `json:"taxonomyId,omitempty"`
-	DeletedCount          float64        `json:"deletedCount,omitempty"`
-	Filter                map[string]any `json:"filter,omitempty"`
 }
 
 // DisableFiles DTO.
@@ -11191,22 +11137,6 @@ type SaveMcpIntegration struct {
 type TestMcpIntegration struct {
 	CodeMashRequestBase
 	IntegrationId string `json:"integrationId,omitempty"`
-}
-
-// IngestSourceMessage DTO.
-type IngestSourceMessage struct {
-	ProjectId              string            `json:"projectId,omitempty"`
-	Env                    string            `json:"env,omitempty"`
-	OwnerAuthId            string            `json:"ownerAuthId,omitempty"`
-	SourceKind             string            `json:"sourceKind,omitempty"`
-	SourceId               string            `json:"sourceId,omitempty"`
-	Title                  string            `json:"title,omitempty"`
-	ContentType            string            `json:"contentType,omitempty"`
-	Content                string            `json:"content,omitempty"`
-	EmbeddingIntegrationId string            `json:"embeddingIntegrationId,omitempty"`
-	Removed                bool              `json:"removed,omitempty"`
-	Metadata               map[string]string `json:"metadata,omitempty"`
-	OwnerRequired          bool              `json:"ownerRequired,omitempty"`
 }
 
 // GetWebhookIntegration DTO.
