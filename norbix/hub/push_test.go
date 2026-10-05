@@ -42,11 +42,11 @@ func pushCases() []pushCase {
 
 	return []pushCase{
 		// --- module
-		{"EnablePush", http.MethodGet, "/v2/notifications/push/enable",
+		{"EnablePush", http.MethodPut, "/v2/notifications/push/enable",
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.EnablePush(ctx, nil, nil)
 			}},
-		{"DisablePush", http.MethodGet, "/v2/notifications/push/disable",
+		{"DisablePush", http.MethodPut, "/v2/notifications/push/disable",
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.DisablePush(ctx, nil, nil)
 			}},

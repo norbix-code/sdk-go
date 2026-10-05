@@ -11,24 +11,24 @@ import (
 // LogsModule groups the logs endpoints on the HUB.
 type LogsModule struct{ t *transport.Transport }
 
-// DisableLogging performs GET /{version}/logs/disable (scope: project).
+// DisableLogging performs PUT /{version}/logs/disable (scope: project).
 func (m *LogsModule) DisableLogging(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/logs/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnableLogging performs GET /{version}/logs/enable (scope: project).
+// EnableLogging performs PUT /{version}/logs/enable (scope: project).
 func (m *LogsModule) EnableLogging(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/logs/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

@@ -11,24 +11,24 @@ import (
 // FilesModule groups the files endpoints on the HUB.
 type FilesModule struct{ t *transport.Transport }
 
-// DisableFiles performs GET /{version}/files/disable (scope: project).
+// DisableFiles performs PUT /{version}/files/disable (scope: project).
 func (m *FilesModule) DisableFiles(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/files/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnableFiles performs GET /{version}/files/enable (scope: project).
+// EnableFiles performs PUT /{version}/files/enable (scope: project).
 func (m *FilesModule) EnableFiles(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/files/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

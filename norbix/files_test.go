@@ -81,7 +81,7 @@ func TestHubEnableFiles(t *testing.T) {
 	if err := c.Hub.Files.EnableFiles(context.Background(), nil, &out); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectCall(t, got, http.MethodGet, "/v2/files/enable")
+	expectCall(t, got, http.MethodPut, "/v2/files/enable")
 }
 
 func TestHubDisableFiles(t *testing.T) {
@@ -90,7 +90,7 @@ func TestHubDisableFiles(t *testing.T) {
 	if err := c.Hub.Files.DisableFiles(context.Background(), nil, &out); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expectCall(t, got, http.MethodGet, "/v2/files/disable")
+	expectCall(t, got, http.MethodPut, "/v2/files/disable")
 }
 
 // ---- hub: browsing ----------------------------------------------------------
