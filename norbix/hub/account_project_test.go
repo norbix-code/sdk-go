@@ -25,7 +25,7 @@ type projectCase struct {
 	name  string
 	verb  string
 	path  string
-	scope string // "account" also sends X-CM-AccountId and needs AccountID
+	scope string // "account" needs AccountID on the client; since the token-only fix every case here is "project"
 	call  func(ctx context.Context, m *AccountModule) error
 }
 
@@ -33,103 +33,103 @@ func projectCases() []projectCase {
 	body := map[string]any{"probe": "value"}
 
 	return []projectCase{
-		{"CreateProject", http.MethodPost, "/v2/account/projects", "account",
+		{"CreateProject", http.MethodPost, "/v2/account/projects", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.CreateProject(ctx, body, nil)
 			}},
-		{"GetProjects", http.MethodGet, "/v2/account/projects", "account",
+		{"GetProjects", http.MethodGet, "/v2/account/projects", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.GetProjects(ctx, body, nil)
 			}},
-		{"GetProject", http.MethodGet, "/v2/account/projects/projectId_1", "account",
+		{"GetProject", http.MethodGet, "/v2/account/projects/projectId_1", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.GetProject(ctx, "projectId_1", body, nil)
 			}},
-		{"DeleteProject", http.MethodDelete, "/v2/account/projects/projectId_1", "account",
+		{"DeleteProject", http.MethodDelete, "/v2/account/projects/projectId_1", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.DeleteProject(ctx, "projectId_1", body, nil)
 			}},
-		{"EnableProject", http.MethodPatch, "/v2/account/projects/projectId_1/enable", "account",
+		{"EnableProject", http.MethodPatch, "/v2/account/projects/projectId_1/enable", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.EnableProject(ctx, "projectId_1", body, nil)
 			}},
-		{"DisableProject", http.MethodPatch, "/v2/account/projects/projectId_1/disable", "account",
+		{"DisableProject", http.MethodPatch, "/v2/account/projects/projectId_1/disable", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.DisableProject(ctx, "projectId_1", body, nil)
 			}},
-		{"GetProjectTokens", http.MethodGet, "/v2/account/projects/projectId_1/tokens", "account",
+		{"GetProjectTokens", http.MethodGet, "/v2/account/projects/projectId_1/tokens", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.GetProjectTokens(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectName", http.MethodPatch, "/v2/account/projects/projectId_1/settings/name", "account",
+		{"UpdateProjectName", http.MethodPatch, "/v2/account/projects/projectId_1/settings/name", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectName(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectDescription", http.MethodPatch, "/v2/account/projects/projectId_1/settings/description", "account",
+		{"UpdateProjectDescription", http.MethodPatch, "/v2/account/projects/projectId_1/settings/description", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectDescription(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectLogo", http.MethodPatch, "/v2/account/projects/projectId_1/settings/logo", "account",
+		{"UpdateProjectLogo", http.MethodPatch, "/v2/account/projects/projectId_1/settings/logo", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectLogo(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectIcon", http.MethodPatch, "/v2/account/projects/projectId_1/settings/icon", "account",
+		{"UpdateProjectIcon", http.MethodPatch, "/v2/account/projects/projectId_1/settings/icon", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectIcon(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectMainColor", http.MethodPatch, "/v2/account/projects/projectId_1/settings/main-color", "account",
+		{"UpdateProjectMainColor", http.MethodPatch, "/v2/account/projects/projectId_1/settings/main-color", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectMainColor(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectAccentColor", http.MethodPatch, "/v2/account/projects/projectId_1/settings/accent-color", "account",
+		{"UpdateProjectAccentColor", http.MethodPatch, "/v2/account/projects/projectId_1/settings/accent-color", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectAccentColor(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectAllowedOrigins", http.MethodPatch, "/v2/account/projects/projectId_1/settings/origins", "account",
+		{"UpdateProjectAllowedOrigins", http.MethodPatch, "/v2/account/projects/projectId_1/settings/origins", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectAllowedOrigins(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectUrl", http.MethodPatch, "/v2/account/projects/projectId_1/settings/url", "account",
+		{"UpdateProjectUrl", http.MethodPatch, "/v2/account/projects/projectId_1/settings/url", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectUrl(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectLanguages", http.MethodPatch, "/v2/account/projects/projectId_1/settings/languages", "account",
+		{"UpdateProjectLanguages", http.MethodPatch, "/v2/account/projects/projectId_1/settings/languages", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectLanguages(ctx, "projectId_1", body, nil)
 			}},
-		{"CheckProjectLanguages", http.MethodPost, "/v2/account/projects/projectId_1/settings/languages/check", "account",
+		{"CheckProjectLanguages", http.MethodPost, "/v2/account/projects/projectId_1/settings/languages/check", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.CheckProjectLanguages(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectDefaultLanguage", http.MethodPatch, "/v2/account/projects/projectId_1/settings/default-language", "account",
+		{"UpdateProjectDefaultLanguage", http.MethodPatch, "/v2/account/projects/projectId_1/settings/default-language", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectDefaultLanguage(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectRegions", http.MethodPatch, "/v2/account/projects/projectId_1/settings/regions", "account",
+		{"UpdateProjectRegions", http.MethodPatch, "/v2/account/projects/projectId_1/settings/regions", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectRegions(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectAdminUrl", http.MethodPatch, "/v2/account/projects/projectId_1/settings/admin-url", "account",
+		{"UpdateProjectAdminUrl", http.MethodPatch, "/v2/account/projects/projectId_1/settings/admin-url", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectAdminUrl(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectLegalDocuments", http.MethodPatch, "/v2/account/projects/projectId_1/settings/legal", "account",
+		{"UpdateProjectLegalDocuments", http.MethodPatch, "/v2/account/projects/projectId_1/settings/legal", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectLegalDocuments(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectExposeLegal", http.MethodPatch, "/v2/account/projects/projectId_1/settings/legal/expose", "account",
+		{"UpdateProjectExposeLegal", http.MethodPatch, "/v2/account/projects/projectId_1/settings/legal/expose", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectExposeLegal(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectExposeBrand", http.MethodPatch, "/v2/account/projects/projectId_1/settings/brand/expose", "account",
+		{"UpdateProjectExposeBrand", http.MethodPatch, "/v2/account/projects/projectId_1/settings/brand/expose", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectExposeBrand(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectExposeAuth", http.MethodPatch, "/v2/account/projects/projectId_1/settings/auth/expose", "account",
+		{"UpdateProjectExposeAuth", http.MethodPatch, "/v2/account/projects/projectId_1/settings/auth/expose", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectExposeAuth(ctx, "projectId_1", body, nil)
 			}},
-		{"AssignAdminPortalServiceUser", http.MethodPut, "/v2/account/projects/projectId_1/settings/admin-portal/service-user", "account",
+		{"AssignAdminPortalServiceUser", http.MethodPut, "/v2/account/projects/projectId_1/settings/admin-portal/service-user", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.AssignAdminPortalServiceUser(ctx, "projectId_1", body, nil)
 			}},
@@ -137,23 +137,23 @@ func projectCases() []projectCase {
 			func(ctx context.Context, m *AccountModule) error {
 				return m.GetAdminPortalStructure(ctx, "projectId_1", body, nil)
 			}},
-		{"CreateAiServiceUser", http.MethodPost, "/v2/account/ai/service-users", "account",
+		{"CreateAiServiceUser", http.MethodPost, "/v2/account/ai/service-users", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.CreateAiServiceUser(ctx, body, nil)
 			}},
-		{"ListAiServiceUsers", http.MethodGet, "/v2/account/ai/service-users", "account",
+		{"ListAiServiceUsers", http.MethodGet, "/v2/account/ai/service-users", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.ListAiServiceUsers(ctx, body, nil)
 			}},
-		{"DeleteAiServiceUser", http.MethodDelete, "/v2/account/ai/service-users/aisu_1", "account",
+		{"DeleteAiServiceUser", http.MethodDelete, "/v2/account/ai/service-users/aisu_1", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.DeleteAiServiceUser(ctx, "aisu_1", body, nil)
 			}},
-		{"RotateAiServiceUserKey", http.MethodPost, "/v2/account/ai/service-users/aisu_1/keys", "account",
+		{"RotateAiServiceUserKey", http.MethodPost, "/v2/account/ai/service-users/aisu_1/keys", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.RotateAiServiceUserKey(ctx, "aisu_1", body, nil)
 			}},
-		{"RevokeAiServiceUserKey", http.MethodDelete, "/v2/account/ai/service-users/aisu_1/keys/key_1", "account",
+		{"RevokeAiServiceUserKey", http.MethodDelete, "/v2/account/ai/service-users/aisu_1/keys/key_1", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.RevokeAiServiceUserKey(ctx, "aisu_1", "key_1", body, nil)
 			}},
