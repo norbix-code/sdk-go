@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -247,10 +248,12 @@ func TestSmsEndpointsSendAuthAndProjectHeaders(t *testing.T) {
 	}
 }
 
-// The four audience blocks of an Sms campaign, with the fields the gateway
+// The five audience blocks of an Sms campaign, with the fields the gateway
 // reads for each one. Source of truth: gateway Hub.Sms/Campaigns/Create.cs —
-// `deliveryType` picks the block (AllUsers / SpecifiedUsers / Collection /
-// PhoneNumbers) and each block repeats its own `recipientsSourceType`.
+// `deliveryType` picks the block (AllUsers / SpecifiedUsers / AccountUsers /
+// Collection / PhoneNumbers) and each block repeats its own
+// `recipientsSourceType`. AccountUsers are the account owner and team members
+// by id; the gateway skips members without a phone.
 var smsCampaignTargets = []struct {
 	deliveryType string
 	block        string
@@ -264,6 +267,10 @@ var smsCampaignTargets = []struct {
 	{"SpecifiedUsers", "specifiedUsers", map[string]any{
 		"recipientsSourceType": "SpecifiedUsers",
 		"recipients":           []any{"user_1"},
+	}},
+	{"AccountUsers", "accountUsers", map[string]any{
+		"recipientsSourceType": "AccountUsers",
+		"recipients":           []any{"owner_1", "member_2"},
 	}},
 	{"Collection", "collection", map[string]any{
 		"recipientsSourceType": "Collection",
@@ -325,5 +332,30 @@ func TestSmsCampaignDeliveryTypesMatchTheGateway(t *testing.T) {
 	}
 	if len(want) != 5 {
 		t.Errorf("delivery types: got %d want 5", len(want))
+	}
+}
+
+// The campaign list takes an optional campaign id: the gateway then returns
+// only that campaign. A GET sends it in the query string.
+func TestGetSmsCampaignsSendsTheCampaignIdFilter(t *testing.T) {
+	var query url.Values
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query = r.URL.Query()
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	err := newSmsTestModule(srv.URL).GetSmsCampaigns(context.Background(), map[string]any{
+		"campaignId": "camp_1",
+		"pageSize":   10,
+	}, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := query.Get("campaignId"); got != "camp_1" {
+		t.Errorf("campaignId: got %q want %q", got, "camp_1")
+	}
+	if got := query.Get("pageSize"); got != "10" {
+		t.Errorf("pageSize: got %q want %q", got, "10")
 	}
 }
