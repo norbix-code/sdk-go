@@ -18,10 +18,8 @@ it).
 
 **Scope.** Every method on this page is marked *project*: it needs only a key
 or a bearer token, no `AccountID`. The gateway takes the account from the
-signed-in session, or from the project id in the path. The one account route
-that still needs `AccountID` on the client is `VerifyAccount` (the gateway
-reads the account id from that request). Test:
-`norbix/hub/account_token_only_test.go`.
+signed-in session, or from the project id in the path, and never reads the
+`X-CM-AccountId` header. Test: `norbix/hub/account_token_only_test.go`.
 
 ```go
 client, err := norbix.New(norbix.Options{
@@ -194,6 +192,32 @@ err := client.Hub.Account.CreateAiServiceUser(ctx, map[string]any{
     },
 }, &created)
 // Store created's key now; it is not shown again.
+```
+
+## Sign-up, invitations, regions and account verification (no token)
+
+These four routes are public on the gateway, so the methods send **no**
+`Authorization` header and need no key, no bearer token and no `AccountID`
+(scope *unauthenticated*). `VerifyAccount` takes the account id once, in the
+request. Test: `TestPublicAccountRoutesWorkWithNoTokenAndNoAccountID` in
+`norbix/hub/account_token_only_test.go`.
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `CreateAccount(ctx, req, out)` | `POST` | `/account` | unauthenticated |
+| `CreateTeamMemberFromInvitation(ctx, req, out)` | `POST` | `/account/team/member` | unauthenticated |
+| `GetAccountRegions(ctx, req, out)` (also `Hub.Regions.List`) | `GET` | `/account/regions` | unauthenticated |
+| `VerifyAccount(ctx, req, out)` | `GET` | `/account/verify` | unauthenticated |
+
+```go
+hub, err := norbix.NewHub(norbix.Options{ProjectID: "proj_123"}) // no key, no token
+if err != nil {
+    log.Fatal(err)
+}
+err = hub.Account.VerifyAccount(ctx, map[string]any{
+    "accountId": "acct_123", // from the verification link
+    "token":     "tok_...",
+}, nil)
 ```
 
 ## Your account user and the team
