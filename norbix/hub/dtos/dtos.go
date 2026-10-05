@@ -1929,8 +1929,7 @@ type PushTemplateDto struct {
 
 // SmsMessageContentDto DTO.
 type SmsMessageContentDto struct {
-	Subject string `json:"subject,omitempty"`
-	Body    string `json:"body,omitempty"`
+	Body string `json:"body,omitempty"`
 }
 
 // SmsMessageTranslationDto DTO.
@@ -2202,6 +2201,12 @@ type SmsToAllUsersDeliverySettingsDto struct {
 
 // SmsToUsersDeliverySettingsDto DTO.
 type SmsToUsersDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	Recipients []string `json:"recipients,omitempty"`
+}
+
+// SmsToAccountUsersDeliverySettingsDto DTO.
+type SmsToAccountUsersDeliverySettingsDto struct {
 	SmsCampaignDeliverySettingsDto
 	Recipients []string `json:"recipients,omitempty"`
 }
@@ -3390,20 +3395,6 @@ type ProjectAiAssistantRequestBase struct {
 	IsDefault          bool     `json:"isDefault,omitempty"`
 }
 
-// CursorArgs DTO.
-type CursorArgs struct {
-	Field string  `json:"field,omitempty"`
-	Order float64 `json:"order,omitempty"`
-}
-
-// PagingArgs DTO.
-type PagingArgs struct {
-	CursorArgs    *CursorArgs `json:"cursorArgs,omitempty"`
-	PageSize      float64     `json:"pageSize,omitempty"`
-	StartingAfter string      `json:"startingAfter,omitempty"`
-	EndingBefore  string      `json:"endingBefore,omitempty"`
-}
-
 // AiScopeDto DTO.
 type AiScopeDto struct {
 	Reach     string   `json:"reach,omitempty"`
@@ -3453,6 +3444,20 @@ type SaveTrigger struct {
 type CredentialsSettingsModeDto struct {
 	Name      string `json:"name,omitempty"`
 	LogoutUrl string `json:"logoutUrl,omitempty"`
+}
+
+// CursorArgs DTO.
+type CursorArgs struct {
+	Field string  `json:"field,omitempty"`
+	Order float64 `json:"order,omitempty"`
+}
+
+// PagingArgs DTO.
+type PagingArgs struct {
+	CursorArgs    *CursorArgs `json:"cursorArgs,omitempty"`
+	PageSize      float64     `json:"pageSize,omitempty"`
+	StartingAfter string      `json:"startingAfter,omitempty"`
+	EndingBefore  string      `json:"endingBefore,omitempty"`
 }
 
 // SchemaSettingsDto DTO.
@@ -5020,7 +5025,6 @@ type CampaignBatchNotificationDto struct {
 	BatchId           string                              `json:"batchId,omitempty"`
 	NotificationId    string                              `json:"notificationId,omitempty"`
 	RefNotificationId string                              `json:"refNotificationId,omitempty"`
-	Subject           string                              `json:"subject,omitempty"`
 	Body              string                              `json:"body,omitempty"`
 	Model             map[string]string                   `json:"model,omitempty"`
 	StatusHistory     []*NotificationStatusChangeEntryDto `json:"statusHistory,omitempty"`
@@ -5030,6 +5034,7 @@ type CampaignBatchNotificationDto struct {
 // EmailCampaignBatchNotificationDto DTO.
 type EmailCampaignBatchNotificationDto struct {
 	CampaignBatchNotificationDto
+	Subject    string                  `json:"subject,omitempty"`
 	Recipients *EmailRecipientsDto     `json:"recipients,omitempty"`
 	Content    *EmailMessageContentDto `json:"content,omitempty"`
 }
@@ -5061,8 +5066,9 @@ type SmsIntegrationListProjection struct {
 // SmsCampaignDto DTO.
 type SmsCampaignDto struct {
 	CampaignDto
-	Recipients *SmsCampaignDeliverySettingsDto `json:"recipients,omitempty"`
-	Template   *SmsTemplateDto                 `json:"template,omitempty"`
+	Recipients  *SmsCampaignDeliverySettingsDto `json:"recipients,omitempty"`
+	Template    *SmsTemplateDto                 `json:"template,omitempty"`
+	CreatedById string                          `json:"createdById,omitempty"`
 }
 
 // SmsRecipientDto DTO.
@@ -5216,6 +5222,7 @@ type PushCampaignBatchDto struct {
 // PushCampaignBatchNotificationDto DTO.
 type PushCampaignBatchNotificationDto struct {
 	CampaignBatchNotificationDto
+	Subject    string                 `json:"subject,omitempty"`
 	Recipients *PushRecipientsDto     `json:"recipients,omitempty"`
 	Content    *PushMessageContentDto `json:"content,omitempty"`
 }
@@ -6305,6 +6312,12 @@ type AccountPasskeyListResponse struct {
 type AccountPasskeyEnrollmentResponse struct {
 	ResponseBase
 	RecoveryCodes []string `json:"recoveryCodes,omitempty"`
+}
+
+// GetMyAccountUserProfileResponse DTO.
+type GetMyAccountUserProfileResponse struct {
+	ResponseBase
+	Item *AuthDto `json:"item,omitempty"`
 }
 
 // GetLicenseDomainDnsStatusResponse DTO.
@@ -7944,6 +7957,7 @@ type InternalsTypeGen struct {
 	Typegen_98_PushToDevicesDeliverySettingsDto                  *PushToDevicesDeliverySettingsDto                  `json:"typegen_98_PushToDevicesDeliverySettingsDto,omitempty"`
 	Typegen_99_SmsToAllUsersDeliverySettingsDto                  *SmsToAllUsersDeliverySettingsDto                  `json:"typegen_99_SmsToAllUsersDeliverySettingsDto,omitempty"`
 	Typegen_100_SmsToUsersDeliverySettingsDto                    *SmsToUsersDeliverySettingsDto                     `json:"typegen_100_SmsToUsersDeliverySettingsDto,omitempty"`
+	Typegen_249_SmsToAccountUsersDeliverySettingsDto             *SmsToAccountUsersDeliverySettingsDto              `json:"typegen_249_SmsToAccountUsersDeliverySettingsDto,omitempty"`
 	Typegen_101_SmsToCollectionRecordsDeliverySettingsDto        *SmsToCollectionRecordsDeliverySettingsDto         `json:"typegen_101_SmsToCollectionRecordsDeliverySettingsDto,omitempty"`
 	Typegen_102_SmsToPhoneNumbersDeliverySettingsDto             *SmsToPhoneNumbersDeliverySettingsDto              `json:"typegen_102_SmsToPhoneNumbersDeliverySettingsDto,omitempty"`
 	Typegen_103_OpenAiLlmIntegrationDto                          *OpenAiLlmIntegrationDto                           `json:"typegen_103_OpenAiLlmIntegrationDto,omitempty"`
@@ -8562,12 +8576,14 @@ type DeleteAccountRole struct {
 // GetAccountCollaborators DTO.
 type GetAccountCollaborators struct {
 	RequestBase
-	IncludeAccountOwner      bool        `json:"includeAccountOwner,omitempty"`
-	UserShouldHavePushDevice bool        `json:"userShouldHavePushDevice,omitempty"`
-	ProjectId                string      `json:"projectId,omitempty"`
-	UserIds                  []string    `json:"userIds,omitempty"`
-	RoleNames                []string    `json:"roleNames,omitempty"`
-	PagingArgs               *PagingArgs `json:"pagingArgs,omitempty"`
+	IncludeAccountOwner      bool     `json:"includeAccountOwner,omitempty"`
+	UserShouldHavePushDevice bool     `json:"userShouldHavePushDevice,omitempty"`
+	ProjectId                string   `json:"projectId,omitempty"`
+	UserIds                  []string `json:"userIds,omitempty"`
+	RoleNames                []string `json:"roleNames,omitempty"`
+	StartingAfter            string   `json:"startingAfter,omitempty"`
+	EndingBefore             string   `json:"endingBefore,omitempty"`
+	PageSize                 float64  `json:"pageSize,omitempty"`
 }
 
 // GetAccountPasswordPolicy DTO.
@@ -8686,6 +8702,17 @@ type AccountVerifyPasskeyEnrollmentRequest struct {
 	CeremonyId          string `json:"ceremonyId,omitempty"`
 	AttestationResponse string `json:"attestationResponse,omitempty"`
 	FriendlyName        string `json:"friendlyName,omitempty"`
+}
+
+// GetMyAccountUserProfile DTO.
+type GetMyAccountUserProfile struct {
+	RequestBase
+}
+
+// UpdateMyAccountUserPhone DTO.
+type UpdateMyAccountUserPhone struct {
+	RequestBase
+	Phone string `json:"phone,omitempty"`
 }
 
 // GetLicenseDomainDnsStatus DTO.
@@ -10207,6 +10234,7 @@ type CreateSmsCampaignRequest struct {
 	DeliveryType          SmsCampaignRecipientsSourceTypes           `json:"deliveryType,omitempty"`
 	AllUsers              *SmsToAllUsersDeliverySettingsDto          `json:"allUsers,omitempty"`
 	SpecifiedUsers        *SmsToUsersDeliverySettingsDto             `json:"specifiedUsers,omitempty"`
+	AccountUsers          *SmsToAccountUsersDeliverySettingsDto      `json:"accountUsers,omitempty"`
 	Collection            *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
 	PhoneNumbers          *SmsToPhoneNumbersDeliverySettingsDto      `json:"phoneNumbers,omitempty"`
 	SendNow               bool                                       `json:"sendNow,omitempty"`
@@ -10230,6 +10258,7 @@ type GetSmsCampaign struct {
 type GetSmsCampaigns struct {
 	CodeMashListPaginationRequestBase
 	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
+	CampaignId            string  `json:"campaignId,omitempty"`
 	TemplateId            string  `json:"templateId,omitempty"`
 	From                  float64 `json:"from,omitempty"`
 	To                    float64 `json:"to,omitempty"`

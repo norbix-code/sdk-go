@@ -1,7 +1,7 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-09-28 20:32:29
+Date: 2026-10-05 08:08:29
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5002
@@ -241,6 +241,17 @@ type PublicAuthDto struct {
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
 }
 
+type PublicAiAssistantDto struct {
+	Id      string  `json:"id"`
+	Name    string  `json:"name"`
+	Welcome *string `json:"welcome,omitempty"`
+}
+
+type PublicAiChatDto struct {
+	Enabled    bool                   `json:"enabled,omitempty"`
+	Assistants []PublicAiAssistantDto `json:"assistants"`
+}
+
 type ErrorDto struct {
 	Message    string            `json:"message"`
 	ErrorCode  *string           `json:"errorCode,omitempty"`
@@ -257,6 +268,83 @@ type CodeMashResponseStatus struct {
 type ResponseBase struct {
 	// @DataMember
 	ResponseStatus CodeMashResponseStatus `json:"responseStatus"`
+}
+
+type EndUserChatAttachment struct {
+	Id           string    `json:"id"`
+	SessionId    string    `json:"sessionId"`
+	FileName     string    `json:"fileName"`
+	ContentType  string    `json:"contentType"`
+	Kind         string    `json:"kind"`
+	Size         int64     `json:"size,omitempty"`
+	Summary      *string   `json:"summary,omitempty"`
+	CreatedAtUtc time.Time `json:"createdAtUtc,omitempty"`
+}
+
+type EndUserChatMemoryNote struct {
+	Id           string    `json:"id"`
+	SessionId    string    `json:"sessionId"`
+	Kind         string    `json:"kind"`
+	Text         string    `json:"text"`
+	CreatedAtUtc time.Time `json:"createdAtUtc,omitempty"`
+}
+
+type EndUserChatAssistant struct {
+	Id             string  `json:"id"`
+	Name           string  `json:"name"`
+	WelcomeMessage *string `json:"welcomeMessage,omitempty"`
+	IsDefault      bool    `json:"isDefault,omitempty"`
+	MemoryEnabled  bool    `json:"memoryEnabled,omitempty"`
+}
+
+type EndUserChatPlan struct {
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	QuotaUnit    string `json:"quotaUnit"`
+	MonthlyQuota int64  `json:"monthlyQuota,omitempty"`
+	Used         int64  `json:"used,omitempty"`
+	Remaining    int64  `json:"remaining,omitempty"`
+	Attachments  bool   `json:"attachments,omitempty"`
+	Rag          bool   `json:"rag,omitempty"`
+	Memory       bool   `json:"memory,omitempty"`
+}
+
+type EndUserChatSession struct {
+	Id           string    `json:"id"`
+	AssistantId  *string   `json:"assistantId,omitempty"`
+	Title        *string   `json:"title,omitempty"`
+	IsPinned     bool      `json:"isPinned,omitempty"`
+	IsArchived   bool      `json:"isArchived,omitempty"`
+	LastSeq      int64     `json:"lastSeq,omitempty"`
+	CreatedAtUtc time.Time `json:"createdAtUtc,omitempty"`
+	UpdatedAtUtc time.Time `json:"updatedAtUtc,omitempty"`
+}
+
+type AiChatEntryWireDto struct {
+	Kind                 string     `json:"kind"`
+	Id                   string     `json:"id"`
+	Seq                  int64      `json:"seq,omitempty"`
+	AtUtc                time.Time  `json:"atUtc,omitempty"`
+	RefEntryId           *string    `json:"refEntryId,omitempty"`
+	WorkItemId           *string    `json:"workItemId,omitempty"`
+	Feedback             *string    `json:"feedback,omitempty"`
+	FeedbackAtUtc        *time.Time `json:"feedbackAtUtc,omitempty"`
+	FeedbackByUserAuthId *string    `json:"feedbackByUserAuthId,omitempty"`
+}
+
+type EndUserAiToolParameter struct {
+	Name        string  `json:"name"`
+	Type        string  `json:"type"`
+	Required    bool    `json:"required,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+type EndUserAiTool struct {
+	Name                 string                   `json:"name"`
+	Description          string                   `json:"description"`
+	Toolsets             []string                 `json:"toolsets"`
+	RequiresConfirmation bool                     `json:"requiresConfirmation,omitempty"`
+	Parameters           []EndUserAiToolParameter `json:"parameters"`
 }
 
 type AuthType string
@@ -439,6 +527,17 @@ type SchemaSettingsDto struct {
 	Description *string `json:"description,omitempty"`
 }
 
+type SchemaEmbedSettingsDto struct {
+	// @DataMember
+	Enabled bool `json:"enabled,omitempty"`
+	// @DataMember
+	Fields []string `json:"fields"`
+	// @DataMember
+	EmbeddingIntegrationId *string `json:"embeddingIntegrationId,omitempty"`
+	// @DataMember
+	PerUser bool `json:"perUser,omitempty"`
+}
+
 type TriggerType string
 
 const (
@@ -446,6 +545,7 @@ const (
 	TriggerTypeSchema                 = "Schema"
 	TriggerTypeFiles                  = "Files"
 	TriggerTypePayments               = "Payments"
+	TriggerTypeAi                     = "Ai"
 )
 
 type TriggerActionType string
@@ -507,6 +607,8 @@ type SchemaDto struct {
 	PublishedAt time.Time `json:"publishedAt,omitempty"`
 	// @DataMember
 	Settings *SchemaSettingsDto `json:"settings,omitempty"`
+	// @DataMember
+	Embed *SchemaEmbedSettingsDto `json:"embed,omitempty"`
 	// @DataMember
 	Triggers []TriggerDto `json:"triggers,omitempty"`
 }
@@ -738,6 +840,7 @@ type PublicProjectConfigDto struct {
 	AdminPortalEnabled bool            `json:"adminPortalEnabled,omitempty"`
 	Branding           *PublicBrandDto `json:"branding,omitempty"`
 	Auth               PublicAuthDto   `json:"auth"`
+	AiChat             PublicAiChatDto `json:"aiChat"`
 }
 
 type PublicLegalDocumentDto struct {
@@ -747,10 +850,6 @@ type PublicLegalDocumentDto struct {
 	Available bool    `json:"available,omitempty"`
 }
 
-type EmptyResponse struct {
-	ResponseBase
-}
-
 // @DataContract
 type IdResponse struct {
 	ResponseBase
@@ -758,6 +857,65 @@ type IdResponse struct {
 	Id *string `json:"id,omitempty"`
 	// @DataMember
 	Status *string `json:"status,omitempty"`
+}
+
+type ListEndUserChatAttachmentsResponse struct {
+	ResponseBase
+	Attachments []EndUserChatAttachment `json:"attachments"`
+}
+
+type EmptyResponse struct {
+	ResponseBase
+}
+
+type ListEndUserChatMemoryResponse struct {
+	ResponseBase
+	Notes []EndUserChatMemoryNote `json:"notes"`
+}
+
+type GetEndUserChatAvailabilityResponse struct {
+	ResponseBase
+	Enabled            bool                   `json:"enabled,omitempty"`
+	Available          bool                   `json:"available,omitempty"`
+	Reason             *string                `json:"reason,omitempty"`
+	DefaultAssistantId *string                `json:"defaultAssistantId,omitempty"`
+	Assistants         []EndUserChatAssistant `json:"assistants"`
+	Plan               *EndUserChatPlan       `json:"plan,omitempty"`
+}
+
+type ListEndUserChatSessionsResponse struct {
+	ResponseBase
+	Sessions []EndUserChatSession `json:"sessions"`
+}
+
+type GetEndUserChatSessionResponse struct {
+	ResponseBase
+	Session *EndUserChatSession `json:"session,omitempty"`
+}
+
+type GetEndUserChatEntriesResponse struct {
+	ResponseBase
+	SessionId *string              `json:"sessionId,omitempty"`
+	Entries   []AiChatEntryWireDto `json:"entries"`
+	LastSeq   int64                `json:"lastSeq,omitempty"`
+	HasMore   bool                 `json:"hasMore,omitempty"`
+}
+
+type StartEndUserChatTurnResponse struct {
+	ResponseBase
+	TurnId    *string `json:"turnId,omitempty"`
+	SessionId *string `json:"sessionId,omitempty"`
+	Channel   *string `json:"channel,omitempty"`
+}
+
+type GetEndUserAiToolsResponse struct {
+	ResponseBase
+	Tools []EndUserAiTool `json:"tools,omitempty"`
+}
+
+type InvokeEndUserAiToolResponse struct {
+	ResponseBase
+	Result *string `json:"result,omitempty"`
 }
 
 type GetUserResponse struct {
@@ -915,6 +1073,17 @@ type Echo struct {
 func (Echo) CreateResponse() (r EchoResponse) { return }
 func (Echo) HttpMethod() string               { return "GET" }
 
+// @Route("/{version}/public/projects/{ProjectId}/brand/{Kind}", "GET")
+type GetPublicProjectBrandAsset struct {
+	RequestBase
+	ProjectId *string `json:"projectId,omitempty"`
+	Kind      *string `json:"kind,omitempty"`
+	V         *string `json:"v,omitempty"`
+}
+
+func (GetPublicProjectBrandAsset) CreateResponse() (r []byte) { return }
+func (GetPublicProjectBrandAsset) HttpMethod() string         { return "GET" }
+
 // @Route("/{version}/public/projects/{ProjectId}/config", "GET")
 type GetPublicProjectConfig struct {
 	RequestBase
@@ -933,6 +1102,221 @@ type GetPublicProjectLegal struct {
 
 func (GetPublicProjectLegal) CreateResponse() (r PublicLegalDocumentDto) { return }
 func (GetPublicProjectLegal) HttpMethod() string                         { return "GET" }
+
+/** @description Adds a file to one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}/attachments", "POST")
+// @Api(Description="Adds a file to one of the caller's own AI chats.")
+type UploadEndUserChatAttachmentRequest struct {
+	CodeMashRequestBase
+	SessionId     string `json:"sessionId"`
+	FileName      string `json:"fileName"`
+	ContentType   string `json:"contentType"`
+	Base64Content string `json:"base64Content"`
+}
+
+func (UploadEndUserChatAttachmentRequest) CreateResponse() (r IdResponse) { return }
+func (UploadEndUserChatAttachmentRequest) HttpMethod() string             { return "POST" }
+
+/** @description Lists the files in one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}/attachments", "GET")
+// @Api(Description="Lists the files in one of the caller's own AI chats.")
+type ListEndUserChatAttachmentsRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId"`
+}
+
+func (ListEndUserChatAttachmentsRequest) CreateResponse() (r ListEndUserChatAttachmentsResponse) {
+	return
+}
+func (ListEndUserChatAttachmentsRequest) HttpMethod() string { return "GET" }
+
+/** @description Removes a file from one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/attachments/{AttachmentId}", "DELETE")
+// @Api(Description="Removes a file from one of the caller's own AI chats.")
+type DeleteEndUserChatAttachmentRequest struct {
+	CodeMashRequestBase
+	AttachmentId string `json:"attachmentId"`
+}
+
+func (DeleteEndUserChatAttachmentRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEndUserChatAttachmentRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description Likes, dislikes or clears one message of the caller's own AI chat. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}/entries/{EntryId}/feedback", "PUT")
+// @Api(Description="Likes, dislikes or clears one message of the caller's own AI chat.")
+type SetEndUserChatEntryFeedbackRequest struct {
+	CodeMashRequestBase
+	SessionId string  `json:"sessionId"`
+	EntryId   string  `json:"entryId"`
+	Feedback  *string `json:"feedback,omitempty"`
+}
+
+func (SetEndUserChatEntryFeedbackRequest) CreateResponse() (r EmptyResponse) { return }
+func (SetEndUserChatEntryFeedbackRequest) HttpMethod() string                { return "PUT" }
+
+/** @description Lists what the AI chat remembers about the caller. */
+// @Route("/{version}/ai/chat/memory", "GET")
+// @Api(Description="Lists what the AI chat remembers about the caller.")
+type ListEndUserChatMemoryRequest struct {
+	CodeMashRequestBase
+	Take *int `json:"take,omitempty"`
+}
+
+func (ListEndUserChatMemoryRequest) CreateResponse() (r ListEndUserChatMemoryResponse) { return }
+func (ListEndUserChatMemoryRequest) HttpMethod() string                                { return "GET" }
+
+/** @description Forgets one thing the AI chat remembers about the caller. */
+// @Route("/{version}/ai/chat/memory/{NoteId}", "DELETE")
+// @Api(Description="Forgets one thing the AI chat remembers about the caller.")
+type ForgetEndUserChatMemoryRequest struct {
+	CodeMashRequestBase
+	NoteId string `json:"noteId"`
+}
+
+func (ForgetEndUserChatMemoryRequest) CreateResponse() (r EmptyResponse) { return }
+func (ForgetEndUserChatMemoryRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description Whether the AI chat can run for the caller, and which assistants it offers. */
+// @Route("/{version}/ai/chat/availability", "GET")
+// @Api(Description="Whether the AI chat can run for the caller, and which assistants it offers.")
+type GetEndUserChatAvailabilityRequest struct {
+	CodeMashRequestBase
+}
+
+func (GetEndUserChatAvailabilityRequest) CreateResponse() (r GetEndUserChatAvailabilityResponse) {
+	return
+}
+func (GetEndUserChatAvailabilityRequest) HttpMethod() string { return "GET" }
+
+/** @description Lists the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions", "GET")
+// @Api(Description="Lists the caller's own AI chats.")
+type ListEndUserChatSessionsRequest struct {
+	CodeMashRequestBase
+	Take            *int `json:"take,omitempty"`
+	IncludeArchived bool `json:"includeArchived,omitempty"`
+}
+
+func (ListEndUserChatSessionsRequest) CreateResponse() (r ListEndUserChatSessionsResponse) { return }
+func (ListEndUserChatSessionsRequest) HttpMethod() string                                  { return "GET" }
+
+/** @description Opens a new AI chat for the caller. */
+// @Route("/{version}/ai/chat/sessions", "POST")
+// @Api(Description="Opens a new AI chat for the caller.")
+type CreateEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	AssistantId *string `json:"assistantId,omitempty"`
+	Title       *string `json:"title,omitempty"`
+}
+
+func (CreateEndUserChatSessionRequest) CreateResponse() (r IdResponse) { return }
+func (CreateEndUserChatSessionRequest) HttpMethod() string             { return "POST" }
+
+/** @description Returns one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}", "GET")
+// @Api(Description="Returns one of the caller's own AI chats.")
+type GetEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId"`
+}
+
+func (GetEndUserChatSessionRequest) CreateResponse() (r GetEndUserChatSessionResponse) { return }
+func (GetEndUserChatSessionRequest) HttpMethod() string                                { return "GET" }
+
+/** @description Renames one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}", "PATCH")
+// @Api(Description="Renames one of the caller's own AI chats.")
+type RenameEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string  `json:"sessionId"`
+	Title     *string `json:"title,omitempty"`
+}
+
+func (RenameEndUserChatSessionRequest) CreateResponse() (r EmptyResponse) { return }
+func (RenameEndUserChatSessionRequest) HttpMethod() string                { return "PATCH" }
+
+/** @description Pins or unpins one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}/pin", "PUT")
+// @Api(Description="Pins or unpins one of the caller's own AI chats.")
+type PinEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId"`
+	Pinned    bool   `json:"pinned,omitempty"`
+}
+
+func (PinEndUserChatSessionRequest) CreateResponse() (r EmptyResponse) { return }
+func (PinEndUserChatSessionRequest) HttpMethod() string                { return "PUT" }
+
+/** @description Archives or unarchives one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}/archive", "PUT")
+// @Api(Description="Archives or unarchives one of the caller's own AI chats.")
+type ArchiveEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId"`
+	Archived  bool   `json:"archived,omitempty"`
+}
+
+func (ArchiveEndUserChatSessionRequest) CreateResponse() (r EmptyResponse) { return }
+func (ArchiveEndUserChatSessionRequest) HttpMethod() string                { return "PUT" }
+
+/** @description Deletes one of the caller's own AI chats. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}", "DELETE")
+// @Api(Description="Deletes one of the caller's own AI chats.")
+type DeleteEndUserChatSessionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId"`
+}
+
+func (DeleteEndUserChatSessionRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEndUserChatSessionRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description Returns a page of one of the caller's own AI chat transcripts. */
+// @Route("/{version}/ai/chat/sessions/{SessionId}/entries", "GET")
+// @Api(Description="Returns a page of one of the caller's own AI chat transcripts.")
+type GetEndUserChatEntriesRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId"`
+	AfterSeq  *int64 `json:"afterSeq,omitempty"`
+	Take      *int   `json:"take,omitempty"`
+}
+
+func (GetEndUserChatEntriesRequest) CreateResponse() (r GetEndUserChatEntriesResponse) { return }
+func (GetEndUserChatEntriesRequest) HttpMethod() string                                { return "GET" }
+
+/** @description Sends a message to the AI chat; the answer streams on the caller's channel. */
+// @Route("/{version}/ai/chat/turn", "POST")
+// @Api(Description="Sends a message to the AI chat; the answer streams on the caller's channel.")
+type StartEndUserChatTurnRequest struct {
+	CodeMashRequestBase
+	SessionId   *string `json:"sessionId,omitempty"`
+	AssistantId *string `json:"assistantId,omitempty"`
+	Message     string  `json:"message"`
+}
+
+func (StartEndUserChatTurnRequest) CreateResponse() (r StartEndUserChatTurnResponse) { return }
+func (StartEndUserChatTurnRequest) HttpMethod() string                               { return "POST" }
+
+/** @description Lists the AI tools a project user may use: only their own data (own:* toolsets). */
+// @Route("/{version}/ai/tools", "GET")
+// @Api(Description="Lists the AI tools a project user may use: only their own data (own:* toolsets).")
+type GetEndUserAiToolsRequest struct {
+	RequestBase
+}
+
+func (GetEndUserAiToolsRequest) CreateResponse() (r GetEndUserAiToolsResponse) { return }
+func (GetEndUserAiToolsRequest) HttpMethod() string                            { return "GET" }
+
+/** @description Invokes one own-scope AI tool as the calling project user. */
+// @Route("/{version}/ai/tools/{ToolName}", "POST")
+// @Api(Description="Invokes one own-scope AI tool as the calling project user.")
+type InvokeEndUserAiToolRequest struct {
+	RequestBase
+	ToolName      string  `json:"toolName"`
+	ArgumentsJson *string `json:"argumentsJson,omitempty"`
+}
+
+func (InvokeEndUserAiToolRequest) CreateResponse() (r InvokeEndUserAiToolResponse) { return }
+func (InvokeEndUserAiToolRequest) HttpMethod() string                              { return "POST" }
 
 /** @description Membership */
 // @Route("/{version}/membership/auth/block", "PATCH")
