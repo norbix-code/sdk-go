@@ -1,7 +1,7 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 08:08:29
+Date: 2026-10-05 07:55:31
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5001
@@ -4793,6 +4793,14 @@ type TaxonomyListProjection struct {
 	TaxonomySlug string `json:"taxonomySlug"`
 	// @DataMember
 	ParentId *string `json:"parentId,omitempty"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+	// @DataMember
+	Dependencies []string `json:"dependencies,omitempty"`
+	// @DataMember
+	ParentName *string `json:"parentName,omitempty"`
+	// @DataMember
+	DependencyNames []string `json:"dependencyNames,omitempty"`
 }
 
 type TermMultiParentDto struct {

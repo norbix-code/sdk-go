@@ -4567,10 +4567,14 @@ type TaxonomyDto struct {
 
 // TaxonomyListProjection DTO.
 type TaxonomyListProjection struct {
-	ViewId       string `json:"viewId,omitempty"`
-	TaxonomyName string `json:"taxonomyName,omitempty"`
-	TaxonomySlug string `json:"taxonomySlug,omitempty"`
-	ParentId     string `json:"parentId,omitempty"`
+	ViewId          string   `json:"viewId,omitempty"`
+	TaxonomyName    string   `json:"taxonomyName,omitempty"`
+	TaxonomySlug    string   `json:"taxonomySlug,omitempty"`
+	ParentId        string   `json:"parentId,omitempty"`
+	Description     string   `json:"description,omitempty"`
+	Dependencies    []string `json:"dependencies,omitempty"`
+	ParentName      string   `json:"parentName,omitempty"`
+	DependencyNames []string `json:"dependencyNames,omitempty"`
 }
 
 // TermMultiParentDto DTO.
