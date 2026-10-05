@@ -11,7 +11,7 @@ import (
 // RegionsModule groups the regions endpoints on the HUB.
 type RegionsModule struct{ t *transport.Transport }
 
-// List performs GET /{version}/account/regions (scope: project).
+// List performs GET /{version}/account/regions (scope: unauthenticated).
 func (m *RegionsModule) List(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -19,7 +19,7 @@ func (m *RegionsModule) List(ctx context.Context, req map[string]any, out any) e
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeUnauthenticated,
 	}, out)
 }
 

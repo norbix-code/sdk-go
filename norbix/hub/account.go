@@ -83,7 +83,7 @@ func (m *AccountModule) GetStripeBillingPortalUrl(ctx context.Context, req map[s
 	}, out)
 }
 
-// CreateTeamMemberFromInvitation performs POST /{version}/account/team/member (scope: project).
+// CreateTeamMemberFromInvitation performs POST /{version}/account/team/member (scope: unauthenticated).
 func (m *AccountModule) CreateTeamMemberFromInvitation(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -91,17 +91,15 @@ func (m *AccountModule) CreateTeamMemberFromInvitation(ctx context.Context, req 
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeUnauthenticated,
 	}, out)
 }
 
-// VerifyAccount performs GET /{version}/account/verify (scope: account).
+// VerifyAccount performs GET /{version}/account/verify (scope: unauthenticated).
 //
-// It is the one account route that keeps the account scope: the gateway reads
-// the account id from this request (VerifyAccount.AccountId), so the client
-// must be built with AccountID and the caller passes "accountId" in req too.
-// Every other account route takes the account from the signed-in session or
-// the project id in the path and needs only a token.
+// The route is public on the gateway: it needs no token and no AccountID on
+// the client. The gateway reads the account id and the token from this
+// request, so pass both in req: {"accountId": ..., "token": ...}.
 func (m *AccountModule) VerifyAccount(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -109,7 +107,7 @@ func (m *AccountModule) VerifyAccount(ctx context.Context, req map[string]any, o
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeUnauthenticated,
 	}, out)
 }
 
@@ -242,7 +240,7 @@ func (m *AccountModule) GetProjects(ctx context.Context, req map[string]any, out
 	}, out)
 }
 
-// GetAccountRegions performs GET /{version}/account/regions (scope: project).
+// GetAccountRegions performs GET /{version}/account/regions (scope: unauthenticated).
 func (m *AccountModule) GetAccountRegions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -250,7 +248,7 @@ func (m *AccountModule) GetAccountRegions(ctx context.Context, req map[string]an
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeUnauthenticated,
 	}, out)
 }
 
@@ -486,7 +484,7 @@ func (m *AccountModule) UpdateProjectRegions(ctx context.Context, projectId stri
 	}, out)
 }
 
-// CreateAccount performs POST /{version}/account (scope: project).
+// CreateAccount performs POST /{version}/account (scope: unauthenticated).
 func (m *AccountModule) CreateAccount(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -494,7 +492,7 @@ func (m *AccountModule) CreateAccount(ctx context.Context, req map[string]any, o
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeUnauthenticated,
 	}, out)
 }
 
