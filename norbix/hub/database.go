@@ -628,3 +628,391 @@ func (m *DatabaseModule) RevealManagedFlexConnectionString(ctx context.Context, 
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// SeedCollectionRecords performs POST /{version}/database/collections/seed (scope: project).
+//
+// It fills collections with sample records ("mode", "collections", optional "databaseIntegrationId").
+func (m *DatabaseModule) SeedCollectionRecords(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/seed",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// FindRecords performs GET /{version}/database/collections/{collectionName} (scope: project).
+//
+// It lists the records of a collection ("filter" JSON, "sortBy", "sortOrder", "pageSize", "startingAfter", "endingBefore", "contactId", "schemaVersion" go in the query string).
+func (m *DatabaseModule) FindRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// InsertRecord performs POST /{version}/database/collections/{collectionName} (scope: project).
+//
+// It adds one record ("document" is the record as a JSON string).
+func (m *DatabaseModule) InsertRecord(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// AggregateRecords performs POST /{version}/database/collections/{collectionName}/aggregate (scope: project).
+//
+// It runs an aggregation "pipeline" (a JSON string) over the collection.
+func (m *DatabaseModule) AggregateRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/aggregate",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ExecuteRecordsAggregate performs POST /{version}/database/collections/{collectionName}/aggregates/{aggregateId}/execute (scope: project).
+//
+// It runs a saved aggregate against the collection; "tokens" fills its placeholders.
+func (m *DatabaseModule) ExecuteRecordsAggregate(ctx context.Context, collectionName string, aggregateId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+		"aggregateId":    aggregateId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/aggregates/{aggregateId}/execute",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CountRecords performs GET /{version}/database/collections/{collectionName}/count (scope: project).
+//
+// It counts the records that match "filter".
+func (m *DatabaseModule) CountRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/count",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DistinctRecordValues performs GET /{version}/database/collections/{collectionName}/distinct (scope: project).
+//
+// It returns the distinct values of "field" among the records that match "filter".
+func (m *DatabaseModule) DistinctRecordValues(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/distinct",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetCollectionIndexes performs GET /{version}/database/collections/{collectionName}/indexes (scope: project).
+//
+// It lists the indexes of the collection.
+func (m *DatabaseModule) GetCollectionIndexes(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/indexes",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteManyRecords performs DELETE /{version}/database/collections/{collectionName}/many (scope: project).
+//
+// It deletes every record that matches "filter" (sent in the query string).
+func (m *DatabaseModule) DeleteManyRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/many",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// InsertManyRecords performs POST /{version}/database/collections/{collectionName}/many (scope: project).
+//
+// It adds several records ("documents" is a JSON array string).
+func (m *DatabaseModule) InsertManyRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/many",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateManyRecords performs PUT /{version}/database/collections/{collectionName}/many (scope: project).
+//
+// It applies "update" to every record that matches "filter".
+func (m *DatabaseModule) UpdateManyRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/many",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteRecord performs DELETE /{version}/database/collections/{collectionName}/{id} (scope: project).
+//
+// It deletes one record.
+func (m *DatabaseModule) DeleteRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+		"id":             id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/{id}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// FindOneRecord performs GET /{version}/database/collections/{collectionName}/{id} (scope: project).
+//
+// It reads one record.
+func (m *DatabaseModule) FindOneRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+		"id":             id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/{id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateOneRecord performs PUT /{version}/database/collections/{collectionName}/{id} (scope: project).
+//
+// It applies "update" (a JSON string) to one record.
+func (m *DatabaseModule) UpdateOneRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+		"id":             id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/{id}",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ReplaceRecord performs PUT /{version}/database/collections/{collectionName}/{id}/replace (scope: project).
+//
+// It replaces one record with "replacement" (a JSON string).
+func (m *DatabaseModule) ReplaceRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+		"id":             id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/{id}/replace",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ChangeRecordResponsibility performs PUT /{version}/database/collections/{collectionName}/{id}/responsibility (scope: project).
+//
+// It moves one record to "newResponsibleUserId".
+func (m *DatabaseModule) ChangeRecordResponsibility(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"collectionName": collectionName,
+		"id":             id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/collections/{collectionName}/{id}/responsibility",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ApplyDatabaseSchemaBundle performs POST /{version}/database/schemas/apply-bundle (scope: project).
+//
+// It creates or updates schemas from a bundle ("entities" or "bundleJson", "tier", "translatable", "publish").
+func (m *DatabaseModule) ApplyDatabaseSchemaBundle(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/schemas/apply-bundle",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateDatabaseSchemaEmbed performs PUT /{version}/database/schemas/{Id}/embed (scope: project).
+//
+// It stores the schema's "embed" settings (dtos.SchemaEmbedSettingsDto).
+func (m *DatabaseModule) UpdateDatabaseSchemaEmbed(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/schemas/{Id}/embed",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetDatabaseSchemaListSettings performs GET /{version}/database/schemas/{Id}/list-settings (scope: project).
+//
+// It reads the schema's record list settings.
+func (m *DatabaseModule) GetDatabaseSchemaListSettings(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/schemas/{Id}/list-settings",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateDatabaseSchemaListSettings performs PUT /{version}/database/schemas/{Id}/list-settings (scope: project).
+//
+// It stores the schema's record list "settings" (dtos.SchemaListSettingsDto).
+func (m *DatabaseModule) UpdateDatabaseSchemaListSettings(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/schemas/{Id}/list-settings",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetDatabaseTaxonomyTree performs GET /{version}/database/taxonomies/tree (scope: project).
+//
+// It returns every taxonomy as a tree ("includeTerms" adds the terms).
+func (m *DatabaseModule) GetDatabaseTaxonomyTree(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/taxonomies/tree",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetDatabaseMergedTermTree performs GET /{version}/database/taxonomies/{TaxonomyName}/merged-tree (scope: project).
+//
+// It returns the terms of a taxonomy merged with the terms of the taxonomies it depends on.
+func (m *DatabaseModule) GetDatabaseMergedTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"TaxonomyName": taxonomyName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/taxonomies/{TaxonomyName}/merged-tree",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetDatabaseTaxonomyTermTree performs GET /{version}/database/taxonomies/{TaxonomyName}/terms/tree (scope: project).
+//
+// It returns the terms of a taxonomy as a tree ("rootTermId", "depth").
+func (m *DatabaseModule) GetDatabaseTaxonomyTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"TaxonomyName": taxonomyName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/taxonomies/{TaxonomyName}/terms/tree",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
