@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 07:55:31
+Date: 2026-10-05 16:13:59
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:5001
+BaseUrl: http://localhost:54938
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -2450,6 +2450,110 @@ type EmailCampaignSchedulerTaskRequest struct {
 	DatabaseIntegrationId *string           `json:"databaseIntegrationId,omitempty"`
 }
 
+// @DataContract
+type IdResponse struct {
+	ResponseBase
+	// @DataMember
+	Id *string `json:"id,omitempty"`
+	// @DataMember
+	Status *string `json:"status,omitempty"`
+}
+
+// @DataContract(Namespace="http://codemash.io/types/")
+type CodeMashRequestBase struct {
+	RequestBase
+	/** @description ID of your project. Can be passed in a header as norbix-project-id. */
+	// @DataMember
+	// @ApiMember(DataType="string", Description="ID of your project. Can be passed in a header as norbix-project-id.", IsRequired=true, Name="norbix-project-id", ParameterType="header")
+	ProjectId string `json:"projectId"`
+	/** @description Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env. */
+	// @DataMember
+	// @ApiMember(DataType="string", Description="Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env.", Name="norbix-env", ParameterType="header")
+	Env *string `json:"env,omitempty"`
+}
+
+/** @description Create SMS campaign */
+// @Route("/{version}/notifications/sms/campaigns", "POST")
+// @Api(Description="Create SMS campaign")
+// @DataContract
+type CreateSmsCampaignRequest struct {
+	CodeMashRequestBase
+	/** @description SMS template id to send — pick one with get_sms_templates. Never invent it. */
+	// @DataMember
+	// @ApiMember(Description="SMS template id to send — pick one with get_sms_templates. Never invent it.")
+	TemplateId string `json:"templateId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description SMS provider integration id the campaign sends through — pick one with get_sms_integrations (the project default unless the user named another). Required; never invent it. */
+	// @DataMember
+	// @ApiMember(Description="SMS provider integration id the campaign sends through — pick one with get_sms_integrations (the project default unless the user named another). Required; never invent it.", IsRequired=true)
+	IntegrationId string `json:"integrationId"`
+	/** @description Optional language code forcing one template translation for every recipient. */
+	// @DataMember
+	// @ApiMember(Description="Optional language code forcing one template translation for every recipient.")
+	Language *string `json:"language,omitempty"`
+	// @DataMember
+	InitiatorId *string `json:"initiatorId,omitempty"`
+	/** @description Audience type: 'AllUsers' (every project member subscribed to the SMS channel — role-based delivery can address MILLIONS of contacts), 'SpecifiedUsers' (exact member ids), or 'PhoneNumbers' (raw phone numbers). Fill EXACTLY the settings object matching this value. 'Collection' delivery is not available from chat. */
+	// @DataMember
+	// @ApiMember(Description="Audience type: 'AllUsers' (every project member subscribed to the SMS channel — role-based delivery can address MILLIONS of contacts), 'SpecifiedUsers' (exact member ids), or 'PhoneNumbers' (raw phone numbers). Fill EXACTLY the settings object matching this value. 'Collection' delivery is not available from chat.")
+	DeliveryType SmsCampaignRecipientsSourceTypes `json:"deliveryType,omitempty"`
+	/** @description For deliveryType 'AllUsers'. JSON object: {"recipientsSourceType":"AllUsers","rolesNames":["authenticated"],"userTags":[],"campaignTime":<unix seconds UTC>}. rolesNames/userTags are optional narrowing filters — verify exact role names with get_roles. */
+	// @DataMember
+	// @ApiMember(Description="For deliveryType 'AllUsers'. JSON object: {\"recipientsSourceType\":\"AllUsers\",\"rolesNames\":[\"authenticated\"],\"userTags\":[],\"campaignTime\":<unix seconds UTC>}. rolesNames/userTags are optional narrowing filters — verify exact role names with get_roles.")
+	AllUsers *SmsToAllUsersDeliverySettingsDto `json:"allUsers,omitempty"`
+	/** @description For deliveryType 'SpecifiedUsers'. JSON object: {"recipientsSourceType":"SpecifiedUsers","recipients":[<member ids>],"campaignTime":<unix seconds UTC>}. */
+	// @DataMember
+	// @ApiMember(Description="For deliveryType 'SpecifiedUsers'. JSON object: {\"recipientsSourceType\":\"SpecifiedUsers\",\"recipients\":[<member ids>],\"campaignTime\":<unix seconds UTC>}.")
+	SpecifiedUsers *SmsToUsersDeliverySettingsDto `json:"specifiedUsers,omitempty"`
+	/** @description For deliveryType 'AccountUsers'. JSON object: {"recipientsSourceType":"AccountUsers","recipients":[<account owner / team member ids>],"campaignTime":<unix seconds UTC>}. Members without a phone number are skipped. */
+	// @DataMember
+	// @ApiMember(Description="For deliveryType 'AccountUsers'. JSON object: {\"recipientsSourceType\":\"AccountUsers\",\"recipients\":[<account owner / team member ids>],\"campaignTime\":<unix seconds UTC>}. Members without a phone number are skipped.")
+	AccountUsers *SmsToAccountUsersDeliverySettingsDto `json:"accountUsers,omitempty"`
+	// @DataMember
+	Collection *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
+	/** @description For deliveryType 'PhoneNumbers'. JSON object: {"recipientsSourceType":"PhoneNumbers","phoneNumbers":["+37060000000"],"campaignTime":<unix seconds UTC>}. Numbers in international format. */
+	// @DataMember
+	// @ApiMember(Description="For deliveryType 'PhoneNumbers'. JSON object: {\"recipientsSourceType\":\"PhoneNumbers\",\"phoneNumbers\":[\"+37060000000\"],\"campaignTime\":<unix seconds UTC>}. Numbers in international format.")
+	PhoneNumbers *SmsToPhoneNumbersDeliverySettingsDto `json:"phoneNumbers,omitempty"`
+	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now. */
+	// @DataMember
+	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now.")
+	SendNow *bool `json:"sendNow,omitempty"`
+}
+
+func (CreateSmsCampaignRequest) CreateResponse() (r IdResponse) { return }
+func (CreateSmsCampaignRequest) HttpMethod() string             { return "POST" }
+
+type SmsCampaignSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type                  SchedulerTaskType         `json:"type,omitempty"`
+	Campaign              *CreateSmsCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId *string                   `json:"databaseIntegrationId,omitempty"`
+}
+
+type PushCampaignRequest struct {
+	Source        PushCampaignRecipientsSourceTypes `json:"source,omitempty"`
+	TemplateId    string                            `json:"templateId"`
+	IntegrationId *string                           `json:"integrationId,omitempty"`
+	Language      *string                           `json:"language,omitempty"`
+	InitiatorId   *string                           `json:"initiatorId,omitempty"`
+	Notes         *string                           `json:"notes,omitempty"`
+	// @DataMember
+	MappedTokens []TokenMappingDto `json:"mappedTokens,omitempty"`
+	// @DataMember
+	CampaignTime *int64 `json:"campaignTime,omitempty"`
+}
+
+type PushCampaignSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type                  SchedulerTaskType    `json:"type,omitempty"`
+	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId *string              `json:"databaseIntegrationId,omitempty"`
+}
+
 type MongoDbAggregateDto struct {
 	// @DataMember
 	ViewId string `json:"viewId"`
@@ -2891,19 +2995,6 @@ type ConversationSnapshotEntryWireDto struct {
 	CoversUpToSeq int64  `json:"coversUpToSeq,omitempty"`
 }
 
-// @DataContract(Namespace="http://codemash.io/types/")
-type CodeMashRequestBase struct {
-	RequestBase
-	/** @description ID of your project. Can be passed in a header as norbix-project-id. */
-	// @DataMember
-	// @ApiMember(DataType="string", Description="ID of your project. Can be passed in a header as norbix-project-id.", IsRequired=true, Name="norbix-project-id", ParameterType="header")
-	ProjectId string `json:"projectId"`
-	/** @description Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env. */
-	// @DataMember
-	// @ApiMember(DataType="string", Description="Target environment for this request (e.g. TEST, STAGING). Optional — when omitted the request runs against PROD. Can be passed in a header as norbix-env.", Name="norbix-env", ParameterType="header")
-	Env *string `json:"env,omitempty"`
-}
-
 type SubscriptionType string
 
 const (
@@ -3318,19 +3409,6 @@ type PushDeviceDto struct {
 	OsVersion *string `json:"osVersion,omitempty"`
 	// @DataMember
 	PlatformApiLevel *int `json:"platformApiLevel,omitempty"`
-}
-
-type PushCampaignRequest struct {
-	Source        PushCampaignRecipientsSourceTypes `json:"source,omitempty"`
-	TemplateId    string                            `json:"templateId"`
-	IntegrationId *string                           `json:"integrationId,omitempty"`
-	Language      *string                           `json:"language,omitempty"`
-	InitiatorId   *string                           `json:"initiatorId,omitempty"`
-	Notes         *string                           `json:"notes,omitempty"`
-	// @DataMember
-	MappedTokens []TokenMappingDto `json:"mappedTokens,omitempty"`
-	// @DataMember
-	CampaignTime *int64 `json:"campaignTime,omitempty"`
 }
 
 type ChatScreenContextDto struct {
@@ -4955,6 +5033,8 @@ type SchemaListProjection struct {
 	MetaSchemaVersion int `json:"metaSchemaVersion,omitempty"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 type SchemaDraftDto struct {
@@ -5341,6 +5421,10 @@ type CampaignDto struct {
 	// @DataMember
 	Notes *string `json:"notes,omitempty"`
 	// @DataMember
+	CreatedById *string `json:"createdById,omitempty"`
+	// @DataMember
+	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	// @DataMember
 	UserId string `json:"userId"`
 	// @DataMember
 	Id *string `json:"id,omitempty"`
@@ -5527,8 +5611,6 @@ type SmsCampaignDto struct {
 	Recipients SmsCampaignDeliverySettingsDto `json:"recipients"`
 	// @DataMember
 	Template SmsTemplateDto `json:"template"`
-	// @DataMember
-	CreatedById *string `json:"createdById,omitempty"`
 }
 
 // @DataContract
@@ -6899,15 +6981,6 @@ type GetAccountStatusResponse struct {
 }
 
 // @DataContract
-type IdResponse struct {
-	ResponseBase
-	// @DataMember
-	Id *string `json:"id,omitempty"`
-	// @DataMember
-	Status *string `json:"status,omitempty"`
-}
-
-// @DataContract
 type CreateStripeCheckoutSessionResponse struct {
 	IdResponse
 }
@@ -8242,21 +8315,21 @@ type RunDiagnosticHealthCheckResponse struct {
 	Result *DiagnosticHealthCheckDto `json:"result,omitempty"`
 }
 
-// @Route("/{version}/code/enable", "GET")
+// @Route("/{version}/code/enable", "PUT")
 type EnableCode struct {
 	CodeMashRequestBase
 }
 
 func (EnableCode) CreateResponse() (r EmptyResponse) { return }
-func (EnableCode) HttpMethod() string                { return "GET" }
+func (EnableCode) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/code/disable", "GET")
+// @Route("/{version}/code/disable", "PUT")
 type DisableCode struct {
 	CodeMashRequestBase
 }
 
 func (DisableCode) CreateResponse() (r EmptyResponse) { return }
-func (DisableCode) HttpMethod() string                { return "GET" }
+func (DisableCode) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/code/integrations", "GET")
 type GetCodeIntegrations struct {
@@ -8791,6 +8864,8 @@ type InternalsTypeGen struct {
 	Typegen193WebhookDestinationDto                            *WebhookDestinationDto                             `json:"typegen_193_WebhookDestinationDto,omitempty"`
 	Typegen194SchedulerTaskDto                                 *SchedulerTaskDto                                  `json:"typegen_194_SchedulerTaskDto,omitempty"`
 	Typegen249EmailCampaignSchedulerTaskRequest                *EmailCampaignSchedulerTaskRequest                 `json:"typegen_249_EmailCampaignSchedulerTaskRequest,omitempty"`
+	Typegen250SmsCampaignSchedulerTaskRequest                  *SmsCampaignSchedulerTaskRequest                   `json:"typegen_250_SmsCampaignSchedulerTaskRequest,omitempty"`
+	Typegen251PushCampaignSchedulerTaskRequest                 *PushCampaignSchedulerTaskRequest                  `json:"typegen_251_PushCampaignSchedulerTaskRequest,omitempty"`
 	Typegen195MongoDbAggregateDto                              *MongoDbAggregateDto                               `json:"typegen_195_MongoDbAggregateDto,omitempty"`
 	Typegen196MarketplaceIntegrationDto                        *MarketplaceIntegrationDto                         `json:"typegen_196_MarketplaceIntegrationDto,omitempty"`
 	Typegen197MarketplaceFunctionDto                           *MarketplaceFunctionDto                            `json:"typegen_197_MarketplaceFunctionDto,omitempty"`
@@ -10240,21 +10315,21 @@ type DeleteAiServiceUserRequest struct {
 func (DeleteAiServiceUserRequest) CreateResponse() (r EmptyResponse) { return }
 func (DeleteAiServiceUserRequest) HttpMethod() string                { return "DELETE" }
 
-// @Route("/{version}/membership/disable", "GET")
+// @Route("/{version}/membership/disable", "PUT")
 type DisableMembership struct {
 	CodeMashRequestBase
 }
 
 func (DisableMembership) CreateResponse() (r EmptyResponse) { return }
-func (DisableMembership) HttpMethod() string                { return "GET" }
+func (DisableMembership) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/membership/enable", "GET")
+// @Route("/{version}/membership/enable", "PUT")
 type EnableMembership struct {
 	CodeMashRequestBase
 }
 
 func (EnableMembership) CreateResponse() (r EmptyResponse) { return }
-func (EnableMembership) HttpMethod() string                { return "GET" }
+func (EnableMembership) HttpMethod() string                { return "PUT" }
 
 /** @description Membership */
 // @Route("/{version}/membership/users/{Id}/api-keys", "POST")
@@ -10762,22 +10837,22 @@ func (UpdateAuthenticationSettings) CreateResponse() (r EmptyResponse) { return 
 func (UpdateAuthenticationSettings) HttpMethod() string                { return "PUT" }
 
 /** @description Disable database service */
-// @Route("/{version}/database/disable", "GET")
+// @Route("/{version}/database/disable", "PUT")
 // @Api(Description="Disable database service")
 type DisableDatabase struct {
 	CodeMashRequestBase
 }
 
 func (DisableDatabase) CreateResponse() (r EmptyResponse) { return }
-func (DisableDatabase) HttpMethod() string                { return "GET" }
+func (DisableDatabase) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/database/enable", "GET")
+// @Route("/{version}/database/enable", "PUT")
 type EnableDatabase struct {
 	CodeMashRequestBase
 }
 
 func (EnableDatabase) CreateResponse() (r EmptyResponse) { return }
-func (EnableDatabase) HttpMethod() string                { return "GET" }
+func (EnableDatabase) HttpMethod() string                { return "PUT" }
 
 /** @description Delete database trigger */
 // @Route("/{version}/database/schemas/triggers/{triggerId}", "DELETE")
@@ -12095,21 +12170,21 @@ type TermsDeleted struct {
 func (TermsDeleted) CreateResponseVoid() {}
 func (TermsDeleted) HttpMethod() string  { return "POST" }
 
-// @Route("/{version}/files/disable", "GET")
+// @Route("/{version}/files/disable", "PUT")
 type DisableFiles struct {
 	CodeMashRequestBase
 }
 
 func (DisableFiles) CreateResponse() (r EmptyResponse) { return }
-func (DisableFiles) HttpMethod() string                { return "GET" }
+func (DisableFiles) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/files/enable", "GET")
+// @Route("/{version}/files/enable", "PUT")
 type EnableFiles struct {
 	CodeMashRequestBase
 }
 
 func (EnableFiles) CreateResponse() (r EmptyResponse) { return }
-func (EnableFiles) HttpMethod() string                { return "GET" }
+func (EnableFiles) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/files/triggers/{triggerId}", "DELETE")
 // @DataContract
@@ -12341,14 +12416,14 @@ func (GetFolderFiles) CreateResponse() (r GetFolderFilesResponse) { return }
 func (GetFolderFiles) HttpMethod() string                         { return "GET" }
 
 /** @description Disable email service */
-// @Route("/{version}/notifications/email/disable", "GET")
+// @Route("/{version}/notifications/email/disable", "PUT")
 // @Api(Description="Disable email service")
 type DisableEmail struct {
 	CodeMashRequestBase
 }
 
 func (DisableEmail) CreateResponse() (r EmptyResponse) { return }
-func (DisableEmail) HttpMethod() string                { return "GET" }
+func (DisableEmail) HttpMethod() string                { return "PUT" }
 
 /** @description Get email disable dependencies */
 // @Route("/{version}/notifications/email/disable-dependencies", "GET")
@@ -12363,14 +12438,14 @@ func (GetEmailDisableDependencies) CreateResponse() (r GetNotificationModuleDisa
 func (GetEmailDisableDependencies) HttpMethod() string { return "GET" }
 
 /** @description Enable email service */
-// @Route("/{version}/notifications/email/enable", "GET")
+// @Route("/{version}/notifications/email/enable", "PUT")
 // @Api(Description="Enable email service")
 type EnableEmail struct {
 	CodeMashRequestBase
 }
 
 func (EnableEmail) CreateResponse() (r EmptyResponse) { return }
-func (EnableEmail) HttpMethod() string                { return "GET" }
+func (EnableEmail) HttpMethod() string                { return "PUT" }
 
 // @Route("/{version}/notifications/email/validation/integrations", "POST")
 // @DataContract
@@ -13094,14 +13169,14 @@ func (GetEmailCampaignMessagesRequest) CreateResponse() (r GetEmailCampaignMessa
 func (GetEmailCampaignMessagesRequest) HttpMethod() string                                   { return "GET" }
 
 /** @description Disable SMS service */
-// @Route("/{version}/notifications/sms/disable", "GET")
+// @Route("/{version}/notifications/sms/disable", "PUT")
 // @Api(Description="Disable SMS service")
 type DisableSms struct {
 	CodeMashRequestBase
 }
 
 func (DisableSms) CreateResponse() (r EmptyResponse) { return }
-func (DisableSms) HttpMethod() string                { return "GET" }
+func (DisableSms) HttpMethod() string                { return "PUT" }
 
 /** @description Lists SMS-module dependencies shown before disable */
 // @Route("/{version}/notifications/sms/disable-dependencies", "GET")
@@ -13116,14 +13191,14 @@ func (GetSmsDisableDependencies) CreateResponse() (r GetNotificationModuleDisabl
 func (GetSmsDisableDependencies) HttpMethod() string { return "GET" }
 
 /** @description Enable SMS service */
-// @Route("/{version}/notifications/sms/enable", "GET")
+// @Route("/{version}/notifications/sms/enable", "PUT")
 // @Api(Description="Enable SMS service")
 type EnableSms struct {
 	CodeMashRequestBase
 }
 
 func (EnableSms) CreateResponse() (r EmptyResponse) { return }
-func (EnableSms) HttpMethod() string                { return "GET" }
+func (EnableSms) HttpMethod() string                { return "PUT" }
 
 /** @description Archives sms template */
 // @Route("/{version}/notifications/sms/templates/{Id}/archive", "PUT")
@@ -13391,61 +13466,6 @@ type TestSmsIntegration struct {
 func (TestSmsIntegration) CreateResponse() (r TestSmsIntegrationResponse) { return }
 func (TestSmsIntegration) HttpMethod() string                             { return "POST" }
 
-/** @description Create SMS campaign */
-// @Route("/{version}/notifications/sms/campaigns", "POST")
-// @Api(Description="Create SMS campaign")
-// @DataContract
-type CreateSmsCampaignRequest struct {
-	CodeMashRequestBase
-	/** @description SMS template id to send — pick one with get_sms_templates. Never invent it. */
-	// @DataMember
-	// @ApiMember(Description="SMS template id to send — pick one with get_sms_templates. Never invent it.")
-	TemplateId string `json:"templateId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @DataMember
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description SMS provider integration id the campaign sends through — pick one with get_sms_integrations (the project default unless the user named another). Required; never invent it. */
-	// @DataMember
-	// @ApiMember(Description="SMS provider integration id the campaign sends through — pick one with get_sms_integrations (the project default unless the user named another). Required; never invent it.", IsRequired=true)
-	IntegrationId string `json:"integrationId"`
-	/** @description Optional language code forcing one template translation for every recipient. */
-	// @DataMember
-	// @ApiMember(Description="Optional language code forcing one template translation for every recipient.")
-	Language *string `json:"language,omitempty"`
-	// @DataMember
-	InitiatorId *string `json:"initiatorId,omitempty"`
-	/** @description Audience type: 'AllUsers' (every project member subscribed to the SMS channel — role-based delivery can address MILLIONS of contacts), 'SpecifiedUsers' (exact member ids), or 'PhoneNumbers' (raw phone numbers). Fill EXACTLY the settings object matching this value. 'Collection' delivery is not available from chat. */
-	// @DataMember
-	// @ApiMember(Description="Audience type: 'AllUsers' (every project member subscribed to the SMS channel — role-based delivery can address MILLIONS of contacts), 'SpecifiedUsers' (exact member ids), or 'PhoneNumbers' (raw phone numbers). Fill EXACTLY the settings object matching this value. 'Collection' delivery is not available from chat.")
-	DeliveryType SmsCampaignRecipientsSourceTypes `json:"deliveryType,omitempty"`
-	/** @description For deliveryType 'AllUsers'. JSON object: {"recipientsSourceType":"AllUsers","rolesNames":["authenticated"],"userTags":[],"campaignTime":<unix seconds UTC>}. rolesNames/userTags are optional narrowing filters — verify exact role names with get_roles. */
-	// @DataMember
-	// @ApiMember(Description="For deliveryType 'AllUsers'. JSON object: {\"recipientsSourceType\":\"AllUsers\",\"rolesNames\":[\"authenticated\"],\"userTags\":[],\"campaignTime\":<unix seconds UTC>}. rolesNames/userTags are optional narrowing filters — verify exact role names with get_roles.")
-	AllUsers *SmsToAllUsersDeliverySettingsDto `json:"allUsers,omitempty"`
-	/** @description For deliveryType 'SpecifiedUsers'. JSON object: {"recipientsSourceType":"SpecifiedUsers","recipients":[<member ids>],"campaignTime":<unix seconds UTC>}. */
-	// @DataMember
-	// @ApiMember(Description="For deliveryType 'SpecifiedUsers'. JSON object: {\"recipientsSourceType\":\"SpecifiedUsers\",\"recipients\":[<member ids>],\"campaignTime\":<unix seconds UTC>}.")
-	SpecifiedUsers *SmsToUsersDeliverySettingsDto `json:"specifiedUsers,omitempty"`
-	/** @description For deliveryType 'AccountUsers'. JSON object: {"recipientsSourceType":"AccountUsers","recipients":[<account owner / team member ids>],"campaignTime":<unix seconds UTC>}. Members without a phone number are skipped. */
-	// @DataMember
-	// @ApiMember(Description="For deliveryType 'AccountUsers'. JSON object: {\"recipientsSourceType\":\"AccountUsers\",\"recipients\":[<account owner / team member ids>],\"campaignTime\":<unix seconds UTC>}. Members without a phone number are skipped.")
-	AccountUsers *SmsToAccountUsersDeliverySettingsDto `json:"accountUsers,omitempty"`
-	// @DataMember
-	Collection *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
-	/** @description For deliveryType 'PhoneNumbers'. JSON object: {"recipientsSourceType":"PhoneNumbers","phoneNumbers":["+37060000000"],"campaignTime":<unix seconds UTC>}. Numbers in international format. */
-	// @DataMember
-	// @ApiMember(Description="For deliveryType 'PhoneNumbers'. JSON object: {\"recipientsSourceType\":\"PhoneNumbers\",\"phoneNumbers\":[\"+37060000000\"],\"campaignTime\":<unix seconds UTC>}. Numbers in international format.")
-	PhoneNumbers *SmsToPhoneNumbersDeliverySettingsDto `json:"phoneNumbers,omitempty"`
-	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now. */
-	// @DataMember
-	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now.")
-	SendNow *bool `json:"sendNow,omitempty"`
-}
-
-func (CreateSmsCampaignRequest) CreateResponse() (r IdResponse) { return }
-func (CreateSmsCampaignRequest) HttpMethod() string             { return "POST" }
-
 /** @description Deletes sms campaign from queue */
 // @Route("/{version}/notifications/sms/campaigns/{id}", "DELETE")
 // @Api(Description="Deletes sms campaign from queue")
@@ -13697,14 +13717,14 @@ func (GetMarketplaceFunctionCatalog) CreateResponse() (r GetMarketplaceFunctionC
 func (GetMarketplaceFunctionCatalog) HttpMethod() string { return "GET" }
 
 /** @description Disable push service */
-// @Route("/{version}/notifications/push/disable", "GET")
+// @Route("/{version}/notifications/push/disable", "PUT")
 // @Api(Description="Disable push service")
 type DisablePush struct {
 	CodeMashRequestBase
 }
 
 func (DisablePush) CreateResponse() (r EmptyResponse) { return }
-func (DisablePush) HttpMethod() string                { return "GET" }
+func (DisablePush) HttpMethod() string                { return "PUT" }
 
 /** @description Lists push disable dependencies */
 // @Route("/{version}/notifications/push/disable-dependencies", "GET")
@@ -13719,14 +13739,14 @@ func (GetPushDisableDependencies) CreateResponse() (r GetNotificationModuleDisab
 func (GetPushDisableDependencies) HttpMethod() string { return "GET" }
 
 /** @description Enable push service */
-// @Route("/{version}/notifications/push/enable", "GET")
+// @Route("/{version}/notifications/push/enable", "PUT")
 // @Api(Description="Enable push service")
 type EnablePush struct {
 	CodeMashRequestBase
 }
 
 func (EnablePush) CreateResponse() (r EmptyResponse) { return }
-func (EnablePush) HttpMethod() string                { return "GET" }
+func (EnablePush) HttpMethod() string                { return "PUT" }
 
 /** @description Archives push template */
 // @Route("/{version}/notifications/push/templates/{Id}/archive", "PUT")
@@ -14302,24 +14322,24 @@ func (GetPushCampaignMessagesRequest) CreateResponse() (r GetPushCampaignMessage
 func (GetPushCampaignMessagesRequest) HttpMethod() string                                  { return "GET" }
 
 /** @description Disable payments service */
-// @Route("/{version}/payments/disable", "GET")
+// @Route("/{version}/payments/disable", "PUT")
 // @Api(Description="Disable payments service")
 type DisablePayments struct {
 	CodeMashRequestBase
 }
 
 func (DisablePayments) CreateResponse() (r EmptyResponse) { return }
-func (DisablePayments) HttpMethod() string                { return "GET" }
+func (DisablePayments) HttpMethod() string                { return "PUT" }
 
 /** @description Enable payments service */
-// @Route("/{version}/payments/enable", "GET")
+// @Route("/{version}/payments/enable", "PUT")
 // @Api(Description="Enable payments service")
 type EnablePayments struct {
 	CodeMashRequestBase
 }
 
 func (EnablePayments) CreateResponse() (r EmptyResponse) { return }
-func (EnablePayments) HttpMethod() string                { return "GET" }
+func (EnablePayments) HttpMethod() string                { return "PUT" }
 
 /** @description Gets the received payment webhooks log */
 // @Route("/{version}/payments/webhooks/log", "GET")
@@ -14503,16 +14523,16 @@ func (TestPaymentsIntegration) CreateResponse() (r TestPaymentsIntegrationRespon
 func (TestPaymentsIntegration) HttpMethod() string                                  { return "POST" }
 
 /** @description Disable logging service */
-// @Route("/{version}/logs/disable", "GET")
+// @Route("/{version}/logs/disable", "PUT")
 // @Api(Description="Disable logging service")
 type DisableLogging struct {
 	CodeMashRequestBase
 }
 
 func (DisableLogging) CreateResponse() (r EmptyResponse) { return }
-func (DisableLogging) HttpMethod() string                { return "GET" }
+func (DisableLogging) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/logs/enable", "GET")
+// @Route("/{version}/logs/enable", "PUT")
 type EnableLogging struct {
 	CodeMashRequestBase
 	/** @description When true, also create a Norbix Logging integration backed by the project's default database. */
@@ -14521,7 +14541,7 @@ type EnableLogging struct {
 }
 
 func (EnableLogging) CreateResponse() (r EmptyResponse) { return }
-func (EnableLogging) HttpMethod() string                { return "GET" }
+func (EnableLogging) HttpMethod() string                { return "PUT" }
 
 /** @description Delete integration for particular project */
 // @Route("/{version}/logs/integrations/{Id}", "DELETE")
