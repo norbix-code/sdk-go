@@ -85,7 +85,7 @@ Every `Options` field falls back to an environment variable, then a default:
 | `ProjectID` | `NORBIX_PROJECT_ID` | required |
 | `APIKey` | `NORBIX_API_KEY` | — |
 | `BearerToken` | `NORBIX_BEARER_TOKEN` | — |
-| `AccountID` | `NORBIX_ACCOUNT_ID` | — |
+| `AccountID` | `NORBIX_ACCOUNT_ID` | — (only `Hub.Account.VerifyAccount` needs it; every other account route works with a key or a bearer token) |
 | `Env` | `NORBIX_ENV` | `PROD` (no header sent) |
 | `Region` | `NORBIX_REGION` | none |
 | `BaseURLAPI` | `NORBIX_API_URL` | `https://api.norbix.ai` |

@@ -16,14 +16,16 @@ Each method takes a context, any route ids as plain arguments, an untyped
 request body, and a pointer to decode the response into (pass `nil` to discard
 it).
 
-**Scope.** Methods marked *account* need `AccountID` on the client (or
-`NORBIX_ACCOUNT_ID`); without it the SDK refuses the call before it is sent.
-Methods marked *project* need only a key or a bearer token.
+**Scope.** Every method on this page is marked *project*: it needs only a key
+or a bearer token, no `AccountID`. The gateway takes the account from the
+signed-in session, or from the project id in the path. The one account route
+that still needs `AccountID` on the client is `VerifyAccount` (the gateway
+reads the account id from that request). Test:
+`norbix/hub/account_token_only_test.go`.
 
 ```go
 client, err := norbix.New(norbix.Options{
     ProjectID: "proj_123",
-    AccountID: "acct_123",
     APIKey:    "sk_live_...",
 })
 if err != nil {
@@ -38,17 +40,17 @@ err = client.Hub.Account.GetProject(ctx, "proj_123", nil, &project)
 
 | method | verb | path | scope |
 |---|---|---|---|
-| `GetProjects(ctx, req, out)` | `GET` | `/account/projects` | account |
-| `CreateProject(ctx, req, out)` | `POST` | `/account/projects` | account |
-| `GetProject(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}` | account |
-| `DeleteProject(ctx, projectId, req, out)` | `DELETE` | `/account/projects/{projectId}` | account |
-| `EnableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/enable` | account |
-| `DisableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/disable` | account |
-| `GetProjectTokens(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/tokens` | account |
+| `GetProjects(ctx, req, out)` | `GET` | `/account/projects` | project |
+| `CreateProject(ctx, req, out)` | `POST` | `/account/projects` | project |
+| `GetProject(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}` | project |
+| `DeleteProject(ctx, projectId, req, out)` | `DELETE` | `/account/projects/{projectId}` | project |
+| `EnableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/enable` | project |
+| `DisableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/disable` | project |
+| `GetProjectTokens(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/tokens` | project |
 
 ## Project settings
 
-All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope account.
+All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope project.
 
 | method | segment |
 |---|---|
@@ -72,7 +74,7 @@ All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope account.
 ### Check template languages
 
 `CheckProjectLanguages(ctx, projectId, req, out)` — `POST
-/account/projects/{projectId}/settings/languages/check`, scope account. It
+/account/projects/{projectId}/settings/languages/check`, scope project. It
 lists the Email, Push and SMS templates that miss a project language. Send the
 proposed `defaultLanguage` and/or `languages` before you save them with
 `UpdateProjectLanguages`; send neither to check the current settings.
@@ -132,8 +134,8 @@ _ = client.Hub.Account.UpdateProjectExposeAuth(ctx, "proj_123", map[string]any{"
 |---|---|---|---|
 | `SetAdminPortalEnabled(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/admin-portal/enabled` | project |
 | `GetAdminPortalStructure(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/admin-portal/structure` | project |
-| `AssignAdminPortalServiceUser(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/settings/admin-portal/service-user` | account |
-| `UpdateProjectAdminUrl(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/settings/admin-url` | account |
+| `AssignAdminPortalServiceUser(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/settings/admin-portal/service-user` | project |
+| `UpdateProjectAdminUrl(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/settings/admin-url` | project |
 
 ### Public project config (API, no sign-in)
 
@@ -176,11 +178,11 @@ same call). Later reads show only a key id and a hint.
 
 | method | verb | path | scope |
 |---|---|---|---|
-| `CreateAiServiceUser(ctx, req, out)` | `POST` | `/account/ai/service-users` | account |
-| `ListAiServiceUsers(ctx, req, out)` | `GET` | `/account/ai/service-users` | account |
-| `DeleteAiServiceUser(ctx, id, req, out)` | `DELETE` | `/account/ai/service-users/{Id}` | account |
-| `RotateAiServiceUserKey(ctx, id, req, out)` | `POST` | `/account/ai/service-users/{Id}/keys` | account |
-| `RevokeAiServiceUserKey(ctx, id, keyId, req, out)` | `DELETE` | `/account/ai/service-users/{Id}/keys/{KeyId}` | account |
+| `CreateAiServiceUser(ctx, req, out)` | `POST` | `/account/ai/service-users` | project |
+| `ListAiServiceUsers(ctx, req, out)` | `GET` | `/account/ai/service-users` | project |
+| `DeleteAiServiceUser(ctx, id, req, out)` | `DELETE` | `/account/ai/service-users/{Id}` | project |
+| `RotateAiServiceUserKey(ctx, id, req, out)` | `POST` | `/account/ai/service-users/{Id}/keys` | project |
+| `RevokeAiServiceUserKey(ctx, id, keyId, req, out)` | `DELETE` | `/account/ai/service-users/{Id}/keys/{KeyId}` | project |
 
 ```go
 var created map[string]any
