@@ -36,6 +36,9 @@ func (m *DatabaseModule) EnableDatabase(ctx context.Context, req map[string]any,
 }
 
 // DeleteSchemaTrigger performs DELETE /{version}/database/schemas/triggers/{triggerId} (scope: project).
+//
+// It acts on the copy of the trigger in the request environment (norbix-env, PROD when absent); no
+// copy there answers CM-ERRORS-TRIGGERS-002.
 func (m *DatabaseModule) DeleteSchemaTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"triggerId": triggerId,
@@ -51,6 +54,9 @@ func (m *DatabaseModule) DeleteSchemaTrigger(ctx context.Context, triggerId stri
 }
 
 // DisableSchemaTrigger performs PATCH /{version}/database/schemas/triggers/{triggerId}/disable (scope: project).
+//
+// It acts on the copy of the trigger in the request environment (norbix-env, PROD when absent); no
+// copy there answers CM-ERRORS-TRIGGERS-002.
 func (m *DatabaseModule) DisableSchemaTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"triggerId": triggerId,
@@ -66,6 +72,9 @@ func (m *DatabaseModule) DisableSchemaTrigger(ctx context.Context, triggerId str
 }
 
 // EnableSchemaTrigger performs PATCH /{version}/database/schemas/triggers/{triggerId}/enable (scope: project).
+//
+// It acts on the copy of the trigger in the request environment (norbix-env, PROD when absent); no
+// copy there answers CM-ERRORS-TRIGGERS-002.
 func (m *DatabaseModule) EnableSchemaTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"triggerId": triggerId,
@@ -81,6 +90,9 @@ func (m *DatabaseModule) EnableSchemaTrigger(ctx context.Context, triggerId stri
 }
 
 // GetSchemaTrigger performs GET /{version}/database/schemas/triggers/{id} (scope: project).
+//
+// It reads one schema trigger (dtos.SchemaTriggerDto): SchemaId is the owning schema (sch_...), Env
+// its environment.
 func (m *DatabaseModule) GetSchemaTrigger(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"id": id,
@@ -96,6 +108,9 @@ func (m *DatabaseModule) GetSchemaTrigger(ctx context.Context, id string, req ma
 }
 
 // GetSchemaTriggers performs GET /{version}/database/schemas/triggers (scope: project).
+//
+// It lists the schema triggers of the request environment only (norbix-env, PROD when absent); each
+// row carries Env.
 func (m *DatabaseModule) GetSchemaTriggers(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -108,6 +123,9 @@ func (m *DatabaseModule) GetSchemaTriggers(ctx context.Context, req map[string]a
 }
 
 // SaveSchemaTrigger performs POST /{version}/database/schemas/triggers (scope: project).
+//
+// It creates or updates a schema trigger. An existing trigger id under another schema is refused with
+// CM-ERRORS-TRIGGERS-002.
 func (m *DatabaseModule) SaveSchemaTrigger(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -150,6 +168,10 @@ func (m *DatabaseModule) GetDatabaseTaxonomy(ctx context.Context, id string, req
 }
 
 // GetDatabaseTaxonomies performs GET /{version}/database/taxonomies (scope: project).
+//
+// It lists the taxonomies; each row (dtos.TaxonomyListProjection) carries DependencyRefs, one {Id,
+// Name} per dependency in the order of Dependencies (Name is empty when the dependency no longer
+// exists).
 func (m *DatabaseModule) GetDatabaseTaxonomies(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -162,6 +184,9 @@ func (m *DatabaseModule) GetDatabaseTaxonomies(ctx context.Context, req map[stri
 }
 
 // SaveDatabaseTaxonomy performs POST /{version}/database/taxonomies (scope: project).
+//
+// It creates a taxonomy (database:create on all), or updates one when "viewId" names an existing
+// taxonomy (database:update on database:taxonomy:<viewId>).
 func (m *DatabaseModule) SaveDatabaseTaxonomy(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -252,6 +277,9 @@ func (m *DatabaseModule) UpdateDatabaseTaxonomyTerm(ctx context.Context, taxonom
 }
 
 // DeleteDatabaseSchema performs DELETE /{version}/database/schemas/{Id} (scope: project).
+//
+// It deletes a schema. A schema a saved aggregate still uses, as its start or as a joined collection,
+// is refused with CM-ERRORS-SCHEMA-018 (context: BlockerAggregateIds, BlockerAggregateNames).
 func (m *DatabaseModule) DeleteDatabaseSchema(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,
@@ -369,6 +397,9 @@ func (m *DatabaseModule) PublishDatabaseSchema(ctx context.Context, id string, r
 }
 
 // RenameDatabaseSchema performs PUT /{version}/database/schemas/{Id}/rename (scope: project).
+//
+// It renames a schema ("title"). A name another schema in the same environment already uses is refused
+// with CM-ERRORS-SCHEMA-002.
 func (m *DatabaseModule) RenameDatabaseSchema(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,
@@ -555,6 +586,9 @@ func (m *DatabaseModule) GetDatabaseAggregate(ctx context.Context, id string, re
 }
 
 // GetDatabaseAggregates performs GET /{version}/database/aggregates (scope: project).
+//
+// It lists the saved aggregates; each (dtos.MongoDbAggregateDto) names the collections it joins in
+// JoinedCollections.
 func (m *DatabaseModule) GetDatabaseAggregates(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -579,6 +613,9 @@ func (m *DatabaseModule) SaveDatabaseAggregate(ctx context.Context, req map[stri
 }
 
 // TestDatabaseAggregate performs POST /{version}/database/aggregates/test (scope: project).
+//
+// It runs a pipeline without saving it. It needs database:create or database:update on
+// database:aggregate:<schemaId>, plus database:read.
 func (m *DatabaseModule) TestDatabaseAggregate(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -663,6 +700,8 @@ func (m *DatabaseModule) FindRecords(ctx context.Context, collectionName string,
 // InsertRecord performs POST /{version}/database/collections/{collectionName} (scope: project).
 //
 // It adds one record ("document" is the record as a JSON string).
+//
+// A body that is not a JSON object is refused with CM-ERRORS-DATABASE-036 "Invalid record document".
 func (m *DatabaseModule) InsertRecord(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -765,7 +804,13 @@ func (m *DatabaseModule) GetCollectionIndexes(ctx context.Context, collectionNam
 
 // DeleteManyRecords performs DELETE /{version}/database/collections/{collectionName}/many (scope: project).
 //
-// It deletes every record that matches "filter" (sent in the query string).
+// It deletes every record that matches "filter" (sent in the query string, with "allRecords").
+//
+// An empty filter ("{}") touches every record, so the gateway refuses it with CM-ERRORS-DATABASE-037
+// unless "allRecords" is true.
+//
+// A caller with only own-record rights (createAsUser / updateOwn / deleteOwn) may call it; it then
+// touches only that caller's records.
 func (m *DatabaseModule) DeleteManyRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -783,6 +828,12 @@ func (m *DatabaseModule) DeleteManyRecords(ctx context.Context, collectionName s
 // InsertManyRecords performs POST /{version}/database/collections/{collectionName}/many (scope: project).
 //
 // It adds several records ("documents" is a JSON array string).
+//
+// A caller with only own-record rights (createAsUser / updateOwn / deleteOwn) may call it; it then
+// touches only that caller's records.
+//
+// An item that is not a JSON object is refused with CM-ERRORS-DATABASE-036 "Invalid record document"
+// (its "Index" in the error context).
 func (m *DatabaseModule) InsertManyRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -799,7 +850,18 @@ func (m *DatabaseModule) InsertManyRecords(ctx context.Context, collectionName s
 
 // UpdateManyRecords performs PUT /{version}/database/collections/{collectionName}/many (scope: project).
 //
-// It applies "update" to every record that matches "filter".
+// It applies "update" to every record that matches "filter" (a missing filter counts as "{}").
+//
+// "update" is the bare field document (e.g. {"price":12}); the gateway applies it with $set. A body
+// with $ operators ($set, $inc, ...) is refused with CM-ERRORS-DATABASE-035.
+//
+// An empty filter ("{}") touches every record, so the gateway refuses it with CM-ERRORS-DATABASE-037
+// unless "allRecords" is true.
+//
+// A caller with only own-record rights (createAsUser / updateOwn / deleteOwn) may call it; it then
+// touches only that caller's records.
+//
+// Soft-deleted records are skipped.
 func (m *DatabaseModule) UpdateManyRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -853,6 +915,11 @@ func (m *DatabaseModule) FindOneRecord(ctx context.Context, collectionName strin
 // UpdateOneRecord performs PUT /{version}/database/collections/{collectionName}/{id} (scope: project).
 //
 // It applies "update" (a JSON string) to one record.
+//
+// "update" is the bare field document (e.g. {"price":12}); the gateway applies it with $set. A body
+// with $ operators ($set, $inc, ...) is refused with CM-ERRORS-DATABASE-035.
+//
+// Soft-deleted records are not matched: such a record is "not found".
 func (m *DatabaseModule) UpdateOneRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -871,6 +938,10 @@ func (m *DatabaseModule) UpdateOneRecord(ctx context.Context, collectionName str
 // ReplaceRecord performs PUT /{version}/database/collections/{collectionName}/{id}/replace (scope: project).
 //
 // It replaces one record with "replacement" (a JSON string).
+//
+// A body that is not a JSON object is refused with CM-ERRORS-DATABASE-036 "Invalid record document".
+//
+// Soft-deleted records are not matched: such a record is "not found".
 func (m *DatabaseModule) ReplaceRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -889,6 +960,11 @@ func (m *DatabaseModule) ReplaceRecord(ctx context.Context, collectionName strin
 // ChangeRecordResponsibility performs PUT /{version}/database/collections/{collectionName}/{id}/responsibility (scope: project).
 //
 // It moves one record to "newResponsibleUserId".
+//
+// A new owner who is not a user of the project in the request environment is refused with
+// CM-ERRORS-MEMBERSHIP-USERS-012.
+//
+// Soft-deleted records are not matched: such a record is "not found".
 func (m *DatabaseModule) ChangeRecordResponsibility(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -972,6 +1048,10 @@ func (m *DatabaseModule) UpdateDatabaseSchemaListSettings(ctx context.Context, i
 // GetDatabaseTaxonomyTree performs GET /{version}/database/taxonomies/tree (scope: project).
 //
 // It returns every taxonomy as a tree ("includeTerms" adds the terms).
+//
+// With "includeTerms" the call fails when the term read fails (it no longer returns the taxonomies
+// without terms). More than 5000 terms answers CM-ERRORS-TAXONOMIES-011; read a sub-tree instead
+// (rootTermId, depth).
 func (m *DatabaseModule) GetDatabaseTaxonomyTree(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -986,6 +1066,10 @@ func (m *DatabaseModule) GetDatabaseTaxonomyTree(ctx context.Context, req map[st
 // GetDatabaseMergedTermTree performs GET /{version}/database/taxonomies/{TaxonomyName}/merged-tree (scope: project).
 //
 // It returns the terms of a taxonomy merged with the terms of the taxonomies it depends on.
+//
+// It needs database:read on database:term:<id> of the taxonomy and of every nested taxonomy. An
+// unknown taxonomy name answers CM-ERRORS-TAXONOMIES-010. More than 5000 terms answers
+// CM-ERRORS-TAXONOMIES-011; read a sub-tree instead (rootTermId, depth).
 func (m *DatabaseModule) GetDatabaseMergedTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"TaxonomyName": taxonomyName,
@@ -1003,6 +1087,10 @@ func (m *DatabaseModule) GetDatabaseMergedTermTree(ctx context.Context, taxonomy
 // GetDatabaseTaxonomyTermTree performs GET /{version}/database/taxonomies/{TaxonomyName}/terms/tree (scope: project).
 //
 // It returns the terms of a taxonomy as a tree ("rootTermId", "depth").
+//
+// It needs database:read on database:term:<taxonomy id>. An unknown taxonomy name answers
+// CM-ERRORS-TAXONOMIES-010; a name over 40 characters answers CM-ERRORS-TAXONOMIES-005. More than 5000
+// terms answers CM-ERRORS-TAXONOMIES-011; read a sub-tree instead (rootTermId, depth).
 func (m *DatabaseModule) GetDatabaseTaxonomyTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"TaxonomyName": taxonomyName,

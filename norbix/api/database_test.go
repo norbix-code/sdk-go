@@ -70,9 +70,9 @@ func apiDatabaseCases() []apiDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.Count(ctx, "products", map[string]any{"filter": "{}"}, nil)
 			}},
-		{"DeleteMany", http.MethodDelete, "/v2/database/collections/products/many", url.Values{"filter": {"{\"price\":10}"}}, nil,
+		{"DeleteMany", http.MethodDelete, "/v2/database/collections/products/many", url.Values{"filter": {"{}"}, "allRecords": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.DeleteMany(ctx, "products", map[string]any{"filter": "{\"price\":10}"}, nil)
+				return m.DeleteMany(ctx, "products", map[string]any{"filter": "{}", "allRecords": true}, nil)
 			}},
 		{"DeleteOne", http.MethodDelete, "/v2/database/collections/products/rec_1", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -106,13 +106,13 @@ func apiDatabaseCases() []apiDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.ReplaceOne(ctx, "products", "rec_1", map[string]any{"replacement": "{\"title\":\"Boot\"}"}, nil)
 			}},
-		{"UpdateMany", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "update": "{\"$set\":{\"price\":12}}"},
+		{"UpdateMany", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateMany(ctx, "products", map[string]any{"filter": "{}", "update": "{\"$set\":{\"price\":12}}"}, nil)
+				return m.UpdateMany(ctx, "products", map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"}, nil)
 			}},
-		{"UpdateOne", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"$set\":{\"price\":12}}"},
+		{"UpdateOne", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"price\":12}"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateOne(ctx, "products", "rec_1", map[string]any{"update": "{\"$set\":{\"price\":12}}"}, nil)
+				return m.UpdateOne(ctx, "products", "rec_1", map[string]any{"update": "{\"price\":12}"}, nil)
 			}},
 		{"FindOwn", http.MethodGet, "/v2/database/collections/products/own", url.Values{"filter": {"{}"}, "pageSize": {"20"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
