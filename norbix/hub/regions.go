@@ -11,7 +11,7 @@ import (
 // RegionsModule groups the regions endpoints on the HUB.
 type RegionsModule struct{ t *transport.Transport }
 
-// List performs GET /{version}/account/regions (scope: account).
+// List performs GET /{version}/account/regions (scope: project).
 func (m *RegionsModule) List(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -19,11 +19,11 @@ func (m *RegionsModule) List(ctx context.Context, req map[string]any, out any) e
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectRegions performs PATCH /{version}/account/projects/{projectId}/settings/regions (scope: account).
+// UpdateProjectRegions performs PATCH /{version}/account/projects/{projectId}/settings/regions (scope: project).
 func (m *RegionsModule) UpdateProjectRegions(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -34,6 +34,6 @@ func (m *RegionsModule) UpdateProjectRegions(ctx context.Context, projectId stri
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
