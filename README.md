@@ -73,7 +73,7 @@ _, err := c.Login(ctx, norbix.LoginCredentials{UserName: "alice", Password: "...
 | `norbix.NewHub(opts)` | flat: `c.Account`, `c.Email`, `c.Webhooks`, ... |
 
 The notification modules (Email, Push, Sms) live on `c.Hub.Notifications`; every
-Sms Hub route (35) has a method there, each proven against a local fake server in
+Sms Hub route (34) has a method there, each proven against a local fake server in
 `norbix/hub/sms_test.go` (verb + resolved path, no provider is ever contacted).
 
 ### Configuration
@@ -166,6 +166,20 @@ current settings. `client.Hub.Triggers.GetTriggersNeedingAttention(ctx,
 map[string]any{"triggerType": "Schema"}, &out)` lists the triggers whose last
 run was stopped before sending (for example a template that misses a
 language).
+
+### SMS: Account users audience, campaign id filter; subject removed
+
+- An SMS campaign can go to the **account owner and team members**:
+  `"deliveryType": "AccountUsers"` with
+  `"accountUsers": {"recipientsSourceType": "AccountUsers", "recipients": [<account user ids>]}`
+  (`dtos.SmsToAccountUsersDeliverySettingsDto`). Each member gets it on the
+  phone saved with `client.Hub.Account.UpdateMyAccountUserPhone`; members
+  without a phone are skipped. See [docs/hub/account.md](./docs/hub/account.md#your-account-user-and-the-team).
+- `GetSmsCampaigns` takes `"campaignId"` to return only that campaign.
+- An SMS template has a body only: `dtos.SmsMessageContentDto` has no
+  `Subject` any more, and neither do SMS campaign messages (Email and Push
+  messages keep theirs).
+- `dtos.SmsCampaignDto.CreatedById` says who created the campaign.
 
 ## Working with terms
 
