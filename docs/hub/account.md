@@ -194,6 +194,44 @@ err := client.Hub.Account.CreateAiServiceUser(ctx, map[string]any{
 // Store created's key now; it is not shown again.
 ```
 
+## Your account user and the team
+
+The signed-in account user's own profile and phone, and the account team. The
+gateway takes the account from the signed-in session, so these need only a key
+or a bearer token — no `AccountID`. Tests: `norbix/hub/account_me_test.go`.
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `GetMyAccountUserProfile(ctx, req, out)` | `GET` | `/account/me` | project |
+| `UpdateMyAccountUserPhone(ctx, req, out)` | `PUT` | `/account/me/phone` | project |
+| `GetAccountCollaborators(ctx, req, out)` | `GET` | `/account/collaborators` | project |
+
+The phone (E.164 format, `+` and the country code; an empty value clears it) is
+the number "Account users" SMS campaigns send to. Members without a phone are
+skipped.
+
+```go
+err := client.Hub.Account.UpdateMyAccountUserPhone(ctx, map[string]any{
+    "phone": "+37060000000",
+}, nil)
+
+var me dtos.GetMyAccountUserProfileResponse
+err = client.Hub.Account.GetMyAccountUserProfile(ctx, nil, &me)
+fmt.Println(me.Item.Email, me.Item.GeneralInfo.Phone)
+```
+
+The team list pages with flat fields — `pageSize` (default 20),
+`startingAfter`, `endingBefore` — and `projectId` (without
+`includeAccountOwner`) narrows it to one project's collaborators:
+
+```go
+var team dtos.GetAccountCollaboratorsResponse
+err := client.Hub.Account.GetAccountCollaborators(ctx, map[string]any{
+    "projectId": "proj_123",
+    "pageSize":  50,
+}, &team)
+```
+
 ## Developer MCP endpoint
 
 `/account/mcp` is the Hub's Model Context Protocol server. MCP clients
