@@ -12,6 +12,13 @@ import (
 type DatabaseModule struct{ t *transport.Transport }
 
 // FindTerms performs GET /{version}/database/taxonomies/{taxonomyName}/terms (scope: project).
+//
+// It lists the terms of a taxonomy.
+//
+// It needs database:read on database:term:<taxonomy id>. An unknown taxonomy name answers
+// CM-ERRORS-TAXONOMIES-010; a name over 40 characters answers CM-ERRORS-TAXONOMIES-005.
+//
+// A "filter" with $where, $function or $accumulator is refused with CM-ERRORS-DATABASE-031.
 func (m *DatabaseModule) FindTerms(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"taxonomyName": taxonomyName,
@@ -27,6 +34,13 @@ func (m *DatabaseModule) FindTerms(ctx context.Context, taxonomyName string, req
 }
 
 // FindTermsChildren performs GET /{version}/database/taxonomies/{taxonomyName}/terms/{parentId}/children (scope: project).
+//
+// It lists the child terms of "parentId".
+//
+// It needs database:read on database:term:<taxonomy id>. An unknown taxonomy name answers
+// CM-ERRORS-TAXONOMIES-010; a name over 40 characters answers CM-ERRORS-TAXONOMIES-005.
+//
+// A "filter" with $where, $function or $accumulator is refused with CM-ERRORS-DATABASE-031.
 func (m *DatabaseModule) FindTermsChildren(ctx context.Context, taxonomyName string, parentId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"taxonomyName": taxonomyName,
@@ -43,6 +57,12 @@ func (m *DatabaseModule) FindTermsChildren(ctx context.Context, taxonomyName str
 }
 
 // FindTermTree performs GET /{version}/database/taxonomies/{taxonomyName}/terms/tree (scope: project).
+//
+// It returns the terms of a taxonomy as a tree ("rootTermId", "depth").
+//
+// It needs database:read on database:term:<taxonomy id>. An unknown taxonomy name answers
+// CM-ERRORS-TAXONOMIES-010; a name over 40 characters answers CM-ERRORS-TAXONOMIES-005. More than 5000
+// terms answers CM-ERRORS-TAXONOMIES-011; read a sub-tree instead (rootTermId, depth).
 func (m *DatabaseModule) FindTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"taxonomyName": taxonomyName,
@@ -58,6 +78,11 @@ func (m *DatabaseModule) FindTermTree(ctx context.Context, taxonomyName string, 
 }
 
 // FindTaxonomyTree performs GET /{version}/database/taxonomies/tree (scope: project).
+//
+// It returns every taxonomy as a tree ("includeTerms" adds the terms).
+//
+// With "includeTerms" the call fails when the term read fails. More than 5000 terms answers
+// CM-ERRORS-TAXONOMIES-011; read a sub-tree instead (rootTermId, depth).
 func (m *DatabaseModule) FindTaxonomyTree(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -112,6 +137,13 @@ func (m *DatabaseModule) Aggregate(ctx context.Context, collectionName string, r
 }
 
 // ChangeResponsibility performs PUT /{version}/database/collections/{collectionName}/{id}/responsibility (scope: project).
+//
+// It moves one record to "newResponsibleUserId".
+//
+// A new owner who is not a user of the project in the request environment is refused with
+// CM-ERRORS-MEMBERSHIP-USERS-012.
+//
+// Soft-deleted records are not matched: such a record is "not found".
 func (m *DatabaseModule) ChangeResponsibility(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -143,6 +175,14 @@ func (m *DatabaseModule) Count(ctx context.Context, collectionName string, req m
 }
 
 // DeleteMany performs DELETE /{version}/database/collections/{collectionName}/many (scope: project).
+//
+// It deletes every record that matches "filter" (sent in the query string, with "allRecords").
+//
+// An empty filter ("{}") touches every record, so the gateway refuses it with CM-ERRORS-DATABASE-037
+// unless "allRecords" is true.
+//
+// A caller with only own-record rights (createAsUser / updateOwn / deleteOwn) may call it; it then
+// touches only that caller's records.
 func (m *DatabaseModule) DeleteMany(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -236,6 +276,14 @@ func (m *DatabaseModule) FindOne(ctx context.Context, collectionName string, id 
 }
 
 // InsertMany performs POST /{version}/database/collections/{collectionName}/many (scope: project).
+//
+// It adds several records ("documents" is a JSON array string).
+//
+// A caller with only own-record rights (createAsUser / updateOwn / deleteOwn) may call it; it then
+// touches only that caller's records.
+//
+// An item that is not a JSON object is refused with CM-ERRORS-DATABASE-036 "Invalid record document"
+// (its "Index" in the error context).
 func (m *DatabaseModule) InsertMany(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -251,6 +299,10 @@ func (m *DatabaseModule) InsertMany(ctx context.Context, collectionName string, 
 }
 
 // InsertOne performs POST /{version}/database/collections/{collectionName} (scope: project).
+//
+// It adds one record ("document" is the record as a JSON string).
+//
+// A body that is not a JSON object is refused with CM-ERRORS-DATABASE-036 "Invalid record document".
 func (m *DatabaseModule) InsertOne(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -266,6 +318,12 @@ func (m *DatabaseModule) InsertOne(ctx context.Context, collectionName string, r
 }
 
 // ReplaceOne performs PUT /{version}/database/collections/{collectionName}/{id}/replace (scope: project).
+//
+// It replaces one record with "replacement" (a JSON string).
+//
+// A body that is not a JSON object is refused with CM-ERRORS-DATABASE-036 "Invalid record document".
+//
+// Soft-deleted records are not matched: such a record is "not found".
 func (m *DatabaseModule) ReplaceOne(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -282,6 +340,19 @@ func (m *DatabaseModule) ReplaceOne(ctx context.Context, collectionName string, 
 }
 
 // UpdateMany performs PUT /{version}/database/collections/{collectionName}/many (scope: project).
+//
+// It applies "update" to every record that matches "filter" (a missing filter counts as "{}").
+//
+// "update" is the bare field document (e.g. {"price":12}); the gateway applies it with $set. A body
+// with $ operators ($set, $inc, ...) is refused with CM-ERRORS-DATABASE-035.
+//
+// An empty filter ("{}") touches every record, so the gateway refuses it with CM-ERRORS-DATABASE-037
+// unless "allRecords" is true.
+//
+// A caller with only own-record rights (createAsUser / updateOwn / deleteOwn) may call it; it then
+// touches only that caller's records.
+//
+// Soft-deleted records are skipped.
 func (m *DatabaseModule) UpdateMany(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -297,6 +368,13 @@ func (m *DatabaseModule) UpdateMany(ctx context.Context, collectionName string, 
 }
 
 // UpdateOne performs PUT /{version}/database/collections/{collectionName}/{id} (scope: project).
+//
+// It applies "update" (a JSON string) to one record.
+//
+// "update" is the bare field document (e.g. {"price":12}); the gateway applies it with $set. A body
+// with $ operators ($set, $inc, ...) is refused with CM-ERRORS-DATABASE-035.
+//
+// Soft-deleted records are not matched: such a record is "not found".
 func (m *DatabaseModule) UpdateOne(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -332,6 +410,10 @@ func (m *DatabaseModule) FindOwn(ctx context.Context, collectionName string, req
 // FindMergedTermTree performs GET /{version}/database/taxonomies/{taxonomyName}/merged-tree (scope: project).
 //
 // It returns the terms of a taxonomy merged with the terms of the taxonomies it depends on.
+//
+// It needs database:read on database:term:<id> of the taxonomy and of every nested taxonomy. An
+// unknown taxonomy name answers CM-ERRORS-TAXONOMIES-010. More than 5000 terms answers
+// CM-ERRORS-TAXONOMIES-011; read a sub-tree instead (rootTermId, depth).
 func (m *DatabaseModule) FindMergedTermTree(ctx context.Context, taxonomyName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"taxonomyName": taxonomyName,

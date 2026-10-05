@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	nberrors "github.com/norbix-code/sdk-go/v2/norbix/errors"
 	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
@@ -243,17 +245,17 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.GetCollectionIndexes(ctx, "products", map[string]any{"databaseIntegrationId": "int_1"}, nil)
 			}},
-		{"DeleteManyRecords", http.MethodDelete, "/v2/database/collections/products/many", url.Values{"filter": {"{\"price\":10}"}}, nil,
+		{"DeleteManyRecords", http.MethodDelete, "/v2/database/collections/products/many", url.Values{"filter": {"{}"}, "allRecords": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.DeleteManyRecords(ctx, "products", map[string]any{"filter": "{\"price\":10}"}, nil)
+				return m.DeleteManyRecords(ctx, "products", map[string]any{"filter": "{}", "allRecords": true}, nil)
 			}},
 		{"InsertManyRecords", http.MethodPost, "/v2/database/collections/products/many", nil, map[string]any{"documents": "[{\"title\":\"A\"},{\"title\":\"B\"}]"},
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.InsertManyRecords(ctx, "products", map[string]any{"documents": "[{\"title\":\"A\"},{\"title\":\"B\"}]"}, nil)
 			}},
-		{"UpdateManyRecords", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{\"price\":10}", "update": "{\"$set\":{\"price\":12}}"},
+		{"UpdateManyRecords", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateManyRecords(ctx, "products", map[string]any{"filter": "{\"price\":10}", "update": "{\"$set\":{\"price\":12}}"}, nil)
+				return m.UpdateManyRecords(ctx, "products", map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"}, nil)
 			}},
 		{"DeleteRecord", http.MethodDelete, "/v2/database/collections/products/rec_1", url.Values{"databaseIntegrationId": {"int_1"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -263,9 +265,9 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.FindOneRecord(ctx, "products", "rec_1", map[string]any{"databaseIntegrationId": "int_1"}, nil)
 			}},
-		{"UpdateOneRecord", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"$set\":{\"price\":12}}"},
+		{"UpdateOneRecord", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"price\":12}"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateOneRecord(ctx, "products", "rec_1", map[string]any{"update": "{\"$set\":{\"price\":12}}"}, nil)
+				return m.UpdateOneRecord(ctx, "products", "rec_1", map[string]any{"update": "{\"price\":12}"}, nil)
 			}},
 		{"ReplaceRecord", http.MethodPut, "/v2/database/collections/products/rec_1/replace", nil, map[string]any{"replacement": "{\"title\":\"Boot\"}"},
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -426,12 +428,14 @@ func TestUpdateDatabaseSchemaEmbedSendsTheTypedSettings(t *testing.T) {
 	}
 }
 
-// The new taxonomy list fields (Description, Dependencies, ParentName,
-// DependencyNames) decode from a GetDatabaseTaxonomies response.
-func TestGetDatabaseTaxonomiesDecodesTheNewListFields(t *testing.T) {
+// The taxonomy list rows decode Description, Dependencies, ParentName and
+// DependencyRefs: one {id, name} pair per dependency, in the order of
+// Dependencies. A dependency that no longer exists keeps its place with a null
+// name, which decodes to an empty Name.
+func TestGetDatabaseTaxonomiesDecodesTheDependencyRefs(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"result":[{"viewId":"tax_1","taxonomyName":"categories","parentId":"tax_0","parentName":"root","description":"Product categories","dependencies":["tax_2"],"dependencyNames":["brands"]}],"totalCount":1}`))
+		_, _ = w.Write([]byte(`{"result":[{"viewId":"tax_1","taxonomyName":"categories","parentId":"tax_0","parentName":"root","description":"Product categories","dependencies":["tax_2","tax_gone"],"dependencyRefs":[{"id":"tax_2","name":"brands"},{"id":"tax_gone","name":null}]}],"totalCount":1}`))
 	}))
 	defer srv.Close()
 
@@ -445,8 +449,185 @@ func TestGetDatabaseTaxonomiesDecodesTheNewListFields(t *testing.T) {
 		t.Fatalf("result count: got %d want 1", len(out.Result))
 	}
 	got, _ := json.Marshal(out.Result[0])
-	want := `{"viewId":"tax_1","taxonomyName":"categories","parentId":"tax_0","description":"Product categories","dependencies":["tax_2"],"parentName":"root","dependencyNames":["brands"]}`
+	want := `{"viewId":"tax_1","taxonomyName":"categories","parentId":"tax_0","description":"Product categories","dependencies":["tax_2","tax_gone"],"parentName":"root","dependencyRefs":[{"id":"tax_2","name":"brands"},{"id":"tax_gone"}]}`
 	if string(got) != want {
 		t.Errorf("taxonomy:\n got %s\nwant %s", got, want)
+	}
+}
+
+// A schema trigger read carries its environment, and SchemaId is the owning
+// schema (sch_...), not the trigger's own id. The list rows carry Env too.
+func TestSchemaTriggerReadsDecodeEnvAndOwningSchema(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/v2/database/schemas/triggers" {
+			_, _ = w.Write([]byte(`{"result":[{"id":"trg_1","name":"On insert","type":"Insert","env":"DEV"}],"totalCount":1}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"result":{"id":"trg_1","name":"On insert","schemaId":"sch_1","when":"Insert","env":"DEV"}}`))
+	}))
+	defer srv.Close()
+	m := newHubDatabaseTestModule(srv.URL)
+
+	var one struct {
+		Result dtos.SchemaTriggerDto `json:"result"`
+	}
+	if err := m.GetSchemaTrigger(context.Background(), "trg_1", nil, &one); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if one.Result.SchemaId != "sch_1" || one.Result.Env != "DEV" {
+		t.Errorf("trigger: got schemaId %q env %q, want sch_1 / DEV", one.Result.SchemaId, one.Result.Env)
+	}
+
+	var list struct {
+		Result []dtos.SchemaTriggerProjectionList `json:"result"`
+	}
+	if err := m.GetSchemaTriggers(context.Background(), nil, &list); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(list.Result) != 1 || list.Result[0].Env != "DEV" {
+		t.Errorf("trigger list: got %+v, want one row with env DEV", list.Result)
+	}
+}
+
+// The schema trigger calls act on the copy in the request environment, so the
+// client's environment must reach the gateway as the norbix-env header.
+func TestSchemaTriggerCallsSendTheEnvironment(t *testing.T) {
+	calls := map[string]func(ctx context.Context, m *DatabaseModule) error{
+		"GetSchemaTriggers": func(ctx context.Context, m *DatabaseModule) error { return m.GetSchemaTriggers(ctx, nil, nil) },
+		"EnableSchemaTrigger": func(ctx context.Context, m *DatabaseModule) error {
+			return m.EnableSchemaTrigger(ctx, "trg_1", nil, nil)
+		},
+		"DisableSchemaTrigger": func(ctx context.Context, m *DatabaseModule) error {
+			return m.DisableSchemaTrigger(ctx, "trg_1", nil, nil)
+		},
+		"DeleteSchemaTrigger": func(ctx context.Context, m *DatabaseModule) error {
+			return m.DeleteSchemaTrigger(ctx, "trg_1", nil, nil)
+		},
+	}
+	for name, call := range calls {
+		t.Run(name, func(t *testing.T) {
+			var gotEnv string
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotEnv = r.Header.Get("norbix-env")
+				w.WriteHeader(http.StatusNoContent)
+			}))
+			defer srv.Close()
+			m := &DatabaseModule{t: transport.New(&transport.Config{
+				ProjectID: "proj_1", AccountID: "acct_1", APIKey: "key_1",
+				BaseURLAPI: "http://api.invalid", BaseURLHub: srv.URL,
+				APIVersion: "v2", HubVersion: "v2", Timeout: 5 * time.Second, Env: "DEV",
+			}, nil)}
+			if err := call(context.Background(), m); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if gotEnv != "DEV" {
+				t.Errorf("norbix-env: got %q want DEV", gotEnv)
+			}
+		})
+	}
+}
+
+// A saved aggregate names the collections its pipeline joins.
+func TestGetDatabaseAggregateDecodesJoinedCollections(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"result":{"viewId":"agg_1","displayName":"Orders with users","schemaViewId":"sch_1","pipeline":"[]","joinedCollections":["users","products"]}}`))
+	}))
+	defer srv.Close()
+
+	var out struct {
+		Result dtos.MongoDbAggregateDto `json:"result"`
+	}
+	if err := newHubDatabaseTestModule(srv.URL).GetDatabaseAggregate(context.Background(), "agg_1", nil, &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	got, _ := json.Marshal(out.Result.JoinedCollections)
+	if string(got) != `["users","products"]` {
+		t.Errorf("joinedCollections: got %s", got)
+	}
+}
+
+// The Database refusals added on refactoringV2 reach the caller with the
+// gateway's own code and context, so callers can switch on them.
+func TestDatabaseRefusalsKeepTheGatewayCode(t *testing.T) {
+	cases := []struct {
+		name    string
+		status  int
+		code    string
+		context string // JSON of the error's context, "" for none
+		call    func(ctx context.Context, m *DatabaseModule) error
+	}{
+		{"empty filter without allRecords", http.StatusBadRequest, "CM-ERRORS-DATABASE-037", `{"Operation":"delete"}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.DeleteManyRecords(ctx, "products", map[string]any{"filter": "{}"}, nil)
+			}},
+		{"update with a $ operator", http.StatusBadRequest, "CM-ERRORS-DATABASE-035", `{"Operator":"$inc"}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.UpdateOneRecord(ctx, "products", "rec_1", map[string]any{"update": `{"$inc":{"stock":1}}`}, nil)
+			}},
+		{"insert many with a broken item", http.StatusBadRequest, "CM-ERRORS-DATABASE-036", `{"Index":1}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.InsertManyRecords(ctx, "products", map[string]any{"documents": `[{"title":"A"},3]`}, nil)
+			}},
+		{"new owner not a project user", http.StatusBadRequest, "CM-ERRORS-MEMBERSHIP-USERS-012", "",
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.ChangeRecordResponsibility(ctx, "products", "rec_1", map[string]any{"newResponsibleUserId": "usr_x"}, nil)
+			}},
+		{"schema used by a saved aggregate", http.StatusBadRequest, "CM-ERRORS-SCHEMA-018", `{"BlockerAggregateIds":["agg_1"],"BlockerAggregateNames":["Orders with users"],"SchemaId":"sch_1"}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.DeleteDatabaseSchema(ctx, "sch_1", nil, nil)
+			}},
+		{"rename to a used name", http.StatusBadRequest, "CM-ERRORS-SCHEMA-002", `{"SchemaName":"orders"}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.RenameDatabaseSchema(ctx, "sch_1", map[string]any{"title": "orders"}, nil)
+			}},
+		{"unknown taxonomy name", http.StatusNotFound, "CM-ERRORS-TAXONOMIES-010", "",
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.GetDatabaseMergedTermTree(ctx, "nope", nil, nil)
+			}},
+		{"term tree too large", http.StatusBadRequest, "CM-ERRORS-TAXONOMIES-011", `{"MaxTerms":5000}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.GetDatabaseTaxonomyTree(ctx, map[string]any{"includeTerms": true}, nil)
+			}},
+		{"trigger copy missing in env", http.StatusNotFound, "CM-ERRORS-TRIGGERS-002", "",
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.EnableSchemaTrigger(ctx, "trg_1", nil, nil)
+			}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			entry := map[string]any{"errorCode": c.code, "message": "refused"}
+			if c.context != "" {
+				var ctxMap map[string]any
+				_ = json.Unmarshal([]byte(c.context), &ctxMap)
+				entry["context"] = ctxMap
+			}
+			body, _ := json.Marshal(map[string]any{"responseStatus": map[string]any{"isSuccess": false, "errors": []any{entry}}})
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(c.status)
+				_, _ = w.Write(body)
+			}))
+			defer srv.Close()
+
+			err := c.call(context.Background(), newHubDatabaseTestModule(srv.URL))
+			var nbErr *nberrors.Error
+			if !errors.As(err, &nbErr) {
+				t.Fatalf("error: got %T %v, want *errors.Error", err, err)
+			}
+			if nbErr.Code != c.code {
+				t.Errorf("code: got %q want %q", nbErr.Code, c.code)
+			}
+			if c.context != "" {
+				if len(nbErr.Errors) != 1 {
+					t.Fatalf("errors: got %d want 1", len(nbErr.Errors))
+				}
+				got, _ := json.Marshal(nbErr.Errors[0].Context)
+				if string(got) != c.context {
+					t.Errorf("context: got %s want %s", got, c.context)
+				}
+			}
+		})
 	}
 }

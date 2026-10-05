@@ -72,8 +72,83 @@ err = client.Hub.Database.GetDatabaseMergedTermTree(ctx, "categories", nil, &mer
 ```
 
 The taxonomy list (`GetDatabaseTaxonomies`, `dtos.TaxonomyListProjection`)
-now also carries `Description`, `Dependencies`, `ParentName` and
-`DependencyNames`.
+carries `Description`, `Dependencies`, `ParentName` and `DependencyRefs`: one
+`dtos.TaxonomyRef{Id, Name}` per dependency, in the order of `Dependencies`.
+A dependency that no longer exists keeps its place with an empty `Name`.
+(`DependencyNames` is gone.)
+
+```go
+var list struct {
+	Result []dtos.TaxonomyListProjection `json:"result"`
+}
+err := client.Hub.Database.GetDatabaseTaxonomies(ctx, nil, &list)
+for _, ref := range list.Result[0].DependencyRefs {
+	fmt.Println(ref.Id, ref.Name) // Name == "" → the dependency was deleted
+}
+```
+
+### Update or delete many records
+
+`"update"` is the **bare field document**: the gateway applies it with
+`$set` itself. A body with `$` operators (`$set`, `$inc`, …) is refused with
+`CM-ERRORS-DATABASE-035`.
+
+An empty filter (`"{}"`) touches every record of the collection, so it is
+refused with `CM-ERRORS-DATABASE-037` unless the request also sets
+`"allRecords": true`. For update many, a missing filter counts as `"{}"`.
+
+```go
+// Only the records that match the filter.
+err := client.API.Database.UpdateMany(ctx, "products", map[string]any{
+	"filter": `{"brand":"acme"}`,
+	"update": `{"price":12}`,
+}, nil)
+
+// Every record, on purpose.
+err = client.API.Database.DeleteMany(ctx, "products", map[string]any{
+	"filter":     "{}",
+	"allRecords": true,
+}, nil)
+```
+
+Callers that only have own-record rights (`createAsUser`, `updateOwn`,
+`deleteOwn`) may call insert many, update many and delete many; those calls
+touch only the caller's own records.
+
+## Errors to expect
+
+Every refusal is an `*errors.Error`; `Code` is the gateway's code and
+`Errors[0].Context` holds its extra values.
+
+| code | when | context |
+|---|---|---|
+| `CM-ERRORS-DATABASE-031` | Api `FindTerms` / `FindTermsChildren`: the filter has `$where`, `$function` or `$accumulator` | `Operator` |
+| `CM-ERRORS-DATABASE-035` | update one / update many: the update has `$` operators | `Operator` |
+| `CM-ERRORS-DATABASE-036` | insert one / insert many / replace: the record is not a JSON object ("Invalid record document"; was `-005`) | `Index` (insert many) |
+| `CM-ERRORS-DATABASE-037` | update many / delete many: empty filter without `allRecords` | `Operation` |
+| `CM-ERRORS-MEMBERSHIP-USERS-012` | change responsibility: the new owner is not a user of the project in the request environment | — |
+| `CM-ERRORS-SCHEMA-002` | rename: another schema in the same environment already uses the name | `SchemaName` |
+| `CM-ERRORS-SCHEMA-018` | delete schema: a saved aggregate uses it as its start or a joined collection | `SchemaId`, `BlockerAggregateIds`, `BlockerAggregateNames` |
+| `CM-ERRORS-TAXONOMIES-005` | term read by a name over 40 characters | — |
+| `CM-ERRORS-TAXONOMIES-010` | term read or merged tree: no taxonomy has that name | — |
+| `CM-ERRORS-TAXONOMIES-011` | whole-taxonomy tree, merged tree or `includeTerms`: more than 5000 terms (read a sub-tree with `rootTermId` + `depth`) | `MaxTerms` |
+| `CM-ERRORS-TRIGGERS-002` | schema trigger enable / disable / delete: no copy in the request environment; save: the trigger id belongs to another schema | — |
+
+Other behaviour to know:
+
+- Update, replace and change responsibility do not match soft-deleted
+  records: such a record is "not found", and update many skips it.
+- `GetDatabaseTaxonomyTree` with `includeTerms` fails when the term read
+  fails (it used to return the taxonomies without terms).
+- Term reads by name (term tree, list, children, merged tree; Hub and Api)
+  need `database:read` on `database:term:<taxonomy id>`; the merged tree asks
+  it for every nested taxonomy too.
+- `SaveDatabaseTaxonomy` with the `viewId` of an existing taxonomy is an
+  update and needs `database:update` on `database:taxonomy:<viewId>`; without
+  one it is a create (`database:create` on all).
+- `TestDatabaseAggregate` needs `database:create` or `database:update` on
+  `database:aggregate:<schemaId>`, plus read. Read-only callers are refused.
+- `RenameDatabaseSchema` takes only `"title"` (`renameUniqueName` is gone).
 
 ### Schema embed and list settings
 
@@ -160,6 +235,13 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 | `GetSchemaTriggers(ctx, req, out)` | `GET` | `/database/schemas/triggers` |
 | `SaveSchemaTrigger(ctx, req, out)` | `POST` | `/database/schemas/triggers` |
 
+Schema triggers live per environment. `GetSchemaTriggers` lists only the
+request environment's triggers (the client's `Env`, sent as `norbix-env`;
+`PROD` when none is set), and each row carries `Env`. Enable, disable and
+delete act on the copy in that environment. `GetSchemaTrigger` returns
+`dtos.SchemaTriggerDto` with `Env`; its `SchemaId` is the owning schema
+(`sch_…`) — it used to hold the trigger's own id by mistake.
+
 **Taxonomies and terms**
 
 | method | verb | path |
@@ -201,6 +283,9 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 | `GetDatabaseAggregates(ctx, req, out)` | `GET` | `/database/aggregates` |
 | `SaveDatabaseAggregate(ctx, req, out)` | `POST` | `/database/aggregates` |
 | `TestDatabaseAggregate(ctx, req, out)` | `POST` | `/database/aggregates/test` |
+
+A saved aggregate (`dtos.MongoDbAggregateDto`) lists the collections its
+pipeline joins in `JoinedCollections`.
 
 ### Api — `client.API.Database` (22 methods)
 
