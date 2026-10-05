@@ -2,13 +2,14 @@ package hub
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
-	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
@@ -20,8 +21,11 @@ import (
 // local server: verb, resolved path, auth header, and no X-CM-AccountId
 // header. Never a real gateway.
 //
-// VerifyAccount is the one exception: the gateway reads the account id from
-// that request (Hub.Account/Account/Verify.cs), so it keeps the account scope.
+// Four routes are public on the gateway (no [Authenticate]): sign-up
+// (CreateAccount), accepting an invitation (CreateTeamMemberFromInvitation),
+// the region list (GetAccountRegions, Regions.List) and VerifyAccount. They
+// go out with NO token at all; VerifyAccount sends the account id once, in
+// the request (the gateway reads VerifyAccount.AccountId, Account/Verify.cs).
 
 type tokenOnlyHub struct {
 	Account *AccountModule
@@ -72,10 +76,6 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.GetStripeBillingPortalUrl(ctx, body, nil)
 			}},
-		{"CreateTeamMemberFromInvitation", http.MethodPost, "/v2/account/team/member",
-			func(ctx context.Context, h tokenOnlyHub) error {
-				return h.Account.CreateTeamMemberFromInvitation(ctx, body, nil)
-			}},
 		{"DeleteNotificationsGroup", http.MethodDelete, "/v2/account/projects/projectId_1/notifications/settings/group",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.DeleteNotificationsGroup(ctx, "projectId_1", body, nil)
@@ -108,8 +108,6 @@ func tokenOnlyCases() []tokenOnlyCase {
 			}},
 		{"GetProjects", http.MethodGet, "/v2/account/projects",
 			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetProjects(ctx, body, nil) }},
-		{"GetAccountRegions", http.MethodGet, "/v2/account/regions",
-			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetAccountRegions(ctx, body, nil) }},
 		{"GetProjectTokens", http.MethodGet, "/v2/account/projects/projectId_1/tokens",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.GetProjectTokens(ctx, "projectId_1", body, nil)
@@ -170,8 +168,6 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.UpdateProjectRegions(ctx, "projectId_1", body, nil)
 			}},
-		{"CreateAccount", http.MethodPost, "/v2/account",
-			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.CreateAccount(ctx, body, nil) }},
 		{"SendInviteToTeamMember", http.MethodPost, "/v2/account/team/member/invite",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.SendInviteToTeamMember(ctx, body, nil)
@@ -218,8 +214,6 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.RevokeAiServiceUserKey(ctx, "id_1", "keyId_1", body, nil)
 			}},
-		{"Regions.List", http.MethodGet, "/v2/account/regions",
-			func(ctx context.Context, h tokenOnlyHub) error { return h.Regions.List(ctx, body, nil) }},
 		{"Regions.UpdateProjectRegions", http.MethodPatch, "/v2/account/projects/projectId_1/settings/regions",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Regions.UpdateProjectRegions(ctx, "projectId_1", body, nil)
@@ -261,24 +255,77 @@ func TestAccountRoutesWorkWithATokenAndNoAccountID(t *testing.T) {
 	}
 }
 
-// VerifyAccount keeps the account scope: without AccountID it is refused
-// before anything leaves the process.
-func TestVerifyAccountStillNeedsTheAccountIDBecauseTheGatewayReadsItFromTheRequest(t *testing.T) {
-	hit := false
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hit = true
-		w.WriteHeader(http.StatusNoContent)
-	}))
-	defer srv.Close()
+func newNoTokenHub(baseURL string) tokenOnlyHub {
+	t := transport.New(&transport.Config{
+		ProjectID:  "proj_1",
+		BaseURLAPI: baseURL,
+		BaseURLHub: baseURL,
+		APIVersion: "v2",
+		HubVersion: "v2",
+		Timeout:    5 * time.Second,
+		Env:        "PROD",
+	}, nil) // no APIKey, no BearerToken, no AccountID
+	return tokenOnlyHub{Account: &AccountModule{t: t}, Regions: &RegionsModule{t: t}}
+}
 
-	err := newTokenOnlyHub(srv.URL).Account.VerifyAccount(context.Background(),
-		map[string]any{"accountId": "acct_1", "token": "t"}, nil)
+func TestPublicAccountRoutesWorkWithNoTokenAndNoAccountID(t *testing.T) {
+	signUp := map[string]any{"email": "ada@example.test", "password": "pw", "displayName": "Ada"}
+	invite := map[string]any{"token": "invite-1", "password": "pw", "displayName": "Ada"}
+	verify := map[string]any{"accountId": "acct_1", "token": "verify-1"}
 
-	var ne *norbixerr.Error
-	if !errors.As(err, &ne) || ne.Code != norbixerr.CodeAccountScope {
-		t.Fatalf("want %s, got %v", norbixerr.CodeAccountScope, err)
+	cases := []struct {
+		name  string
+		verb  string
+		path  string
+		query string // GET: the query the gateway reads
+		body  map[string]any
+		call  func(ctx context.Context, h tokenOnlyHub) error
+	}{
+		{"CreateAccount", http.MethodPost, "/v2/account", "", signUp,
+			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.CreateAccount(ctx, signUp, nil) }},
+		{"CreateTeamMemberFromInvitation", http.MethodPost, "/v2/account/team/member", "", invite,
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.CreateTeamMemberFromInvitation(ctx, invite, nil)
+			}},
+		{"GetAccountRegions", http.MethodGet, "/v2/account/regions", "", nil,
+			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetAccountRegions(ctx, nil, nil) }},
+		{"Regions.List", http.MethodGet, "/v2/account/regions", "", nil,
+			func(ctx context.Context, h tokenOnlyHub) error { return h.Regions.List(ctx, nil, nil) }},
+		{"VerifyAccount", http.MethodGet, "/v2/account/verify", "accountId=acct_1&token=verify-1", nil,
+			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.VerifyAccount(ctx, verify, nil) }},
 	}
-	if hit {
-		t.Error("the request must not leave the process without AccountID")
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var gotMethod, gotPath, gotQuery, gotAuth, gotAccount string
+			var gotBody map[string]any
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotMethod, gotPath, gotQuery = r.Method, r.URL.Path, r.URL.Query().Encode()
+				gotAuth = r.Header.Get("Authorization")
+				gotAccount = r.Header.Get("X-CM-AccountId")
+				raw, _ := io.ReadAll(r.Body)
+				if len(raw) > 0 {
+					_ = json.Unmarshal(raw, &gotBody)
+				}
+				w.WriteHeader(http.StatusNoContent)
+			}))
+			defer srv.Close()
+
+			if err := c.call(context.Background(), newNoTokenHub(srv.URL)); err != nil {
+				t.Fatalf("%s: want the call to go out with no token, got %v", c.name, err)
+			}
+			if gotMethod != c.verb || gotPath != c.path {
+				t.Errorf("%s route: got %s %s want %s %s", c.name, gotMethod, gotPath, c.verb, c.path)
+			}
+			if gotAuth != "" || gotAccount != "" {
+				t.Errorf("%s: no Authorization / X-CM-AccountId header expected, got %q / %q", c.name, gotAuth, gotAccount)
+			}
+			if gotQuery != c.query {
+				t.Errorf("%s query: got %q want %q", c.name, gotQuery, c.query)
+			}
+			if c.body != nil && !reflect.DeepEqual(gotBody, c.body) {
+				t.Errorf("%s body: got %v want %v", c.name, gotBody, c.body)
+			}
+		})
 	}
 }
