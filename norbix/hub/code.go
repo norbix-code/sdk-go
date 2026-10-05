@@ -11,24 +11,24 @@ import (
 // CodeModule groups the code endpoints on the HUB.
 type CodeModule struct{ t *transport.Transport }
 
-// DisableCode performs GET /{version}/code/disable (scope: project).
+// DisableCode performs PUT /{version}/code/disable (scope: project).
 func (m *CodeModule) DisableCode(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/code/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnableCode performs GET /{version}/code/enable (scope: project).
+// EnableCode performs PUT /{version}/code/enable (scope: project).
 func (m *CodeModule) EnableCode(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/code/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

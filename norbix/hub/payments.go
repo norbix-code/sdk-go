@@ -11,24 +11,24 @@ import (
 // PaymentsModule groups the payments endpoints on the HUB.
 type PaymentsModule struct{ t *transport.Transport }
 
-// DisablePayments performs GET /{version}/payments/disable (scope: project).
+// DisablePayments performs PUT /{version}/payments/disable (scope: project).
 func (m *PaymentsModule) DisablePayments(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/payments/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnablePayments performs GET /{version}/payments/enable (scope: project).
+// EnablePayments performs PUT /{version}/payments/enable (scope: project).
 func (m *PaymentsModule) EnablePayments(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/payments/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

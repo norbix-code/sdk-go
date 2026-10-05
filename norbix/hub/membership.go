@@ -11,24 +11,24 @@ import (
 // MembershipModule groups the membership endpoints on the HUB.
 type MembershipModule struct{ t *transport.Transport }
 
-// DisableMembership performs GET /{version}/membership/disable (scope: project).
+// DisableMembership performs PUT /{version}/membership/disable (scope: project).
 func (m *MembershipModule) DisableMembership(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/membership/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnableMembership performs GET /{version}/membership/enable (scope: project).
+// EnableMembership performs PUT /{version}/membership/enable (scope: project).
 func (m *MembershipModule) EnableMembership(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/membership/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

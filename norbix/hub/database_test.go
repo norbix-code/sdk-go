@@ -35,11 +35,11 @@ type hubDatabaseCase struct {
 
 func hubDatabaseCases() []hubDatabaseCase {
 	return []hubDatabaseCase{
-		{"DisableDatabase", http.MethodGet, "/v2/database/disable", nil, nil,
+		{"DisableDatabase", http.MethodPut, "/v2/database/disable", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.DisableDatabase(ctx, nil, nil)
 			}},
-		{"EnableDatabase", http.MethodGet, "/v2/database/enable", nil, nil,
+		{"EnableDatabase", http.MethodPut, "/v2/database/enable", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.EnableDatabase(ctx, nil, nil)
 			}},

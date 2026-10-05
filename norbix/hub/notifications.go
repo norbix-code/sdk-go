@@ -35,12 +35,12 @@ func (m *NotificationsModule) UpdateUserNotificationsPreferences(ctx context.Con
 	}, out)
 }
 
-// DisableEmail performs GET /{version}/notifications/email/disable (scope: project).
+// DisableEmail performs PUT /{version}/notifications/email/disable (scope: project).
 func (m *NotificationsModule) DisableEmail(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/email/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -60,12 +60,12 @@ func (m *NotificationsModule) GetEmailDisableDependencies(ctx context.Context, r
 	}, out)
 }
 
-// EnableEmail performs GET /{version}/notifications/email/enable (scope: project).
+// EnableEmail performs PUT /{version}/notifications/email/enable (scope: project).
 func (m *NotificationsModule) EnableEmail(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/email/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -666,24 +666,24 @@ func (m *NotificationsModule) GetEmailCampaignMessages(ctx context.Context, camp
 	}, out)
 }
 
-// DisablePush performs GET /{version}/notifications/push/disable (scope: project).
+// DisablePush performs PUT /{version}/notifications/push/disable (scope: project).
 func (m *NotificationsModule) DisablePush(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/push/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnablePush performs GET /{version}/notifications/push/enable (scope: project).
+// EnablePush performs PUT /{version}/notifications/push/enable (scope: project).
 func (m *NotificationsModule) EnablePush(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/push/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -1506,12 +1506,12 @@ func (m *NotificationsModule) GetSmsCampaignStatistics(ctx context.Context, id s
 	}, out)
 }
 
-// DisableSms performs GET /{version}/notifications/sms/disable (scope: project).
+// DisableSms performs PUT /{version}/notifications/sms/disable (scope: project).
 func (m *NotificationsModule) DisableSms(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/sms/disable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -1532,12 +1532,12 @@ func (m *NotificationsModule) GetSmsDisableDependencies(ctx context.Context, req
 	}, out)
 }
 
-// EnableSms performs GET /{version}/notifications/sms/enable (scope: project).
+// EnableSms performs PUT /{version}/notifications/sms/enable (scope: project).
 func (m *NotificationsModule) EnableSms(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/sms/enable",
-		Method:     "GET",
+		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

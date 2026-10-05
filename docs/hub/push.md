@@ -32,9 +32,9 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 
 | method | verb | path |
 |---|---|---|
-| `DisablePush(ctx, req, out)` | `GET` | `/notifications/push/disable` |
+| `DisablePush(ctx, req, out)` | `PUT` | `/notifications/push/disable` |
 | `GetPushDisableDependencies(ctx, req, out)` | `GET` | `/notifications/push/disable-dependencies` |
-| `EnablePush(ctx, req, out)` | `GET` | `/notifications/push/enable` |
+| `EnablePush(ctx, req, out)` | `PUT` | `/notifications/push/enable` |
 | `GetPushSettings(ctx, req, out)` | `GET` | `/notifications/push/settings` |
 
 ## Integrations

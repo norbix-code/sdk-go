@@ -78,7 +78,7 @@ func emailCases() []emailCase {
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.GetEmailCampaignStatistics(ctx, testEmailID, nil, nil)
 			}},
-		{"DisableEmail", http.MethodGet, "/v2/notifications/email/disable",
+		{"DisableEmail", http.MethodPut, "/v2/notifications/email/disable",
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.DisableEmail(ctx, nil, nil)
 			}},
@@ -86,7 +86,7 @@ func emailCases() []emailCase {
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.GetEmailDisableDependencies(ctx, nil, nil)
 			}},
-		{"EnableEmail", http.MethodGet, "/v2/notifications/email/enable",
+		{"EnableEmail", http.MethodPut, "/v2/notifications/email/enable",
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.EnableEmail(ctx, nil, nil)
 			}},

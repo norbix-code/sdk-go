@@ -33,11 +33,11 @@ func smsCases() []smsCase {
 
 	return []smsCase{
 		// --- module
-		{"EnableSms", http.MethodGet, "/v2/notifications/sms/enable",
+		{"EnableSms", http.MethodPut, "/v2/notifications/sms/enable",
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.EnableSms(ctx, nil, nil)
 			}},
-		{"DisableSms", http.MethodGet, "/v2/notifications/sms/disable",
+		{"DisableSms", http.MethodPut, "/v2/notifications/sms/disable",
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.DisableSms(ctx, nil, nil)
 			}},
