@@ -102,8 +102,8 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 
 | method | verb | path |
 |---|---|---|
-| `DisableDatabase(ctx, req, out)` | `GET` | `/database/disable` |
-| `EnableDatabase(ctx, req, out)` | `GET` | `/database/enable` |
+| `DisableDatabase(ctx, req, out)` | `PUT` | `/database/disable` |
+| `EnableDatabase(ctx, req, out)` | `PUT` | `/database/enable` |
 
 **Records and collections**
 
@@ -146,6 +146,8 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 | `UpdateDatabaseSchemaEmbed(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/embed` |
 | `GetDatabaseSchemaListSettings(ctx, id, req, out)` | `GET` | `/database/schemas/{Id}/list-settings` |
 | `UpdateDatabaseSchemaListSettings(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/list-settings` |
+
+`GetDatabaseSchemas` returns only the schemas of the request environment (the client's `Env`, sent as the `norbix-env` header; `PROD` when none is set). Each row carries that environment in `Env`. The paging cursors (`startingAfter` / `endingBefore`) are schema view ids (`sch_…`); a cursor saved before this gateway change no longer matches.
 
 **Schema triggers**
 
@@ -228,6 +230,8 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 |---|---|---|
 | `GetDatabaseSchema(ctx, id, req, out)` | `GET` | `/database/schemas/{id}` |
 | `GetDatabaseSchemas(ctx, req, out)` | `GET` | `/database/schemas` |
+
+`GetDatabaseSchemas` returns only the schemas of the request environment (the client's `Env`, sent as the `norbix-env` header; `PROD` when none is set). Each row carries that environment in `Env`. The paging cursors (`startingAfter` / `endingBefore`) are schema view ids (`sch_…`); a cursor saved before this gateway change no longer matches.
 
 **Taxonomies and terms**
 

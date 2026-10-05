@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 08:08:29
+Date: 2026-10-05 16:13:59
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:5002
+BaseUrl: http://localhost:54946
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -628,6 +628,8 @@ type SchemaListProjection struct {
 	MetaSchemaVersion int `json:"metaSchemaVersion,omitempty"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 // @DataContract

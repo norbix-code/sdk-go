@@ -591,6 +591,7 @@ type SchemaListProjection struct {
 	HasDraft          bool    `json:"hasDraft,omitempty"`
 	MetaSchemaVersion float64 `json:"metaSchemaVersion,omitempty"`
 	Description       string  `json:"description,omitempty"`
+	Env               string  `json:"env,omitempty"`
 }
 
 // FileChecksumDto DTO.

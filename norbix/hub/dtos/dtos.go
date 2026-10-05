@@ -2972,6 +2972,65 @@ type EmailCampaignSchedulerTaskRequest struct {
 	DatabaseIntegrationId string                `json:"databaseIntegrationId,omitempty"`
 }
 
+// IdResponse DTO.
+type IdResponse struct {
+	ResponseBase
+	Id     string `json:"id,omitempty"`
+	Status string `json:"status,omitempty"`
+}
+
+// CodeMashRequestBase DTO.
+type CodeMashRequestBase struct {
+	RequestBase
+	ProjectId string `json:"projectId,omitempty"`
+	Env       string `json:"env,omitempty"`
+}
+
+// CreateSmsCampaignRequest DTO.
+type CreateSmsCampaignRequest struct {
+	CodeMashRequestBase
+	TemplateId            string                                     `json:"templateId,omitempty"`
+	DatabaseIntegrationId string                                     `json:"databaseIntegrationId,omitempty"`
+	IntegrationId         string                                     `json:"integrationId,omitempty"`
+	Language              string                                     `json:"language,omitempty"`
+	InitiatorId           string                                     `json:"initiatorId,omitempty"`
+	DeliveryType          SmsCampaignRecipientsSourceTypes           `json:"deliveryType,omitempty"`
+	AllUsers              *SmsToAllUsersDeliverySettingsDto          `json:"allUsers,omitempty"`
+	SpecifiedUsers        *SmsToUsersDeliverySettingsDto             `json:"specifiedUsers,omitempty"`
+	AccountUsers          *SmsToAccountUsersDeliverySettingsDto      `json:"accountUsers,omitempty"`
+	Collection            *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
+	PhoneNumbers          *SmsToPhoneNumbersDeliverySettingsDto      `json:"phoneNumbers,omitempty"`
+	SendNow               bool                                       `json:"sendNow,omitempty"`
+}
+
+// SmsCampaignSchedulerTaskRequest DTO.
+type SmsCampaignSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type                  SchedulerTaskType         `json:"type,omitempty"`
+	Campaign              *CreateSmsCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId string                    `json:"databaseIntegrationId,omitempty"`
+}
+
+// PushCampaignRequest DTO.
+type PushCampaignRequest struct {
+	Source        PushCampaignRecipientsSourceTypes `json:"source,omitempty"`
+	TemplateId    string                            `json:"templateId,omitempty"`
+	IntegrationId string                            `json:"integrationId,omitempty"`
+	Language      string                            `json:"language,omitempty"`
+	InitiatorId   string                            `json:"initiatorId,omitempty"`
+	Notes         string                            `json:"notes,omitempty"`
+	MappedTokens  []*TokenMappingDto                `json:"mappedTokens,omitempty"`
+	CampaignTime  float64                           `json:"campaignTime,omitempty"`
+}
+
+// PushCampaignSchedulerTaskRequest DTO.
+type PushCampaignSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type                  SchedulerTaskType    `json:"type,omitempty"`
+	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId string               `json:"databaseIntegrationId,omitempty"`
+}
+
 // MongoDbAggregateDto DTO.
 type MongoDbAggregateDto struct {
 	ViewId       string `json:"viewId,omitempty"`
@@ -3300,13 +3359,6 @@ type IVersionBasedRequest struct {
 type IHasCorrelationIdRequest struct {
 }
 
-// CodeMashRequestBase DTO.
-type CodeMashRequestBase struct {
-	RequestBase
-	ProjectId string `json:"projectId,omitempty"`
-	Env       string `json:"env,omitempty"`
-}
-
 // IHasProjectId DTO.
 type IHasProjectId struct {
 }
@@ -3586,18 +3638,6 @@ type PushDeviceDto struct {
 	OsName           string     `json:"osName,omitempty"`
 	OsVersion        string     `json:"osVersion,omitempty"`
 	PlatformApiLevel float64    `json:"platformApiLevel,omitempty"`
-}
-
-// PushCampaignRequest DTO.
-type PushCampaignRequest struct {
-	Source        PushCampaignRecipientsSourceTypes `json:"source,omitempty"`
-	TemplateId    string                            `json:"templateId,omitempty"`
-	IntegrationId string                            `json:"integrationId,omitempty"`
-	Language      string                            `json:"language,omitempty"`
-	InitiatorId   string                            `json:"initiatorId,omitempty"`
-	Notes         string                            `json:"notes,omitempty"`
-	MappedTokens  []*TokenMappingDto                `json:"mappedTokens,omitempty"`
-	CampaignTime  float64                           `json:"campaignTime,omitempty"`
 }
 
 // ChatScreenContextDto DTO.
@@ -4671,6 +4711,7 @@ type SchemaListProjection struct {
 	HasDraft          bool    `json:"hasDraft,omitempty"`
 	MetaSchemaVersion float64 `json:"metaSchemaVersion,omitempty"`
 	Description       string  `json:"description,omitempty"`
+	Env               string  `json:"env,omitempty"`
 }
 
 // SchemaDraftDto DTO.
@@ -4950,6 +4991,8 @@ type CampaignDto struct {
 	Status                          *CampaignStatusChangeEntryDto   `json:"status,omitempty"`
 	TokenMappingValues              []*TokenMappingDto              `json:"tokenMappingValues,omitempty"`
 	Notes                           string                          `json:"notes,omitempty"`
+	CreatedById                     string                          `json:"createdById,omitempty"`
+	TimeZoneId                      string                          `json:"timeZoneId,omitempty"`
 	UserId                          string                          `json:"userId,omitempty"`
 	Id                              string                          `json:"id,omitempty"`
 }
@@ -5070,9 +5113,8 @@ type SmsIntegrationListProjection struct {
 // SmsCampaignDto DTO.
 type SmsCampaignDto struct {
 	CampaignDto
-	Recipients  *SmsCampaignDeliverySettingsDto `json:"recipients,omitempty"`
-	Template    *SmsTemplateDto                 `json:"template,omitempty"`
-	CreatedById string                          `json:"createdById,omitempty"`
+	Recipients *SmsCampaignDeliverySettingsDto `json:"recipients,omitempty"`
+	Template   *SmsTemplateDto                 `json:"template,omitempty"`
 }
 
 // SmsRecipientDto DTO.
@@ -6123,13 +6165,6 @@ type EmptyResponse struct {
 type GetAccountStatusResponse struct {
 	ResponseBase
 	Item *AccountStatusDto `json:"item,omitempty"`
-}
-
-// IdResponse DTO.
-type IdResponse struct {
-	ResponseBase
-	Id     string `json:"id,omitempty"`
-	Status string `json:"status,omitempty"`
 }
 
 // CreateStripeCheckoutSessionResponse DTO.
@@ -8053,6 +8088,8 @@ type InternalsTypeGen struct {
 	Typegen_193_WebhookDestinationDto                            *WebhookDestinationDto                             `json:"typegen_193_WebhookDestinationDto,omitempty"`
 	Typegen_194_SchedulerTaskDto                                 *SchedulerTaskDto                                  `json:"typegen_194_SchedulerTaskDto,omitempty"`
 	Typegen_249_EmailCampaignSchedulerTaskRequest                *EmailCampaignSchedulerTaskRequest                 `json:"typegen_249_EmailCampaignSchedulerTaskRequest,omitempty"`
+	Typegen_250_SmsCampaignSchedulerTaskRequest                  *SmsCampaignSchedulerTaskRequest                   `json:"typegen_250_SmsCampaignSchedulerTaskRequest,omitempty"`
+	Typegen_251_PushCampaignSchedulerTaskRequest                 *PushCampaignSchedulerTaskRequest                  `json:"typegen_251_PushCampaignSchedulerTaskRequest,omitempty"`
 	Typegen_195_MongoDbAggregateDto                              *MongoDbAggregateDto                               `json:"typegen_195_MongoDbAggregateDto,omitempty"`
 	Typegen_196_MarketplaceIntegrationDto                        *MarketplaceIntegrationDto                         `json:"typegen_196_MarketplaceIntegrationDto,omitempty"`
 	Typegen_197_MarketplaceFunctionDto                           *MarketplaceFunctionDto                            `json:"typegen_197_MarketplaceFunctionDto,omitempty"`
@@ -10225,23 +10262,6 @@ type TestSmsIntegration struct {
 	CodeMashRequestBase
 	IntegrationId string `json:"integrationId,omitempty"`
 	To            string `json:"to,omitempty"`
-}
-
-// CreateSmsCampaignRequest DTO.
-type CreateSmsCampaignRequest struct {
-	CodeMashRequestBase
-	TemplateId            string                                     `json:"templateId,omitempty"`
-	DatabaseIntegrationId string                                     `json:"databaseIntegrationId,omitempty"`
-	IntegrationId         string                                     `json:"integrationId,omitempty"`
-	Language              string                                     `json:"language,omitempty"`
-	InitiatorId           string                                     `json:"initiatorId,omitempty"`
-	DeliveryType          SmsCampaignRecipientsSourceTypes           `json:"deliveryType,omitempty"`
-	AllUsers              *SmsToAllUsersDeliverySettingsDto          `json:"allUsers,omitempty"`
-	SpecifiedUsers        *SmsToUsersDeliverySettingsDto             `json:"specifiedUsers,omitempty"`
-	AccountUsers          *SmsToAccountUsersDeliverySettingsDto      `json:"accountUsers,omitempty"`
-	Collection            *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
-	PhoneNumbers          *SmsToPhoneNumbersDeliverySettingsDto      `json:"phoneNumbers,omitempty"`
-	SendNow               bool                                       `json:"sendNow,omitempty"`
 }
 
 // DeleteSmsCampaign DTO.
