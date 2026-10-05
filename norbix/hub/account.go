@@ -11,7 +11,7 @@ import (
 // AccountModule groups the account endpoints on the HUB.
 type AccountModule struct{ t *transport.Transport }
 
-// GetAccountProfile performs GET /{version}/account/profile (scope: account).
+// GetAccountProfile performs GET /{version}/account/profile (scope: project).
 func (m *AccountModule) GetAccountProfile(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -19,11 +19,11 @@ func (m *AccountModule) GetAccountProfile(ctx context.Context, req map[string]an
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateAccountProfile performs PUT /{version}/account/profile (scope: account).
+// UpdateAccountProfile performs PUT /{version}/account/profile (scope: project).
 func (m *AccountModule) UpdateAccountProfile(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -31,11 +31,11 @@ func (m *AccountModule) UpdateAccountProfile(ctx context.Context, req map[string
 		Method:     "PUT",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// ResendAccountVerificationToken performs GET /{version}/account/verify/resend (scope: account).
+// ResendAccountVerificationToken performs GET /{version}/account/verify/resend (scope: project).
 func (m *AccountModule) ResendAccountVerificationToken(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -43,11 +43,11 @@ func (m *AccountModule) ResendAccountVerificationToken(ctx context.Context, req 
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetAccountStatus performs GET /{version}/account/status (scope: account).
+// GetAccountStatus performs GET /{version}/account/status (scope: project).
 func (m *AccountModule) GetAccountStatus(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -55,11 +55,11 @@ func (m *AccountModule) GetAccountStatus(ctx context.Context, req map[string]any
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// CreateStripeCheckoutSession performs POST /{version}/account/stripe/create-checkout-session (scope: account).
+// CreateStripeCheckoutSession performs POST /{version}/account/stripe/create-checkout-session (scope: project).
 func (m *AccountModule) CreateStripeCheckoutSession(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -67,11 +67,11 @@ func (m *AccountModule) CreateStripeCheckoutSession(ctx context.Context, req map
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetStripeBillingPortalUrl performs POST /{version}/account/stripe/get-portal-url (scope: account).
+// GetStripeBillingPortalUrl performs POST /{version}/account/stripe/get-portal-url (scope: project).
 func (m *AccountModule) GetStripeBillingPortalUrl(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -79,11 +79,11 @@ func (m *AccountModule) GetStripeBillingPortalUrl(ctx context.Context, req map[s
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// CreateTeamMemberFromInvitation performs POST /{version}/account/team/member (scope: account).
+// CreateTeamMemberFromInvitation performs POST /{version}/account/team/member (scope: project).
 func (m *AccountModule) CreateTeamMemberFromInvitation(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -91,11 +91,17 @@ func (m *AccountModule) CreateTeamMemberFromInvitation(ctx context.Context, req 
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
 // VerifyAccount performs GET /{version}/account/verify (scope: account).
+//
+// It is the one account route that keeps the account scope: the gateway reads
+// the account id from this request (VerifyAccount.AccountId), so the client
+// must be built with AccountID and the caller passes "accountId" in req too.
+// Every other account route takes the account from the signed-in session or
+// the project id in the path and needs only a token.
 func (m *AccountModule) VerifyAccount(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -107,7 +113,7 @@ func (m *AccountModule) VerifyAccount(ctx context.Context, req map[string]any, o
 	}, out)
 }
 
-// DeleteNotificationsGroup performs DELETE /{version}/account/projects/{projectId}/notifications/settings/group (scope: account).
+// DeleteNotificationsGroup performs DELETE /{version}/account/projects/{projectId}/notifications/settings/group (scope: project).
 func (m *AccountModule) DeleteNotificationsGroup(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -118,11 +124,11 @@ func (m *AccountModule) DeleteNotificationsGroup(ctx context.Context, projectId 
 		Method:     "DELETE",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// DeleteNotificationsTag performs DELETE /{version}/account/projects/{projectId}/notifications/settings/tag (scope: account).
+// DeleteNotificationsTag performs DELETE /{version}/account/projects/{projectId}/notifications/settings/tag (scope: project).
 func (m *AccountModule) DeleteNotificationsTag(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -133,11 +139,11 @@ func (m *AccountModule) DeleteNotificationsTag(ctx context.Context, projectId st
 		Method:     "DELETE",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// RemoveTagFromNotificationsGroup performs DELETE /{version}/account/projects/{projectId}/notifications/settings/group/tag (scope: account).
+// RemoveTagFromNotificationsGroup performs DELETE /{version}/account/projects/{projectId}/notifications/settings/group/tag (scope: project).
 func (m *AccountModule) RemoveTagFromNotificationsGroup(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -148,11 +154,11 @@ func (m *AccountModule) RemoveTagFromNotificationsGroup(ctx context.Context, pro
 		Method:     "DELETE",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// SaveNotificationsGroup performs POST /{version}/account/projects/{projectId}/notifications/settings/group (scope: account).
+// SaveNotificationsGroup performs POST /{version}/account/projects/{projectId}/notifications/settings/group (scope: project).
 func (m *AccountModule) SaveNotificationsGroup(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -163,11 +169,11 @@ func (m *AccountModule) SaveNotificationsGroup(ctx context.Context, projectId st
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// SaveNotificationsTag performs POST /{version}/account/projects/{projectId}/notifications/settings/tag (scope: account).
+// SaveNotificationsTag performs POST /{version}/account/projects/{projectId}/notifications/settings/tag (scope: project).
 func (m *AccountModule) SaveNotificationsTag(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -178,11 +184,11 @@ func (m *AccountModule) SaveNotificationsTag(ctx context.Context, projectId stri
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// CreateProject performs POST /{version}/account/projects (scope: account).
+// CreateProject performs POST /{version}/account/projects (scope: project).
 func (m *AccountModule) CreateProject(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -190,11 +196,11 @@ func (m *AccountModule) CreateProject(ctx context.Context, req map[string]any, o
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// DeleteProject performs DELETE /{version}/account/projects/{projectId} (scope: account).
+// DeleteProject performs DELETE /{version}/account/projects/{projectId} (scope: project).
 func (m *AccountModule) DeleteProject(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -205,11 +211,11 @@ func (m *AccountModule) DeleteProject(ctx context.Context, projectId string, req
 		Method:     "DELETE",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetProject performs GET /{version}/account/projects/{projectId} (scope: account).
+// GetProject performs GET /{version}/account/projects/{projectId} (scope: project).
 func (m *AccountModule) GetProject(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -220,11 +226,11 @@ func (m *AccountModule) GetProject(ctx context.Context, projectId string, req ma
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetProjects performs GET /{version}/account/projects (scope: account).
+// GetProjects performs GET /{version}/account/projects (scope: project).
 func (m *AccountModule) GetProjects(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -232,11 +238,11 @@ func (m *AccountModule) GetProjects(ctx context.Context, req map[string]any, out
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetAccountRegions performs GET /{version}/account/regions (scope: account).
+// GetAccountRegions performs GET /{version}/account/regions (scope: project).
 func (m *AccountModule) GetAccountRegions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -244,11 +250,11 @@ func (m *AccountModule) GetAccountRegions(ctx context.Context, req map[string]an
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetProjectTokens performs GET /{version}/account/projects/{projectId}/tokens (scope: account).
+// GetProjectTokens performs GET /{version}/account/projects/{projectId}/tokens (scope: project).
 func (m *AccountModule) GetProjectTokens(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -259,11 +265,11 @@ func (m *AccountModule) GetProjectTokens(ctx context.Context, projectId string, 
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectAccentColor performs PATCH /{version}/account/projects/{projectId}/settings/accent-color (scope: account).
+// UpdateProjectAccentColor performs PATCH /{version}/account/projects/{projectId}/settings/accent-color (scope: project).
 func (m *AccountModule) UpdateProjectAccentColor(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -274,11 +280,11 @@ func (m *AccountModule) UpdateProjectAccentColor(ctx context.Context, projectId 
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectIcon performs PATCH /{version}/account/projects/{projectId}/settings/icon (scope: account).
+// UpdateProjectIcon performs PATCH /{version}/account/projects/{projectId}/settings/icon (scope: project).
 func (m *AccountModule) UpdateProjectIcon(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -289,11 +295,11 @@ func (m *AccountModule) UpdateProjectIcon(ctx context.Context, projectId string,
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectLogo performs PATCH /{version}/account/projects/{projectId}/settings/logo (scope: account).
+// UpdateProjectLogo performs PATCH /{version}/account/projects/{projectId}/settings/logo (scope: project).
 func (m *AccountModule) UpdateProjectLogo(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -304,11 +310,11 @@ func (m *AccountModule) UpdateProjectLogo(ctx context.Context, projectId string,
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectMainColor performs PATCH /{version}/account/projects/{projectId}/settings/main-color (scope: account).
+// UpdateProjectMainColor performs PATCH /{version}/account/projects/{projectId}/settings/main-color (scope: project).
 func (m *AccountModule) UpdateProjectMainColor(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -319,11 +325,11 @@ func (m *AccountModule) UpdateProjectMainColor(ctx context.Context, projectId st
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectAllowedOrigins performs PATCH /{version}/account/projects/{projectId}/settings/origins (scope: account).
+// UpdateProjectAllowedOrigins performs PATCH /{version}/account/projects/{projectId}/settings/origins (scope: project).
 func (m *AccountModule) UpdateProjectAllowedOrigins(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -334,11 +340,11 @@ func (m *AccountModule) UpdateProjectAllowedOrigins(ctx context.Context, project
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectDefaultLanguage performs PATCH /{version}/account/projects/{projectId}/settings/default-language (scope: account).
+// UpdateProjectDefaultLanguage performs PATCH /{version}/account/projects/{projectId}/settings/default-language (scope: project).
 func (m *AccountModule) UpdateProjectDefaultLanguage(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -349,11 +355,11 @@ func (m *AccountModule) UpdateProjectDefaultLanguage(ctx context.Context, projec
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectDescription performs PATCH /{version}/account/projects/{projectId}/settings/description (scope: account).
+// UpdateProjectDescription performs PATCH /{version}/account/projects/{projectId}/settings/description (scope: project).
 func (m *AccountModule) UpdateProjectDescription(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -364,11 +370,11 @@ func (m *AccountModule) UpdateProjectDescription(ctx context.Context, projectId 
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// DisableProject performs PATCH /{version}/account/projects/{projectId}/disable (scope: account).
+// DisableProject performs PATCH /{version}/account/projects/{projectId}/disable (scope: project).
 func (m *AccountModule) DisableProject(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -379,11 +385,11 @@ func (m *AccountModule) DisableProject(ctx context.Context, projectId string, re
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// EnableProject performs PATCH /{version}/account/projects/{projectId}/enable (scope: account).
+// EnableProject performs PATCH /{version}/account/projects/{projectId}/enable (scope: project).
 func (m *AccountModule) EnableProject(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -394,11 +400,11 @@ func (m *AccountModule) EnableProject(ctx context.Context, projectId string, req
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectLanguages performs PATCH /{version}/account/projects/{projectId}/settings/languages (scope: account).
+// UpdateProjectLanguages performs PATCH /{version}/account/projects/{projectId}/settings/languages (scope: project).
 func (m *AccountModule) UpdateProjectLanguages(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -409,11 +415,11 @@ func (m *AccountModule) UpdateProjectLanguages(ctx context.Context, projectId st
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// CheckProjectLanguages performs POST /{version}/account/projects/{projectId}/settings/languages/check (scope: account).
+// CheckProjectLanguages performs POST /{version}/account/projects/{projectId}/settings/languages/check (scope: project).
 //
 // It lists the Email, Push and SMS templates that miss a project language.
 // Send the proposed "defaultLanguage" and/or "languages" to check a change
@@ -431,11 +437,11 @@ func (m *AccountModule) CheckProjectLanguages(ctx context.Context, projectId str
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectUrl performs PATCH /{version}/account/projects/{projectId}/settings/url (scope: account).
+// UpdateProjectUrl performs PATCH /{version}/account/projects/{projectId}/settings/url (scope: project).
 func (m *AccountModule) UpdateProjectUrl(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -446,11 +452,11 @@ func (m *AccountModule) UpdateProjectUrl(ctx context.Context, projectId string, 
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectName performs PATCH /{version}/account/projects/{projectId}/settings/name (scope: account).
+// UpdateProjectName performs PATCH /{version}/account/projects/{projectId}/settings/name (scope: project).
 func (m *AccountModule) UpdateProjectName(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -461,11 +467,11 @@ func (m *AccountModule) UpdateProjectName(ctx context.Context, projectId string,
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectRegions performs PATCH /{version}/account/projects/{projectId}/settings/regions (scope: account).
+// UpdateProjectRegions performs PATCH /{version}/account/projects/{projectId}/settings/regions (scope: project).
 func (m *AccountModule) UpdateProjectRegions(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -476,11 +482,11 @@ func (m *AccountModule) UpdateProjectRegions(ctx context.Context, projectId stri
 		Method:     "PATCH",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// CreateAccount performs POST /{version}/account (scope: account).
+// CreateAccount performs POST /{version}/account (scope: project).
 func (m *AccountModule) CreateAccount(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -488,7 +494,7 @@ func (m *AccountModule) CreateAccount(ctx context.Context, req map[string]any, o
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
@@ -537,7 +543,7 @@ func (m *AccountModule) UpdateMyAccountUserPhone(ctx context.Context, req map[st
 	}, out)
 }
 
-// SendInviteToTeamMember performs POST /{version}/account/team/member/invite (scope: account).
+// SendInviteToTeamMember performs POST /{version}/account/team/member/invite (scope: project).
 func (m *AccountModule) SendInviteToTeamMember(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -545,11 +551,11 @@ func (m *AccountModule) SendInviteToTeamMember(ctx context.Context, req map[stri
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetLicenses performs GET /{version}/account/licenses (scope: account).
+// GetLicenses performs GET /{version}/account/licenses (scope: project).
 func (m *AccountModule) GetLicenses(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -557,7 +563,7 @@ func (m *AccountModule) GetLicenses(ctx context.Context, req map[string]any, out
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
@@ -672,7 +678,7 @@ func (m *AccountModule) SetAdminPortalEnabled(ctx context.Context, projectId str
 // Project settings and Admin Portal (project audit, item E1). Hand-added.
 // ---------------------------------------------------------------------------
 
-// UpdateProjectAdminUrl performs PATCH /{version}/account/projects/{projectId}/settings/admin-url (scope: account).
+// UpdateProjectAdminUrl performs PATCH /{version}/account/projects/{projectId}/settings/admin-url (scope: project).
 // It overrides the project's Admin Portal address; an empty value restores the
 // canonical one.
 func (m *AccountModule) UpdateProjectAdminUrl(ctx context.Context, projectId string, req map[string]any, out any) error {
@@ -682,11 +688,11 @@ func (m *AccountModule) UpdateProjectAdminUrl(ctx context.Context, projectId str
 		Method:     "PATCH",
 		PathParams: map[string]string{"projectId": projectId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectLegalDocuments performs PATCH /{version}/account/projects/{projectId}/settings/legal (scope: account).
+// UpdateProjectLegalDocuments performs PATCH /{version}/account/projects/{projectId}/settings/legal (scope: project).
 // It saves the project's Terms and Privacy Policy as Markdown; an empty value
 // clears that document.
 func (m *AccountModule) UpdateProjectLegalDocuments(ctx context.Context, projectId string, req map[string]any, out any) error {
@@ -696,11 +702,11 @@ func (m *AccountModule) UpdateProjectLegalDocuments(ctx context.Context, project
 		Method:     "PATCH",
 		PathParams: map[string]string{"projectId": projectId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectExposeLegal performs PATCH /{version}/account/projects/{projectId}/settings/legal/expose (scope: account).
+// UpdateProjectExposeLegal performs PATCH /{version}/account/projects/{projectId}/settings/legal/expose (scope: project).
 // It turns the public legal links (api.PublicModule.GetPublicProjectLegal) on or off.
 func (m *AccountModule) UpdateProjectExposeLegal(ctx context.Context, projectId string, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -709,11 +715,11 @@ func (m *AccountModule) UpdateProjectExposeLegal(ctx context.Context, projectId 
 		Method:     "PATCH",
 		PathParams: map[string]string{"projectId": projectId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectExposeBrand performs PATCH /{version}/account/projects/{projectId}/settings/brand/expose (scope: account).
+// UpdateProjectExposeBrand performs PATCH /{version}/account/projects/{projectId}/settings/brand/expose (scope: project).
 // It sets whether the brand (name, colors, logo, icon) is returned by the public
 // Admin Portal config (api.PublicModule.GetPublicProjectConfig). On by default.
 func (m *AccountModule) UpdateProjectExposeBrand(ctx context.Context, projectId string, req map[string]any, out any) error {
@@ -723,11 +729,11 @@ func (m *AccountModule) UpdateProjectExposeBrand(ctx context.Context, projectId 
 		Method:     "PATCH",
 		PathParams: map[string]string{"projectId": projectId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// UpdateProjectExposeAuth performs PATCH /{version}/account/projects/{projectId}/settings/auth/expose (scope: account).
+// UpdateProjectExposeAuth performs PATCH /{version}/account/projects/{projectId}/settings/auth/expose (scope: project).
 // It sets whether the sign-in methods and password policy are returned by the public
 // Admin Portal config (api.PublicModule.GetPublicProjectConfig). Off by default.
 func (m *AccountModule) UpdateProjectExposeAuth(ctx context.Context, projectId string, req map[string]any, out any) error {
@@ -737,11 +743,11 @@ func (m *AccountModule) UpdateProjectExposeAuth(ctx context.Context, projectId s
 		Method:     "PATCH",
 		PathParams: map[string]string{"projectId": projectId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// AssignAdminPortalServiceUser performs PUT /{version}/account/projects/{projectId}/settings/admin-portal/service-user (scope: account).
+// AssignAdminPortalServiceUser performs PUT /{version}/account/projects/{projectId}/settings/admin-portal/service-user (scope: project).
 // It makes an existing service user the project's Admin Portal service user.
 func (m *AccountModule) AssignAdminPortalServiceUser(ctx context.Context, projectId string, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -750,7 +756,7 @@ func (m *AccountModule) AssignAdminPortalServiceUser(ctx context.Context, projec
 		Method:     "PUT",
 		PathParams: map[string]string{"projectId": projectId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
@@ -775,29 +781,29 @@ func (m *AccountModule) GetAdminPortalStructure(ctx context.Context, projectId s
 // RotateAiServiceUserKey; later reads show only a key id and a hint.
 // ---------------------------------------------------------------------------
 
-// CreateAiServiceUser performs POST /{version}/account/ai/service-users (scope: account).
+// CreateAiServiceUser performs POST /{version}/account/ai/service-users (scope: project).
 func (m *AccountModule) CreateAiServiceUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target: transport.TargetHub,
 		Path:   "/{version}/account/ai/service-users",
 		Method: "POST",
 		Body:   req,
-		Scope:  transport.ScopeAccount,
+		Scope:  transport.ScopeProject,
 	}, out)
 }
 
-// ListAiServiceUsers performs GET /{version}/account/ai/service-users (scope: account).
+// ListAiServiceUsers performs GET /{version}/account/ai/service-users (scope: project).
 func (m *AccountModule) ListAiServiceUsers(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target: transport.TargetHub,
 		Path:   "/{version}/account/ai/service-users",
 		Method: "GET",
 		Body:   req,
-		Scope:  transport.ScopeAccount,
+		Scope:  transport.ScopeProject,
 	}, out)
 }
 
-// DeleteAiServiceUser performs DELETE /{version}/account/ai/service-users/{Id} (scope: account).
+// DeleteAiServiceUser performs DELETE /{version}/account/ai/service-users/{Id} (scope: project).
 // It deletes the service user and every one of its keys.
 func (m *AccountModule) DeleteAiServiceUser(ctx context.Context, id string, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -806,11 +812,11 @@ func (m *AccountModule) DeleteAiServiceUser(ctx context.Context, id string, req 
 		Method:     "DELETE",
 		PathParams: map[string]string{"Id": id},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// RotateAiServiceUserKey performs POST /{version}/account/ai/service-users/{Id}/keys (scope: account).
+// RotateAiServiceUserKey performs POST /{version}/account/ai/service-users/{Id}/keys (scope: project).
 // It issues a new key; with "revokeKeyId" in req it also revokes that old key.
 func (m *AccountModule) RotateAiServiceUserKey(ctx context.Context, id string, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -819,11 +825,11 @@ func (m *AccountModule) RotateAiServiceUserKey(ctx context.Context, id string, r
 		Method:     "POST",
 		PathParams: map[string]string{"Id": id},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// RevokeAiServiceUserKey performs DELETE /{version}/account/ai/service-users/{Id}/keys/{KeyId} (scope: account).
+// RevokeAiServiceUserKey performs DELETE /{version}/account/ai/service-users/{Id}/keys/{KeyId} (scope: project).
 func (m *AccountModule) RevokeAiServiceUserKey(ctx context.Context, id string, keyId string, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -831,7 +837,7 @@ func (m *AccountModule) RevokeAiServiceUserKey(ctx context.Context, id string, k
 		Method:     "DELETE",
 		PathParams: map[string]string{"Id": id, "KeyId": keyId},
 		Body:       req,
-		Scope:      transport.ScopeAccount,
+		Scope:      transport.ScopeProject,
 	}, out)
 }
 
