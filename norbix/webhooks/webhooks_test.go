@@ -126,3 +126,68 @@ func TestParseEnvelopeInvalid(t *testing.T) {
 		t.Fatalf("expected *ParseError, got %T", err)
 	}
 }
+
+func TestReceiverEventIDSharedAcrossDeliveries(t *testing.T) {
+	// One record change → two deliveries to the same destination: the plain
+	// webhook (triggerId null) and a schema Webhook trigger. Different ids,
+	// one eventId.
+	plain := []byte(`{"id":"d-plain","eventId":"evt-1","event":"database.record.inserted","accountId":"a","projectId":"p","triggerId":null,"data":{"schemaName":"orders","id":"r1"}}`)
+	trig := []byte(`{"id":"d-trig","eventId":"evt-1","event":"database.record.inserted","accountId":"a","projectId":"p","triggerId":"t1","data":{"schemaName":"orders","id":"r1"}}`)
+
+	r := New(Options{})
+	seen := map[string]bool{}
+	processed := 0
+	var gotEventIDs, gotDeliveryIDs []string
+	r.On(EventDatabaseRecordInserted, func(ctx context.Context, payload json.RawMessage, e Event) error {
+		gotEventIDs = append(gotEventIDs, e.EventID)
+		gotDeliveryIDs = append(gotDeliveryIDs, e.DeliveryID)
+		if seen[e.EventID] {
+			return nil
+		}
+		seen[e.EventID] = true
+		processed++
+		return nil
+	})
+
+	for _, body := range [][]byte{plain, trig} {
+		res, err := r.Handle(context.Background(), HandleInput{RawBody: body})
+		if err != nil {
+			t.Fatalf("handle: %v", err)
+		}
+		if res.EventID != "evt-1" {
+			t.Errorf("result EventID = %q, want evt-1", res.EventID)
+		}
+	}
+	if processed != 1 {
+		t.Errorf("processed = %d, want 1 (dedupe on EventID)", processed)
+	}
+	if fmt.Sprint(gotEventIDs) != "[evt-1 evt-1]" || fmt.Sprint(gotDeliveryIDs) != "[d-plain d-trig]" {
+		t.Errorf("ids wrong: eventIds=%v deliveryIds=%v", gotEventIDs, gotDeliveryIDs)
+	}
+}
+
+func TestReceiverEventIDFallsBackToID(t *testing.T) {
+	// Older gateway: no eventId on the envelope → EventID falls back to id.
+	body := []byte(`{"id":"d-old","event":"files.file.uploaded","accountId":"a","projectId":"p","data":{}}`)
+	env, err := ParseEnvelope(body)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	if env.EventID != "" || env.EffectiveEventID() != "d-old" {
+		t.Errorf("EventID=%q Effective=%q, want empty / d-old", env.EventID, env.EffectiveEventID())
+	}
+
+	r := New(Options{})
+	var got string
+	r.On(EventFilesFileUploaded, func(ctx context.Context, payload json.RawMessage, e Event) error {
+		got = e.EventID
+		return nil
+	})
+	res, err := r.Handle(context.Background(), HandleInput{RawBody: body})
+	if err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if got != "d-old" || res.EventID != "d-old" {
+		t.Errorf("fallback failed: event=%q result=%q", got, res.EventID)
+	}
+}
