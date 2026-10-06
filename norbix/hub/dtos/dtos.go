@@ -5272,6 +5272,7 @@ type PushCampaignBatchNotificationDto struct {
 type PaymentsWebhookLogEntry struct {
 	IntegrationId   string  `json:"integrationId,omitempty"`
 	Source          string  `json:"source,omitempty"`
+	Env             string  `json:"env,omitempty"`
 	EventName       string  `json:"eventName,omitempty"`
 	ProviderEventId string  `json:"providerEventId,omitempty"`
 	StatusCode      float64 `json:"statusCode,omitempty"`
@@ -5311,6 +5312,7 @@ type TenantLogEntryDto struct {
 	CorrelationId string            `json:"correlationId,omitempty"`
 	TraceId       string            `json:"traceId,omitempty"`
 	SpanId        string            `json:"spanId,omitempty"`
+	Env           string            `json:"env,omitempty"`
 	Meta          map[string]string `json:"meta,omitempty"`
 }
 
