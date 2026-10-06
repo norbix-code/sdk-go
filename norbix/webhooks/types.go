@@ -5,7 +5,15 @@ import "encoding/json"
 // Envelope is the JSON payload POSTed to every webhook destination.
 type Envelope struct {
 	// ID is the stable delivery id — dedupe retries on this (also X-Norbix-Delivery).
+	// A retry of the same delivery keeps its ID.
 	ID string `json:"id"`
+	// EventID is the id of the change that caused this delivery. Every delivery
+	// made for ONE record change (the plain webhook delivery and each schema
+	// Webhook-trigger delivery) carries the same EventID, each with its own ID.
+	// De-duplicate the same change arriving through several deliveries on it.
+	// Equals ID when the publisher has no shared event id. Empty from older
+	// gateways — use EffectiveEventID, which falls back to ID.
+	EventID string `json:"eventId"`
 	// Event is the logical event name, e.g. database.record.inserted.
 	Event string `json:"event"`
 	// CreatedOn is the ISO-8601 UTC emit time.
@@ -16,6 +24,15 @@ type Envelope struct {
 	TriggerID string `json:"triggerId,omitempty"`
 	// Data is the raw module-specific payload (record, user, file metadata, ...).
 	Data json.RawMessage `json:"data"`
+}
+
+// EffectiveEventID returns EventID, or ID when the gateway did not send
+// eventId (older gateways). Use it as the de-duplication key for a change.
+func (e Envelope) EffectiveEventID() string {
+	if e.EventID != "" {
+		return e.EventID
+	}
+	return e.ID
 }
 
 // DeliveryHeaders are the parsed Norbix delivery headers on an inbound POST.
@@ -44,8 +61,12 @@ type EventMetadata struct {
 
 // Event is the metadata passed to a handler alongside the decoded payload.
 type Event struct {
-	Name          string
-	DeliveryID    string
+	Name       string
+	DeliveryID string
+	// EventID is the change id shared by every delivery of one record change
+	// (falls back to DeliveryID when the gateway did not send eventId).
+	// De-duplicate on it; DeliveryID only dedupes retries of one delivery.
+	EventID       string
 	CreatedOn     string
 	TriggerID     string
 	CorrelationID string
@@ -85,9 +106,11 @@ type HandleResult struct {
 	Received   bool
 	Event      string
 	DeliveryID string
-	Verified   *bool
-	Handled    bool
-	TriggerID  string
+	// EventID is the envelope eventId (falls back to DeliveryID when absent).
+	EventID   string
+	Verified  *bool
+	Handled   bool
+	TriggerID string
 }
 
 // Mutation is the {from, to} shape carried by update/replace events.

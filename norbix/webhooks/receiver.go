@@ -124,6 +124,7 @@ func (r *Receiver) Handle(ctx context.Context, in HandleInput) (HandleResult, er
 		event := Event{
 			Name:          env.Event,
 			DeliveryID:    env.ID,
+			EventID:       env.EffectiveEventID(),
 			CreatedOn:     env.CreatedOn,
 			TriggerID:     env.TriggerID,
 			AccountID:     firstNonEmptyStr(headers.AccountID, env.AccountID),
@@ -150,6 +151,7 @@ func (r *Receiver) Handle(ctx context.Context, in HandleInput) (HandleResult, er
 		Received:   true,
 		Event:      env.Event,
 		DeliveryID: env.ID,
+		EventID:    env.EffectiveEventID(),
 		Verified:   verified,
 		Handled:    handled,
 		TriggerID:  env.TriggerID,
