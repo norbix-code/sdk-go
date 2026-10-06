@@ -518,6 +518,39 @@ Normalisation matches the JS SDK: entity events hand you the entity, mutation
 events `{from, to}`, batch events the array; wrapper ids (record id, schema,
 user id) are lifted onto `event.Metadata`.
 
+### `id` vs `eventId` — de-duplication
+
+Each POSTed envelope is
+`{ id, eventId, event, createdOn, accountId, projectId, triggerId?, data }`.
+
+- `id` (`Envelope.ID`, `Event.DeliveryID`, also `X-Norbix-Delivery`) is one per
+  delivery. A retry of the same delivery keeps its `id` — use it to drop retries.
+- `eventId` (`Envelope.EventID`, `Event.EventID`, `HandleResult.EventID`) is one
+  per change. Every delivery made for ONE record change — the plain webhook
+  delivery and each schema Webhook-trigger delivery — carries the same `eventId`.
+
+A destination that is subscribed to the event **and** targeted by a schema
+Webhook trigger gets **two** deliveries for one record change: one with
+`triggerId` empty, one with `triggerId` set; two different `id`s, one `eventId`.
+De-duplicate on `eventId`. When a publisher has no shared event id (Files,
+Membership, Payments, AI triggers) `eventId` equals `id`. Older gateways do not
+send `eventId`: `Event.EventID`, `HandleResult.EventID` and
+`Envelope.EffectiveEventID()` then fall back to `id`.
+
+```go
+r.On(webhooks.EventDatabaseRecordInserted,
+	func(ctx context.Context, payload json.RawMessage, e webhooks.Event) error {
+		if alreadyProcessed(e.EventID) { // your store, e.g. Redis SETNX with a TTL
+			return nil // answer 2xx so the gateway does not retry
+		}
+		// ... handle the change once ...
+		return nil
+	})
+```
+
+The [`examples/webhook-receiver`](examples/webhook-receiver/main.go) server
+shows this with an in-memory set.
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:
