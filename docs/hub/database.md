@@ -222,6 +222,8 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 | `GetDatabaseSchemaListSettings(ctx, id, req, out)` | `GET` | `/database/schemas/{Id}/list-settings` |
 | `UpdateDatabaseSchemaListSettings(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/list-settings` |
 
+`DeleteDatabaseSchema` also drops the schema's records — its MongoDB collection, with its indexes — in the request environment (the client's `Env`, on every active database integration of that environment). For a schema with AI embed on, its records are also removed from the AI knowledge. The delete is still refused when a saved aggregate or a schema trigger uses the schema; nothing is dropped then. The request and response shape did not change, and a retry is safe (idempotent).
+
 `GetDatabaseSchemas` returns only the schemas of the request environment (the client's `Env`, sent as the `norbix-env` header; `PROD` when none is set). Each row carries that environment in `Env`. The paging cursors (`startingAfter` / `endingBefore`) are schema view ids (`sch_…`); a cursor saved before this gateway change no longer matches.
 
 **Schema triggers**
