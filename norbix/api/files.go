@@ -101,6 +101,27 @@ func (m *FilesModule) GetFileInfo(ctx context.Context, filesIntegrationId string
 	}, out)
 }
 
+// GetFileById performs GET /{version}/files/{filesIntegrationId}/by-id/{id} (scope: project).
+//
+// It reads the metadata of one file by the id a listing or GetFileInfo
+// returned ("nbfl_…" or its bare UUID) instead of by path — the id a record's
+// file field stores. Same response shape as GetFileInfo
+// (dtos.GetFileByIdResponse: "file", "isPublic", "publicUrl").
+func (m *FilesModule) GetFileById(ctx context.Context, filesIntegrationId string, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"filesIntegrationId": filesIntegrationId,
+		"id":                 id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/files/{filesIntegrationId}/by-id/{id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetSignedUrl performs GET /{version}/files/{filesIntegrationId}/sign (scope: project).
 func (m *FilesModule) GetSignedUrl(ctx context.Context, filesIntegrationId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
