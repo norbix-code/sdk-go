@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 20:53:15
+Date: 2026-10-07 10:13:50
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:64965
+BaseUrl: http://localhost:49877
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -450,6 +450,8 @@ type TermTreeDto struct {
 	// @DataMember
 	Names map[string]string `json:"names,omitempty"`
 	// @DataMember
+	Slug *string `json:"slug,omitempty"`
+	// @DataMember
 	Description *string `json:"description,omitempty"`
 	// @DataMember
 	Descriptions map[string]string `json:"descriptions,omitempty"`
@@ -491,6 +493,8 @@ type TermDto struct {
 	Name *string `json:"name,omitempty"`
 	// @DataMember
 	Names map[string]string `json:"names,omitempty"`
+	// @DataMember
+	Slug *string `json:"slug,omitempty"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
 	// @DataMember
@@ -719,6 +723,10 @@ type StringFieldDto struct {
 	MaxLength *int `json:"maxLength,omitempty"`
 	// @DataMember
 	TranslateOptions *IReadOnlyDictionary[string, string] `json:"translateOptions,omitempty"`
+	// @DataMember
+	Default *string `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
 }
 
 type DecimalFieldDto struct {
@@ -729,16 +737,37 @@ type DecimalFieldDto struct {
 	Maximum *float64 `json:"maximum,omitempty"`
 	// @DataMember
 	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	// @DataMember
+	Default *float64 `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
+}
+
+type CurrencyDefaultDto struct {
+	// @DataMember
+	Value float64 `json:"value,omitempty"`
+	// @DataMember
+	Currency string `json:"currency"`
 }
 
 type CurrencyFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	AllowedCurrencies *IReadOnlyList[string] `json:"allowedCurrencies,omitempty"`
+	// @DataMember
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	// @DataMember
+	Minimum *float64 `json:"minimum,omitempty"`
+	// @DataMember
+	Maximum *float64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *CurrencyDefaultDto `json:"default,omitempty"`
 }
 
 type BooleanFieldDto struct {
 	JsonSchemaFieldDto
+	// @DataMember
+	Default *bool `json:"default,omitempty"`
 }
 
 type DateFieldDto struct {
@@ -747,6 +776,8 @@ type DateFieldDto struct {
 	Minimum *int64 `json:"minimum,omitempty"`
 	// @DataMember
 	Maximum *int64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *int64 `json:"default,omitempty"`
 }
 
 type IntegerFieldDto struct {
@@ -755,6 +786,10 @@ type IntegerFieldDto struct {
 	Minimum *int64 `json:"minimum,omitempty"`
 	// @DataMember
 	Maximum *int64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *int64 `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
 }
 
 type GeolocationFieldDto struct {
@@ -765,12 +800,26 @@ type GeolocationFieldDto struct {
 
 type TagsFieldDto struct {
 	JsonSchemaFieldDto
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	Default *IReadOnlyList[string] `json:"default,omitempty"`
 }
 
 type FileFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	Storages *IReadOnlyList[string] `json:"storages,omitempty"`
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	AllowedFileType *string `json:"allowedFileType,omitempty"`
+	// @DataMember
+	MaxSizeMb *float64 `json:"maxSizeMb,omitempty"`
 }
 
 type TaxonomySelectionFieldDto struct {
@@ -779,6 +828,8 @@ type TaxonomySelectionFieldDto struct {
 	TaxonomyId *string `json:"taxonomyId,omitempty"`
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
 }
 
 type CollectionSelectionFieldDto struct {
@@ -795,12 +846,16 @@ type UserSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
 }
 
 type RoleSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
 }
 
 type EnumSelectionFieldDto struct {
@@ -809,6 +864,34 @@ type EnumSelectionFieldDto struct {
 	Values *IReadOnlyList[string] `json:"values,omitempty"`
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	Default *IReadOnlyList[string] `json:"default,omitempty"`
+}
+
+type ObjectFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Properties IReadOnlyList[interface{}] `json:"properties"`
+	// @DataMember
+	Required *IReadOnlyList[string] `json:"required,omitempty"`
+}
+
+type ArrayFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Items interface{} `json:"items"`
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	UniqueItems *bool `json:"uniqueItems,omitempty"`
+}
+
+type JsonFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	MaxBytes *int `json:"maxBytes,omitempty"`
 }
 
 type EchoResponse struct {
@@ -1034,6 +1117,13 @@ type FindResponse struct {
 type FindOneResponse struct {
 	ResponseBase
 	Result *interface{} `json:"result,omitempty"`
+}
+
+type GetFileByIdResponse struct {
+	ResponseBase
+	File      *FileResourceRefDto `json:"file,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
+	PublicUrl *string             `json:"publicUrl,omitempty"`
 }
 
 type GetFileInfoResponse struct {
@@ -2312,6 +2402,8 @@ type FindRequest struct {
 	SortBy *string `json:"sortBy,omitempty"`
 	// @DataMember
 	SortOrder *int `json:"sortOrder,omitempty"`
+	// @DataMember
+	ExpandReferences bool `json:"expandReferences,omitempty"`
 }
 
 func (FindRequest) CreateResponse() (r FindResponse) { return }
@@ -2329,6 +2421,8 @@ type FindOneRequest struct {
 	Id string `json:"id"`
 	// @DataMember
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	// @DataMember
+	ExpandReferences bool `json:"expandReferences,omitempty"`
 }
 
 func (FindOneRequest) CreateResponse() (r FindOneResponse) { return }
@@ -2350,6 +2444,10 @@ type FindOwnRequest struct {
 	SchemaVersion *int `json:"schemaVersion,omitempty"`
 	// @DataMember
 	PagingArgs *PagingArgs `json:"pagingArgs,omitempty"`
+	/** @description Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids. */
+	// @DataMember
+	// @ApiMember(Description="Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids.")
+	ExpandReferences bool `json:"expandReferences,omitempty"`
 }
 
 func (FindOwnRequest) CreateResponse() (r FindResponse) { return }
@@ -2424,6 +2522,8 @@ type UpdateManyRequest struct {
 	AllRecords *bool `json:"allRecords,omitempty"`
 	// @DataMember
 	Update string `json:"update"`
+	// @DataMember
+	ArrayFilters *string `json:"arrayFilters,omitempty"`
 }
 
 func (UpdateManyRequest) CreateResponse() (r EmptyResponse) { return }
@@ -2443,6 +2543,8 @@ type UpdateOneRequest struct {
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 	// @DataMember
 	Update string `json:"update"`
+	// @DataMember
+	ArrayFilters *string `json:"arrayFilters,omitempty"`
 }
 
 func (UpdateOneRequest) CreateResponse() (r EmptyResponse) { return }
@@ -2547,6 +2649,21 @@ type DownloadFileApiRequest struct {
 
 func (DownloadFileApiRequest) CreateResponse() (r []byte) { return }
 func (DownloadFileApiRequest) HttpMethod() string         { return "GET" }
+
+/** @description Files */
+// @Route("/{version}/files/{filesIntegrationId}/by-id/{id}", "GET")
+// @Api(Description="Files")
+// @DataContract
+type GetFileByIdRequest struct {
+	CodeMashRequestBase
+	// @DataMember
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	// @DataMember
+	Id string `json:"id"`
+}
+
+func (GetFileByIdRequest) CreateResponse() (r GetFileByIdResponse) { return }
+func (GetFileByIdRequest) HttpMethod() string                      { return "GET" }
 
 /** @description Files */
 // @Route("/{version}/files/{filesIntegrationId}/info", "GET")
