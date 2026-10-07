@@ -17,7 +17,9 @@ There are two clients:
   records the signed-in user is responsible for.
 
 Every method is covered by `norbix/hub/database_test.go` (67 routes) and
-`norbix/api/database_test.go` (22 routes). Each test asserts the verb, the
+`norbix/api/database_test.go` (22 routes); the schema-content additions
+(`expandReferences`, `arrayFilters`, the expanded-reference decode, error
+codes 053 / 056) are in the same files. Each test asserts the verb, the
 fully-resolved path, the query string, the JSON body and the key + project
 headers.
 
@@ -31,6 +33,14 @@ and a pipeline as JSON text, not as nested objects: `"document"`,
 `"documents"`, `"filter"`, `"update"`, `"replacement"` and `"pipeline"` are
 strings. Pass `"databaseIntegrationId"` to work on a database other than the
 project default.
+
+**Nested documents.** A schema may declare `object` fields (a nested form)
+and `array` fields of primitives or of objects, at any depth. On the wire
+nothing changes: the nested value is simply part of the JSON text in
+`"document"` / `"update"`, and the gateway validates it against the schema
+with the same keywords (`required`, `minItems` / `maxItems`, `uniqueItems`,
+`properties`, …) and the same error codes as a top-level field. The field
+name in an error is the dotted path (`lines.0.sku`).
 
 ## Examples
 
@@ -115,6 +125,59 @@ Callers that only have own-record rights (`createAsUser`, `updateOwn`,
 `deleteOwn`) may call insert many, update many and delete many; those calls
 touch only the caller's own records.
 
+### Change one element of a nested array (`arrayFilters`)
+
+`"arrayFilters"` is an optional JSON **string** holding a MongoDB
+`arrayFilters` array: one filter document per `$[name]` identifier used in
+an `"update"` path. It is accepted by `UpdateOne` / `UpdateMany` (Api) and
+`UpdateOneRecord` / `UpdateManyRecords` (Hub). `"update"` stays the bare
+field document — the gateway still applies it with `$set`.
+
+```go
+// Set the quantity of the order line whose sku is "A-1", and only that line.
+err := client.API.Database.UpdateOne(ctx, "orders", orderID, map[string]any{
+	"update":       `{"lines.$[line].qty":3}`,
+	"arrayFilters": `[{"line.sku":"A-1"}]`,
+}, nil)
+```
+
+### Read references with their display value (`expandReferences`)
+
+A reference field (user, role, taxonomy term, record of another collection,
+file) stores ids. With `"expandReferences": true` — on `Find`, `FindOne`,
+`FindOwn` (Api) and `FindRecords`, `FindOneRecord` (Hub) — every reference
+comes back as `{ "id": "…", "display": … }` (a list of them when the field
+is `multiple`), at any nesting depth. `display` is the target's property the
+schema's `displayField` names, read in the request environment; a target
+that no longer exists gives `display: null`, the id is always kept. Off
+(the default) the records are returned exactly as stored.
+
+Decode an expanded value into `api.ExpandedReference` / `hub.ExpandedReference`
+(`Id string`, `Display any` — the property keeps its own JSON type):
+
+```go
+var page struct {
+	Result []struct {
+		Id    string                  `json:"_id"`
+		Owner api.ExpandedReference   `json:"owner"`
+		Tags  []api.ExpandedReference `json:"tags"`
+	} `json:"result"`
+}
+err := client.API.Database.Find(ctx, "products",
+	map[string]any{"expandReferences": true, "pageSize": 20}, &page)
+```
+
+Permission: the caller must hold read on the collection **and** on every
+source the published schema links to (users and roles `membership:read`,
+terms and records `database:read` on the target, files `files:read`). One
+missing source refuses the whole read with `CM-ERRORS-DATABASE-056` before
+any record is read — like an aggregation pipeline (`-033`).
+
+File ids stored in a record can be turned into the file's name and path
+with `client.API.Files.GetFileById(ctx, filesIntegrationID, id, nil, &out)`
+or `client.Hub.Files.GetFileById(ctx, map[string]any{"filesIntegrationId":
+…, "id": …}, &out)` (`dtos.GetFileByIdResponse`).
+
 ## Errors to expect
 
 Every refusal is an `*errors.Error`; `Code` is the gateway's code and
@@ -126,6 +189,25 @@ Every refusal is an `*errors.Error`; `Code` is the gateway's code and
 | `CM-ERRORS-DATABASE-035` | update one / update many: the update has `$` operators | `Operator` |
 | `CM-ERRORS-DATABASE-036` | insert one / insert many / replace: the record is not a JSON object ("Invalid record document"; was `-005`) | `Index` (insert many) |
 | `CM-ERRORS-DATABASE-037` | update many / delete many: empty filter without `allRecords` | `Operation` |
+| `CM-ERRORS-DATABASE-030` | record validation, keyword `required`: a required field is missing or null | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-039` | record validation, keyword `type`: wrong JSON type (a string where an integer is declared, one value where the field is `multiple`, …) | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-040` | record validation, `minLength` / `maxLength` | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-041` | record validation, `pattern`: the string does not match the schema's regular expression | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-042` | record validation, `format`: `email`, `uri` or `uuid` (file ids) does not hold | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-043` | record validation, `minimum` / `maximum` on integer, decimal, currency amount and date fields | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-044` | record validation, `multipleOf`: a decimal or currency amount off the declared step | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-045` | record validation, `enum`: a value outside the declared list (enum values, allowed currencies, allowed geometry types) | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-046` | record validation, `uniqueItems`: a repeated entry in tags, a multiple enum, file ids or multiple references | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-047` | record validation, `properties`: an object-typed field (currency, geolocation, nested object) misses a declared member or carries an undeclared one | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-048` | record validation, geolocation `coordinates`: not a [longitude, latitude] pair (or a list of pairs for MultiPoint), or out of range | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-049` | record validation, `translateOptions`: a translatable string is not a language → text object | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-050` | record validation, `reference`: the id is not a user of the project | `FieldName`, `Keyword`, `MissingId` |
+| `CM-ERRORS-DATABASE-051` | record validation, `reference`: the id is not a role of the project (a role NAME is not accepted — records store the role id) | `FieldName`, `Keyword`, `MissingId` |
+| `CM-ERRORS-DATABASE-052` | record validation, `reference`: the id is not a term of the declared taxonomy in this environment | `FieldName`, `Keyword`, `MissingId` |
+| `CM-ERRORS-DATABASE-053` | record validation, `reference`: the id is not a record of the declared collection in this environment | `FieldName`, `Keyword`, `MissingId` |
+| `CM-ERRORS-DATABASE-054` | record validation, file field: no storage the field allows holds a file with this id | `FieldName`, `Keyword`, `MissingId` |
+| `CM-ERRORS-DATABASE-055` | record validation, `reference`: the target the schema declares cannot be read (taxonomy, collection or storage gone) | `FieldName`, `Keyword` |
+| `CM-ERRORS-DATABASE-056` | `expandReferences`: the caller may read the collection but not one of the sources the schema links to; nothing is read | `SourceKind`, `Source`, `Fields`, `MissingPermissions` |
 | `CM-ERRORS-MEMBERSHIP-USERS-012` | change responsibility: the new owner is not a user of the project in the request environment | — |
 | `CM-ERRORS-SCHEMA-002` | rename: another schema in the same environment already uses the name | `SchemaName` |
 | `CM-ERRORS-SCHEMA-018` | delete schema: a saved aggregate uses it as its start or a joined collection | `SchemaId`, `BlockerAggregateIds`, `BlockerAggregateNames` |
@@ -149,6 +231,27 @@ Other behaviour to know:
 - `TestDatabaseAggregate` needs `database:create` or `database:update` on
   `database:aggregate:<schemaId>`, plus read. Read-only callers are refused.
 - `RenameDatabaseSchema` takes only `"title"` (`renameUniqueName` is gone).
+
+### Schema field DTOs (schema-content contract)
+
+A schema read (`dtos.DataSchemaDto.Fields`) lists its fields as
+`JsonSchemaFieldDto` subtypes. The schema-content contract added:
+
+- `ObjectFieldDto` (`Properties`, `Required`) — a nested object; and
+  `ArrayFieldDto` (`Items`, `MinItems`, `MaxItems`, `UniqueItems`) — an array
+  of primitives or of objects, at any depth.
+- `JsonFieldDto` (`MaxBytes`) — free-form JSON.
+- `CurrencyDefaultDto` (`Value`, `Currency`) — the `Default` of a
+  `CurrencyFieldDto`, which also gained `MultipleOf` (the amount step),
+  `Minimum`, `Maximum`.
+- `Default` and `Unique` on `StringFieldDto`, `IntegerFieldDto` and
+  `DecimalFieldDto`; `Default` on `BooleanFieldDto` and `DateFieldDto`;
+  `Default` (a list) on `TagsFieldDto` and `EnumSelectionFieldDto`.
+- `Slug` on taxonomy terms (`TermDto`, `TermTreeDto`).
+- `DisplayField` on `UserSelectionFieldDto`, `RoleSelectionFieldDto`,
+  `TaxonomySelectionFieldDto` and `CollectionSelectionFieldDto` — the target
+  property `expandReferences` returns as `display`.
+- `MinItems`, `MaxItems`, `AllowedFileType`, `MaxSizeMb` on `FileFieldDto`.
 
 ### Schema embed and list settings
 
