@@ -86,13 +86,13 @@ func apiDatabaseCases() []apiDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.ExecuteAggregate(ctx, "products", "agg_1", map[string]any{"tokens": map[string]any{"brand": "acme"}}, nil)
 			}},
-		{"Find", http.MethodGet, "/v2/database/collections/products", url.Values{"filter": {"{}"}, "pageSize": {"20"}}, nil,
+		{"Find", http.MethodGet, "/v2/database/collections/products", url.Values{"filter": {"{}"}, "pageSize": {"20"}, "expandReferences": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.Find(ctx, "products", map[string]any{"filter": "{}", "pageSize": 20}, nil)
+				return m.Find(ctx, "products", map[string]any{"filter": "{}", "pageSize": 20, "expandReferences": true}, nil)
 			}},
-		{"FindOne", http.MethodGet, "/v2/database/collections/products/rec_1", url.Values{"databaseIntegrationId": {"int_1"}}, nil,
+		{"FindOne", http.MethodGet, "/v2/database/collections/products/rec_1", url.Values{"databaseIntegrationId": {"int_1"}, "expandReferences": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.FindOne(ctx, "products", "rec_1", map[string]any{"databaseIntegrationId": "int_1"}, nil)
+				return m.FindOne(ctx, "products", "rec_1", map[string]any{"databaseIntegrationId": "int_1", "expandReferences": true}, nil)
 			}},
 		{"InsertMany", http.MethodPost, "/v2/database/collections/products/many", nil, map[string]any{"documents": "[{\"title\":\"A\"}]"},
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -106,17 +106,17 @@ func apiDatabaseCases() []apiDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.ReplaceOne(ctx, "products", "rec_1", map[string]any{"replacement": "{\"title\":\"Boot\"}"}, nil)
 			}},
-		{"UpdateMany", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"},
+		{"UpdateMany", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "allRecords": true, "update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateMany(ctx, "products", map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"}, nil)
+				return m.UpdateMany(ctx, "products", map[string]any{"filter": "{}", "allRecords": true, "update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"}, nil)
 			}},
-		{"UpdateOne", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"price\":12}"},
+		{"UpdateOne", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateOne(ctx, "products", "rec_1", map[string]any{"update": "{\"price\":12}"}, nil)
+				return m.UpdateOne(ctx, "products", "rec_1", map[string]any{"update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"}, nil)
 			}},
-		{"FindOwn", http.MethodGet, "/v2/database/collections/products/own", url.Values{"filter": {"{}"}, "pageSize": {"20"}}, nil,
+		{"FindOwn", http.MethodGet, "/v2/database/collections/products/own", url.Values{"filter": {"{}"}, "pageSize": {"20"}, "expandReferences": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.FindOwn(ctx, "products", map[string]any{"filter": "{}", "pageSize": 20}, nil)
+				return m.FindOwn(ctx, "products", map[string]any{"filter": "{}", "pageSize": 20, "expandReferences": true}, nil)
 			}},
 		{"FindMergedTermTree", http.MethodGet, "/v2/database/taxonomies/categories/merged-tree", url.Values{"databaseIntegrationId": {"int_1"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -225,5 +225,41 @@ func assertDatabaseFields(t *testing.T, got, want map[string]any) {
 		if string(gb) != string(wb) {
 			t.Errorf("field %q: got %s want %s", key, gb, wb)
 		}
+	}
+}
+
+// A record read with "expandReferences": true carries every reference as
+// {id, display} (a list of them for a multiple field). The gateway builds
+// that value on the fly, so ExpandedReference is the SDK's own type.
+func TestFindDecodesExpandedReferences(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("expandReferences") != "true" {
+			t.Errorf("expandReferences: got %q want \"true\"", r.URL.Query().Get("expandReferences"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"result":[{"_id":"rec_1","owner":{"id":"usr_1","display":"Ada"},"tags":[{"id":"trm_1","display":"new"},{"id":"trm_gone","display":null}]}],"totalCount":1}`))
+	}))
+	defer srv.Close()
+
+	var page struct {
+		Result []struct {
+			Id    string              `json:"_id"`
+			Owner ExpandedReference   `json:"owner"`
+			Tags  []ExpandedReference `json:"tags"`
+		} `json:"result"`
+	}
+	err := newAPIDatabaseTestModule(srv.URL).Find(context.Background(), "products", map[string]any{"expandReferences": true}, &page)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(page.Result) != 1 {
+		t.Fatalf("records: got %d want 1", len(page.Result))
+	}
+	rec := page.Result[0]
+	if rec.Owner.Id != "usr_1" || rec.Owner.Display != "Ada" {
+		t.Errorf("owner: got %+v", rec.Owner)
+	}
+	if len(rec.Tags) != 2 || rec.Tags[0].Display != "new" || rec.Tags[1].Id != "trm_gone" || rec.Tags[1].Display != nil {
+		t.Errorf("tags: got %+v", rec.Tags)
 	}
 }
