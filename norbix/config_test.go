@@ -37,3 +37,24 @@ func TestBuildConfigRequiresProjectID(t *testing.T) {
 		t.Fatal("expected projectID required error")
 	}
 }
+
+func TestBuildConfigDefaultsToV3(t *testing.T) {
+	t.Setenv("NORBIX_API_VERSION", "")
+	t.Setenv("NORBIX_HUB_VERSION", "")
+	cfg, err := buildConfig(Options{ProjectID: "p", APIKey: "k"}, "Test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.APIVersion != "v3" || cfg.HubVersion != "v3" {
+		t.Errorf("default versions: got api %q hub %q, want v3", cfg.APIVersion, cfg.HubVersion)
+	}
+
+	t.Setenv("NORBIX_API_VERSION", "v2")
+	cfg, err = buildConfig(Options{ProjectID: "p", APIKey: "k", HubVersion: "v4"}, "Test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.APIVersion != "v2" || cfg.HubVersion != "v4" {
+		t.Errorf("overrides: got api %q hub %q, want v2 / v4", cfg.APIVersion, cfg.HubVersion)
+	}
+}
