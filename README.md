@@ -181,6 +181,26 @@ language).
   messages keep theirs).
 - `dtos.SmsCampaignDto.CreatedById` says who created the campaign.
 
+### Database: nested fields, expanded references, files by id
+
+- A schema may hold `object` and `array` fields at any depth
+  (`dtos.ObjectFieldDto`, `dtos.ArrayFieldDto`); the nested value is just
+  part of the record's JSON text. `"arrayFilters"` on `UpdateOne` /
+  `UpdateMany` (Api) and `UpdateOneRecord` / `UpdateManyRecords` (Hub)
+  changes one element of a nested array in place.
+- `"expandReferences": true` on `Find` / `FindOne` / `FindOwn` (Api) and
+  `FindRecords` / `FindOneRecord` (Hub) returns every reference field as
+  `{id, display}` — decode it into `api.ExpandedReference` /
+  `hub.ExpandedReference`. One unreadable linked source refuses the read
+  with `CM-ERRORS-DATABASE-056`.
+- `c.API.Files.GetFileById(ctx, filesIntegrationID, id, nil, &out)` and
+  `c.Hub.Files.GetFileById(ctx, map[string]any{"filesIntegrationId": …, "id": …}, &out)`
+  read a file by the id a listing returned (`nbfl_…`) — the id a record's
+  file field stores. Same response as `GetFileInfo` / `GetFile`.
+- Record validation refusals now carry one code per keyword
+  (`CM-ERRORS-DATABASE-039` … `-056`); see
+  [docs/hub/database.md](docs/hub/database.md#errors-to-expect).
+
 ## Working with terms
 
 A **taxonomy** is a named tree of **terms** (labels). A term can have one parent (a clean hierarchy) or several parents (the same item under many categories). Pick the call that matches what you want:
