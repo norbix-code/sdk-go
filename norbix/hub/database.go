@@ -1037,6 +1037,25 @@ func (m *DatabaseModule) UpdateDatabaseSchemaEmbed(ctx context.Context, id strin
 	}, out)
 }
 
+// GetDatabaseSchemaIndexStatus performs GET /{version}/database/schemas/{Id}/index-status (scope: project).
+//
+// It reads the last schema-index run of the collection in the request's
+// environment: which indexes Norbix wanted, created, dropped or could not
+// create, per database (state building | ready | refused | partial).
+func (m *DatabaseModule) GetDatabaseSchemaIndexStatus(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/schemas/{Id}/index-status",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetDatabaseSchemaListSettings performs GET /{version}/database/schemas/{Id}/list-settings (scope: project).
 //
 // It reads the schema's record list settings.

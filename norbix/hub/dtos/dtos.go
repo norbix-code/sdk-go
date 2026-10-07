@@ -713,6 +713,16 @@ const (
 	ApplicationModuleCompliance   ApplicationModule = "Compliance"
 	ApplicationModuleContacts     ApplicationModule = "Contacts"
 	ApplicationModuleMarketplace  ApplicationModule = "Marketplace"
+	ApplicationModuleDiagnostics  ApplicationModule = "Diagnostics"
+)
+
+// LanguageGapKind enum.
+type LanguageGapKind string
+
+const (
+	LanguageGapKindTemplate  LanguageGapKind = "Template"
+	LanguageGapKindFooter    LanguageGapKind = "Footer"
+	LanguageGapKindSignature LanguageGapKind = "Signature"
 )
 
 // AuthType enum.
@@ -867,6 +877,15 @@ const (
 	RequestAttributesInternalNetworkAccess RequestAttributes = "InternalNetworkAccess"
 	RequestAttributesAnyNetworkAccessType  RequestAttributes = "AnyNetworkAccessType"
 	RequestAttributesAny                   RequestAttributes = "Any"
+)
+
+// SchedulerTaskRunOutcome enum.
+type SchedulerTaskRunOutcome string
+
+const (
+	SchedulerTaskRunOutcomeFired   SchedulerTaskRunOutcome = "Fired"
+	SchedulerTaskRunOutcomeFailed  SchedulerTaskRunOutcome = "Failed"
+	SchedulerTaskRunOutcomeSkipped SchedulerTaskRunOutcome = "Skipped"
 )
 
 // ResolvedRefStatus enum.
@@ -2733,8 +2752,9 @@ type LocalFilesIntegrationDto struct {
 // DatabaseIntegrationDto DTO.
 type DatabaseIntegrationDto struct {
 	IntegrationDto
-	Provider      DatabaseProvider `json:"provider,omitempty"`
-	IsSystemOwned bool             `json:"isSystemOwned,omitempty"`
+	Provider         DatabaseProvider `json:"provider,omitempty"`
+	IsSystemOwned    bool             `json:"isSystemOwned,omitempty"`
+	CanManageIndexes bool             `json:"canManageIndexes,omitempty"`
 }
 
 // MongoDbConnectionStringIntegrationDto DTO.
@@ -2831,8 +2851,10 @@ type AndroidFirebasePushIntegrationDto struct {
 // AppleApnsPushIntegrationDto DTO.
 type AppleApnsPushIntegrationDto struct {
 	PushIntegrationDto
-	TeamId      string `json:"teamId,omitempty"`
-	AppBundleId string `json:"appBundleId,omitempty"`
+	TeamId       string `json:"teamId,omitempty"`
+	AppBundleId  string `json:"appBundleId,omitempty"`
+	KeyId        string `json:"keyId,omitempty"`
+	IsProduction bool   `json:"isProduction,omitempty"`
 }
 
 // ChromePluginPushIntegrationDto DTO.
@@ -2947,19 +2969,22 @@ type WebhookIntegrationDto struct {
 
 // SchedulerTaskDto DTO.
 type SchedulerTaskDto struct {
-	ProjectId     string            `json:"projectId,omitempty"`
-	TaskId        string            `json:"taskId,omitempty"`
-	Name          string            `json:"name,omitempty"`
-	Description   string            `json:"description,omitempty"`
-	Cron          string            `json:"cron,omitempty"`
-	Type          SchedulerTaskType `json:"type,omitempty"`
-	PayloadJson   string            `json:"payloadJson,omitempty"`
-	InitiatorId   string            `json:"initiatorId,omitempty"`
-	IsEnabled     bool              `json:"isEnabled,omitempty"`
-	StopOnError   bool              `json:"stopOnError,omitempty"`
-	Env           string            `json:"env,omitempty"`
-	CreatedAtUnix float64           `json:"createdAtUnix,omitempty"`
-	UpdatedAtUnix float64           `json:"updatedAtUnix,omitempty"`
+	ProjectId         string            `json:"projectId,omitempty"`
+	TaskId            string            `json:"taskId,omitempty"`
+	Name              string            `json:"name,omitempty"`
+	Description       string            `json:"description,omitempty"`
+	Cron              string            `json:"cron,omitempty"`
+	Type              SchedulerTaskType `json:"type,omitempty"`
+	PayloadJson       string            `json:"payloadJson,omitempty"`
+	InitiatorId       string            `json:"initiatorId,omitempty"`
+	IsEnabled         bool              `json:"isEnabled,omitempty"`
+	StopOnError       bool              `json:"stopOnError,omitempty"`
+	Env               string            `json:"env,omitempty"`
+	CreatedAtUnix     float64           `json:"createdAtUnix,omitempty"`
+	UpdatedAtUnix     float64           `json:"updatedAtUnix,omitempty"`
+	IsFailing         bool              `json:"isFailing,omitempty"`
+	LastFailureReason string            `json:"lastFailureReason,omitempty"`
+	LastFailedAtUnix  float64           `json:"lastFailedAtUnix,omitempty"`
 }
 
 // SchedulerTaskRequest DTO.
@@ -3451,12 +3476,10 @@ type ProjectAiAssistantRequestBase struct {
 	IsDefault          bool     `json:"isDefault,omitempty"`
 }
 
-// AiScopeDto DTO.
-type AiScopeDto struct {
-	Reach     string   `json:"reach,omitempty"`
+// AiProjectRoleIdsDto DTO.
+type AiProjectRoleIdsDto struct {
 	ProjectId string   `json:"projectId,omitempty"`
-	Rights    string   `json:"rights,omitempty"`
-	Envs      []string `json:"envs,omitempty"`
+	RoleIds   []string `json:"roleIds,omitempty"`
 }
 
 // DeleteTrigger DTO.
@@ -3678,13 +3701,33 @@ type EchoRegionDto struct {
 	HubUrl      string `json:"hubUrl,omitempty"`
 }
 
+// EchoAgentSnippetDto DTO.
+type EchoAgentSnippetDto struct {
+	Client      string `json:"client,omitempty"`
+	Kind        string `json:"kind,omitempty"`
+	Recommended bool   `json:"recommended,omitempty"`
+	Auth        string `json:"auth,omitempty"`
+	Config      string `json:"config,omitempty"`
+}
+
 // EchoAgentDto DTO.
 type EchoAgentDto struct {
-	McpUrl            string `json:"mcpUrl,omitempty"`
-	OAuthMetadataUrl  string `json:"oAuthMetadataUrl,omitempty"`
-	InstallationType  string `json:"installationType,omitempty"`
-	OnboardingDocsUrl string `json:"onboardingDocsUrl,omitempty"`
-	ToolsUrl          string `json:"toolsUrl,omitempty"`
+	McpUrl                 string                 `json:"mcpUrl,omitempty"`
+	OAuthMetadataUrl       string                 `json:"oAuthMetadataUrl,omitempty"`
+	InstallationType       string                 `json:"installationType,omitempty"`
+	OnboardingDocsUrl      string                 `json:"onboardingDocsUrl,omitempty"`
+	ToolsUrl               string                 `json:"toolsUrl,omitempty"`
+	CliPackage             string                 `json:"cliPackage,omitempty"`
+	CliInstallCommand      string                 `json:"cliInstallCommand,omitempty"`
+	DeviceAuthorizationUrl string                 `json:"deviceAuthorizationUrl,omitempty"`
+	DeviceTokenUrl         string                 `json:"deviceTokenUrl,omitempty"`
+	Snippets               []*EchoAgentSnippetDto `json:"snippets,omitempty"`
+}
+
+// EchoHostingPlatformDto DTO.
+type EchoHostingPlatformDto struct {
+	Provider string `json:"provider,omitempty"`
+	IsAws    bool   `json:"isAws,omitempty"`
 }
 
 // PublicBrandDto DTO.
@@ -4204,6 +4247,7 @@ type ProjectAiUsageDto struct {
 // TemplateLanguageGapDto DTO.
 type TemplateLanguageGapDto struct {
 	Module           ApplicationModule `json:"module,omitempty"`
+	Kind             LanguageGapKind   `json:"kind,omitempty"`
 	TemplateId       string            `json:"templateId,omitempty"`
 	TemplateName     string            `json:"templateName,omitempty"`
 	MissingLanguages []string          `json:"missingLanguages,omitempty"`
@@ -4398,6 +4442,21 @@ type InstallationLicenseStatusDto struct {
 	Message            string  `json:"message,omitempty"`
 }
 
+// AiRoleDto DTO.
+type AiRoleDto struct {
+	Id          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	IsSystem    bool   `json:"isSystem,omitempty"`
+}
+
+// AiProjectRolesDto DTO.
+type AiProjectRolesDto struct {
+	Id    string       `json:"id,omitempty"`
+	Name  string       `json:"name,omitempty"`
+	Roles []*AiRoleDto `json:"roles,omitempty"`
+}
+
 // AiServiceUserKeyDto DTO.
 type AiServiceUserKeyDto struct {
 	Id       string `json:"id,omitempty"`
@@ -4407,11 +4466,12 @@ type AiServiceUserKeyDto struct {
 
 // AiServiceUserDto DTO.
 type AiServiceUserDto struct {
-	Id        string                 `json:"id,omitempty"`
-	Name      string                 `json:"name,omitempty"`
-	Scope     *AiScopeDto            `json:"scope,omitempty"`
-	CreatedAt string                 `json:"createdAt,omitempty"`
-	Keys      []*AiServiceUserKeyDto `json:"keys,omitempty"`
+	Id           string                 `json:"id,omitempty"`
+	Name         string                 `json:"name,omitempty"`
+	AccountRoles []*AiRoleDto           `json:"accountRoles,omitempty"`
+	Projects     []*AiProjectRolesDto   `json:"projects,omitempty"`
+	CreatedAt    string                 `json:"createdAt,omitempty"`
+	Keys         []*AiServiceUserKeyDto `json:"keys,omitempty"`
 }
 
 // ServiceUserApiKeyDto DTO.
@@ -4716,6 +4776,37 @@ type SchemaDraftDto struct {
 	UpdatedAt    string           `json:"updatedAt,omitempty"`
 }
 
+// SchemaIndexDto DTO.
+type SchemaIndexDto struct {
+	Name   string   `json:"name,omitempty"`
+	Keys   []string `json:"keys,omitempty"`
+	Unique bool     `json:"unique,omitempty"`
+	Reason string   `json:"reason,omitempty"`
+	Field  string   `json:"field,omitempty"`
+}
+
+// SchemaIndexIntegrationStatusDto DTO.
+type SchemaIndexIntegrationStatusDto struct {
+	IntegrationId string            `json:"integrationId,omitempty"`
+	State         string            `json:"state,omitempty"`
+	Wanted        []*SchemaIndexDto `json:"wanted,omitempty"`
+	Created       []string          `json:"created,omitempty"`
+	Dropped       []string          `json:"dropped,omitempty"`
+	OverCap       []*SchemaIndexDto `json:"overCap,omitempty"`
+	RefusedReason string            `json:"refusedReason,omitempty"`
+	LastRunUtc    string            `json:"lastRunUtc,omitempty"`
+}
+
+// SchemaIndexStatusDto DTO.
+type SchemaIndexStatusDto struct {
+	SchemaId     string                             `json:"schemaId,omitempty"`
+	Env          string                             `json:"env,omitempty"`
+	Collection   string                             `json:"collection,omitempty"`
+	State        string                             `json:"state,omitempty"`
+	Integrations []*SchemaIndexIntegrationStatusDto `json:"integrations,omitempty"`
+	LastRunUtc   string                             `json:"lastRunUtc,omitempty"`
+}
+
 // SchemaDiffDto DTO.
 type SchemaDiffDto struct {
 	FromVersion        float64  `json:"fromVersion,omitempty"`
@@ -4741,8 +4832,9 @@ type CollectionIndexKeyDto struct {
 
 // CollectionIndexDto DTO.
 type CollectionIndexDto struct {
-	Name string                   `json:"name,omitempty"`
-	Keys []*CollectionIndexKeyDto `json:"keys,omitempty"`
+	Name            string                   `json:"name,omitempty"`
+	Keys            []*CollectionIndexKeyDto `json:"keys,omitempty"`
+	CreatedByNorbix bool                     `json:"createdByNorbix,omitempty"`
 }
 
 // SeedCollectionReportItemDto DTO.
@@ -4915,6 +5007,10 @@ type HtmlFromMjmlResponse struct {
 // SystemEmailTemplateListProjection DTO.
 type SystemEmailTemplateListProjection struct {
 	EmailTemplateListProjection
+	ImagePreview string                   `json:"imagePreview,omitempty"`
+	Description  string                   `json:"description,omitempty"`
+	Theme        SystemEmailTemplateTheme `json:"theme,omitempty"`
+	SystemTags   []string                 `json:"systemTags,omitempty"`
 }
 
 // EmailSignatureDto DTO.
@@ -5320,9 +5416,11 @@ type TenantLogEntryDto struct {
 
 // AgentOnboardingSnippet DTO.
 type AgentOnboardingSnippet struct {
-	Client string `json:"client,omitempty"`
-	Config string `json:"config,omitempty"`
-	Auth   string `json:"auth,omitempty"`
+	Client      string `json:"client,omitempty"`
+	Config      string `json:"config,omitempty"`
+	Auth        string `json:"auth,omitempty"`
+	Kind        string `json:"kind,omitempty"`
+	Recommended bool   `json:"recommended,omitempty"`
 }
 
 // AiToolManifestParameter DTO.
@@ -5677,12 +5775,26 @@ type IResponse struct {
 
 // SchedulerTaskListProjection DTO.
 type SchedulerTaskListProjection struct {
-	TaskId    string            `json:"taskId,omitempty"`
-	Name      string            `json:"name,omitempty"`
-	Cron      string            `json:"cron,omitempty"`
-	Type      SchedulerTaskType `json:"type,omitempty"`
-	IsEnabled bool              `json:"isEnabled,omitempty"`
-	ViewId    string            `json:"viewId,omitempty"`
+	TaskId            string            `json:"taskId,omitempty"`
+	Name              string            `json:"name,omitempty"`
+	Cron              string            `json:"cron,omitempty"`
+	Type              SchedulerTaskType `json:"type,omitempty"`
+	IsEnabled         bool              `json:"isEnabled,omitempty"`
+	IsFailing         bool              `json:"isFailing,omitempty"`
+	LastFailureReason string            `json:"lastFailureReason,omitempty"`
+	LastFailedAtUnix  float64           `json:"lastFailedAtUnix,omitempty"`
+	ViewId            string            `json:"viewId,omitempty"`
+}
+
+// SchedulerTaskRunDto DTO.
+type SchedulerTaskRunDto struct {
+	LogId         string                  `json:"logId,omitempty"`
+	AtUtc         string                  `json:"atUtc,omitempty"`
+	AtUnix        float64                 `json:"atUnix,omitempty"`
+	Outcome       SchedulerTaskRunOutcome `json:"outcome,omitempty"`
+	Reason        string                  `json:"reason,omitempty"`
+	Detail        string                  `json:"detail,omitempty"`
+	CorrelationId string                  `json:"correlationId,omitempty"`
 }
 
 // ResolvedResourceEntry DTO.
@@ -6148,29 +6260,30 @@ type JsonFieldDto struct {
 
 // EchoResponse DTO.
 type EchoResponse struct {
-	ContainerName                string           `json:"containerName,omitempty"`
-	Ip                           string           `json:"ip,omitempty"`
-	Release                      CodeMashRelease  `json:"release,omitempty"`
-	Runtime                      CodeMashRuntime  `json:"runtime,omitempty"`
-	ManagedServiceHubUrl         string           `json:"managedServiceHubUrl,omitempty"`
-	ManagedServiceApiUrl         string           `json:"managedServiceApiUrl,omitempty"`
-	HubUrl                       string           `json:"hubUrl,omitempty"`
-	ApiUrl                       string           `json:"apiUrl,omitempty"`
-	ApiVersion                   string           `json:"apiVersion,omitempty"`
-	HubVersion                   string           `json:"hubVersion,omitempty"`
-	MjmlUrl                      string           `json:"mjmlUrl,omitempty"`
-	AdminUrlTemplate             string           `json:"adminUrlTemplate,omitempty"`
-	License                      *EchoLicenseDto  `json:"license,omitempty"`
-	AskForEnterpriseLicenseEmail string           `json:"askForEnterpriseLicenseEmail,omitempty"`
-	EmailServiceConfigured       bool             `json:"emailServiceConfigured,omitempty"`
-	RootBootstrapPasswordSource  string           `json:"rootBootstrapPasswordSource,omitempty"`
-	Regions                      []*EchoRegionDto `json:"regions,omitempty"`
-	IsProductionInstallation     bool             `json:"isProductionInstallation,omitempty"`
-	LicensingMode                string           `json:"licensingMode,omitempty"`
-	GraceDaysLeft                float64          `json:"graceDaysLeft,omitempty"`
-	InstallationDomain           string           `json:"installationDomain,omitempty"`
-	LicensingDocsUrl             string           `json:"licensingDocsUrl,omitempty"`
-	Agent                        *EchoAgentDto    `json:"agent,omitempty"`
+	ContainerName                string                  `json:"containerName,omitempty"`
+	Ip                           string                  `json:"ip,omitempty"`
+	Release                      CodeMashRelease         `json:"release,omitempty"`
+	Runtime                      CodeMashRuntime         `json:"runtime,omitempty"`
+	ManagedServiceHubUrl         string                  `json:"managedServiceHubUrl,omitempty"`
+	ManagedServiceApiUrl         string                  `json:"managedServiceApiUrl,omitempty"`
+	HubUrl                       string                  `json:"hubUrl,omitempty"`
+	ApiUrl                       string                  `json:"apiUrl,omitempty"`
+	ApiVersion                   string                  `json:"apiVersion,omitempty"`
+	HubVersion                   string                  `json:"hubVersion,omitempty"`
+	MjmlUrl                      string                  `json:"mjmlUrl,omitempty"`
+	AdminUrlTemplate             string                  `json:"adminUrlTemplate,omitempty"`
+	License                      *EchoLicenseDto         `json:"license,omitempty"`
+	AskForEnterpriseLicenseEmail string                  `json:"askForEnterpriseLicenseEmail,omitempty"`
+	EmailServiceConfigured       bool                    `json:"emailServiceConfigured,omitempty"`
+	RootBootstrapPasswordSource  string                  `json:"rootBootstrapPasswordSource,omitempty"`
+	Regions                      []*EchoRegionDto        `json:"regions,omitempty"`
+	IsProductionInstallation     bool                    `json:"isProductionInstallation,omitempty"`
+	LicensingMode                string                  `json:"licensingMode,omitempty"`
+	GraceDaysLeft                float64                 `json:"graceDaysLeft,omitempty"`
+	InstallationDomain           string                  `json:"installationDomain,omitempty"`
+	LicensingDocsUrl             string                  `json:"licensingDocsUrl,omitempty"`
+	Agent                        *EchoAgentDto           `json:"agent,omitempty"`
+	HostingPlatform              *EchoHostingPlatformDto `json:"hostingPlatform,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
@@ -6620,6 +6733,12 @@ type GetDatabaseSchemasResponse struct {
 type GetDatabaseSchemaDraftResponse struct {
 	ResponseBase
 	Item *SchemaDraftDto `json:"item,omitempty"`
+}
+
+// GetDatabaseSchemaIndexStatusResponse DTO.
+type GetDatabaseSchemaIndexStatusResponse struct {
+	ResponseBase
+	Status *SchemaIndexStatusDto `json:"status,omitempty"`
 }
 
 // GetDatabaseSchemaListSettingsResponse DTO.
@@ -7517,6 +7636,66 @@ type GetAiTriggerResponse struct {
 	Trigger *AiTriggerDto `json:"trigger,omitempty"`
 }
 
+// AuthDeviceStartResponse DTO.
+type AuthDeviceStartResponse struct {
+	ResponseBase
+	DeviceCode              string  `json:"deviceCode,omitempty"`
+	UserCode                string  `json:"userCode,omitempty"`
+	VerificationUri         string  `json:"verificationUri,omitempty"`
+	VerificationUriComplete string  `json:"verificationUriComplete,omitempty"`
+	ExpiresIn               float64 `json:"expiresIn,omitempty"`
+	Interval                float64 `json:"interval,omitempty"`
+}
+
+// AuthDeviceTokenResponse DTO.
+type AuthDeviceTokenResponse struct {
+	ResponseBase
+	Error            string  `json:"error,omitempty"`
+	ErrorDescription string  `json:"errorDescription,omitempty"`
+	ErrorCode        string  `json:"errorCode,omitempty"`
+	BearerToken      string  `json:"bearerToken,omitempty"`
+	RefreshToken     string  `json:"refreshToken,omitempty"`
+	ExpiresIn        float64 `json:"expiresIn,omitempty"`
+	ClientId         string  `json:"clientId,omitempty"`
+	UserId           string  `json:"userId,omitempty"`
+	UserName         string  `json:"userName,omitempty"`
+	DisplayName      string  `json:"displayName,omitempty"`
+	AccountId        string  `json:"accountId,omitempty"`
+	ProjectId        string  `json:"projectId,omitempty"`
+}
+
+// AuthDeviceConsentResponse DTO.
+type AuthDeviceConsentResponse struct {
+	ResponseBase
+	ClientName   string               `json:"clientName,omitempty"`
+	DeviceName   string               `json:"deviceName,omitempty"`
+	UserCode     string               `json:"userCode,omitempty"`
+	ProjectId    string               `json:"projectId,omitempty"`
+	AccountRoles []*AiRoleDto         `json:"accountRoles,omitempty"`
+	Projects     []*AiProjectRolesDto `json:"projects,omitempty"`
+}
+
+// AuthDeviceConsentDecisionResponse DTO.
+type AuthDeviceConsentDecisionResponse struct {
+	ResponseBase
+}
+
+// OAuthConsentResponse DTO.
+type OAuthConsentResponse struct {
+	ResponseBase
+	ClientName    string               `json:"clientName,omitempty"`
+	RedirectHost  string               `json:"redirectHost,omitempty"`
+	ConsentTicket string               `json:"consentTicket,omitempty"`
+	AccountRoles  []*AiRoleDto         `json:"accountRoles,omitempty"`
+	Projects      []*AiProjectRolesDto `json:"projects,omitempty"`
+}
+
+// OAuthConsentDecisionResponse DTO.
+type OAuthConsentDecisionResponse struct {
+	ResponseBase
+	RedirectUrl string `json:"redirectUrl,omitempty"`
+}
+
 // GetEmbeddingIntegrationResponse DTO.
 type GetEmbeddingIntegrationResponse struct {
 	ResponseBase
@@ -7633,6 +7812,13 @@ type GetSchedulerTaskResponse struct {
 type GetSchedulerTasksResponse struct {
 	ResponseBase
 	List PaginatedResponse[*SchedulerTaskListProjection] `json:"list,omitempty"`
+}
+
+// GetSchedulerTaskRunsResponse DTO.
+type GetSchedulerTaskRunsResponse struct {
+	ResponseBase
+	LogsEnabled bool                   `json:"logsEnabled,omitempty"`
+	Runs        []*SchedulerTaskRunDto `json:"runs,omitempty"`
 }
 
 // ResolveResourcesResponse DTO.
@@ -8853,8 +9039,9 @@ type GetInstallationLicenseStatus struct {
 // CreateAiServiceUserRequest DTO.
 type CreateAiServiceUserRequest struct {
 	RequestBase
-	Name  string      `json:"name,omitempty"`
-	Scope *AiScopeDto `json:"scope,omitempty"`
+	Name           string                 `json:"name,omitempty"`
+	AccountRoleIds []string               `json:"accountRoleIds,omitempty"`
+	ProjectRoles   []*AiProjectRoleIdsDto `json:"projectRoles,omitempty"`
 }
 
 // ListAiServiceUsersRequest DTO.
@@ -9313,6 +9500,12 @@ type GetDatabaseSchemas struct {
 
 // GetDatabaseSchemaDraft DTO.
 type GetDatabaseSchemaDraft struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetDatabaseSchemaIndexStatus DTO.
+type GetDatabaseSchemaIndexStatus struct {
 	CodeMashRequestBase
 	Id string `json:"id,omitempty"`
 }
@@ -9814,6 +10007,13 @@ type GetFileById struct {
 // GetFolderFiles DTO.
 type GetFolderFiles struct {
 	CodeMashListPaginationRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// UseFileRequest DTO.
+type UseFileRequest struct {
+	CodeMashRequestBase
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
 	Path               string `json:"path,omitempty"`
 }
@@ -10811,6 +11011,8 @@ type GetLogs struct {
 	LogCorrelationId string `json:"logCorrelationId,omitempty"`
 	EventCode        string `json:"eventCode,omitempty"`
 	Search           string `json:"search,omitempty"`
+	MetaKey          string `json:"metaKey,omitempty"`
+	MetaValue        string `json:"metaValue,omitempty"`
 	FromUtc          string `json:"fromUtc,omitempty"`
 	ToUtc            string `json:"toUtc,omitempty"`
 }
@@ -11060,6 +11262,35 @@ type DeleteAiProjectTrigger struct {
 	DeleteTrigger
 }
 
+// AuthDeviceStartRequest DTO.
+type AuthDeviceStartRequest struct {
+	RequestBase
+	ClientName string `json:"clientName,omitempty"`
+	DeviceName string `json:"deviceName,omitempty"`
+	ProjectId  string `json:"projectId,omitempty"`
+}
+
+// AuthDeviceTokenRequest DTO.
+type AuthDeviceTokenRequest struct {
+	RequestBase
+	DeviceCode string `json:"deviceCode,omitempty"`
+}
+
+// AuthDeviceConsentRequest DTO.
+type AuthDeviceConsentRequest struct {
+	RequestBase
+	UserCode string `json:"userCode,omitempty"`
+}
+
+// AuthDeviceConsentDecisionRequest DTO.
+type AuthDeviceConsentDecisionRequest struct {
+	RequestBase
+	UserCode       string                 `json:"userCode,omitempty"`
+	Decision       string                 `json:"decision,omitempty"`
+	AccountRoleIds []string               `json:"accountRoleIds,omitempty"`
+	ProjectRoles   []*AiProjectRoleIdsDto `json:"projectRoles,omitempty"`
+}
+
 // OAuthProtectedResourceMetadataRequest DTO.
 type OAuthProtectedResourceMetadataRequest struct {
 	Path string `json:"path,omitempty"`
@@ -11081,9 +11312,34 @@ type OAuthAuthorizeRequest struct {
 	Version string `json:"version,omitempty"`
 }
 
-// OAuthAuthorizeDecisionRequest DTO.
-type OAuthAuthorizeDecisionRequest struct {
-	Version string `json:"version,omitempty"`
+// OAuthConsentRequest DTO.
+type OAuthConsentRequest struct {
+	RequestBase
+	ResponseType        string `json:"responseType,omitempty"`
+	ClientId            string `json:"clientId,omitempty"`
+	RedirectUri         string `json:"redirectUri,omitempty"`
+	CodeChallenge       string `json:"codeChallenge,omitempty"`
+	CodeChallengeMethod string `json:"codeChallengeMethod,omitempty"`
+	State               string `json:"state,omitempty"`
+	Resource            string `json:"resource,omitempty"`
+	Scope               string `json:"scope,omitempty"`
+}
+
+// OAuthConsentDecisionRequest DTO.
+type OAuthConsentDecisionRequest struct {
+	RequestBase
+	ResponseType        string                 `json:"responseType,omitempty"`
+	ClientId            string                 `json:"clientId,omitempty"`
+	RedirectUri         string                 `json:"redirectUri,omitempty"`
+	CodeChallenge       string                 `json:"codeChallenge,omitempty"`
+	CodeChallengeMethod string                 `json:"codeChallengeMethod,omitempty"`
+	State               string                 `json:"state,omitempty"`
+	Resource            string                 `json:"resource,omitempty"`
+	Scope               string                 `json:"scope,omitempty"`
+	ConsentTicket       string                 `json:"consentTicket,omitempty"`
+	Decision            string                 `json:"decision,omitempty"`
+	AccountRoleIds      []string               `json:"accountRoleIds,omitempty"`
+	ProjectRoles        []*AiProjectRoleIdsDto `json:"projectRoles,omitempty"`
 }
 
 // OAuthTokenRequest DTO.
@@ -11236,6 +11492,7 @@ type UpdateWebhookIntegrationExtraHeadersRequest struct {
 
 // ReceiveWebhook DTO.
 type ReceiveWebhook struct {
+	Version               string `json:"version,omitempty"`
 	Source                string `json:"source,omitempty"`
 	IntegrationInstanceId string `json:"integrationInstanceId,omitempty"`
 	RequestStream         string `json:"requestStream,omitempty"`
@@ -11309,6 +11566,13 @@ type GetSchedulerTasks struct {
 	CodeMashListPaginationRequestBase
 	Type    SchedulerTaskType `json:"type,omitempty"`
 	Enabled bool              `json:"enabled,omitempty"`
+}
+
+// GetSchedulerTaskRuns DTO.
+type GetSchedulerTaskRuns struct {
+	CodeMashRequestBase
+	Id   string  `json:"id,omitempty"`
+	Take float64 `json:"take,omitempty"`
 }
 
 // SaveSchedulerTaskRequest DTO.
