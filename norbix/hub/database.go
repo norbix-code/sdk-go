@@ -683,6 +683,15 @@ func (m *DatabaseModule) SeedCollectionRecords(ctx context.Context, req map[stri
 // FindRecords performs GET /{version}/database/collections/{collectionName} (scope: project).
 //
 // It lists the records of a collection ("filter" JSON, "sortBy", "sortOrder", "pageSize", "startingAfter", "endingBefore", "contactId", "schemaVersion" go in the query string).
+//
+// "expandReferences": true (query) returns every reference field (user, role, term, record, file — at
+// any nesting depth) as {"id": "...", "display": ...} — an array of them when the field is multiple —
+// where "display" is the target's property named by the schema's displayField; a target that no
+// longer exists gives "display": null, the id is always kept. Decode such a value into
+// ExpandedReference. The caller must hold read on this collection AND on every source the published
+// schema links to; one missing source refuses the whole read with CM-ERRORS-DATABASE-056 (context:
+// SourceKind, Source, Fields, MissingPermissions) before any record is read. Off (default): the
+// records exactly as stored, no source check.
 func (m *DatabaseModule) FindRecords(ctx context.Context, collectionName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -852,6 +861,10 @@ func (m *DatabaseModule) InsertManyRecords(ctx context.Context, collectionName s
 //
 // It applies "update" to every record that matches "filter" (a missing filter counts as "{}").
 //
+// "arrayFilters" (optional, a JSON string): a MongoDB arrayFilters ARRAY, one filter document per
+// $[name] identifier used in an "update" path — e.g. "update": {"lines.$[line].qty":3} with
+// "arrayFilters": [{"line.sku":"A-1"}] — to change one element of a nested array in place.
+//
 // "update" is the bare field document (e.g. {"price":12}); the gateway applies it with $set. A body
 // with $ operators ($set, $inc, ...) is refused with CM-ERRORS-DATABASE-035.
 //
@@ -897,6 +910,15 @@ func (m *DatabaseModule) DeleteRecord(ctx context.Context, collectionName string
 // FindOneRecord performs GET /{version}/database/collections/{collectionName}/{id} (scope: project).
 //
 // It reads one record.
+//
+// "expandReferences": true (query) returns every reference field (user, role, term, record, file — at
+// any nesting depth) as {"id": "...", "display": ...} — an array of them when the field is multiple —
+// where "display" is the target's property named by the schema's displayField; a target that no
+// longer exists gives "display": null, the id is always kept. Decode such a value into
+// ExpandedReference. The caller must hold read on this collection AND on every source the published
+// schema links to; one missing source refuses the whole read with CM-ERRORS-DATABASE-056 (context:
+// SourceKind, Source, Fields, MissingPermissions) before any record is read. Off (default): the
+// records exactly as stored, no source check.
 func (m *DatabaseModule) FindOneRecord(ctx context.Context, collectionName string, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"collectionName": collectionName,
@@ -915,6 +937,10 @@ func (m *DatabaseModule) FindOneRecord(ctx context.Context, collectionName strin
 // UpdateOneRecord performs PUT /{version}/database/collections/{collectionName}/{id} (scope: project).
 //
 // It applies "update" (a JSON string) to one record.
+//
+// "arrayFilters" (optional, a JSON string): a MongoDB arrayFilters ARRAY, one filter document per
+// $[name] identifier used in an "update" path — e.g. "update": {"lines.$[line].qty":3} with
+// "arrayFilters": [{"line.sku":"A-1"}] — to change one element of a nested array in place.
 //
 // "update" is the bare field document (e.g. {"price":12}); the gateway applies it with $set. A body
 // with $ operators ($set, $inc, ...) is refused with CM-ERRORS-DATABASE-035.

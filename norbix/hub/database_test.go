@@ -217,9 +217,9 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.SeedCollectionRecords(ctx, map[string]any{"mode": "Sample", "collections": "products"}, nil)
 			}},
-		{"FindRecords", http.MethodGet, "/v2/database/collections/products", url.Values{"filter": {"{\"price\":{\"$gt\":10}}"}, "pageSize": {"20"}, "sortBy": {"price"}}, nil,
+		{"FindRecords", http.MethodGet, "/v2/database/collections/products", url.Values{"filter": {"{\"price\":{\"$gt\":10}}"}, "pageSize": {"20"}, "sortBy": {"price"}, "expandReferences": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.FindRecords(ctx, "products", map[string]any{"filter": "{\"price\":{\"$gt\":10}}", "pageSize": 20, "sortBy": "price"}, nil)
+				return m.FindRecords(ctx, "products", map[string]any{"filter": "{\"price\":{\"$gt\":10}}", "pageSize": 20, "sortBy": "price", "expandReferences": true}, nil)
 			}},
 		{"InsertRecord", http.MethodPost, "/v2/database/collections/products", nil, map[string]any{"document": "{\"title\":\"Shoe\"}"},
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -253,21 +253,21 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.InsertManyRecords(ctx, "products", map[string]any{"documents": "[{\"title\":\"A\"},{\"title\":\"B\"}]"}, nil)
 			}},
-		{"UpdateManyRecords", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"},
+		{"UpdateManyRecords", http.MethodPut, "/v2/database/collections/products/many", nil, map[string]any{"filter": "{}", "allRecords": true, "update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateManyRecords(ctx, "products", map[string]any{"filter": "{}", "allRecords": true, "update": "{\"price\":12}"}, nil)
+				return m.UpdateManyRecords(ctx, "products", map[string]any{"filter": "{}", "allRecords": true, "update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"}, nil)
 			}},
 		{"DeleteRecord", http.MethodDelete, "/v2/database/collections/products/rec_1", url.Values{"databaseIntegrationId": {"int_1"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.DeleteRecord(ctx, "products", "rec_1", map[string]any{"databaseIntegrationId": "int_1"}, nil)
 			}},
-		{"FindOneRecord", http.MethodGet, "/v2/database/collections/products/rec_1", url.Values{"databaseIntegrationId": {"int_1"}}, nil,
+		{"FindOneRecord", http.MethodGet, "/v2/database/collections/products/rec_1", url.Values{"databaseIntegrationId": {"int_1"}, "expandReferences": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.FindOneRecord(ctx, "products", "rec_1", map[string]any{"databaseIntegrationId": "int_1"}, nil)
+				return m.FindOneRecord(ctx, "products", "rec_1", map[string]any{"databaseIntegrationId": "int_1", "expandReferences": true}, nil)
 			}},
-		{"UpdateOneRecord", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"price\":12}"},
+		{"UpdateOneRecord", http.MethodPut, "/v2/database/collections/products/rec_1", nil, map[string]any{"update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateOneRecord(ctx, "products", "rec_1", map[string]any{"update": "{\"price\":12}"}, nil)
+				return m.UpdateOneRecord(ctx, "products", "rec_1", map[string]any{"update": "{\"lines.$[line].qty\":3}", "arrayFilters": "[{\"line.sku\":\"A-1\"}]"}, nil)
 			}},
 		{"ReplaceRecord", http.MethodPut, "/v2/database/collections/products/rec_1/replace", nil, map[string]any{"replacement": "{\"title\":\"Boot\"}"},
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -589,6 +589,14 @@ func TestDatabaseRefusalsKeepTheGatewayCode(t *testing.T) {
 		{"term tree too large", http.StatusBadRequest, "CM-ERRORS-TAXONOMIES-011", `{"MaxTerms":5000}`,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.GetDatabaseTaxonomyTree(ctx, map[string]any{"includeTerms": true}, nil)
+			}},
+		{"expand references: a linked source is not readable", http.StatusForbidden, "CM-ERRORS-DATABASE-056", `{"Fields":["owner"],"MissingPermissions":["membership:read"],"Source":"users","SourceKind":"user"}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.FindRecords(ctx, "products", map[string]any{"expandReferences": true}, nil)
+			}},
+		{"reference to a missing record", http.StatusBadRequest, "CM-ERRORS-DATABASE-053", `{"FieldName":"category","Keyword":"reference","MissingId":"rec_x"}`,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.InsertRecord(ctx, "products", map[string]any{"document": `{"category":"rec_x"}`}, nil)
 			}},
 		{"trigger copy missing in env", http.StatusNotFound, "CM-ERRORS-TRIGGERS-002", "",
 			func(ctx context.Context, m *DatabaseModule) error {
