@@ -255,13 +255,33 @@ type EchoRegionDto struct {
 	HubUrl      string `json:"hubUrl,omitempty"`
 }
 
+// EchoAgentSnippetDto DTO.
+type EchoAgentSnippetDto struct {
+	Client      string `json:"client,omitempty"`
+	Kind        string `json:"kind,omitempty"`
+	Recommended bool   `json:"recommended,omitempty"`
+	Auth        string `json:"auth,omitempty"`
+	Config      string `json:"config,omitempty"`
+}
+
 // EchoAgentDto DTO.
 type EchoAgentDto struct {
-	McpUrl            string `json:"mcpUrl,omitempty"`
-	OAuthMetadataUrl  string `json:"oAuthMetadataUrl,omitempty"`
-	InstallationType  string `json:"installationType,omitempty"`
-	OnboardingDocsUrl string `json:"onboardingDocsUrl,omitempty"`
-	ToolsUrl          string `json:"toolsUrl,omitempty"`
+	McpUrl                 string                 `json:"mcpUrl,omitempty"`
+	OAuthMetadataUrl       string                 `json:"oAuthMetadataUrl,omitempty"`
+	InstallationType       string                 `json:"installationType,omitempty"`
+	OnboardingDocsUrl      string                 `json:"onboardingDocsUrl,omitempty"`
+	ToolsUrl               string                 `json:"toolsUrl,omitempty"`
+	CliPackage             string                 `json:"cliPackage,omitempty"`
+	CliInstallCommand      string                 `json:"cliInstallCommand,omitempty"`
+	DeviceAuthorizationUrl string                 `json:"deviceAuthorizationUrl,omitempty"`
+	DeviceTokenUrl         string                 `json:"deviceTokenUrl,omitempty"`
+	Snippets               []*EchoAgentSnippetDto `json:"snippets,omitempty"`
+}
+
+// EchoHostingPlatformDto DTO.
+type EchoHostingPlatformDto struct {
+	Provider string `json:"provider,omitempty"`
+	IsAws    bool   `json:"isAws,omitempty"`
 }
 
 // PublicBrandDto DTO.
@@ -813,29 +833,30 @@ type JsonFieldDto struct {
 
 // EchoResponse DTO.
 type EchoResponse struct {
-	ContainerName                string           `json:"containerName,omitempty"`
-	Ip                           string           `json:"ip,omitempty"`
-	Release                      CodeMashRelease  `json:"release,omitempty"`
-	Runtime                      CodeMashRuntime  `json:"runtime,omitempty"`
-	ManagedServiceHubUrl         string           `json:"managedServiceHubUrl,omitempty"`
-	ManagedServiceApiUrl         string           `json:"managedServiceApiUrl,omitempty"`
-	HubUrl                       string           `json:"hubUrl,omitempty"`
-	ApiUrl                       string           `json:"apiUrl,omitempty"`
-	ApiVersion                   string           `json:"apiVersion,omitempty"`
-	HubVersion                   string           `json:"hubVersion,omitempty"`
-	MjmlUrl                      string           `json:"mjmlUrl,omitempty"`
-	AdminUrlTemplate             string           `json:"adminUrlTemplate,omitempty"`
-	License                      *EchoLicenseDto  `json:"license,omitempty"`
-	AskForEnterpriseLicenseEmail string           `json:"askForEnterpriseLicenseEmail,omitempty"`
-	EmailServiceConfigured       bool             `json:"emailServiceConfigured,omitempty"`
-	RootBootstrapPasswordSource  string           `json:"rootBootstrapPasswordSource,omitempty"`
-	Regions                      []*EchoRegionDto `json:"regions,omitempty"`
-	IsProductionInstallation     bool             `json:"isProductionInstallation,omitempty"`
-	LicensingMode                string           `json:"licensingMode,omitempty"`
-	GraceDaysLeft                float64          `json:"graceDaysLeft,omitempty"`
-	InstallationDomain           string           `json:"installationDomain,omitempty"`
-	LicensingDocsUrl             string           `json:"licensingDocsUrl,omitempty"`
-	Agent                        *EchoAgentDto    `json:"agent,omitempty"`
+	ContainerName                string                  `json:"containerName,omitempty"`
+	Ip                           string                  `json:"ip,omitempty"`
+	Release                      CodeMashRelease         `json:"release,omitempty"`
+	Runtime                      CodeMashRuntime         `json:"runtime,omitempty"`
+	ManagedServiceHubUrl         string                  `json:"managedServiceHubUrl,omitempty"`
+	ManagedServiceApiUrl         string                  `json:"managedServiceApiUrl,omitempty"`
+	HubUrl                       string                  `json:"hubUrl,omitempty"`
+	ApiUrl                       string                  `json:"apiUrl,omitempty"`
+	ApiVersion                   string                  `json:"apiVersion,omitempty"`
+	HubVersion                   string                  `json:"hubVersion,omitempty"`
+	MjmlUrl                      string                  `json:"mjmlUrl,omitempty"`
+	AdminUrlTemplate             string                  `json:"adminUrlTemplate,omitempty"`
+	License                      *EchoLicenseDto         `json:"license,omitempty"`
+	AskForEnterpriseLicenseEmail string                  `json:"askForEnterpriseLicenseEmail,omitempty"`
+	EmailServiceConfigured       bool                    `json:"emailServiceConfigured,omitempty"`
+	RootBootstrapPasswordSource  string                  `json:"rootBootstrapPasswordSource,omitempty"`
+	Regions                      []*EchoRegionDto        `json:"regions,omitempty"`
+	IsProductionInstallation     bool                    `json:"isProductionInstallation,omitempty"`
+	LicensingMode                string                  `json:"licensingMode,omitempty"`
+	GraceDaysLeft                float64                 `json:"graceDaysLeft,omitempty"`
+	InstallationDomain           string                  `json:"installationDomain,omitempty"`
+	LicensingDocsUrl             string                  `json:"licensingDocsUrl,omitempty"`
+	Agent                        *EchoAgentDto           `json:"agent,omitempty"`
+	HostingPlatform              *EchoHostingPlatformDto `json:"hostingPlatform,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
@@ -1874,6 +1895,13 @@ type RequestUploadUrlRequest struct {
 type TestFilesIntegrationRequest struct {
 	CodeMashRequestBase
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+}
+
+// UseFileRequest DTO.
+type UseFileRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
 }
 
 // Authenticate DTO.

@@ -285,6 +285,10 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.UpdateDatabaseSchemaEmbed(ctx, "id_1", map[string]any{"embed": map[string]any{"enabled": true, "fields": []any{"title"}, "perUser": false}}, nil)
 			}},
+		{"GetDatabaseSchemaIndexStatus", http.MethodGet, "/v2/database/schemas/id_1/index-status", nil, nil,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.GetDatabaseSchemaIndexStatus(ctx, "id_1", nil, nil)
+			}},
 		{"GetDatabaseSchemaListSettings", http.MethodGet, "/v2/database/schemas/id_1/list-settings", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.GetDatabaseSchemaListSettings(ctx, "id_1", nil, nil)
@@ -387,7 +391,7 @@ func TestHubDatabaseEndpointsHitTheExpectedRoute(t *testing.T) {
 // grows one and a method is added, this count changes, so a new endpoint
 // cannot arrive untested.
 func TestHubDatabaseSurfaceSize(t *testing.T) {
-	const want = 67
+	const want = 68
 	if got := len(hubDatabaseCases()); got != want {
 		t.Errorf("database endpoint count: got %d want %d", got, want)
 	}

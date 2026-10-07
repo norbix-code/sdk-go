@@ -322,6 +322,7 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 | `UpdateDatabaseSchemaSettings(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/settings` |
 | `ApplyDatabaseSchemaBundle(ctx, req, out)` | `POST` | `/database/schemas/apply-bundle` |
 | `UpdateDatabaseSchemaEmbed(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/embed` |
+| `GetDatabaseSchemaIndexStatus(ctx, id, req, out)` | `GET` | `/database/schemas/{Id}/index-status` |
 | `GetDatabaseSchemaListSettings(ctx, id, req, out)` | `GET` | `/database/schemas/{Id}/list-settings` |
 | `UpdateDatabaseSchemaListSettings(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/list-settings` |
 
