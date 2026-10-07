@@ -12,7 +12,7 @@ import (
 const (
 	DefaultBaseURLAPI = "https://api.norbix.ai"
 	DefaultBaseURLHub = "https://hub.norbix.ai"
-	DefaultVersion    = "v2"
+	DefaultVersion    = "v3"
 	DefaultTimeout    = 30 * time.Second
 )
 
