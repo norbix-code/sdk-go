@@ -486,6 +486,7 @@ type TermTreeDto struct {
 	Order        float64               `json:"order,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Names        map[string]string     `json:"names,omitempty"`
+	Slug         string                `json:"slug,omitempty"`
 	Description  string                `json:"description,omitempty"`
 	Descriptions map[string]string     `json:"descriptions,omitempty"`
 	MultiParents []*TermMultiParentDto `json:"multiParents,omitempty"`
@@ -512,6 +513,7 @@ type TermDto struct {
 	Order        float64               `json:"order,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Names        map[string]string     `json:"names,omitempty"`
+	Slug         string                `json:"slug,omitempty"`
 	Description  string                `json:"description,omitempty"`
 	Descriptions map[string]string     `json:"descriptions,omitempty"`
 	MultiParents []*TermMultiParentDto `json:"multiParents,omitempty"`
@@ -672,6 +674,8 @@ type StringFieldDto struct {
 	MinLength        float64           `json:"minLength,omitempty"`
 	MaxLength        float64           `json:"maxLength,omitempty"`
 	TranslateOptions map[string]string `json:"translateOptions,omitempty"`
+	Default          string            `json:"default,omitempty"`
+	Unique           bool              `json:"unique,omitempty"`
 }
 
 // DecimalFieldDto DTO.
@@ -680,17 +684,30 @@ type DecimalFieldDto struct {
 	Minimum    float64 `json:"minimum,omitempty"`
 	Maximum    float64 `json:"maximum,omitempty"`
 	MultipleOf float64 `json:"multipleOf,omitempty"`
+	Default    float64 `json:"default,omitempty"`
+	Unique     bool    `json:"unique,omitempty"`
+}
+
+// CurrencyDefaultDto DTO.
+type CurrencyDefaultDto struct {
+	Value    float64 `json:"value,omitempty"`
+	Currency string  `json:"currency,omitempty"`
 }
 
 // CurrencyFieldDto DTO.
 type CurrencyFieldDto struct {
 	JsonSchemaFieldDto
-	AllowedCurrencies []string `json:"allowedCurrencies,omitempty"`
+	AllowedCurrencies []string            `json:"allowedCurrencies,omitempty"`
+	MultipleOf        float64             `json:"multipleOf,omitempty"`
+	Minimum           float64             `json:"minimum,omitempty"`
+	Maximum           float64             `json:"maximum,omitempty"`
+	Default           *CurrencyDefaultDto `json:"default,omitempty"`
 }
 
 // BooleanFieldDto DTO.
 type BooleanFieldDto struct {
 	JsonSchemaFieldDto
+	Default bool `json:"default,omitempty"`
 }
 
 // DateFieldDto DTO.
@@ -698,6 +715,7 @@ type DateFieldDto struct {
 	JsonSchemaFieldDto
 	Minimum float64 `json:"minimum,omitempty"`
 	Maximum float64 `json:"maximum,omitempty"`
+	Default float64 `json:"default,omitempty"`
 }
 
 // IntegerFieldDto DTO.
@@ -705,6 +723,8 @@ type IntegerFieldDto struct {
 	JsonSchemaFieldDto
 	Minimum float64 `json:"minimum,omitempty"`
 	Maximum float64 `json:"maximum,omitempty"`
+	Default float64 `json:"default,omitempty"`
+	Unique  bool    `json:"unique,omitempty"`
 }
 
 // GeolocationFieldDto DTO.
@@ -716,19 +736,27 @@ type GeolocationFieldDto struct {
 // TagsFieldDto DTO.
 type TagsFieldDto struct {
 	JsonSchemaFieldDto
+	MinItems float64  `json:"minItems,omitempty"`
+	MaxItems float64  `json:"maxItems,omitempty"`
+	Default  []string `json:"default,omitempty"`
 }
 
 // FileFieldDto DTO.
 type FileFieldDto struct {
 	JsonSchemaFieldDto
-	Storages []string `json:"storages,omitempty"`
+	Storages        []string `json:"storages,omitempty"`
+	MinItems        float64  `json:"minItems,omitempty"`
+	MaxItems        float64  `json:"maxItems,omitempty"`
+	AllowedFileType string   `json:"allowedFileType,omitempty"`
+	MaxSizeMb       float64  `json:"maxSizeMb,omitempty"`
 }
 
 // TaxonomySelectionFieldDto DTO.
 type TaxonomySelectionFieldDto struct {
 	JsonSchemaFieldDto
-	TaxonomyId string `json:"taxonomyId,omitempty"`
-	Multiple   bool   `json:"multiple,omitempty"`
+	TaxonomyId   string `json:"taxonomyId,omitempty"`
+	Multiple     bool   `json:"multiple,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
 }
 
 // CollectionSelectionFieldDto DTO.
@@ -742,13 +770,15 @@ type CollectionSelectionFieldDto struct {
 // UserSelectionFieldDto DTO.
 type UserSelectionFieldDto struct {
 	JsonSchemaFieldDto
-	Multiple bool `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
 }
 
 // RoleSelectionFieldDto DTO.
 type RoleSelectionFieldDto struct {
 	JsonSchemaFieldDto
-	Multiple bool `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
 }
 
 // EnumSelectionFieldDto DTO.
@@ -756,6 +786,29 @@ type EnumSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	Values   []string `json:"values,omitempty"`
 	Multiple bool     `json:"multiple,omitempty"`
+	Default  []string `json:"default,omitempty"`
+}
+
+// ObjectFieldDto DTO.
+type ObjectFieldDto struct {
+	JsonSchemaFieldDto
+	Properties []*JsonSchemaFieldDto `json:"properties,omitempty"`
+	Required   []string              `json:"required,omitempty"`
+}
+
+// ArrayFieldDto DTO.
+type ArrayFieldDto struct {
+	JsonSchemaFieldDto
+	Items       *JsonSchemaFieldDto `json:"items,omitempty"`
+	MinItems    float64             `json:"minItems,omitempty"`
+	MaxItems    float64             `json:"maxItems,omitempty"`
+	UniqueItems bool                `json:"uniqueItems,omitempty"`
+}
+
+// JsonFieldDto DTO.
+type JsonFieldDto struct {
+	JsonSchemaFieldDto
+	MaxBytes float64 `json:"maxBytes,omitempty"`
 }
 
 // EchoResponse DTO.
@@ -1014,6 +1067,14 @@ type FindResponse struct {
 type FindOneResponse struct {
 	ResponseBase
 	Result map[string]any `json:"result,omitempty"`
+}
+
+// GetFileByIdResponse DTO.
+type GetFileByIdResponse struct {
+	ResponseBase
+	File      *FileResourceRefDto `json:"file,omitempty"`
+	IsPublic  bool                `json:"isPublic,omitempty"`
+	PublicUrl string              `json:"publicUrl,omitempty"`
 }
 
 // GetFileInfoResponse DTO.
@@ -1648,6 +1709,7 @@ type FindRequest struct {
 	PagingArgs            *PagingArgs `json:"pagingArgs,omitempty"`
 	SortBy                string      `json:"sortBy,omitempty"`
 	SortOrder             float64     `json:"sortOrder,omitempty"`
+	ExpandReferences      bool        `json:"expandReferences,omitempty"`
 }
 
 // FindOneRequest DTO.
@@ -1656,6 +1718,7 @@ type FindOneRequest struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	Id                    string `json:"id,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+	ExpandReferences      bool   `json:"expandReferences,omitempty"`
 }
 
 // FindOwnRequest DTO.
@@ -1666,6 +1729,7 @@ type FindOwnRequest struct {
 	Filter                string      `json:"filter,omitempty"`
 	SchemaVersion         float64     `json:"schemaVersion,omitempty"`
 	PagingArgs            *PagingArgs `json:"pagingArgs,omitempty"`
+	ExpandReferences      bool        `json:"expandReferences,omitempty"`
 }
 
 // InsertManyRequest DTO.
@@ -1701,6 +1765,7 @@ type UpdateManyRequest struct {
 	Filter                string `json:"filter,omitempty"`
 	AllRecords            bool   `json:"allRecords,omitempty"`
 	Update                string `json:"update,omitempty"`
+	ArrayFilters          string `json:"arrayFilters,omitempty"`
 }
 
 // UpdateOneRequest DTO.
@@ -1710,6 +1775,7 @@ type UpdateOneRequest struct {
 	Id                    string `json:"id,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Update                string `json:"update,omitempty"`
+	ArrayFilters          string `json:"arrayFilters,omitempty"`
 }
 
 // CommitUploadRequest DTO.
@@ -1757,6 +1823,13 @@ type DownloadFileApiRequest struct {
 	CodeMashRequestBase
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
 	Path               string `json:"path,omitempty"`
+}
+
+// GetFileByIdRequest DTO.
+type GetFileByIdRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Id                 string `json:"id,omitempty"`
 }
 
 // GetFileInfoRequest DTO.

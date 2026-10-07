@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-05 20:53:15
+Date: 2026-10-07 10:13:50
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:64964
+BaseUrl: http://localhost:49826
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -4912,6 +4912,8 @@ type TermTreeDto struct {
 	// @DataMember
 	Names map[string]string `json:"names,omitempty"`
 	// @DataMember
+	Slug *string `json:"slug,omitempty"`
+	// @DataMember
 	Description *string `json:"description,omitempty"`
 	// @DataMember
 	Descriptions map[string]string `json:"descriptions,omitempty"`
@@ -4953,6 +4955,8 @@ type TermDto struct {
 	Name *string `json:"name,omitempty"`
 	// @DataMember
 	Names map[string]string `json:"names,omitempty"`
+	// @DataMember
+	Slug *string `json:"slug,omitempty"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
 	// @DataMember
@@ -5851,6 +5855,7 @@ type PushCampaignBatchNotificationDto struct {
 type PaymentsWebhookLogEntry struct {
 	IntegrationId   string    `json:"integrationId"`
 	Source          string    `json:"source"`
+	Env             *string   `json:"env,omitempty"`
 	EventName       *string   `json:"eventName,omitempty"`
 	ProviderEventId *string   `json:"providerEventId,omitempty"`
 	StatusCode      int       `json:"statusCode,omitempty"`
@@ -5903,6 +5908,8 @@ type TenantLogEntryDto struct {
 	TraceId *string `json:"traceId,omitempty"`
 	// @DataMember
 	SpanId *string `json:"spanId,omitempty"`
+	// @DataMember
+	Env string `json:"env"`
 	// @DataMember
 	Meta *IReadOnlyDictionary[string, string] `json:"meta,omitempty"`
 }
@@ -6834,6 +6841,10 @@ type StringFieldDto struct {
 	MaxLength *int `json:"maxLength,omitempty"`
 	// @DataMember
 	TranslateOptions *IReadOnlyDictionary[string, string] `json:"translateOptions,omitempty"`
+	// @DataMember
+	Default *string `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
 }
 
 type DecimalFieldDto struct {
@@ -6844,16 +6855,37 @@ type DecimalFieldDto struct {
 	Maximum *float64 `json:"maximum,omitempty"`
 	// @DataMember
 	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	// @DataMember
+	Default *float64 `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
+}
+
+type CurrencyDefaultDto struct {
+	// @DataMember
+	Value float64 `json:"value,omitempty"`
+	// @DataMember
+	Currency string `json:"currency"`
 }
 
 type CurrencyFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	AllowedCurrencies *IReadOnlyList[string] `json:"allowedCurrencies,omitempty"`
+	// @DataMember
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	// @DataMember
+	Minimum *float64 `json:"minimum,omitempty"`
+	// @DataMember
+	Maximum *float64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *CurrencyDefaultDto `json:"default,omitempty"`
 }
 
 type BooleanFieldDto struct {
 	JsonSchemaFieldDto
+	// @DataMember
+	Default *bool `json:"default,omitempty"`
 }
 
 type DateFieldDto struct {
@@ -6862,6 +6894,8 @@ type DateFieldDto struct {
 	Minimum *int64 `json:"minimum,omitempty"`
 	// @DataMember
 	Maximum *int64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *int64 `json:"default,omitempty"`
 }
 
 type IntegerFieldDto struct {
@@ -6870,6 +6904,10 @@ type IntegerFieldDto struct {
 	Minimum *int64 `json:"minimum,omitempty"`
 	// @DataMember
 	Maximum *int64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *int64 `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
 }
 
 type GeolocationFieldDto struct {
@@ -6880,12 +6918,26 @@ type GeolocationFieldDto struct {
 
 type TagsFieldDto struct {
 	JsonSchemaFieldDto
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	Default *IReadOnlyList[string] `json:"default,omitempty"`
 }
 
 type FileFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	Storages *IReadOnlyList[string] `json:"storages,omitempty"`
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	AllowedFileType *string `json:"allowedFileType,omitempty"`
+	// @DataMember
+	MaxSizeMb *float64 `json:"maxSizeMb,omitempty"`
 }
 
 type TaxonomySelectionFieldDto struct {
@@ -6894,6 +6946,8 @@ type TaxonomySelectionFieldDto struct {
 	TaxonomyId *string `json:"taxonomyId,omitempty"`
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
 }
 
 type CollectionSelectionFieldDto struct {
@@ -6910,12 +6964,16 @@ type UserSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
 }
 
 type RoleSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
 }
 
 type EnumSelectionFieldDto struct {
@@ -6924,6 +6982,34 @@ type EnumSelectionFieldDto struct {
 	Values *IReadOnlyList[string] `json:"values,omitempty"`
 	// @DataMember
 	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	Default *IReadOnlyList[string] `json:"default,omitempty"`
+}
+
+type ObjectFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Properties IReadOnlyList[interface{}] `json:"properties"`
+	// @DataMember
+	Required *IReadOnlyList[string] `json:"required,omitempty"`
+}
+
+type ArrayFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Items interface{} `json:"items"`
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	UniqueItems *bool `json:"uniqueItems,omitempty"`
+}
+
+type JsonFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	MaxBytes *int `json:"maxBytes,omitempty"`
 }
 
 type EchoResponse struct {
@@ -7506,6 +7592,13 @@ type TestFilesIntegrationResponse struct {
 }
 
 type GetFileResponse struct {
+	ResponseBase
+	File      *FileResourceRefDto `json:"file,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
+	PublicUrl *string             `json:"publicUrl,omitempty"`
+}
+
+type GetFileByIdResponse struct {
 	ResponseBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
 	IsPublic  *bool               `json:"isPublic,omitempty"`
@@ -11152,9 +11245,9 @@ type SaveDatabaseTaxonomyTermRequest struct {
 	// @DataMember
 	// @ApiMember(Description="Optional database integration id. When omitted, the project's default database integration is used.")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description The term to insert, as a MongoDB extended-JSON document string (a raw JSON object). Supported term fields: name (string, or a {lang:value} map — required); description; order (integer sort position, lower shows first — omit for unordered); parentId (id of the single parent term); multiParents ("additional categories": array of {taxonomyId, parentId}). The server stamps taxonomyId/taxonomyName automatically — do not include them. Example: {"name":"France","order":1}. */
+	/** @description The term to insert, as a MongoDB extended-JSON document string (a raw JSON object). Supported term fields: name (string, or a {lang:value} map — required); description; slug (optional — the URL-safe name, unique inside the taxonomy; derived from name when omitted, e.g. 'France' → 'france', with a -2, -3… suffix when another term of the taxonomy already has that derived slug; an explicit slug another term has is refused, CM-ERRORS-TAXONOMIES-012); order (integer sort position, lower shows first — omit for unordered); parentId (id of the single parent term); multiParents ("additional categories": array of {taxonomyId, parentId}). The server stamps taxonomyId/taxonomyName automatically — do not include them. Example: {"name":"France","order":1}. */
 	// @DataMember
-	// @ApiMember(Description="The term to insert, as a MongoDB extended-JSON document string (a raw JSON object). Supported term fields: name (string, or a {lang:value} map — required); description; order (integer sort position, lower shows first — omit for unordered); parentId (id of the single parent term); multiParents (\"additional categories\": array of {taxonomyId, parentId}). The server stamps taxonomyId/taxonomyName automatically — do not include them. Example: {\"name\":\"France\",\"order\":1}.", IsRequired=true)
+	// @ApiMember(Description="The term to insert, as a MongoDB extended-JSON document string (a raw JSON object). Supported term fields: name (string, or a {lang:value} map — required); description; slug (optional — the URL-safe name, unique inside the taxonomy; derived from name when omitted, e.g. 'France' → 'france', with a -2, -3… suffix when another term of the taxonomy already has that derived slug; an explicit slug another term has is refused, CM-ERRORS-TAXONOMIES-012); order (integer sort position, lower shows first — omit for unordered); parentId (id of the single parent term); multiParents (\"additional categories\": array of {taxonomyId, parentId}). The server stamps taxonomyId/taxonomyName automatically — do not include them. Example: {\"name\":\"France\",\"order\":1}.", IsRequired=true)
 	Document string `json:"document"`
 }
 
@@ -11179,9 +11272,9 @@ type UpdateDatabaseTaxonomyTermRequest struct {
 	// @DataMember
 	// @ApiMember(Description="Optional database integration id. When omitted, the project's default database integration is used.")
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Partial update document as MongoDB extended-JSON (a raw JSON object of fields to change), applied with $set — only the given fields change. Updatable term fields: name (string or {lang:value} map); description; order (integer sort position, lower shows first — use this to numerate/rank terms; set null to clear); parentId (single parent term id — a term from THIS taxonomy's parent taxonomy; e.g. link a country to its region by setting the country term's parentId to the region term id); multiParents ("additional categories": array of {taxonomyId, parentId}). Example to rank a term: {"order":1}. */
+	/** @description Partial update document as MongoDB extended-JSON (a raw JSON object of fields to change), applied with $set — only the given fields change. Updatable term fields: name (string or {lang:value} map — a new name re-derives the slug unless 'slug' is sent too; a derived slug another term has gets a -2, -3… suffix); slug (optional — set explicitly, unique inside the taxonomy, CM-ERRORS-TAXONOMIES-012 when another term has it); description; order (integer sort position, lower shows first — use this to numerate/rank terms; set null to clear); parentId (single parent term id — a term from THIS taxonomy's parent taxonomy; e.g. link a country to its region by setting the country term's parentId to the region term id); multiParents ("additional categories": array of {taxonomyId, parentId}). Example to rank a term: {"order":1}. */
 	// @DataMember
-	// @ApiMember(Description="Partial update document as MongoDB extended-JSON (a raw JSON object of fields to change), applied with $set — only the given fields change. Updatable term fields: name (string or {lang:value} map); description; order (integer sort position, lower shows first — use this to numerate/rank terms; set null to clear); parentId (single parent term id — a term from THIS taxonomy's parent taxonomy; e.g. link a country to its region by setting the country term's parentId to the region term id); multiParents (\"additional categories\": array of {taxonomyId, parentId}). Example to rank a term: {\"order\":1}.", IsRequired=true)
+	// @ApiMember(Description="Partial update document as MongoDB extended-JSON (a raw JSON object of fields to change), applied with $set — only the given fields change. Updatable term fields: name (string or {lang:value} map — a new name re-derives the slug unless 'slug' is sent too; a derived slug another term has gets a -2, -3… suffix); slug (optional — set explicitly, unique inside the taxonomy, CM-ERRORS-TAXONOMIES-012 when another term has it); description; order (integer sort position, lower shows first — use this to numerate/rank terms; set null to clear); parentId (single parent term id — a term from THIS taxonomy's parent taxonomy; e.g. link a country to its region by setting the country term's parentId to the region term id); multiParents (\"additional categories\": array of {taxonomyId, parentId}). Example to rank a term: {\"order\":1}.", IsRequired=true)
 	Update string `json:"update"`
 }
 
@@ -11424,9 +11517,9 @@ type UpdateDatabaseSchemaDraftRequest struct {
 	// @DataMember
 	// @ApiMember(Description="Raw JSON string matching the Norbix data meta-schema (https://norbix.ai/schemas/meta/v1.json) for the draft's data schema.")
 	DataSchema *string `json:"dataSchema,omitempty"`
-	/** @description OPTIONAL raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. If omitted or invalid, the backend auto-generates a flat-list form from the data schema. */
+	/** @description OPTIONAL raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. If omitted or empty (no field cell), the backend auto-generates a flat-list form from the data schema; a layout that fails the meta-schema is refused with the key named. */
 	// @DataMember
-	// @ApiMember(Description="OPTIONAL raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. If omitted or invalid, the backend auto-generates a flat-list form from the data schema.")
+	// @ApiMember(Description="OPTIONAL raw JSON string matching the Norbix UI/visual meta-schema (https://norbix.ai/schemas/ui/v1.json) for the draft's record form. If omitted or empty (no field cell), the backend auto-generates a flat-list form from the data schema; a layout that fails the meta-schema is refused with the key named.")
 	VisualSchema *string `json:"visualSchema,omitempty"`
 }
 
@@ -11642,6 +11735,9 @@ type FindRecords struct {
 	PagingArgs    *PagingArgs `json:"pagingArgs,omitempty"`
 	SortBy        *string     `json:"sortBy,omitempty"`
 	SortOrder     *int        `json:"sortOrder,omitempty"`
+	/** @description Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids. */
+	// @ApiMember(Description="Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids.")
+	ExpandReferences bool `json:"expandReferences,omitempty"`
 }
 
 func (FindRecords) CreateResponse() (r FindRecordsResponse) { return }
@@ -11659,6 +11755,9 @@ type FindOneRecord struct {
 	// @ApiMember(Description="The id of the record to fetch.", IsRequired=true)
 	Id                    string  `json:"id"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids. */
+	// @ApiMember(Description="Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids.")
+	ExpandReferences bool `json:"expandReferences,omitempty"`
 }
 
 func (FindOneRecord) CreateResponse() (r FindOneRecordResponse) { return }
@@ -11767,9 +11866,12 @@ type UpdateManyRecords struct {
 	/** @description Set to true to update EVERY record of the collection with an empty filter ({}). Without it an empty filter is refused (CM-ERRORS-DATABASE-037). */
 	// @ApiMember(Description="Set to true to update EVERY record of the collection with an empty filter ({}). Without it an empty filter is refused (CM-ERRORS-DATABASE-037).")
 	AllRecords *bool `json:"allRecords,omitempty"`
-	/** @description The partial update document (applied with $set), as MongoDB extended-JSON. */
-	// @ApiMember(Description="The partial update document (applied with $set), as MongoDB extended-JSON.", IsRequired=true)
+	/** @description The partial update document (applied with $set), as MongoDB extended-JSON. Dotted paths reach nested data: {"address.city":"Vilnius"}, {"lines.$[].qty":1}, or {"lines.$[line].qty":3} together with ArrayFilters. */
+	// @ApiMember(Description="The partial update document (applied with $set), as MongoDB extended-JSON. Dotted paths reach nested data: {\"address.city\":\"Vilnius\"}, {\"lines.$[].qty\":1}, or {\"lines.$[line].qty\":3} together with ArrayFilters.", IsRequired=true)
 	Update string `json:"update"`
+	/** @description Optional MongoDB arrayFilters — a JSON array of filter documents, one per $[name] identifier used in the Update paths, e.g. [{"line.sku":"A-1"}] for {"lines.$[line].qty":3}. */
+	// @ApiMember(Description="Optional MongoDB arrayFilters — a JSON array of filter documents, one per $[name] identifier used in the Update paths, e.g. [{\"line.sku\":\"A-1\"}] for {\"lines.$[line].qty\":3}.")
+	ArrayFilters *string `json:"arrayFilters,omitempty"`
 }
 
 func (UpdateManyRecords) CreateResponse() (r EmptyResponse) { return }
@@ -11787,9 +11889,12 @@ type UpdateOneRecord struct {
 	// @ApiMember(Description="The id of the record to update.", IsRequired=true)
 	Id                    string  `json:"id"`
 	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description The partial update document (applied with $set), as MongoDB extended-JSON. */
-	// @ApiMember(Description="The partial update document (applied with $set), as MongoDB extended-JSON.", IsRequired=true)
+	/** @description The partial update document (applied with $set), as MongoDB extended-JSON. Dotted paths reach nested data: {"address.city":"Vilnius"}, {"lines.2.qty":3}, {"lines.$[].qty":1}, or {"lines.$[line].qty":3} together with ArrayFilters. */
+	// @ApiMember(Description="The partial update document (applied with $set), as MongoDB extended-JSON. Dotted paths reach nested data: {\"address.city\":\"Vilnius\"}, {\"lines.2.qty\":3}, {\"lines.$[].qty\":1}, or {\"lines.$[line].qty\":3} together with ArrayFilters.", IsRequired=true)
 	Update string `json:"update"`
+	/** @description Optional MongoDB arrayFilters — a JSON array of filter documents, one per $[name] identifier used in the Update paths, e.g. [{"line.sku":"A-1"}] for {"lines.$[line].qty":3}. */
+	// @ApiMember(Description="Optional MongoDB arrayFilters — a JSON array of filter documents, one per $[name] identifier used in the Update paths, e.g. [{\"line.sku\":\"A-1\"}] for {\"lines.$[line].qty\":3}.")
+	ArrayFilters *string `json:"arrayFilters,omitempty"`
 }
 
 func (UpdateOneRecord) CreateResponse() (r EmptyResponse) { return }
@@ -12354,6 +12459,20 @@ type GetFile struct {
 
 func (GetFile) CreateResponse() (r GetFileResponse) { return }
 func (GetFile) HttpMethod() string                  { return "GET" }
+
+// @Route("/{version}/files/item/by-id", "GET")
+type GetFileById struct {
+	CodeMashRequestBase
+	/** @description The files integration id to read from, from get_files_integrations. */
+	// @ApiMember(Description="The files integration id to read from, from get_files_integrations.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description The file id — nbfl_… as the Files endpoints return it, or its bare UUID. */
+	// @ApiMember(Description="The file id — nbfl_… as the Files endpoints return it, or its bare UUID.", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (GetFileById) CreateResponse() (r GetFileByIdResponse) { return }
+func (GetFileById) HttpMethod() string                      { return "GET" }
 
 // @Route("/{version}/files/folder", "GET")
 type GetFolderFiles struct {
