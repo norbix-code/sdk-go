@@ -59,6 +59,24 @@ func (m *FilesModule) GetFile(ctx context.Context, req map[string]any, out any) 
 	}, out)
 }
 
+// GetFileById performs GET /{version}/files/item/by-id (scope: project).
+//
+// It reads the metadata of one file by "id" (the id a listing returned,
+// "nbfl_…" or its bare UUID) in "filesIntegrationId", instead of by "path"
+// as GetFile does — the id a record's file field stores. Same response
+// shape as GetFile (dtos.GetFileByIdResponse: "file", "isPublic",
+// "publicUrl").
+func (m *FilesModule) GetFileById(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/files/item/by-id",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // DeleteFilesTrigger performs DELETE /{version}/files/triggers/{triggerId} (scope: project).
 func (m *FilesModule) DeleteFilesTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{

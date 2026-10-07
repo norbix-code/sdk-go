@@ -11,10 +11,11 @@ import (
 
 	"github.com/norbix-code/sdk-go/v2/norbix/api/dtos"
 	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
+	hubdtos "github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 )
 
-// Files endpoints, one case per endpoint: 12 on the hub (the dashboard API)
-// and 9 on the public API.
+// Files endpoints, one case per endpoint: 13 on the hub (the dashboard API)
+// and 10 on the public API.
 //
 // Every case starts its own fake HTTP server and its own client, so the order
 // the tests run in does not matter and no real storage provider is contacted.
@@ -131,6 +132,25 @@ func TestHubGetFile(t *testing.T) {
 	expectCall(t, got, http.MethodGet, "/v2/files/item")
 	if out.File.Path != "invoices/invoice.pdf" {
 		t.Errorf("file path: got %q", out.File.Path)
+	}
+}
+
+func TestHubGetFileById(t *testing.T) {
+	c, got := newFilesClient(t, `{"file":{"id":"nbfl_0f1e2d3c","path":"invoices/invoice.pdf"},"isPublic":true,"publicUrl":"https://cdn.example/invoice.pdf"}`)
+	var out hubdtos.GetFileByIdResponse
+	err := c.Hub.Files.GetFileById(context.Background(), map[string]any{
+		"filesIntegrationId": filesIntegrationID,
+		"id":                 "nbfl_0f1e2d3c",
+	}, &out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expectCall(t, got, http.MethodGet, "/v2/files/item/by-id")
+	if got.query != "filesIntegrationId="+filesIntegrationID+"&id=nbfl_0f1e2d3c" {
+		t.Errorf("query: got %q", got.query)
+	}
+	if out.File == nil || out.File.Path != "invoices/invoice.pdf" || !out.IsPublic || out.PublicUrl != "https://cdn.example/invoice.pdf" {
+		t.Errorf("decoded response: %+v", out)
 	}
 }
 
@@ -267,6 +287,22 @@ func TestAPIGetFileInfo(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	expectCall(t, got, http.MethodGet, "/v2/files/"+filesIntegrationID+"/info")
+}
+
+func TestAPIGetFileById(t *testing.T) {
+	c, got := newFilesClient(t, `{"file":{"id":"nbfl_0f1e2d3c","path":"invoices/invoice.pdf"},"isPublic":false}`)
+	var out dtos.GetFileByIdResponse
+	err := c.API.Files.GetFileById(context.Background(), filesIntegrationID, "nbfl_0f1e2d3c", nil, &out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expectCall(t, got, http.MethodGet, "/v2/files/"+filesIntegrationID+"/by-id/nbfl_0f1e2d3c")
+	if got.query != "" {
+		t.Errorf("query: got %q want none", got.query)
+	}
+	if out.File == nil || out.File.Path != "invoices/invoice.pdf" || out.IsPublic {
+		t.Errorf("decoded response: %+v", out)
+	}
 }
 
 func TestAPIGetSignedURL(t *testing.T) {
