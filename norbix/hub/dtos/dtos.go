@@ -1116,6 +1116,8 @@ type SaveTriggerRequest struct {
 	Description    string            `json:"description,omitempty"`
 	IsEnabled      bool              `json:"isEnabled,omitempty"`
 	PreExecuteCode string            `json:"preExecuteCode,omitempty"`
+	Order          float64           `json:"order,omitempty"`
+	BreakOnError   bool              `json:"breakOnError,omitempty"`
 	Action         *TriggerActionDto `json:"action,omitempty"`
 }
 
@@ -3954,6 +3956,8 @@ type TriggerDto struct {
 	Description    string            `json:"description,omitempty"`
 	IsEnabled      bool              `json:"isEnabled,omitempty"`
 	ActivationCode string            `json:"activationCode,omitempty"`
+	Order          float64           `json:"order,omitempty"`
+	BreakOnError   bool              `json:"breakOnError,omitempty"`
 	SavedByAuthId  string            `json:"savedByAuthId,omitempty"`
 }
 
@@ -4498,6 +4502,8 @@ type TriggerProjectionList struct {
 	ActionType        TriggerActionType `json:"actionType,omitempty"`
 	HasPreExecuteCode bool              `json:"hasPreExecuteCode,omitempty"`
 	IsEnabled         bool              `json:"isEnabled,omitempty"`
+	Order             float64           `json:"order,omitempty"`
+	BreakOnError      bool              `json:"breakOnError,omitempty"`
 }
 
 // MembershipTriggerProjectionList DTO.
@@ -6103,6 +6109,10 @@ type IBindableContract struct {
 
 // IHasRazorTemplateCode DTO.
 type IHasRazorTemplateCode struct {
+}
+
+// IQueuedTrigger DTO.
+type IQueuedTrigger struct {
 }
 
 // IHasResponsibleUserId DTO.

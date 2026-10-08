@@ -586,6 +586,8 @@ type TriggerDto struct {
 	Description    string            `json:"description,omitempty"`
 	IsEnabled      bool              `json:"isEnabled,omitempty"`
 	ActivationCode string            `json:"activationCode,omitempty"`
+	Order          float64           `json:"order,omitempty"`
+	BreakOnError   bool              `json:"breakOnError,omitempty"`
 	SavedByAuthId  string            `json:"savedByAuthId,omitempty"`
 }
 
@@ -684,6 +686,10 @@ type IHasViewId struct {
 
 // ICursorArgs DTO.
 type ICursorArgs struct {
+}
+
+// IQueuedTrigger DTO.
+type IQueuedTrigger struct {
 }
 
 // StringFieldDto DTO.
