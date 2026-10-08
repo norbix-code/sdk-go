@@ -1,7 +1,7 @@
 // Package transport is the shared HTTP layer for the Norbix SDK.
 //
 // It mirrors the Python/JS transports: it injects auth + scope headers
-// (X-CM-ProjectId, X-CM-AccountId, norbix-env, nb-region), builds URLs from a
+// (norbix-project-id, norbix-account-id, norbix-env, nb-region), builds URLs from a
 // templated path, serialises GET/DELETE params as the query string and
 // POST/PUT/PATCH params as a JSON body, and retries idempotent requests on
 // 429 / 5xx with exponential backoff.
@@ -100,7 +100,7 @@ type Request struct {
 	// Headers are extra request headers for this call only (for example
 	// Mcp-Session-Id on the developer MCP endpoint). They are applied after
 	// DefaultHeaders and before the auth / scope headers, so they never
-	// replace Authorization or X-CM-ProjectId.
+	// replace Authorization or norbix-project-id.
 	Headers map[string]string
 
 	// Per-call overrides (empty means "use client default").
@@ -172,9 +172,9 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 		}
 	}
 
-	headers["X-CM-ProjectId"] = t.Cfg.ProjectID
+	headers["norbix-project-id"] = t.Cfg.ProjectID
 	if t.Cfg.AccountID != "" {
-		headers["X-CM-AccountId"] = t.Cfg.AccountID
+		headers["norbix-account-id"] = t.Cfg.AccountID
 	}
 
 	// Environment selector: per-call override wins; "PROD" is the backend

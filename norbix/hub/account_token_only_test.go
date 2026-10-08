@@ -18,7 +18,7 @@ import (
 // project id in the path, or needs no account at all. So each method works
 // with a token only — a client with no AccountID — like the TypeScript,
 // .NET, Kotlin and Swift SDKs. One sub-test per method, against a throw-away
-// local server: verb, resolved path, auth header, and no X-CM-AccountId
+// local server: verb, resolved path, auth header, and no norbix-account-id
 // header. Never a real gateway.
 //
 // Four routes are public on the gateway (no [Authenticate]): sign-up
@@ -231,7 +231,7 @@ func TestAccountRoutesWorkWithATokenAndNoAccountID(t *testing.T) {
 				gotMethod = r.Method
 				gotPath = r.URL.Path
 				gotAuth = r.Header.Get("Authorization")
-				gotAccount = r.Header.Get("X-CM-AccountId")
+				gotAccount = r.Header.Get("norbix-account-id")
 				w.WriteHeader(http.StatusNoContent)
 			}))
 			defer srv.Close()
@@ -249,7 +249,7 @@ func TestAccountRoutesWorkWithATokenAndNoAccountID(t *testing.T) {
 				t.Errorf("%s auth header: got %q want %q", c.name, gotAuth, "Bearer key_1")
 			}
 			if gotAccount != "" {
-				t.Errorf("%s: no X-CM-AccountId header expected, got %q", c.name, gotAccount)
+				t.Errorf("%s: no norbix-account-id header expected, got %q", c.name, gotAccount)
 			}
 		})
 	}
@@ -302,7 +302,7 @@ func TestPublicAccountRoutesWorkWithNoTokenAndNoAccountID(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				gotMethod, gotPath, gotQuery = r.Method, r.URL.Path, r.URL.Query().Encode()
 				gotAuth = r.Header.Get("Authorization")
-				gotAccount = r.Header.Get("X-CM-AccountId")
+				gotAccount = r.Header.Get("norbix-account-id")
 				raw, _ := io.ReadAll(r.Body)
 				if len(raw) > 0 {
 					_ = json.Unmarshal(raw, &gotBody)
@@ -318,7 +318,7 @@ func TestPublicAccountRoutesWorkWithNoTokenAndNoAccountID(t *testing.T) {
 				t.Errorf("%s route: got %s %s want %s %s", c.name, gotMethod, gotPath, c.verb, c.path)
 			}
 			if gotAuth != "" || gotAccount != "" {
-				t.Errorf("%s: no Authorization / X-CM-AccountId header expected, got %q / %q", c.name, gotAuth, gotAccount)
+				t.Errorf("%s: no Authorization / norbix-account-id header expected, got %q / %q", c.name, gotAuth, gotAccount)
 			}
 			if gotQuery != c.query {
 				t.Errorf("%s query: got %q want %q", c.name, gotQuery, c.query)

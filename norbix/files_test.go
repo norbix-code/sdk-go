@@ -453,8 +453,14 @@ func TestAPITestFilesIntegration(t *testing.T) {
 	if auth := seen.Get("Authorization"); auth != "Bearer key_1" {
 		t.Errorf("Authorization: got %q want %q", auth, "Bearer key_1")
 	}
-	if p := seen.Get("X-CM-ProjectId"); p != "proj_1" {
-		t.Errorf("X-CM-ProjectId: got %q want %q", p, "proj_1")
+	if p := seen.Get("norbix-project-id"); p != "proj_1" {
+		t.Errorf("norbix-project-id: got %q want %q", p, "proj_1")
+	}
+	// The gateway reads only norbix-*; the legacy X-CM-* names must not be sent.
+	for _, legacy := range []string{"X-CM-ProjectId", "X-CM-AccountId"} {
+		if v := seen.Get(legacy); v != "" {
+			t.Errorf("legacy header %s sent: %q", legacy, v)
+		}
 	}
 
 	if out.ResponseStatus == nil || !out.ResponseStatus.IsSuccess {
