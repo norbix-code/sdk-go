@@ -232,7 +232,7 @@ func TestSmsEndpointsSendAuthAndProjectHeaders(t *testing.T) {
 	var auth, project string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth = r.Header.Get("Authorization")
-		project = r.Header.Get("X-CM-ProjectId")
+		project = r.Header.Get("norbix-project-id")
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer srv.Close()

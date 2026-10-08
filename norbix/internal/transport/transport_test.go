@@ -31,7 +31,7 @@ func TestSendInjectsHeadersAndVersion(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.Path
 		gotAuth = r.Header.Get("Authorization")
-		gotProject = r.Header.Get("X-CM-ProjectId")
+		gotProject = r.Header.Get("norbix-project-id")
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true}`))
 	}))

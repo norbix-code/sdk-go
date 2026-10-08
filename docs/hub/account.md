@@ -19,7 +19,7 @@ it).
 **Scope.** Every method on this page is marked *project*: it needs only a key
 or a bearer token, no `AccountID`. The gateway takes the account from the
 signed-in session, or from the project id in the path, and never reads the
-`X-CM-AccountId` header. Test: `norbix/hub/account_token_only_test.go`.
+`norbix-account-id` header. Test: `norbix/hub/account_token_only_test.go`.
 
 ```go
 client, err := norbix.New(norbix.Options{

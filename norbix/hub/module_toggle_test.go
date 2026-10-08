@@ -107,7 +107,7 @@ func TestModuleEnableDisableUsePut(t *testing.T) {
 				gotMethod = r.Method
 				gotPath = r.URL.Path
 				gotRawQuery = r.URL.RawQuery
-				gotProject = r.Header.Get("X-CM-ProjectId")
+				gotProject = r.Header.Get("norbix-project-id")
 				gotBody, _ = io.ReadAll(r.Body)
 				w.WriteHeader(http.StatusNoContent)
 			}))

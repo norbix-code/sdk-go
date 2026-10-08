@@ -115,7 +115,7 @@ func TestEnduserchatEndpointsHitTheExpectedRoute(t *testing.T) {
 				gotMethod = r.Method
 				gotPath = r.URL.Path
 				gotAuth = r.Header.Get("Authorization")
-				gotProject = r.Header.Get("X-CM-ProjectId")
+				gotProject = r.Header.Get("norbix-project-id")
 				w.WriteHeader(http.StatusNoContent)
 			}))
 			defer srv.Close()

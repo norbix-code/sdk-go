@@ -336,7 +336,7 @@ func TestHubDatabaseEndpointsHitTheExpectedRoute(t *testing.T) {
 				gotPath = r.URL.Path
 				gotRawQuery = r.URL.RawQuery
 				gotAuth = r.Header.Get("Authorization")
-				gotProject = r.Header.Get("X-CM-ProjectId")
+				gotProject = r.Header.Get("norbix-project-id")
 				gotBody, _ = io.ReadAll(r.Body)
 				w.WriteHeader(http.StatusNoContent)
 			}))

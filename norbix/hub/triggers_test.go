@@ -37,7 +37,7 @@ func TestGetTriggersNeedingAttentionHitsTheExpectedRoute(t *testing.T) {
 		gotMethod = r.Method
 		gotPath = r.URL.Path
 		gotType = r.URL.Query().Get("triggerType")
-		gotProject = r.Header.Get("X-CM-ProjectId")
+		gotProject = r.Header.Get("norbix-project-id")
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"items":[{"triggerId":"trg_1","triggerType":"Schema","reason":"template misses language de","atUtc":"2026-10-04T10:00:00Z"}]}`)
 	}))

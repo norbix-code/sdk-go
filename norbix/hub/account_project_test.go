@@ -194,8 +194,8 @@ func TestProjectEndpointsHitTheExpectedRoute(t *testing.T) {
 				gotMethod = r.Method
 				gotPath = r.URL.Path
 				gotAuth = r.Header.Get("Authorization")
-				gotProject = r.Header.Get("X-CM-ProjectId")
-				gotAccount = r.Header.Get("X-CM-AccountId")
+				gotProject = r.Header.Get("norbix-project-id")
+				gotAccount = r.Header.Get("norbix-account-id")
 				w.WriteHeader(http.StatusNoContent)
 			}))
 			defer srv.Close()
