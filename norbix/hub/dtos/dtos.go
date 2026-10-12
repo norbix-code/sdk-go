@@ -60,21 +60,34 @@ const (
 type TokenMappingResolverType string
 
 const (
-	TokenMappingResolverTypeNotSet          TokenMappingResolverType = "NotSet"
-	TokenMappingResolverTypeCustom          TokenMappingResolverType = "Custom"
-	TokenMappingResolverTypeProject         TokenMappingResolverType = "Project"
-	TokenMappingResolverTypeProjectSocials  TokenMappingResolverType = "ProjectSocials"
-	TokenMappingResolverTypeInitiator       TokenMappingResolverType = "Initiator"
-	TokenMappingResolverTypeRecipient       TokenMappingResolverType = "Recipient"
-	TokenMappingResolverTypeSchemaRecord    TokenMappingResolverType = "SchemaRecord"
-	TokenMappingResolverTypeTargetUser      TokenMappingResolverType = "TargetUser"
-	TokenMappingResolverTypeTagDefinitions  TokenMappingResolverType = "TagDefinitions"
-	TokenMappingResolverTypeEmailSignatures TokenMappingResolverType = "EmailSignatures"
-	TokenMappingResolverTypeCampaign        TokenMappingResolverType = "Campaign"
-	TokenMappingResolverTypeTemplate        TokenMappingResolverType = "Template"
-	TokenMappingResolverTypeEmailFooters    TokenMappingResolverType = "EmailFooters"
-	TokenMappingResolverTypeOld             TokenMappingResolverType = "Old"
-	TokenMappingResolverTypeNew             TokenMappingResolverType = "New"
+	TokenMappingResolverTypeNotSet            TokenMappingResolverType = "NotSet"
+	TokenMappingResolverTypeCustom            TokenMappingResolverType = "Custom"
+	TokenMappingResolverTypeProject           TokenMappingResolverType = "Project"
+	TokenMappingResolverTypeProjectSocials    TokenMappingResolverType = "ProjectSocials"
+	TokenMappingResolverTypeInitiator         TokenMappingResolverType = "Initiator"
+	TokenMappingResolverTypeRecipient         TokenMappingResolverType = "Recipient"
+	TokenMappingResolverTypeSchemaRecord      TokenMappingResolverType = "SchemaRecord"
+	TokenMappingResolverTypeTargetUser        TokenMappingResolverType = "TargetUser"
+	TokenMappingResolverTypeTagDefinitions    TokenMappingResolverType = "TagDefinitions"
+	TokenMappingResolverTypeEmailSignatures   TokenMappingResolverType = "EmailSignatures"
+	TokenMappingResolverTypeCampaign          TokenMappingResolverType = "Campaign"
+	TokenMappingResolverTypeTemplate          TokenMappingResolverType = "Template"
+	TokenMappingResolverTypeEmailFooters      TokenMappingResolverType = "EmailFooters"
+	TokenMappingResolverTypeOld               TokenMappingResolverType = "Old"
+	TokenMappingResolverTypeNew               TokenMappingResolverType = "New"
+	TokenMappingResolverTypeRequestInput      TokenMappingResolverType = "RequestInput"
+	TokenMappingResolverTypeIntegrationConfig TokenMappingResolverType = "IntegrationConfig"
+	TokenMappingResolverTypeIntegrationSecret TokenMappingResolverType = "IntegrationSecret"
+)
+
+// SecretValueFormat enum.
+type SecretValueFormat string
+
+const (
+	SecretValueFormatRaw      SecretValueFormat = "Raw"
+	SecretValueFormatBearer   SecretValueFormat = "Bearer"
+	SecretValueFormatBasic    SecretValueFormat = "Basic"
+	SecretValueFormatPrefixed SecretValueFormat = "Prefixed"
 )
 
 // CollectionEmailCampaignRecipientField enum.
@@ -466,11 +479,12 @@ const (
 type SchedulerTaskType string
 
 const (
-	SchedulerTaskTypeEmailCampaign      SchedulerTaskType = "EmailCampaign"
-	SchedulerTaskTypePushCampaign       SchedulerTaskType = "PushCampaign"
-	SchedulerTaskTypeSmsCampaign        SchedulerTaskType = "SmsCampaign"
-	SchedulerTaskTypeCodeFunctionalCall SchedulerTaskType = "CodeFunctionalCall"
-	SchedulerTaskTypeWebhookCall        SchedulerTaskType = "WebhookCall"
+	SchedulerTaskTypeEmailCampaign           SchedulerTaskType = "EmailCampaign"
+	SchedulerTaskTypePushCampaign            SchedulerTaskType = "PushCampaign"
+	SchedulerTaskTypeSmsCampaign             SchedulerTaskType = "SmsCampaign"
+	SchedulerTaskTypeCodeFunctionalCall      SchedulerTaskType = "CodeFunctionalCall"
+	SchedulerTaskTypeWebhookCall             SchedulerTaskType = "WebhookCall"
+	SchedulerTaskTypeMarketplaceFunctionCall SchedulerTaskType = "MarketplaceFunctionCall"
 )
 
 // MarketplaceTransport enum.
@@ -505,27 +519,13 @@ const (
 	MarketplaceCategoryCalendar      MarketplaceCategory = "Calendar"
 )
 
-// MarketplaceTokenResolverKind enum.
-type MarketplaceTokenResolverKind string
+// MarketplaceAvailability enum.
+type MarketplaceAvailability string
 
 const (
-	MarketplaceTokenResolverKindStatic            MarketplaceTokenResolverKind = "Static"
-	MarketplaceTokenResolverKindRequest           MarketplaceTokenResolverKind = "Request"
-	MarketplaceTokenResolverKindProject           MarketplaceTokenResolverKind = "Project"
-	MarketplaceTokenResolverKindInitiator         MarketplaceTokenResolverKind = "Initiator"
-	MarketplaceTokenResolverKindCustom            MarketplaceTokenResolverKind = "Custom"
-	MarketplaceTokenResolverKindIntegrationConfig MarketplaceTokenResolverKind = "IntegrationConfig"
-	MarketplaceTokenResolverKindIntegrationSecret MarketplaceTokenResolverKind = "IntegrationSecret"
-)
-
-// MarketplaceSecretValueFormat enum.
-type MarketplaceSecretValueFormat string
-
-const (
-	MarketplaceSecretValueFormatRaw      MarketplaceSecretValueFormat = "Raw"
-	MarketplaceSecretValueFormatBearer   MarketplaceSecretValueFormat = "Bearer"
-	MarketplaceSecretValueFormatBasic    MarketplaceSecretValueFormat = "Basic"
-	MarketplaceSecretValueFormatPrefixed MarketplaceSecretValueFormat = "Prefixed"
+	MarketplaceAvailabilityDevelopment MarketplaceAvailability = "Development"
+	MarketplaceAvailabilityStaging     MarketplaceAvailability = "Staging"
+	MarketplaceAvailabilityProduction  MarketplaceAvailability = "Production"
 )
 
 // MarketplaceFieldType enum.
@@ -549,6 +549,18 @@ const (
 	MarketplaceParameterLocationHeader MarketplaceParameterLocation = "Header"
 	MarketplaceParameterLocationQuery  MarketplaceParameterLocation = "Query"
 	MarketplaceParameterLocationPath   MarketplaceParameterLocation = "Path"
+)
+
+// MarketplaceFormKind enum.
+type MarketplaceFormKind string
+
+const (
+	MarketplaceFormKindGeneric       MarketplaceFormKind = "Generic"
+	MarketplaceFormKindDatabaseQuery MarketplaceFormKind = "DatabaseQuery"
+	MarketplaceFormKindDatabaseWrite MarketplaceFormKind = "DatabaseWrite"
+	MarketplaceFormKindMessage       MarketplaceFormKind = "Message"
+	MarketplaceFormKindPrompt        MarketplaceFormKind = "Prompt"
+	MarketplaceFormKindWeb           MarketplaceFormKind = "Web"
 )
 
 // CodeFunctionSource enum.
@@ -1074,9 +1086,11 @@ type MailGunEmailIntegrationRequest struct {
 
 // TokenMappingDto DTO.
 type TokenMappingDto struct {
-	Key      string                   `json:"key,omitempty"`
-	Value    string                   `json:"value,omitempty"`
-	Resolver TokenMappingResolverType `json:"resolver,omitempty"`
+	Key          string                   `json:"key,omitempty"`
+	Value        string                   `json:"value,omitempty"`
+	Resolver     TokenMappingResolverType `json:"resolver,omitempty"`
+	SecretKeys   []string                 `json:"secretKeys,omitempty"`
+	SecretFormat SecretValueFormat        `json:"secretFormat,omitempty"`
 }
 
 // EmailCampaignRequest DTO.
@@ -2129,8 +2143,9 @@ type TriggerActionSseDto struct {
 // TriggerActionMarketplaceDto DTO.
 type TriggerActionMarketplaceDto struct {
 	TriggerActionDto
-	FunctionId string            `json:"functionId,omitempty"`
-	Payload    map[string]string `json:"payload,omitempty"`
+	FunctionId  string            `json:"functionId,omitempty"`
+	Payload     map[string]string `json:"payload,omitempty"`
+	RunAsUserId string            `json:"runAsUserId,omitempty"`
 }
 
 // RequestBase DTO.
@@ -3125,36 +3140,49 @@ type MongoDbAggregateDto struct {
 	JoinedCollections []string `json:"joinedCollections,omitempty"`
 }
 
+// MarketplaceValidationStepResultDto DTO.
+type MarketplaceValidationStepResultDto struct {
+	Key                  string `json:"key,omitempty"`
+	Label                string `json:"label,omitempty"`
+	RequiredForFunctions bool   `json:"requiredForFunctions,omitempty"`
+	Succeeded            bool   `json:"succeeded,omitempty"`
+	Skipped              bool   `json:"skipped,omitempty"`
+	Message              string `json:"message,omitempty"`
+}
+
 // MarketplaceIntegrationDto DTO.
 type MarketplaceIntegrationDto struct {
 	IntegrationDto
-	ListingViewId string               `json:"listingViewId,omitempty"`
-	Transport     MarketplaceTransport `json:"transport,omitempty"`
-	Vendor        string               `json:"vendor,omitempty"`
-	Category      MarketplaceCategory  `json:"category,omitempty"`
-	Description   string               `json:"description,omitempty"`
-	Config        map[string]string    `json:"config,omitempty"`
+	ListingViewId       string                                `json:"listingViewId,omitempty"`
+	Transport           MarketplaceTransport                  `json:"transport,omitempty"`
+	Vendor              string                                `json:"vendor,omitempty"`
+	Category            MarketplaceCategory                   `json:"category,omitempty"`
+	Description         string                                `json:"description,omitempty"`
+	Config              map[string]string                     `json:"config,omitempty"`
+	LastValidationSteps []*MarketplaceValidationStepResultDto `json:"lastValidationSteps,omitempty"`
 }
 
-// MarketplaceTokenMappingDto DTO.
-type MarketplaceTokenMappingDto struct {
-	Token      string                       `json:"token,omitempty"`
-	Resolver   MarketplaceTokenResolverKind `json:"resolver,omitempty"`
-	Value      string                       `json:"value,omitempty"`
-	SecretKeys []string                     `json:"secretKeys,omitempty"`
-	Format     MarketplaceSecretValueFormat `json:"format,omitempty"`
+// MarketplaceFunctionParameterDto DTO.
+type MarketplaceFunctionParameterDto struct {
+	Name         string `json:"name,omitempty"`
+	Type         string `json:"type,omitempty"`
+	Description  string `json:"description,omitempty"`
+	IsRequired   bool   `json:"isRequired,omitempty"`
+	DefaultValue string `json:"defaultValue,omitempty"`
 }
 
 // MarketplaceFunctionDto DTO.
 type MarketplaceFunctionDto struct {
-	ViewId            string                        `json:"viewId,omitempty"`
-	IntegrationViewId string                        `json:"integrationViewId,omitempty"`
-	FunctionKey       string                        `json:"functionKey,omitempty"`
-	DisplayName       string                        `json:"displayName,omitempty"`
-	Description       string                        `json:"description,omitempty"`
-	IsEnabled         bool                          `json:"isEnabled,omitempty"`
-	RequestTemplate   string                        `json:"requestTemplate,omitempty"`
-	MappedTokens      []*MarketplaceTokenMappingDto `json:"mappedTokens,omitempty"`
+	ViewId            string                             `json:"viewId,omitempty"`
+	IntegrationViewId string                             `json:"integrationViewId,omitempty"`
+	FunctionKey       string                             `json:"functionKey,omitempty"`
+	DisplayName       string                             `json:"displayName,omitempty"`
+	Description       string                             `json:"description,omitempty"`
+	IsEnabled         bool                               `json:"isEnabled,omitempty"`
+	RequestTemplate   string                             `json:"requestTemplate,omitempty"`
+	Arguments         map[string]string                  `json:"arguments,omitempty"`
+	Inputs            []*MarketplaceFunctionParameterDto `json:"inputs,omitempty"`
+	MappedTokens      []*TokenMappingDto                 `json:"mappedTokens,omitempty"`
 }
 
 // MarketplaceFieldDefinitionDto DTO.
@@ -3171,13 +3199,11 @@ type MarketplaceFieldDefinitionDto struct {
 	AllowedValues     []string             `json:"allowedValues,omitempty"`
 }
 
-// MarketplaceFunctionParameterDto DTO.
-type MarketplaceFunctionParameterDto struct {
-	Name         string `json:"name,omitempty"`
-	Type         string `json:"type,omitempty"`
-	Description  string `json:"description,omitempty"`
-	IsRequired   bool   `json:"isRequired,omitempty"`
-	DefaultValue string `json:"defaultValue,omitempty"`
+// MarketplaceInstallFormDto DTO.
+type MarketplaceInstallFormDto struct {
+	DataSchema string   `json:"dataSchema,omitempty"`
+	UiSchema   string   `json:"uiSchema,omitempty"`
+	SecretKeys []string `json:"secretKeys,omitempty"`
 }
 
 // MarketplaceParameterSpecDto DTO.
@@ -3200,6 +3226,15 @@ type MarketplaceHttpRequestSpecDto struct {
 	ContentType  string                         `json:"contentType,omitempty"`
 }
 
+// MarketplaceValidationStepDto DTO.
+type MarketplaceValidationStepDto struct {
+	Key                  string                         `json:"key,omitempty"`
+	Label                string                         `json:"label,omitempty"`
+	Description          string                         `json:"description,omitempty"`
+	RequiredForFunctions bool                           `json:"requiredForFunctions,omitempty"`
+	Probe                *MarketplaceHttpRequestSpecDto `json:"probe,omitempty"`
+}
+
 // MarketplaceFunctionDefinitionDto DTO.
 type MarketplaceFunctionDefinitionDto struct {
 	DefinitionId         string                             `json:"definitionId,omitempty"`
@@ -3207,11 +3242,13 @@ type MarketplaceFunctionDefinitionDto struct {
 	DisplayName          string                             `json:"displayName,omitempty"`
 	Description          string                             `json:"description,omitempty"`
 	Group                string                             `json:"group,omitempty"`
+	FormKind             MarketplaceFormKind                `json:"formKind,omitempty"`
+	Inputs               []*MarketplaceFunctionParameterDto `json:"inputs,omitempty"`
 	Parameters           []*MarketplaceFunctionParameterDto `json:"parameters,omitempty"`
 	RequestSchema        string                             `json:"requestSchema,omitempty"`
 	RequestTemplate      string                             `json:"requestTemplate,omitempty"`
 	Request              *MarketplaceHttpRequestSpecDto     `json:"request,omitempty"`
-	DefaultTokenMappings []*MarketplaceTokenMappingDto      `json:"defaultTokenMappings,omitempty"`
+	DefaultTokenMappings []*TokenMappingDto                 `json:"defaultTokenMappings,omitempty"`
 }
 
 // MarketplaceListingDto DTO.
@@ -3225,11 +3262,15 @@ type MarketplaceListingDto struct {
 	Description      string                              `json:"description,omitempty"`
 	IconUrl          string                              `json:"iconUrl,omitempty"`
 	DocumentationUrl string                              `json:"documentationUrl,omitempty"`
+	VideoUrl         string                              `json:"videoUrl,omitempty"`
+	Availability     MarketplaceAvailability             `json:"availability,omitempty"`
 	IsOfficial       bool                                `json:"isOfficial,omitempty"`
 	Tags             []string                            `json:"tags,omitempty"`
 	SpecVersion      float64                             `json:"specVersion,omitempty"`
 	ConfigFields     []*MarketplaceFieldDefinitionDto    `json:"configFields,omitempty"`
 	SecretFields     []*MarketplaceFieldDefinitionDto    `json:"secretFields,omitempty"`
+	InstallForm      *MarketplaceInstallFormDto          `json:"installForm,omitempty"`
+	ValidationSteps  []*MarketplaceValidationStepDto     `json:"validationSteps,omitempty"`
 	Functions        []*MarketplaceFunctionDefinitionDto `json:"functions,omitempty"`
 }
 
@@ -3682,15 +3723,24 @@ type ScheduledTaskInfoDto struct {
 	FiredAt string `json:"firedAt,omitempty"`
 }
 
+// MarketplaceFunctionCallDto DTO.
+type MarketplaceFunctionCallDto struct {
+	FunctionId    string         `json:"functionId,omitempty"`
+	FunctionKey   string         `json:"functionKey,omitempty"`
+	IntegrationId string         `json:"integrationId,omitempty"`
+	Payload       map[string]any `json:"payload,omitempty"`
+}
+
 // CodeFunctionDataDto DTO.
 type CodeFunctionDataDto struct {
-	Database *DatabaseRecordChangeDto `json:"database,omitempty"`
-	User     *UserChangeDto           `json:"user,omitempty"`
-	File     *FileChangeDto           `json:"file,omitempty"`
-	Payment  *PaymentFactDto          `json:"payment,omitempty"`
-	Ai       *AiUsageEventDto         `json:"ai,omitempty"`
-	Task     *ScheduledTaskInfoDto    `json:"task,omitempty"`
-	Payload  map[string]any           `json:"payload,omitempty"`
+	Database    *DatabaseRecordChangeDto    `json:"database,omitempty"`
+	User        *UserChangeDto              `json:"user,omitempty"`
+	File        *FileChangeDto              `json:"file,omitempty"`
+	Payment     *PaymentFactDto             `json:"payment,omitempty"`
+	Ai          *AiUsageEventDto            `json:"ai,omitempty"`
+	Task        *ScheduledTaskInfoDto       `json:"task,omitempty"`
+	Payload     map[string]any              `json:"payload,omitempty"`
+	Marketplace *MarketplaceFunctionCallDto `json:"marketplace,omitempty"`
 }
 
 // CodeFunctionEventDto DTO.
@@ -3725,6 +3775,14 @@ type CodeFunctionSchedulerTaskRequest struct {
 	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
 	Config         string             `json:"config,omitempty"`
 	MappedTokens   []*TokenMappingDto `json:"mappedTokens,omitempty"`
+}
+
+// MarketplaceFunctionSchedulerTaskRequest DTO.
+type MarketplaceFunctionSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type       SchedulerTaskType `json:"type,omitempty"`
+	FunctionId string            `json:"functionId,omitempty"`
+	Payload    map[string]string `json:"payload,omitempty"`
 }
 
 // ICultureBasedRequest DTO.
@@ -4776,19 +4834,21 @@ type LicenseHeartbeatVerdictDto struct {
 
 // InstallationLicenseStatusDto DTO.
 type InstallationLicenseStatusDto struct {
-	StoredMode         string  `json:"storedMode,omitempty"`
-	EffectiveMode      string  `json:"effectiveMode,omitempty"`
-	IsProduction       bool    `json:"isProduction,omitempty"`
-	GraceDaysLeft      float64 `json:"graceDaysLeft,omitempty"`
-	GraceUntilUtc      string  `json:"graceUntilUtc,omitempty"`
-	LastProvenAtUtc    string  `json:"lastProvenAtUtc,omitempty"`
-	LastHeartbeatAtUtc string  `json:"lastHeartbeatAtUtc,omitempty"`
-	InstallationDomain string  `json:"installationDomain,omitempty"`
-	LicensedDomain     string  `json:"licensedDomain,omitempty"`
-	HostKind           string  `json:"hostKind,omitempty"`
-	IsTrialLicense     bool    `json:"isTrialLicense,omitempty"`
-	LicenseExpireUtc   string  `json:"licenseExpireUtc,omitempty"`
-	Message            string  `json:"message,omitempty"`
+	StoredMode           string  `json:"storedMode,omitempty"`
+	EffectiveMode        string  `json:"effectiveMode,omitempty"`
+	IsProduction         bool    `json:"isProduction,omitempty"`
+	GraceDaysLeft        float64 `json:"graceDaysLeft,omitempty"`
+	GraceUntilUtc        string  `json:"graceUntilUtc,omitempty"`
+	LastProvenAtUtc      string  `json:"lastProvenAtUtc,omitempty"`
+	LastHeartbeatAtUtc   string  `json:"lastHeartbeatAtUtc,omitempty"`
+	InstallationDomain   string  `json:"installationDomain,omitempty"`
+	LicensedDomain       string  `json:"licensedDomain,omitempty"`
+	HostKind             string  `json:"hostKind,omitempty"`
+	IsTrialLicense       bool    `json:"isTrialLicense,omitempty"`
+	LicenseExpireUtc     string  `json:"licenseExpireUtc,omitempty"`
+	LastHeartbeatOutcome string  `json:"lastHeartbeatOutcome,omitempty"`
+	LastHeartbeatError   string  `json:"lastHeartbeatError,omitempty"`
+	Message              string  `json:"message,omitempty"`
 }
 
 // AiRoleDto DTO.
@@ -5588,16 +5648,18 @@ type SmsCampaignBatchNotificationDto struct {
 
 // MarketplaceListingProjection DTO.
 type MarketplaceListingProjection struct {
-	ViewId        string               `json:"viewId,omitempty"`
-	Slug          string               `json:"slug,omitempty"`
-	DisplayName   string               `json:"displayName,omitempty"`
-	Vendor        string               `json:"vendor,omitempty"`
-	Category      MarketplaceCategory  `json:"category,omitempty"`
-	Transport     MarketplaceTransport `json:"transport,omitempty"`
-	IconUrl       string               `json:"iconUrl,omitempty"`
-	IsOfficial    bool                 `json:"isOfficial,omitempty"`
-	Tags          []string             `json:"tags,omitempty"`
-	FunctionCount float64              `json:"functionCount,omitempty"`
+	ViewId        string                  `json:"viewId,omitempty"`
+	Slug          string                  `json:"slug,omitempty"`
+	DisplayName   string                  `json:"displayName,omitempty"`
+	Vendor        string                  `json:"vendor,omitempty"`
+	Category      MarketplaceCategory     `json:"category,omitempty"`
+	Transport     MarketplaceTransport    `json:"transport,omitempty"`
+	IconUrl       string                  `json:"iconUrl,omitempty"`
+	IsOfficial    bool                    `json:"isOfficial,omitempty"`
+	Tags          []string                `json:"tags,omitempty"`
+	FunctionCount float64                 `json:"functionCount,omitempty"`
+	Availability  MarketplaceAvailability `json:"availability,omitempty"`
+	VideoUrl      string                  `json:"videoUrl,omitempty"`
 }
 
 // MarketplaceIntegrationListProjection DTO.
@@ -5624,6 +5686,20 @@ type MarketplaceFunctionProjection struct {
 	DisplayName       string  `json:"displayName,omitempty"`
 	IsEnabled         bool    `json:"isEnabled,omitempty"`
 	MappingCount      float64 `json:"mappingCount,omitempty"`
+}
+
+// MarketplaceFunctionRunDto DTO.
+type MarketplaceFunctionRunDto struct {
+	FiredAt         string  `json:"firedAt,omitempty"`
+	Event           string  `json:"event,omitempty"`
+	Source          string  `json:"source,omitempty"`
+	FunctionId      string  `json:"functionId,omitempty"`
+	RunAsUserId     string  `json:"runAsUserId,omitempty"`
+	Succeeded       bool    `json:"succeeded,omitempty"`
+	DurationMs      float64 `json:"durationMs,omitempty"`
+	Error           string  `json:"error,omitempty"`
+	VendorRequestId string  `json:"vendorRequestId,omitempty"`
+	Input           string  `json:"input,omitempty"`
 }
 
 // CodeIntegrationListProjection DTO.
@@ -6794,6 +6870,12 @@ type GetInstallationLicenseStatusResponse struct {
 	Status *InstallationLicenseStatusDto `json:"status,omitempty"`
 }
 
+// GetLicenseKeyResponse DTO.
+type GetLicenseKeyResponse struct {
+	ResponseBase
+	Key string `json:"key,omitempty"`
+}
+
 // CreateAiServiceUserResponse DTO.
 type CreateAiServiceUserResponse struct {
 	ResponseBase
@@ -7481,7 +7563,8 @@ type RevealMarketplaceIntegrationSecretsResponse struct {
 // TestMarketplaceIntegrationResponse DTO.
 type TestMarketplaceIntegrationResponse struct {
 	ResponseBase
-	Items []*IntegrationTestResultItemDto `json:"items,omitempty"`
+	Items []*IntegrationTestResultItemDto       `json:"items,omitempty"`
+	Steps []*MarketplaceValidationStepResultDto `json:"steps,omitempty"`
 }
 
 // SetMarketplaceIntegrationTokenMappingsResponse DTO.
@@ -7505,6 +7588,12 @@ type GetMarketplaceFunctionsResponse struct {
 type GetMarketplaceFunctionCatalogResponse struct {
 	ResponseBase
 	Functions []*MarketplaceFunctionDefinitionDto `json:"functions,omitempty"`
+}
+
+// GetMarketplaceFunctionRunsResponse DTO.
+type GetMarketplaceFunctionRunsResponse struct {
+	ResponseBase
+	Runs []*MarketplaceFunctionRunDto `json:"runs,omitempty"`
 }
 
 // InvokeMarketplaceFunctionResponse DTO.
@@ -8681,6 +8770,7 @@ type InternalsTypeGen struct {
 	Typegen_281_FakeCodeIntegrationDto                           *FakeCodeIntegrationDto                            `json:"typegen_281_FakeCodeIntegrationDto,omitempty"`
 	Typegen_282_FakeCodeIntegrationRequest                       *FakeCodeIntegrationRequest                        `json:"typegen_282_FakeCodeIntegrationRequest,omitempty"`
 	Typegen_283_CodeFunctionSchedulerTaskRequest                 *CodeFunctionSchedulerTaskRequest                  `json:"typegen_283_CodeFunctionSchedulerTaskRequest,omitempty"`
+	Typegen_284_MarketplaceFunctionSchedulerTaskRequest          *MarketplaceFunctionSchedulerTaskRequest           `json:"typegen_284_MarketplaceFunctionSchedulerTaskRequest,omitempty"`
 }
 
 // Echo DTO.
@@ -9336,6 +9426,12 @@ type PostLicenseHeartbeat struct {
 // GetInstallationLicenseStatus DTO.
 type GetInstallationLicenseStatus struct {
 	RequestBase
+}
+
+// GetLicenseKey DTO.
+type GetLicenseKey struct {
+	RequestBase
+	Id string `json:"id,omitempty"`
 }
 
 // CreateAiServiceUserRequest DTO.
@@ -10880,14 +10976,22 @@ type RevealMarketplaceIntegrationSecretsRequest struct {
 // SetMarketplaceIntegrationTokenMappingsRequest DTO.
 type SetMarketplaceIntegrationTokenMappingsRequest struct {
 	CodeMashRequestBase
-	IntegrationViewId string                        `json:"integrationViewId,omitempty"`
-	TokenMappings     []*MarketplaceTokenMappingDto `json:"tokenMappings,omitempty"`
+	IntegrationViewId string             `json:"integrationViewId,omitempty"`
+	TokenMappings     []*TokenMappingDto `json:"tokenMappings,omitempty"`
 }
 
 // GetMarketplaceFunctionCatalog DTO.
 type GetMarketplaceFunctionCatalog struct {
 	CodeMashRequestBase
 	IntegrationViewId string `json:"integrationViewId,omitempty"`
+}
+
+// GetMarketplaceFunctionRuns DTO.
+type GetMarketplaceFunctionRuns struct {
+	CodeMashRequestBase
+	TriggerId string  `json:"triggerId,omitempty"`
+	TaskId    string  `json:"taskId,omitempty"`
+	Limit     float64 `json:"limit,omitempty"`
 }
 
 // GetCodeFunctions DTO.
