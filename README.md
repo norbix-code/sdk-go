@@ -666,6 +666,14 @@ _ = c.Hub.Code.GetCodeFunctionEventSample(ctx, map[string]any{"source": "databas
 _ = c.Hub.Code.GetCodeFunctionRuns(ctx, map[string]any{"triggerId": "trg_1", "limit": 20}, &runs)
 ```
 
+A run through the Fake provider (a dry run) also carries `input`
+(`dtos.CodeFunctionRunDto.Input`) — the envelope the function received, as
+JSON, with `context.runAs.accessToken` masked to `***` and the text cut at
+64 KB. It is empty for every real provider (the payload is the project's
+data) and when the function was not called. There is no default Code
+integration: every call names the integration it means (`integrationId`),
+as the examples above do.
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:
