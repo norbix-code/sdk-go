@@ -159,12 +159,12 @@ func TestCodeFunctionEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The Code module is 33 routes: the 28 integration / marketplace ones the
+// The Code module is 32 routes: the 27 integration / marketplace ones the
 // generator wrote plus the five cloud-function ones above. A route added to
 // the gateway without a method here, or a method added without a case, moves
 // one of the two numbers.
 func TestCodeSurfaceSize(t *testing.T) {
-	const wantMethods = 33
+	const wantMethods = 32
 	if got := reflect.TypeOf(&CodeModule{}).NumMethod(); got != wantMethods {
 		t.Errorf("CodeModule method count: got %d want %d", got, wantMethods)
 	}

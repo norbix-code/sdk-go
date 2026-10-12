@@ -4411,8 +4411,7 @@ type SchedulerDto struct {
 
 // CodeDto DTO.
 type CodeDto struct {
-	IsEnabled                bool   `json:"isEnabled,omitempty"`
-	DefaultIntegrationViewId string `json:"defaultIntegrationViewId,omitempty"`
+	IsEnabled bool `json:"isEnabled,omitempty"`
 }
 
 // FilesTriggerDto DTO.
@@ -5663,6 +5662,7 @@ type CodeFunctionRunDto struct {
 	DurationMs float64 `json:"durationMs,omitempty"`
 	Error      string  `json:"error,omitempty"`
 	RequestId  string  `json:"requestId,omitempty"`
+	Input      string  `json:"input,omitempty"`
 }
 
 // PushTemplateListProjection DTO.
@@ -7524,8 +7524,7 @@ type GetCodeIntegrationResponse struct {
 // GetCodeIntegrationsResponse DTO.
 type GetCodeIntegrationsResponse struct {
 	ResponseBase
-	DefaultIntegrationId string                                            `json:"defaultIntegrationId,omitempty"`
-	List                 PaginatedResponse[*CodeIntegrationListProjection] `json:"list,omitempty"`
+	List PaginatedResponse[*CodeIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // TestCodeIntegrationResponse DTO.
@@ -8266,12 +8265,6 @@ type ConfirmCodeIntegrationHumanDeliveryRequest struct {
 	IntegrationId string `json:"integrationId,omitempty"`
 }
 
-// SetCodeIntegrationAsDefault DTO.
-type SetCodeIntegrationAsDefault struct {
-	CodeMashRequestBase
-	Id string `json:"id,omitempty"`
-}
-
 // DeleteCodeIntegrationRequest DTO.
 type DeleteCodeIntegrationRequest struct {
 	CodeMashRequestBase
@@ -8621,7 +8614,6 @@ type InternalsTypeGen struct {
 	Typegen_205_SaveCodeIntegration                              *SaveCodeIntegration                               `json:"typegen_205_SaveCodeIntegration,omitempty"`
 	Typegen_206_TestCodeIntegration                              *TestCodeIntegration                               `json:"typegen_206_TestCodeIntegration,omitempty"`
 	Typegen_207_ConfirmCodeIntegrationHumanDeliveryRequest       *ConfirmCodeIntegrationHumanDeliveryRequest        `json:"typegen_207_ConfirmCodeIntegrationHumanDeliveryRequest,omitempty"`
-	Typegen_208_SetCodeIntegrationAsDefault                      *SetCodeIntegrationAsDefault                       `json:"typegen_208_SetCodeIntegrationAsDefault,omitempty"`
 	Typegen_209_DeleteCodeIntegrationRequest                     *DeleteCodeIntegrationRequest                      `json:"typegen_209_DeleteCodeIntegrationRequest,omitempty"`
 	Typegen_210_EnableCodeIntegrationRequest                     *EnableCodeIntegrationRequest                      `json:"typegen_210_EnableCodeIntegrationRequest,omitempty"`
 	Typegen_211_DisableCodeIntegrationRequest                    *DisableCodeIntegrationRequest                     `json:"typegen_211_DisableCodeIntegrationRequest,omitempty"`

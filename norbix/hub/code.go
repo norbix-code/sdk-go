@@ -158,21 +158,6 @@ func (m *CodeModule) DeleteCodeIntegration(ctx context.Context, id string, req m
 	}, out)
 }
 
-// SetCodeIntegrationAsDefault performs PUT /{version}/code/integrations/{Id}/default (scope: project).
-func (m *CodeModule) SetCodeIntegrationAsDefault(ctx context.Context, id string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"Id": id,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/integrations/{Id}/default",
-		Method:     "PUT",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // DisableCodeIntegration performs PUT /{version}/code/integrations/{Id}/disable (scope: project).
 func (m *CodeModule) DisableCodeIntegration(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
