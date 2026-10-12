@@ -22,6 +22,13 @@ const (
 	CodeNotFound         = "NORBIX_NOT_FOUND"
 	CodeRateLimit        = "NORBIX_RATE_LIMIT"
 	CodeValidation       = "NORBIX_VALIDATION_ERROR"
+
+	// A cloud function received a body that is not a Norbix code function
+	// envelope, one whose specVersion this SDK does not read, or asked for a
+	// data slot the event does not carry (see norbix.ParseFunctionEvent).
+	CodeFunctionEventInvalid     = "NORBIX_FUNCTION_EVENT_INVALID"
+	CodeFunctionEventUnsupported = "NORBIX_FUNCTION_EVENT_UNSUPPORTED"
+	CodeFunctionEventNoSlot      = "NORBIX_FUNCTION_EVENT_NO_SLOT"
 )
 
 // Item is one error inside the gateway's responseStatus.errors list.
