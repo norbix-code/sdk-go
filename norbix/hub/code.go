@@ -35,6 +35,66 @@ func (m *CodeModule) EnableCode(ctx context.Context, req map[string]any, out any
 	}, out)
 }
 
+// GetCodeFunctions performs GET /{version}/code/functions (scope: project).
+func (m *CodeModule) GetCodeFunctions(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/functions",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetCodeFunctionEventSample performs GET /{version}/code/functions/event-sample (scope: project).
+func (m *CodeModule) GetCodeFunctionEventSample(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/functions/event-sample",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// InvokeCodeFunction performs POST /{version}/code/functions/invoke (scope: project).
+func (m *CodeModule) InvokeCodeFunction(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/functions/invoke",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetCodeFunctionQualifiers performs GET /{version}/code/functions/qualifiers (scope: project).
+func (m *CodeModule) GetCodeFunctionQualifiers(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/functions/qualifiers",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetCodeFunctionRuns performs GET /{version}/code/functions/runs (scope: project).
+func (m *CodeModule) GetCodeFunctionRuns(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/functions/runs",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetCodeIntegrations performs GET /{version}/code/integrations (scope: project).
 func (m *CodeModule) GetCodeIntegrations(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{

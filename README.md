@@ -571,6 +571,101 @@ r.On(webhooks.EventDatabaseRecordInserted,
 The [`examples/webhook-receiver`](examples/webhook-receiver/main.go) server
 shows this with an in-memory set.
 
+## Cloud functions
+
+When Norbix calls one of your functions on AWS Lambda, Azure Functions or
+Google Cloud Functions, the function receives one JSON envelope: the event
+name, the data of the source event, a short-lived bearer token for the
+run-as service user and your own config. `norbix.ParseFunctionEvent` reads
+it, the `As*` views decode the slot that matches `Event` into your own
+types, and `ClientOptions()` turns the token and the deployment urls into
+the `norbix.Options` a client takes. Your function is a separate program
+that imports this module.
+
+```go
+// AWS Lambda — main.go
+package main
+
+import (
+	"context"
+	"encoding/json"
+
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/norbix-code/sdk-go/v2/norbix"
+)
+
+type Order struct {
+	ID     string  `json:"_id"`
+	Status string  `json:"status"`
+	Total  float64 `json:"total"`
+}
+
+func handler(ctx context.Context, raw json.RawMessage) (map[string]any, error) {
+	event, err := norbix.ParseFunctionEvent(raw) // *norbix.CodeFunctionEvent; a *errors.Error on a foreign body
+	if err != nil {
+		return nil, err
+	}
+	if event.Event != "database.record.updated" {
+		return map[string]any{"ok": true}, nil
+	}
+
+	var old, next *Order
+	if _, err := event.AsDatabaseRecordChange(&old, &next); err != nil { // nil when absent
+		return nil, err
+	}
+	if next != nil && next.Status == "processing" && (old == nil || old.Status != next.Status) {
+		c, err := norbix.New(event.ClientOptions()) // bearer = context.runAs.accessToken (15 min), urls from the envelope
+		if err != nil {
+			return nil, err
+		}
+		defer c.Close()
+		doc, _ := json.Marshal(map[string]any{"orderId": next.ID, "status": "processing", "eventId": event.EventID})
+		if err := c.API.Database.InsertOne(ctx, "order_events", map[string]any{"document": string(doc)}, nil); err != nil {
+			return nil, err
+		}
+	}
+	return map[string]any{"ok": true}, nil
+}
+
+func main() { lambda.Start(handler) }
+```
+
+| View | Source | Gives |
+| --- | --- | --- |
+| `AsDatabaseRecordChange(&old, &new)` | `database` | `Collection`, `SchemaID`, `SchemaVersion`, `RecordID`, `Truncated`, `OldRef` / `NewRef` (documents above 200 KB are left out; fetch them with the refs); `old` / `new` decoded into your type, untouched when absent |
+| `AsUserChange(&old, &new)` | `membership` | `UserID`; the user documents decoded |
+| `AsFileChange(&old, &new)` | `files` | `Path`; the file documents decoded |
+| `AsPayment()` | `payments` | the webhook fact (`Provider`, `EventName`, `Status`, `AmountMinor`, `Currency`, `ExternalIDs`, …) |
+| `AsAIUsage(&payload)` | `ai` | `TargetUserID`; the usage payload decoded |
+| `AsScheduledTask()` | `scheduler` | `TaskID`, `Name`, `FiredAt` |
+| `Payload(&out)` | `manual`, `scheduler` | the caller's JSON object decoded; untouched when none |
+| `DecodeConfig(&out)` | any | your config, bound at fire time; `event.Config` is nil when the action has none |
+
+A view of another source is a `*errors.Error` with code
+`NORBIX_FUNCTION_EVENT_NO_SLOT` naming the slot and the event.
+`ParseFunctionEvent` refuses a body that is not an envelope
+(`NORBIX_FUNCTION_EVENT_INVALID`) or whose `specVersion` is newer than `1`
+(`NORBIX_FUNCTION_EVENT_UNSUPPORTED`). The raw slots stay on `event.Data`
+(`json.RawMessage`), the whole body on `event.Raw()`.
+
+From your backend — the functions an integration may call, their aliases
+and versions, a call by hand, a sample envelope for a local run and the
+last runs of a trigger:
+
+```go
+integrationID := "int_6rBACnEaxQ0x1jTiHtAuWV"
+var functions, qualifiers, result, sample, runs map[string]any
+_ = c.Hub.Code.GetCodeFunctions(ctx, map[string]any{"integrationId": integrationID, "prefix": "orders-"}, &functions)
+_ = c.Hub.Code.GetCodeFunctionQualifiers(ctx, map[string]any{"integrationId": integrationID, "functionId": "orders-on-update"}, &qualifiers)
+_ = c.Hub.Code.InvokeCodeFunction(ctx, map[string]any{
+	"functionRef":    map[string]any{"integrationId": integrationID, "functionId": "orders-on-update", "qualifier": "prod"},
+	"payload":        map[string]any{"orderId": "6ac54a59212c29912eaddd81", "dryRun": true},
+	"invocationType": "Sync",
+}, &result)
+_ = c.Hub.Code.GetCodeFunctionEventSample(ctx, map[string]any{"source": "database", "event": "database.record.updated"}, &sample)
+_ = c.Hub.Code.GetCodeFunctionRuns(ctx, map[string]any{"triggerId": "trg_1", "limit": 20}, &runs)
+```
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:
