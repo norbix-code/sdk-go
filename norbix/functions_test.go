@@ -2,6 +2,7 @@ package norbix
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
+	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 )
 
 // ParseFunctionEvent reads the envelope a cloud function receives (gateway
@@ -486,5 +488,25 @@ func TestClientOptionsWithoutARunAsTokenHaveNoBearer(t *testing.T) {
 
 	if opts := ev.ClientOptions(); opts.BearerToken != "" || opts.ProjectID != "proj_1" {
 		t.Errorf("options: %+v", opts)
+	}
+}
+
+// The generated envelope type decodes a real envelope: the dictionary
+// slots (old / new documents, payload, config) hold scalar values, so they
+// are map[string]any, not map[string]map[string]any — the earlier
+// generator output refused `{"status":"paid"}` with "cannot unmarshal string
+// into Go struct field ... of type map[string]interface {}".
+func TestGeneratedEnvelopeDecodesScalarSlotValues(t *testing.T) {
+	raw := []byte(`{"data":{"database":{"old":{"status":"paid"}}}}`)
+
+	var ev dtos.CodeFunctionEventDto
+	if err := json.Unmarshal(raw, &ev); err != nil {
+		t.Fatalf("Unmarshal into dtos.CodeFunctionEventDto: %v", err)
+	}
+	if ev.Data == nil || ev.Data.Database == nil {
+		t.Fatalf("data.database missing: %+v", ev)
+	}
+	if got := ev.Data.Database.Old["status"]; got != "paid" {
+		t.Errorf("old.status = %#v, want %q", got, "paid")
 	}
 }

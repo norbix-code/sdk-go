@@ -3630,29 +3630,29 @@ type DocumentRefDto struct {
 
 // DatabaseRecordChangeDto DTO.
 type DatabaseRecordChangeDto struct {
-	Collection    string                    `json:"collection,omitempty"`
-	SchemaId      string                    `json:"schemaId,omitempty"`
-	SchemaVersion float64                   `json:"schemaVersion,omitempty"`
-	RecordId      string                    `json:"recordId,omitempty"`
-	Old           map[string]map[string]any `json:"old,omitempty"`
-	New           map[string]map[string]any `json:"new,omitempty"`
-	Truncated     bool                      `json:"truncated,omitempty"`
-	OldRef        *DocumentRefDto           `json:"oldRef,omitempty"`
-	NewRef        *DocumentRefDto           `json:"newRef,omitempty"`
+	Collection    string          `json:"collection,omitempty"`
+	SchemaId      string          `json:"schemaId,omitempty"`
+	SchemaVersion float64         `json:"schemaVersion,omitempty"`
+	RecordId      string          `json:"recordId,omitempty"`
+	Old           map[string]any  `json:"old,omitempty"`
+	New           map[string]any  `json:"new,omitempty"`
+	Truncated     bool            `json:"truncated,omitempty"`
+	OldRef        *DocumentRefDto `json:"oldRef,omitempty"`
+	NewRef        *DocumentRefDto `json:"newRef,omitempty"`
 }
 
 // UserChangeDto DTO.
 type UserChangeDto struct {
-	UserId string                    `json:"userId,omitempty"`
-	Old    map[string]map[string]any `json:"old,omitempty"`
-	New    map[string]map[string]any `json:"new,omitempty"`
+	UserId string         `json:"userId,omitempty"`
+	Old    map[string]any `json:"old,omitempty"`
+	New    map[string]any `json:"new,omitempty"`
 }
 
 // FileChangeDto DTO.
 type FileChangeDto struct {
-	Old  map[string]map[string]any `json:"old,omitempty"`
-	New  map[string]map[string]any `json:"new,omitempty"`
-	Path string                    `json:"path,omitempty"`
+	Old  map[string]any `json:"old,omitempty"`
+	New  map[string]any `json:"new,omitempty"`
+	Path string         `json:"path,omitempty"`
 }
 
 // PaymentFactDto DTO.
@@ -3671,8 +3671,8 @@ type PaymentFactDto struct {
 
 // AiUsageEventDto DTO.
 type AiUsageEventDto struct {
-	Payload      map[string]map[string]any `json:"payload,omitempty"`
-	TargetUserId string                    `json:"targetUserId,omitempty"`
+	Payload      map[string]any `json:"payload,omitempty"`
+	TargetUserId string         `json:"targetUserId,omitempty"`
 }
 
 // ScheduledTaskInfoDto DTO.
@@ -3684,26 +3684,26 @@ type ScheduledTaskInfoDto struct {
 
 // CodeFunctionDataDto DTO.
 type CodeFunctionDataDto struct {
-	Database *DatabaseRecordChangeDto  `json:"database,omitempty"`
-	User     *UserChangeDto            `json:"user,omitempty"`
-	File     *FileChangeDto            `json:"file,omitempty"`
-	Payment  *PaymentFactDto           `json:"payment,omitempty"`
-	Ai       *AiUsageEventDto          `json:"ai,omitempty"`
-	Task     *ScheduledTaskInfoDto     `json:"task,omitempty"`
-	Payload  map[string]map[string]any `json:"payload,omitempty"`
+	Database *DatabaseRecordChangeDto `json:"database,omitempty"`
+	User     *UserChangeDto           `json:"user,omitempty"`
+	File     *FileChangeDto           `json:"file,omitempty"`
+	Payment  *PaymentFactDto          `json:"payment,omitempty"`
+	Ai       *AiUsageEventDto         `json:"ai,omitempty"`
+	Task     *ScheduledTaskInfoDto    `json:"task,omitempty"`
+	Payload  map[string]any           `json:"payload,omitempty"`
 }
 
 // CodeFunctionEventDto DTO.
 type CodeFunctionEventDto struct {
-	SpecVersion string                    `json:"specVersion,omitempty"`
-	Id          string                    `json:"id,omitempty"`
-	EventId     string                    `json:"eventId,omitempty"`
-	Event       string                    `json:"event,omitempty"`
-	Source      CodeFunctionSource        `json:"source,omitempty"`
-	CreatedOn   string                    `json:"createdOn,omitempty"`
-	Context     *CodeFunctionContextDto   `json:"context,omitempty"`
-	Data        *CodeFunctionDataDto      `json:"data,omitempty"`
-	Config      map[string]map[string]any `json:"config,omitempty"`
+	SpecVersion string                  `json:"specVersion,omitempty"`
+	Id          string                  `json:"id,omitempty"`
+	EventId     string                  `json:"eventId,omitempty"`
+	Event       string                  `json:"event,omitempty"`
+	Source      CodeFunctionSource      `json:"source,omitempty"`
+	CreatedOn   string                  `json:"createdOn,omitempty"`
+	Context     *CodeFunctionContextDto `json:"context,omitempty"`
+	Data        *CodeFunctionDataDto    `json:"data,omitempty"`
+	Config      map[string]any          `json:"config,omitempty"`
 }
 
 // FakeCodeIntegrationDto DTO.
@@ -6433,7 +6433,7 @@ type DiagnosticRedisInspectDto struct {
 	KeyPattern    string                        `json:"keyPattern,omitempty"`
 	CacheKey      string                        `json:"cacheKey,omitempty"`
 	IsList        bool                          `json:"isList,omitempty"`
-	Item          map[string]map[string]any     `json:"item,omitempty"`
+	Item          map[string]any                `json:"item,omitempty"`
 	ListItems     []*DiagnosticRedisListItemDto `json:"listItems,omitempty"`
 	HasMore       bool                          `json:"hasMore,omitempty"`
 	StartingAfter string                        `json:"startingAfter,omitempty"`
@@ -8394,8 +8394,8 @@ type GetMarketplaceFunctionTokens struct {
 // InvokeMarketplaceFunction DTO.
 type InvokeMarketplaceFunction struct {
 	CodeMashRequestBase
-	FunctionViewId string                    `json:"functionViewId,omitempty"`
-	Payload        map[string]map[string]any `json:"payload,omitempty"`
+	FunctionViewId string         `json:"functionViewId,omitempty"`
+	Payload        map[string]any `json:"payload,omitempty"`
 }
 
 // GetMarketplaceListing DTO.
@@ -10932,11 +10932,11 @@ type GetCodeFunctionRuns struct {
 // InvokeCodeFunction DTO.
 type InvokeCodeFunction struct {
 	CodeMashRequestBase
-	FunctionRef    *FunctionRefDto           `json:"functionRef,omitempty"`
-	Payload        map[string]map[string]any `json:"payload,omitempty"`
-	InvocationType CodeInvocationType        `json:"invocationType,omitempty"`
-	RunAsUserId    string                    `json:"runAsUserId,omitempty"`
-	Config         string                    `json:"config,omitempty"`
+	FunctionRef    *FunctionRefDto    `json:"functionRef,omitempty"`
+	Payload        map[string]any     `json:"payload,omitempty"`
+	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
+	RunAsUserId    string             `json:"runAsUserId,omitempty"`
+	Config         string             `json:"config,omitempty"`
 }
 
 // DisablePush DTO.
