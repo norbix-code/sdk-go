@@ -203,6 +203,34 @@ func (m *CodeModule) GetCodeIntegration(ctx context.Context, id string, req map[
 	}, out)
 }
 
+// GetMarketplaceListings performs GET /{version}/code/marketplace/listings (scope: project).
+func (m *CodeModule) GetMarketplaceListings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/listings",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMarketplaceListingFunctionTokens performs GET /{version}/code/marketplace/listings/{ListingViewId}/functions/{FunctionKey}/tokens (scope: project).
+func (m *CodeModule) GetMarketplaceListingFunctionTokens(ctx context.Context, listingViewId string, functionKey string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ListingViewId": listingViewId,
+		"FunctionKey":   functionKey,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/listings/{ListingViewId}/functions/{FunctionKey}/tokens",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetMarketplaceIntegrations performs GET /{version}/code/marketplace/integrations (scope: project).
 func (m *CodeModule) GetMarketplaceIntegrations(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -210,6 +238,21 @@ func (m *CodeModule) GetMarketplaceIntegrations(ctx context.Context, req map[str
 		Path:       "/{version}/code/marketplace/integrations",
 		Method:     "GET",
 		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMarketplaceIntegration performs GET /{version}/code/marketplace/integrations/{IntegrationViewId} (scope: project).
+func (m *CodeModule) GetMarketplaceIntegration(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}",
+		Method:     "GET",
+		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
@@ -242,141 +285,15 @@ func (m *CodeModule) DeleteMarketplaceIntegration(ctx context.Context, integrati
 	}, out)
 }
 
-// GetMarketplaceIntegration performs GET /{version}/code/marketplace/integrations/{IntegrationViewId} (scope: project).
-func (m *CodeModule) GetMarketplaceIntegration(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+// EnableMarketplaceIntegration performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/enable (scope: project).
+func (m *CodeModule) EnableMarketplaceIntegration(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"IntegrationViewId": integrationViewId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetMarketplaceBindings performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings (scope: project).
-func (m *CodeModule) GetMarketplaceBindings(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// SaveMarketplaceFunctionBinding performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings (scope: project).
-func (m *CodeModule) SaveMarketplaceFunctionBinding(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings",
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/enable",
 		Method:     "POST",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// DeleteMarketplaceFunctionBinding performs DELETE /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId} (scope: project).
-func (m *CodeModule) DeleteMarketplaceFunctionBinding(ctx context.Context, integrationViewId string, bindingViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-		"BindingViewId":     bindingViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}",
-		Method:     "DELETE",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetMarketplaceBinding performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId} (scope: project).
-func (m *CodeModule) GetMarketplaceBinding(ctx context.Context, integrationViewId string, bindingViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-		"BindingViewId":     bindingViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// DisableMarketplaceFunctionBinding performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/disable (scope: project).
-func (m *CodeModule) DisableMarketplaceFunctionBinding(ctx context.Context, integrationViewId string, bindingViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-		"BindingViewId":     bindingViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/disable",
-		Method:     "POST",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// EnableMarketplaceFunctionBinding performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/enable (scope: project).
-func (m *CodeModule) EnableMarketplaceFunctionBinding(ctx context.Context, integrationViewId string, bindingViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-		"BindingViewId":     bindingViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/enable",
-		Method:     "POST",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// InvokeMarketplaceFunctionBinding performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/invoke (scope: project).
-func (m *CodeModule) InvokeMarketplaceFunctionBinding(ctx context.Context, integrationViewId string, bindingViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-		"BindingViewId":     bindingViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/invoke",
-		Method:     "POST",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetMarketplaceBindingTokens performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/tokens (scope: project).
-func (m *CodeModule) GetMarketplaceBindingTokens(ctx context.Context, integrationViewId string, bindingViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-		"BindingViewId":     bindingViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/bindings/{BindingViewId}/tokens",
-		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
@@ -398,23 +315,8 @@ func (m *CodeModule) DisableMarketplaceIntegration(ctx context.Context, integrat
 	}, out)
 }
 
-// EnableMarketplaceIntegration performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/enable (scope: project).
-func (m *CodeModule) EnableMarketplaceIntegration(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"IntegrationViewId": integrationViewId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/enable",
-		Method:     "POST",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetMarketplaceFunctionCatalog performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/functions (scope: project).
-func (m *CodeModule) GetMarketplaceFunctionCatalog(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+// GetMarketplaceFunctions performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/functions (scope: project).
+func (m *CodeModule) GetMarketplaceFunctions(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"IntegrationViewId": integrationViewId,
 	}
@@ -428,29 +330,213 @@ func (m *CodeModule) GetMarketplaceFunctionCatalog(ctx context.Context, integrat
 	}, out)
 }
 
-// GetMarketplaceListings performs GET /{version}/code/marketplace/listings (scope: project).
-func (m *CodeModule) GetMarketplaceListings(ctx context.Context, req map[string]any, out any) error {
+// GetMarketplaceFunction performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId} (scope: project).
+func (m *CodeModule) GetMarketplaceFunction(ctx context.Context, integrationViewId string, functionViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+		"FunctionViewId":    functionViewId,
+	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/listings",
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}",
 		Method:     "GET",
-		PathParams: nil,
+		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
 }
 
-// GetMarketplaceListingFunctionTokens performs GET /{version}/code/marketplace/listings/{ListingViewId}/functions/{FunctionKey}/tokens (scope: project).
-func (m *CodeModule) GetMarketplaceListingFunctionTokens(ctx context.Context, listingViewId string, functionKey string, req map[string]any, out any) error {
+// SaveMarketplaceFunction performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/functions (scope: project).
+func (m *CodeModule) SaveMarketplaceFunction(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"ListingViewId": listingViewId,
-		"FunctionKey":   functionKey,
+		"IntegrationViewId": integrationViewId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/code/marketplace/listings/{ListingViewId}/functions/{FunctionKey}/tokens",
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/functions",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteMarketplaceFunction performs DELETE /{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId} (scope: project).
+func (m *CodeModule) DeleteMarketplaceFunction(ctx context.Context, integrationViewId string, functionViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+		"FunctionViewId":    functionViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// EnableMarketplaceFunction performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/enable (scope: project).
+func (m *CodeModule) EnableMarketplaceFunction(ctx context.Context, integrationViewId string, functionViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+		"FunctionViewId":    functionViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/enable",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DisableMarketplaceFunction performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/disable (scope: project).
+func (m *CodeModule) DisableMarketplaceFunction(ctx context.Context, integrationViewId string, functionViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+		"FunctionViewId":    functionViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/disable",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMarketplaceFunctionTokens performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/tokens (scope: project).
+func (m *CodeModule) GetMarketplaceFunctionTokens(ctx context.Context, integrationViewId string, functionViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+		"FunctionViewId":    functionViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/functions/{FunctionViewId}/tokens",
 		Method:     "GET",
 		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// InvokeMarketplaceFunction performs POST /{version}/code/marketplace/functions/{FunctionViewId}/invoke (scope: project).
+func (m *CodeModule) InvokeMarketplaceFunction(ctx context.Context, functionViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"FunctionViewId": functionViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/functions/{FunctionViewId}/invoke",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMarketplaceListing performs GET /{version}/code/marketplace/listings/{ListingViewId} (scope: project).
+func (m *CodeModule) GetMarketplaceListing(ctx context.Context, listingViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ListingViewId": listingViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/listings/{ListingViewId}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// TestMarketplaceIntegration performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/test (scope: project).
+func (m *CodeModule) TestMarketplaceIntegration(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/test",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ReplaceMarketplaceIntegrationSecrets performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/secrets (scope: project).
+func (m *CodeModule) ReplaceMarketplaceIntegrationSecrets(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/secrets",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RevealMarketplaceIntegrationSecrets performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/secrets/reveal (scope: project).
+func (m *CodeModule) RevealMarketplaceIntegrationSecrets(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/secrets/reveal",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetMarketplaceIntegrationTokenMappings performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/token-mappings (scope: project).
+func (m *CodeModule) SetMarketplaceIntegrationTokenMappings(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/token-mappings",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMarketplaceFunctionCatalog performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/catalog (scope: project).
+func (m *CodeModule) GetMarketplaceFunctionCatalog(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/catalog",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMarketplaceFunctionRuns performs GET /{version}/code/marketplace/functions/runs (scope: project).
+func (m *CodeModule) GetMarketplaceFunctionRuns(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/functions/runs",
+		Method:     "GET",
+		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
 	}, out)
