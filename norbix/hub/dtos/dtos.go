@@ -289,6 +289,7 @@ const (
 	CodeProviderNetlify              CodeProvider = "Netlify"
 	CodeProviderSupabaseEdge         CodeProvider = "SupabaseEdge"
 	CodeProviderModal                CodeProvider = "Modal"
+	CodeProviderFake                 CodeProvider = "Fake"
 )
 
 // AwsLambdaIntegrationType enum.
@@ -394,6 +395,14 @@ const (
 	PushCampaignRecipientsSourceTypesCollection     PushCampaignRecipientsSourceTypes = "Collection"
 	PushCampaignRecipientsSourceTypesDevices        PushCampaignRecipientsSourceTypes = "Devices"
 	PushCampaignRecipientsSourceTypesAccountUsers   PushCampaignRecipientsSourceTypes = "AccountUsers"
+)
+
+// CodeInvocationType enum.
+type CodeInvocationType string
+
+const (
+	CodeInvocationTypeSync  CodeInvocationType = "Sync"
+	CodeInvocationTypeAsync CodeInvocationType = "Async"
 )
 
 // SmsCampaignRecipientsSourceTypes enum.
@@ -542,6 +551,42 @@ const (
 	MarketplaceParameterLocationPath   MarketplaceParameterLocation = "Path"
 )
 
+// CodeFunctionSource enum.
+type CodeFunctionSource string
+
+const (
+	CodeFunctionSourceDatabase   CodeFunctionSource = "Database"
+	CodeFunctionSourceMembership CodeFunctionSource = "Membership"
+	CodeFunctionSourceFiles      CodeFunctionSource = "Files"
+	CodeFunctionSourcePayments   CodeFunctionSource = "Payments"
+	CodeFunctionSourceAi         CodeFunctionSource = "Ai"
+	CodeFunctionSourceScheduler  CodeFunctionSource = "Scheduler"
+	CodeFunctionSourceManual     CodeFunctionSource = "Manual"
+)
+
+// CodeFunctionCallerKind enum.
+type CodeFunctionCallerKind string
+
+const (
+	CodeFunctionCallerKindUser   CodeFunctionCallerKind = "User"
+	CodeFunctionCallerKindApiKey CodeFunctionCallerKind = "ApiKey"
+	CodeFunctionCallerKindSystem CodeFunctionCallerKind = "System"
+)
+
+// ResourceKindDto enum.
+type ResourceKindDto string
+
+const (
+	ResourceKindDtoContact         ResourceKindDto = "contact"
+	ResourceKindDtoDocument        ResourceKindDto = "document"
+	ResourceKindDtoFile            ResourceKindDto = "file"
+	ResourceKindDtoPaymentCustomer ResourceKindDto = "paymentCustomer"
+	ResourceKindDtoOrder           ResourceKindDto = "order"
+	ResourceKindDtoPayment         ResourceKindDto = "payment"
+	ResourceKindDtoProduct         ResourceKindDto = "product"
+	ResourceKindDtoIntegration     ResourceKindDto = "integration"
+)
+
 // SubscriptionType enum.
 type SubscriptionType string
 
@@ -599,20 +644,6 @@ type EmbeddingProvider string
 const (
 	EmbeddingProviderVoyage EmbeddingProvider = "Voyage"
 	EmbeddingProviderOpenAI EmbeddingProvider = "OpenAI"
-)
-
-// ResourceKindDto enum.
-type ResourceKindDto string
-
-const (
-	ResourceKindDtoContact         ResourceKindDto = "contact"
-	ResourceKindDtoDocument        ResourceKindDto = "document"
-	ResourceKindDtoFile            ResourceKindDto = "file"
-	ResourceKindDtoPaymentCustomer ResourceKindDto = "paymentCustomer"
-	ResourceKindDtoOrder           ResourceKindDto = "order"
-	ResourceKindDtoPayment         ResourceKindDto = "payment"
-	ResourceKindDtoProduct         ResourceKindDto = "product"
-	ResourceKindDtoIntegration     ResourceKindDto = "integration"
 )
 
 // CaseResolutionFixKind enum.
@@ -806,6 +837,14 @@ const (
 	CampaignNotificationStatusViewed                            CampaignNotificationStatus = "Viewed"
 	CampaignNotificationStatusClicked                           CampaignNotificationStatus = "Clicked"
 	CampaignNotificationStatusBlockedByValidation               CampaignNotificationStatus = "BlockedByValidation"
+)
+
+// CodeFunctionQualifierKindDto enum.
+type CodeFunctionQualifierKindDto string
+
+const (
+	CodeFunctionQualifierKindDtoAlias   CodeFunctionQualifierKindDto = "Alias"
+	CodeFunctionQualifierKindDtoVersion CodeFunctionQualifierKindDto = "Version"
 )
 
 // AiTriggerType enum.
@@ -2011,6 +2050,15 @@ type TriggerActionPushDto struct {
 	InitiatorId      string                           `json:"initiatorId,omitempty"`
 }
 
+// FunctionRefDto DTO.
+type FunctionRefDto struct {
+	IntegrationId string       `json:"integrationId,omitempty"`
+	Provider      CodeProvider `json:"provider,omitempty"`
+	FunctionId    string       `json:"functionId,omitempty"`
+	Qualifier     string       `json:"qualifier,omitempty"`
+	DisplayName   string       `json:"displayName,omitempty"`
+}
+
 // CodeDeliverySettingsDto DTO.
 type CodeDeliverySettingsDto struct {
 	MappedTokens []*TokenMappingDto `json:"mappedTokens,omitempty"`
@@ -2019,8 +2067,14 @@ type CodeDeliverySettingsDto struct {
 // TriggerActionCodeDto DTO.
 type TriggerActionCodeDto struct {
 	TriggerActionDto
-	FunctionId       string                   `json:"functionId,omitempty"`
+	FunctionRef      *FunctionRefDto          `json:"functionRef,omitempty"`
+	RunAsUserId      string                   `json:"runAsUserId,omitempty"`
+	InvocationType   CodeInvocationType       `json:"invocationType,omitempty"`
+	Config           string                   `json:"config,omitempty"`
 	DeliverySettings *CodeDeliverySettingsDto `json:"deliverySettings,omitempty"`
+	FunctionId       string                   `json:"functionId,omitempty"`
+	ActivationCode   string                   `json:"activationCode,omitempty"`
+	Meta             map[string]string        `json:"meta,omitempty"`
 }
 
 // WebhookDeliverySettingsDto DTO.
@@ -3378,6 +3432,301 @@ type ConversationSnapshotEntryWireDto struct {
 	CoversUpToSeq float64 `json:"coversUpToSeq,omitempty"`
 }
 
+// JsonSchemaFieldDto DTO.
+type JsonSchemaFieldDto struct {
+	FieldName string `json:"fieldName,omitempty"`
+}
+
+// StringFieldDto DTO.
+type StringFieldDto struct {
+	JsonSchemaFieldDto
+	Format           string            `json:"format,omitempty"`
+	Pattern          string            `json:"pattern,omitempty"`
+	MinLength        float64           `json:"minLength,omitempty"`
+	MaxLength        float64           `json:"maxLength,omitempty"`
+	TranslateOptions map[string]string `json:"translateOptions,omitempty"`
+	Default          string            `json:"default,omitempty"`
+	Unique           bool              `json:"unique,omitempty"`
+}
+
+// DecimalFieldDto DTO.
+type DecimalFieldDto struct {
+	JsonSchemaFieldDto
+	Minimum    float64 `json:"minimum,omitempty"`
+	Maximum    float64 `json:"maximum,omitempty"`
+	MultipleOf float64 `json:"multipleOf,omitempty"`
+	Default    float64 `json:"default,omitempty"`
+	Unique     bool    `json:"unique,omitempty"`
+}
+
+// CurrencyDefaultDto DTO.
+type CurrencyDefaultDto struct {
+	Value    float64 `json:"value,omitempty"`
+	Currency string  `json:"currency,omitempty"`
+}
+
+// CurrencyFieldDto DTO.
+type CurrencyFieldDto struct {
+	JsonSchemaFieldDto
+	AllowedCurrencies []string            `json:"allowedCurrencies,omitempty"`
+	MultipleOf        float64             `json:"multipleOf,omitempty"`
+	Minimum           float64             `json:"minimum,omitempty"`
+	Maximum           float64             `json:"maximum,omitempty"`
+	Default           *CurrencyDefaultDto `json:"default,omitempty"`
+}
+
+// BooleanFieldDto DTO.
+type BooleanFieldDto struct {
+	JsonSchemaFieldDto
+	Default bool `json:"default,omitempty"`
+}
+
+// DateFieldDto DTO.
+type DateFieldDto struct {
+	JsonSchemaFieldDto
+	Minimum float64 `json:"minimum,omitempty"`
+	Maximum float64 `json:"maximum,omitempty"`
+	Default float64 `json:"default,omitempty"`
+}
+
+// IntegerFieldDto DTO.
+type IntegerFieldDto struct {
+	JsonSchemaFieldDto
+	Minimum float64 `json:"minimum,omitempty"`
+	Maximum float64 `json:"maximum,omitempty"`
+	Default float64 `json:"default,omitempty"`
+	Unique  bool    `json:"unique,omitempty"`
+}
+
+// GeolocationFieldDto DTO.
+type GeolocationFieldDto struct {
+	JsonSchemaFieldDto
+	AllowedTypes []string `json:"allowedTypes,omitempty"`
+}
+
+// TagsFieldDto DTO.
+type TagsFieldDto struct {
+	JsonSchemaFieldDto
+	MinItems float64  `json:"minItems,omitempty"`
+	MaxItems float64  `json:"maxItems,omitempty"`
+	Default  []string `json:"default,omitempty"`
+}
+
+// FileFieldDto DTO.
+type FileFieldDto struct {
+	JsonSchemaFieldDto
+	Storages        []string `json:"storages,omitempty"`
+	MinItems        float64  `json:"minItems,omitempty"`
+	MaxItems        float64  `json:"maxItems,omitempty"`
+	AllowedFileType string   `json:"allowedFileType,omitempty"`
+	MaxSizeMb       float64  `json:"maxSizeMb,omitempty"`
+}
+
+// TaxonomySelectionFieldDto DTO.
+type TaxonomySelectionFieldDto struct {
+	JsonSchemaFieldDto
+	TaxonomyId   string `json:"taxonomyId,omitempty"`
+	Multiple     bool   `json:"multiple,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
+}
+
+// CollectionSelectionFieldDto DTO.
+type CollectionSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	CollectionId string `json:"collectionId,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
+	Multiple     bool   `json:"multiple,omitempty"`
+}
+
+// UserSelectionFieldDto DTO.
+type UserSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	Multiple     bool   `json:"multiple,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
+}
+
+// RoleSelectionFieldDto DTO.
+type RoleSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	Multiple     bool   `json:"multiple,omitempty"`
+	DisplayField string `json:"displayField,omitempty"`
+}
+
+// EnumSelectionFieldDto DTO.
+type EnumSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	Values   []string `json:"values,omitempty"`
+	Multiple bool     `json:"multiple,omitempty"`
+	Default  []string `json:"default,omitempty"`
+}
+
+// ObjectFieldDto DTO.
+type ObjectFieldDto struct {
+	JsonSchemaFieldDto
+	Properties []*JsonSchemaFieldDto `json:"properties,omitempty"`
+	Required   []string              `json:"required,omitempty"`
+}
+
+// ArrayFieldDto DTO.
+type ArrayFieldDto struct {
+	JsonSchemaFieldDto
+	Items       *JsonSchemaFieldDto `json:"items,omitempty"`
+	MinItems    float64             `json:"minItems,omitempty"`
+	MaxItems    float64             `json:"maxItems,omitempty"`
+	UniqueItems bool                `json:"uniqueItems,omitempty"`
+}
+
+// JsonFieldDto DTO.
+type JsonFieldDto struct {
+	JsonSchemaFieldDto
+	MaxBytes float64 `json:"maxBytes,omitempty"`
+}
+
+// CodeFunctionCallerDto DTO.
+type CodeFunctionCallerDto struct {
+	UserId string                 `json:"userId,omitempty"`
+	Email  string                 `json:"email,omitempty"`
+	Kind   CodeFunctionCallerKind `json:"kind,omitempty"`
+}
+
+// CodeFunctionRunAsDto DTO.
+type CodeFunctionRunAsDto struct {
+	UserId      string `json:"userId,omitempty"`
+	AccessToken string `json:"accessToken,omitempty"`
+	ExpiresAt   string `json:"expiresAt,omitempty"`
+}
+
+// CodeFunctionContextDto DTO.
+type CodeFunctionContextDto struct {
+	AccountId     string                 `json:"accountId,omitempty"`
+	ProjectId     string                 `json:"projectId,omitempty"`
+	Environment   string                 `json:"environment,omitempty"`
+	Region        string                 `json:"region,omitempty"`
+	HubUrl        string                 `json:"hubUrl,omitempty"`
+	ApiUrl        string                 `json:"apiUrl,omitempty"`
+	EchoUrl       string                 `json:"echoUrl,omitempty"`
+	TriggerId     string                 `json:"triggerId,omitempty"`
+	TaskId        string                 `json:"taskId,omitempty"`
+	CorrelationId string                 `json:"correlationId,omitempty"`
+	Caller        *CodeFunctionCallerDto `json:"caller,omitempty"`
+	RunAs         *CodeFunctionRunAsDto  `json:"runAs,omitempty"`
+}
+
+// ResourceRefDto DTO.
+type ResourceRefDto struct {
+	ProjectId     string          `json:"projectId,omitempty"`
+	IntegrationId string          `json:"integrationId,omitempty"`
+	Kind          ResourceKindDto `json:"kind,omitempty"`
+}
+
+// DocumentRefDto DTO.
+type DocumentRefDto struct {
+	ResourceRefDto
+	Kind                  ResourceKindDto `json:"kind,omitempty"`
+	DatabaseIntegrationId string          `json:"databaseIntegrationId,omitempty"`
+	SchemaId              string          `json:"schemaId,omitempty"`
+	ExternalId            string          `json:"externalId,omitempty"`
+}
+
+// DatabaseRecordChangeDto DTO.
+type DatabaseRecordChangeDto struct {
+	Collection    string                    `json:"collection,omitempty"`
+	SchemaId      string                    `json:"schemaId,omitempty"`
+	SchemaVersion float64                   `json:"schemaVersion,omitempty"`
+	RecordId      string                    `json:"recordId,omitempty"`
+	Old           map[string]map[string]any `json:"old,omitempty"`
+	New           map[string]map[string]any `json:"new,omitempty"`
+	Truncated     bool                      `json:"truncated,omitempty"`
+	OldRef        *DocumentRefDto           `json:"oldRef,omitempty"`
+	NewRef        *DocumentRefDto           `json:"newRef,omitempty"`
+}
+
+// UserChangeDto DTO.
+type UserChangeDto struct {
+	UserId string                    `json:"userId,omitempty"`
+	Old    map[string]map[string]any `json:"old,omitempty"`
+	New    map[string]map[string]any `json:"new,omitempty"`
+}
+
+// FileChangeDto DTO.
+type FileChangeDto struct {
+	Old  map[string]map[string]any `json:"old,omitempty"`
+	New  map[string]map[string]any `json:"new,omitempty"`
+	Path string                    `json:"path,omitempty"`
+}
+
+// PaymentFactDto DTO.
+type PaymentFactDto struct {
+	IntegrationId   string            `json:"integrationId,omitempty"`
+	Provider        string            `json:"provider,omitempty"`
+	ProviderEventId string            `json:"providerEventId,omitempty"`
+	EventName       string            `json:"eventName,omitempty"`
+	Status          string            `json:"status,omitempty"`
+	AmountMinor     float64           `json:"amountMinor,omitempty"`
+	Currency        string            `json:"currency,omitempty"`
+	ExternalIds     map[string]string `json:"externalIds,omitempty"`
+	OccurredOn      string            `json:"occurredOn,omitempty"`
+	ReceivedOn      string            `json:"receivedOn,omitempty"`
+}
+
+// AiUsageEventDto DTO.
+type AiUsageEventDto struct {
+	Payload      map[string]map[string]any `json:"payload,omitempty"`
+	TargetUserId string                    `json:"targetUserId,omitempty"`
+}
+
+// ScheduledTaskInfoDto DTO.
+type ScheduledTaskInfoDto struct {
+	TaskId  string `json:"taskId,omitempty"`
+	Name    string `json:"name,omitempty"`
+	FiredAt string `json:"firedAt,omitempty"`
+}
+
+// CodeFunctionDataDto DTO.
+type CodeFunctionDataDto struct {
+	Database *DatabaseRecordChangeDto  `json:"database,omitempty"`
+	User     *UserChangeDto            `json:"user,omitempty"`
+	File     *FileChangeDto            `json:"file,omitempty"`
+	Payment  *PaymentFactDto           `json:"payment,omitempty"`
+	Ai       *AiUsageEventDto          `json:"ai,omitempty"`
+	Task     *ScheduledTaskInfoDto     `json:"task,omitempty"`
+	Payload  map[string]map[string]any `json:"payload,omitempty"`
+}
+
+// CodeFunctionEventDto DTO.
+type CodeFunctionEventDto struct {
+	SpecVersion string                    `json:"specVersion,omitempty"`
+	Id          string                    `json:"id,omitempty"`
+	EventId     string                    `json:"eventId,omitempty"`
+	Event       string                    `json:"event,omitempty"`
+	Source      CodeFunctionSource        `json:"source,omitempty"`
+	CreatedOn   string                    `json:"createdOn,omitempty"`
+	Context     *CodeFunctionContextDto   `json:"context,omitempty"`
+	Data        *CodeFunctionDataDto      `json:"data,omitempty"`
+	Config      map[string]map[string]any `json:"config,omitempty"`
+}
+
+// FakeCodeIntegrationDto DTO.
+type FakeCodeIntegrationDto struct {
+	CodeIntegrationDto
+}
+
+// FakeCodeIntegrationRequest DTO.
+type FakeCodeIntegrationRequest struct {
+	CodeIntegrationRequest
+	Provider CodeProvider `json:"provider,omitempty"`
+}
+
+// CodeFunctionSchedulerTaskRequest DTO.
+type CodeFunctionSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type           SchedulerTaskType  `json:"type,omitempty"`
+	FunctionRef    *FunctionRefDto    `json:"functionRef,omitempty"`
+	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
+	Config         string             `json:"config,omitempty"`
+	MappedTokens   []*TokenMappingDto `json:"mappedTokens,omitempty"`
+}
+
 // ICultureBasedRequest DTO.
 type ICultureBasedRequest struct {
 }
@@ -3667,13 +4016,6 @@ type EmbeddingIntegrationRequest struct {
 	ApiKey          string            `json:"apiKey,omitempty"`
 }
 
-// ResourceRefDto DTO.
-type ResourceRefDto struct {
-	ProjectId     string          `json:"projectId,omitempty"`
-	IntegrationId string          `json:"integrationId,omitempty"`
-	Kind          ResourceKindDto `json:"kind,omitempty"`
-}
-
 // CaseResolutionDto DTO.
 type CaseResolutionDto struct {
 	Problem          string                `json:"problem,omitempty"`
@@ -3792,17 +4134,19 @@ type AccountOwnerDto struct {
 
 // AccountStatusDto DTO.
 type AccountStatusDto struct {
-	AccountId         string        `json:"accountId,omitempty"`
-	AccountIdAsGuid   string        `json:"accountIdAsGuid,omitempty"`
-	UserId            string        `json:"userId,omitempty"`
-	LoggedInUserId    string        `json:"loggedInUserId,omitempty"`
-	LoggedInUserEmail string        `json:"loggedInUserEmail,omitempty"`
-	Status            AccountStatus `json:"status,omitempty"`
-	ProjectCap        float64       `json:"projectCap,omitempty"`
-	Permissions       []string      `json:"permissions,omitempty"`
-	Roles             []string      `json:"roles,omitempty"`
-	AllowedProjects   []string      `json:"allowedProjects,omitempty"`
-	TrialWasIssued    bool          `json:"trialWasIssued,omitempty"`
+	AccountId          string        `json:"accountId,omitempty"`
+	AccountIdAsGuid    string        `json:"accountIdAsGuid,omitempty"`
+	UserId             string        `json:"userId,omitempty"`
+	LoggedInUserId     string        `json:"loggedInUserId,omitempty"`
+	LoggedInUserEmail  string        `json:"loggedInUserEmail,omitempty"`
+	Status             AccountStatus `json:"status,omitempty"`
+	ProjectCap         float64       `json:"projectCap,omitempty"`
+	Permissions        []string      `json:"permissions,omitempty"`
+	Roles              []string      `json:"roles,omitempty"`
+	AllowedProjects    []string      `json:"allowedProjects,omitempty"`
+	TrialWasIssued     bool          `json:"trialWasIssued,omitempty"`
+	EmailVerified      bool          `json:"emailVerified,omitempty"`
+	JoinedByInvitation bool          `json:"joinedByInvitation,omitempty"`
 }
 
 // UsageBillingClusterChargeDto DTO.
@@ -4020,6 +4364,7 @@ type PolicyItemDto struct {
 	Name        string           `json:"name,omitempty"`
 	Description string           `json:"description,omitempty"`
 	IsSystem    bool             `json:"isSystem,omitempty"`
+	Version     string           `json:"version,omitempty"`
 	Permissions []*PermissionDto `json:"permissions,omitempty"`
 }
 
@@ -4066,7 +4411,8 @@ type SchedulerDto struct {
 
 // CodeDto DTO.
 type CodeDto struct {
-	IsEnabled bool `json:"isEnabled,omitempty"`
+	IsEnabled                bool   `json:"isEnabled,omitempty"`
+	DefaultIntegrationViewId string `json:"defaultIntegrationViewId,omitempty"`
 }
 
 // FilesTriggerDto DTO.
@@ -4628,11 +4974,6 @@ type SchemaTriggerProjectionList struct {
 	TriggerProjectionList
 	Type SchemaTriggerType `json:"type,omitempty"`
 	Env  string            `json:"env,omitempty"`
-}
-
-// JsonSchemaFieldDto DTO.
-type JsonSchemaFieldDto struct {
-	FieldName string `json:"fieldName,omitempty"`
 }
 
 // DataSchemaDto DTO.
@@ -5290,6 +5631,38 @@ type MarketplaceFunctionProjection struct {
 type CodeIntegrationListProjection struct {
 	IntegrationListProjection
 	Provider CodeProvider `json:"provider,omitempty"`
+}
+
+// CodeFunctionDescriptorDto DTO.
+type CodeFunctionDescriptorDto struct {
+	FunctionId   string            `json:"functionId,omitempty"`
+	DisplayName  string            `json:"displayName,omitempty"`
+	Runtime      string            `json:"runtime,omitempty"`
+	Region       string            `json:"region,omitempty"`
+	Description  string            `json:"description,omitempty"`
+	LastModified string            `json:"lastModified,omitempty"`
+	Tags         map[string]string `json:"tags,omitempty"`
+	Arn          string            `json:"arn,omitempty"`
+}
+
+// CodeFunctionQualifierDto DTO.
+type CodeFunctionQualifierDto struct {
+	Name          string                       `json:"name,omitempty"`
+	Kind          CodeFunctionQualifierKindDto `json:"kind,omitempty"`
+	Description   string                       `json:"description,omitempty"`
+	TargetVersion string                       `json:"targetVersion,omitempty"`
+}
+
+// CodeFunctionRunDto DTO.
+type CodeFunctionRunDto struct {
+	FiredAt    string  `json:"firedAt,omitempty"`
+	Event      string  `json:"event,omitempty"`
+	Source     string  `json:"source,omitempty"`
+	Succeeded  bool    `json:"succeeded,omitempty"`
+	StatusCode float64 `json:"statusCode,omitempty"`
+	DurationMs float64 `json:"durationMs,omitempty"`
+	Error      string  `json:"error,omitempty"`
+	RequestId  string  `json:"requestId,omitempty"`
 }
 
 // PushTemplateListProjection DTO.
@@ -6123,151 +6496,6 @@ type IHasResponsibleUserId struct {
 type ICursorArgs struct {
 }
 
-// StringFieldDto DTO.
-type StringFieldDto struct {
-	JsonSchemaFieldDto
-	Format           string            `json:"format,omitempty"`
-	Pattern          string            `json:"pattern,omitempty"`
-	MinLength        float64           `json:"minLength,omitempty"`
-	MaxLength        float64           `json:"maxLength,omitempty"`
-	TranslateOptions map[string]string `json:"translateOptions,omitempty"`
-	Default          string            `json:"default,omitempty"`
-	Unique           bool              `json:"unique,omitempty"`
-}
-
-// DecimalFieldDto DTO.
-type DecimalFieldDto struct {
-	JsonSchemaFieldDto
-	Minimum    float64 `json:"minimum,omitempty"`
-	Maximum    float64 `json:"maximum,omitempty"`
-	MultipleOf float64 `json:"multipleOf,omitempty"`
-	Default    float64 `json:"default,omitempty"`
-	Unique     bool    `json:"unique,omitempty"`
-}
-
-// CurrencyDefaultDto DTO.
-type CurrencyDefaultDto struct {
-	Value    float64 `json:"value,omitempty"`
-	Currency string  `json:"currency,omitempty"`
-}
-
-// CurrencyFieldDto DTO.
-type CurrencyFieldDto struct {
-	JsonSchemaFieldDto
-	AllowedCurrencies []string            `json:"allowedCurrencies,omitempty"`
-	MultipleOf        float64             `json:"multipleOf,omitempty"`
-	Minimum           float64             `json:"minimum,omitempty"`
-	Maximum           float64             `json:"maximum,omitempty"`
-	Default           *CurrencyDefaultDto `json:"default,omitempty"`
-}
-
-// BooleanFieldDto DTO.
-type BooleanFieldDto struct {
-	JsonSchemaFieldDto
-	Default bool `json:"default,omitempty"`
-}
-
-// DateFieldDto DTO.
-type DateFieldDto struct {
-	JsonSchemaFieldDto
-	Minimum float64 `json:"minimum,omitempty"`
-	Maximum float64 `json:"maximum,omitempty"`
-	Default float64 `json:"default,omitempty"`
-}
-
-// IntegerFieldDto DTO.
-type IntegerFieldDto struct {
-	JsonSchemaFieldDto
-	Minimum float64 `json:"minimum,omitempty"`
-	Maximum float64 `json:"maximum,omitempty"`
-	Default float64 `json:"default,omitempty"`
-	Unique  bool    `json:"unique,omitempty"`
-}
-
-// GeolocationFieldDto DTO.
-type GeolocationFieldDto struct {
-	JsonSchemaFieldDto
-	AllowedTypes []string `json:"allowedTypes,omitempty"`
-}
-
-// TagsFieldDto DTO.
-type TagsFieldDto struct {
-	JsonSchemaFieldDto
-	MinItems float64  `json:"minItems,omitempty"`
-	MaxItems float64  `json:"maxItems,omitempty"`
-	Default  []string `json:"default,omitempty"`
-}
-
-// FileFieldDto DTO.
-type FileFieldDto struct {
-	JsonSchemaFieldDto
-	Storages        []string `json:"storages,omitempty"`
-	MinItems        float64  `json:"minItems,omitempty"`
-	MaxItems        float64  `json:"maxItems,omitempty"`
-	AllowedFileType string   `json:"allowedFileType,omitempty"`
-	MaxSizeMb       float64  `json:"maxSizeMb,omitempty"`
-}
-
-// TaxonomySelectionFieldDto DTO.
-type TaxonomySelectionFieldDto struct {
-	JsonSchemaFieldDto
-	TaxonomyId   string `json:"taxonomyId,omitempty"`
-	Multiple     bool   `json:"multiple,omitempty"`
-	DisplayField string `json:"displayField,omitempty"`
-}
-
-// CollectionSelectionFieldDto DTO.
-type CollectionSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	CollectionId string `json:"collectionId,omitempty"`
-	DisplayField string `json:"displayField,omitempty"`
-	Multiple     bool   `json:"multiple,omitempty"`
-}
-
-// UserSelectionFieldDto DTO.
-type UserSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	Multiple     bool   `json:"multiple,omitempty"`
-	DisplayField string `json:"displayField,omitempty"`
-}
-
-// RoleSelectionFieldDto DTO.
-type RoleSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	Multiple     bool   `json:"multiple,omitempty"`
-	DisplayField string `json:"displayField,omitempty"`
-}
-
-// EnumSelectionFieldDto DTO.
-type EnumSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	Values   []string `json:"values,omitempty"`
-	Multiple bool     `json:"multiple,omitempty"`
-	Default  []string `json:"default,omitempty"`
-}
-
-// ObjectFieldDto DTO.
-type ObjectFieldDto struct {
-	JsonSchemaFieldDto
-	Properties []*JsonSchemaFieldDto `json:"properties,omitempty"`
-	Required   []string              `json:"required,omitempty"`
-}
-
-// ArrayFieldDto DTO.
-type ArrayFieldDto struct {
-	JsonSchemaFieldDto
-	Items       *JsonSchemaFieldDto `json:"items,omitempty"`
-	MinItems    float64             `json:"minItems,omitempty"`
-	MaxItems    float64             `json:"maxItems,omitempty"`
-	UniqueItems bool                `json:"uniqueItems,omitempty"`
-}
-
-// JsonFieldDto DTO.
-type JsonFieldDto struct {
-	JsonSchemaFieldDto
-	MaxBytes float64 `json:"maxBytes,omitempty"`
-}
-
 // EchoResponse DTO.
 type EchoResponse struct {
 	ContainerName                string                  `json:"containerName,omitempty"`
@@ -6339,6 +6567,8 @@ type GetAccountStatusResponse struct {
 // CreateStripeCheckoutSessionResponse DTO.
 type CreateStripeCheckoutSessionResponse struct {
 	IdResponse
+	TrialIncluded bool   `json:"trialIncluded,omitempty"`
+	NoTrialReason string `json:"noTrialReason,omitempty"`
 }
 
 // GetStripeBillingPortalUrlResponse DTO.
@@ -7294,13 +7524,48 @@ type GetCodeIntegrationResponse struct {
 // GetCodeIntegrationsResponse DTO.
 type GetCodeIntegrationsResponse struct {
 	ResponseBase
-	List PaginatedResponse[*CodeIntegrationListProjection] `json:"list,omitempty"`
+	DefaultIntegrationId string                                            `json:"defaultIntegrationId,omitempty"`
+	List                 PaginatedResponse[*CodeIntegrationListProjection] `json:"list,omitempty"`
 }
 
 // TestCodeIntegrationResponse DTO.
 type TestCodeIntegrationResponse struct {
 	ResponseBase
 	Items []*IntegrationTestResultItemDto `json:"items,omitempty"`
+}
+
+// GetCodeFunctionsResponse DTO.
+type GetCodeFunctionsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*CodeFunctionDescriptorDto] `json:"list,omitempty"`
+}
+
+// GetCodeFunctionEventSampleResponse DTO.
+type GetCodeFunctionEventSampleResponse struct {
+	ResponseBase
+	Sample *CodeFunctionEventDto `json:"sample,omitempty"`
+}
+
+// GetCodeFunctionQualifiersResponse DTO.
+type GetCodeFunctionQualifiersResponse struct {
+	ResponseBase
+	Qualifiers []*CodeFunctionQualifierDto `json:"qualifiers,omitempty"`
+}
+
+// GetCodeFunctionRunsResponse DTO.
+type GetCodeFunctionRunsResponse struct {
+	ResponseBase
+	Runs []*CodeFunctionRunDto `json:"runs,omitempty"`
+}
+
+// InvokeCodeFunctionResponse DTO.
+type InvokeCodeFunctionResponse struct {
+	ResponseBase
+	StatusCode float64        `json:"statusCode,omitempty"`
+	Output     map[string]any `json:"output,omitempty"`
+	DurationMs float64        `json:"durationMs,omitempty"`
+	RequestId  string         `json:"requestId,omitempty"`
+	Logs       string         `json:"logs,omitempty"`
 }
 
 // GetPushTemplateResponse DTO.
@@ -7663,6 +7928,7 @@ type AuthDeviceTokenResponse struct {
 	Error            string  `json:"error,omitempty"`
 	ErrorDescription string  `json:"errorDescription,omitempty"`
 	ErrorCode        string  `json:"errorCode,omitempty"`
+	Reason           string  `json:"reason,omitempty"`
 	BearerToken      string  `json:"bearerToken,omitempty"`
 	RefreshToken     string  `json:"refreshToken,omitempty"`
 	ExpiresIn        float64 `json:"expiresIn,omitempty"`
@@ -7693,11 +7959,13 @@ type AuthDeviceConsentDecisionResponse struct {
 // OAuthConsentResponse DTO.
 type OAuthConsentResponse struct {
 	ResponseBase
-	ClientName    string               `json:"clientName,omitempty"`
-	RedirectHost  string               `json:"redirectHost,omitempty"`
-	ConsentTicket string               `json:"consentTicket,omitempty"`
-	AccountRoles  []*AiRoleDto         `json:"accountRoles,omitempty"`
-	Projects      []*AiProjectRolesDto `json:"projects,omitempty"`
+	ClientName         string               `json:"clientName,omitempty"`
+	RedirectHost       string               `json:"redirectHost,omitempty"`
+	ClientHost         string               `json:"clientHost,omitempty"`
+	RedirectIsLoopback bool                 `json:"redirectIsLoopback,omitempty"`
+	ConsentTicket      string               `json:"consentTicket,omitempty"`
+	AccountRoles       []*AiRoleDto         `json:"accountRoles,omitempty"`
+	Projects           []*AiProjectRolesDto `json:"projects,omitempty"`
 }
 
 // OAuthConsentDecisionResponse DTO.
@@ -8389,6 +8657,38 @@ type InternalsTypeGen struct {
 	Typegen_243_ActionPendingEntryWireDto                        *ActionPendingEntryWireDto                         `json:"typegen_243_ActionPendingEntryWireDto,omitempty"`
 	Typegen_244_NoticeEntryWireDto                               *NoticeEntryWireDto                                `json:"typegen_244_NoticeEntryWireDto,omitempty"`
 	Typegen_245_ConversationSnapshotEntryWireDto                 *ConversationSnapshotEntryWireDto                  `json:"typegen_245_ConversationSnapshotEntryWireDto,omitempty"`
+	Typegen_252_StringFieldDto                                   *StringFieldDto                                    `json:"typegen_252_StringFieldDto,omitempty"`
+	Typegen_253_DecimalFieldDto                                  *DecimalFieldDto                                   `json:"typegen_253_DecimalFieldDto,omitempty"`
+	Typegen_254_CurrencyFieldDto                                 *CurrencyFieldDto                                  `json:"typegen_254_CurrencyFieldDto,omitempty"`
+	Typegen_255_BooleanFieldDto                                  *BooleanFieldDto                                   `json:"typegen_255_BooleanFieldDto,omitempty"`
+	Typegen_256_DateFieldDto                                     *DateFieldDto                                      `json:"typegen_256_DateFieldDto,omitempty"`
+	Typegen_257_IntegerFieldDto                                  *IntegerFieldDto                                   `json:"typegen_257_IntegerFieldDto,omitempty"`
+	Typegen_258_GeolocationFieldDto                              *GeolocationFieldDto                               `json:"typegen_258_GeolocationFieldDto,omitempty"`
+	Typegen_259_TagsFieldDto                                     *TagsFieldDto                                      `json:"typegen_259_TagsFieldDto,omitempty"`
+	Typegen_260_FileFieldDto                                     *FileFieldDto                                      `json:"typegen_260_FileFieldDto,omitempty"`
+	Typegen_261_TaxonomySelectionFieldDto                        *TaxonomySelectionFieldDto                         `json:"typegen_261_TaxonomySelectionFieldDto,omitempty"`
+	Typegen_262_CollectionSelectionFieldDto                      *CollectionSelectionFieldDto                       `json:"typegen_262_CollectionSelectionFieldDto,omitempty"`
+	Typegen_263_UserSelectionFieldDto                            *UserSelectionFieldDto                             `json:"typegen_263_UserSelectionFieldDto,omitempty"`
+	Typegen_264_RoleSelectionFieldDto                            *RoleSelectionFieldDto                             `json:"typegen_264_RoleSelectionFieldDto,omitempty"`
+	Typegen_265_EnumSelectionFieldDto                            *EnumSelectionFieldDto                             `json:"typegen_265_EnumSelectionFieldDto,omitempty"`
+	Typegen_266_ObjectFieldDto                                   *ObjectFieldDto                                    `json:"typegen_266_ObjectFieldDto,omitempty"`
+	Typegen_267_ArrayFieldDto                                    *ArrayFieldDto                                     `json:"typegen_267_ArrayFieldDto,omitempty"`
+	Typegen_268_JsonFieldDto                                     *JsonFieldDto                                      `json:"typegen_268_JsonFieldDto,omitempty"`
+	Typegen_269_FunctionRefDto                                   *FunctionRefDto                                    `json:"typegen_269_FunctionRefDto,omitempty"`
+	Typegen_270_CodeFunctionEventDto                             *CodeFunctionEventDto                              `json:"typegen_270_CodeFunctionEventDto,omitempty"`
+	Typegen_271_CodeFunctionContextDto                           *CodeFunctionContextDto                            `json:"typegen_271_CodeFunctionContextDto,omitempty"`
+	Typegen_272_CodeFunctionCallerDto                            *CodeFunctionCallerDto                             `json:"typegen_272_CodeFunctionCallerDto,omitempty"`
+	Typegen_273_CodeFunctionRunAsDto                             *CodeFunctionRunAsDto                              `json:"typegen_273_CodeFunctionRunAsDto,omitempty"`
+	Typegen_274_CodeFunctionDataDto                              *CodeFunctionDataDto                               `json:"typegen_274_CodeFunctionDataDto,omitempty"`
+	Typegen_275_DatabaseRecordChangeDto                          *DatabaseRecordChangeDto                           `json:"typegen_275_DatabaseRecordChangeDto,omitempty"`
+	Typegen_276_UserChangeDto                                    *UserChangeDto                                     `json:"typegen_276_UserChangeDto,omitempty"`
+	Typegen_277_FileChangeDto                                    *FileChangeDto                                     `json:"typegen_277_FileChangeDto,omitempty"`
+	Typegen_278_PaymentFactDto                                   *PaymentFactDto                                    `json:"typegen_278_PaymentFactDto,omitempty"`
+	Typegen_279_AiUsageEventDto                                  *AiUsageEventDto                                   `json:"typegen_279_AiUsageEventDto,omitempty"`
+	Typegen_280_ScheduledTaskInfoDto                             *ScheduledTaskInfoDto                              `json:"typegen_280_ScheduledTaskInfoDto,omitempty"`
+	Typegen_281_FakeCodeIntegrationDto                           *FakeCodeIntegrationDto                            `json:"typegen_281_FakeCodeIntegrationDto,omitempty"`
+	Typegen_282_FakeCodeIntegrationRequest                       *FakeCodeIntegrationRequest                        `json:"typegen_282_FakeCodeIntegrationRequest,omitempty"`
+	Typegen_283_CodeFunctionSchedulerTaskRequest                 *CodeFunctionSchedulerTaskRequest                  `json:"typegen_283_CodeFunctionSchedulerTaskRequest,omitempty"`
 }
 
 // Echo DTO.
@@ -10596,6 +10896,47 @@ type SetMarketplaceIntegrationTokenMappingsRequest struct {
 type GetMarketplaceFunctionCatalog struct {
 	CodeMashRequestBase
 	IntegrationViewId string `json:"integrationViewId,omitempty"`
+}
+
+// GetCodeFunctions DTO.
+type GetCodeFunctions struct {
+	CodeMashListPaginationRequestBase
+	IntegrationId string `json:"integrationId,omitempty"`
+	Prefix        string `json:"prefix,omitempty"`
+	Tag           string `json:"tag,omitempty"`
+}
+
+// GetCodeFunctionEventSample DTO.
+type GetCodeFunctionEventSample struct {
+	CodeMashRequestBase
+	Source   CodeFunctionSource `json:"source,omitempty"`
+	Event    string             `json:"event,omitempty"`
+	SchemaId string             `json:"schemaId,omitempty"`
+}
+
+// GetCodeFunctionQualifiers DTO.
+type GetCodeFunctionQualifiers struct {
+	CodeMashRequestBase
+	IntegrationId string `json:"integrationId,omitempty"`
+	FunctionId    string `json:"functionId,omitempty"`
+}
+
+// GetCodeFunctionRuns DTO.
+type GetCodeFunctionRuns struct {
+	CodeMashRequestBase
+	TriggerId string  `json:"triggerId,omitempty"`
+	TaskId    string  `json:"taskId,omitempty"`
+	Limit     float64 `json:"limit,omitempty"`
+}
+
+// InvokeCodeFunction DTO.
+type InvokeCodeFunction struct {
+	CodeMashRequestBase
+	FunctionRef    *FunctionRefDto           `json:"functionRef,omitempty"`
+	Payload        map[string]map[string]any `json:"payload,omitempty"`
+	InvocationType CodeInvocationType        `json:"invocationType,omitempty"`
+	RunAsUserId    string                    `json:"runAsUserId,omitempty"`
+	Config         string                    `json:"config,omitempty"`
 }
 
 // DisablePush DTO.
