@@ -486,6 +486,54 @@ func (m *CodeModule) GetMarketplaceIntegrationTools(ctx context.Context, integra
 	}, out)
 }
 
+// GetMarketplaceIntegrationAccess performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/access (scope: project).
+// It returns the access matrix of a connection: which role holds which package, the packages, tools and functions (dtos.GetMarketplaceIntegrationAccessResponse).
+func (m *CodeModule) GetMarketplaceIntegrationAccess(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/access",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetMarketplaceIntegrationRoleAccess performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/access/roles (scope: project).
+// Body: roleId, package (None, Viewer, FunctionsOnly, ReadOnly, FullAccess) and manage; it returns the role id (dtos.IdResponse).
+func (m *CodeModule) SetMarketplaceIntegrationRoleAccess(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/access/roles",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SaveMarketplaceIntegrationCustomAccess performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/access/roles/custom (scope: project).
+// Body: roleId, basePackage, tools, functions, manage, newPolicyForThisRoleOnly (dtos.SaveMarketplaceIntegrationCustomAccessResponse).
+func (m *CodeModule) SaveMarketplaceIntegrationCustomAccess(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/access/roles/custom",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ReplaceMarketplaceIntegrationSecrets performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/secrets (scope: project).
 func (m *CodeModule) ReplaceMarketplaceIntegrationSecrets(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{

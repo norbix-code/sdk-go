@@ -10,8 +10,9 @@ import (
 	"testing"
 )
 
-// The 24 marketplace routes of the Code module (gateway campaign audit/marketplace,
-// docs/architecture/Code.Marketplace.md §14; route 24 = MCP tool catalog, item mcp-step1) and the module method that calls each
+// The 27 marketplace routes of the Code module (gateway campaign audit/marketplace,
+// docs/architecture/Code.Marketplace.md §14; route 24 = MCP tool catalog, item mcp-step1;
+// routes 25–27 = connection access matrix, role package, custom policy, item access) and the module method that calls each
 // one. Every case asserts the verb, the fully-resolved path (version and ids
 // substituted) and where the parameters land: the query string for GET / DELETE,
 // the JSON body for POST / PUT. Nothing leaves the process.
@@ -94,6 +95,18 @@ func marketplaceCases() []codeCase {
 			func(ctx context.Context, m *CodeModule) error {
 				return m.GetMarketplaceIntegrationTools(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{}, nil)
 			}},
+		{"GetMarketplaceIntegrationAccess", http.MethodGet, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/access", nil, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetMarketplaceIntegrationAccess(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{}, nil)
+			}},
+		{"SetMarketplaceIntegrationRoleAccess", http.MethodPut, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/access/roles", nil, map[string]any{"roleId": "acc_6Qp1dW2kRm8NsT4vYc0Hb_nr_3kLm9QwErTyU", "package": "ReadOnly", "manage": false},
+			func(ctx context.Context, m *CodeModule) error {
+				return m.SetMarketplaceIntegrationRoleAccess(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{"roleId": "acc_6Qp1dW2kRm8NsT4vYc0Hb_nr_3kLm9QwErTyU", "package": "ReadOnly", "manage": false}, nil)
+			}},
+		{"SaveMarketplaceIntegrationCustomAccess", http.MethodPost, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/access/roles/custom", nil, map[string]any{"roleId": "acc_6Qp1dW2kRm8NsT4vYc0Hb_nr_3kLm9QwErTyU", "basePackage": "ReadOnly", "tools": []any{"create_issue"}, "functions": []any{"func_4hT2b9QkLm3XcT1yRfGh7a"}, "manage": false, "newPolicyForThisRoleOnly": true},
+			func(ctx context.Context, m *CodeModule) error {
+				return m.SaveMarketplaceIntegrationCustomAccess(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{"roleId": "acc_6Qp1dW2kRm8NsT4vYc0Hb_nr_3kLm9QwErTyU", "basePackage": "ReadOnly", "tools": []any{"create_issue"}, "functions": []any{"func_4hT2b9QkLm3XcT1yRfGh7a"}, "manage": false, "newPolicyForThisRoleOnly": true}, nil)
+			}},
 		{"ReplaceMarketplaceIntegrationSecrets", http.MethodPut, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/secrets", nil, map[string]any{"secrets": map[string]any{"botToken": "xoxb-new"}},
 			func(ctx context.Context, m *CodeModule) error {
 				return m.ReplaceMarketplaceIntegrationSecrets(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{"secrets": map[string]any{"botToken": "xoxb-new"}}, nil)
@@ -173,7 +186,7 @@ func TestMarketplaceEndpointsHitTheExpectedRoute(t *testing.T) {
 }
 
 func TestMarketplaceCaseCount(t *testing.T) {
-	const want = 24
+	const want = 27
 	if got := len(marketplaceCases()); got != want {
 		t.Errorf("code/marketplace case count: got %d want %d", got, want)
 	}
