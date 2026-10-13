@@ -3173,6 +3173,10 @@ type MarketplaceIntegrationDto struct {
 	Description         string                                `json:"description,omitempty"`
 	Config              map[string]string                     `json:"config,omitempty"`
 	LastValidationSteps []*MarketplaceValidationStepResultDto `json:"lastValidationSteps,omitempty"`
+	SignedIn            bool                                  `json:"signedIn,omitempty"`
+	SignedInBy          string                                `json:"signedInBy,omitempty"`
+	SignedInAt          string                                `json:"signedInAt,omitempty"`
+	TokenExpiresAt      string                                `json:"tokenExpiresAt,omitempty"`
 }
 
 // MarketplaceFunctionParameterDto DTO.
@@ -3277,6 +3281,8 @@ type MarketplaceListingDto struct {
 	DocumentationUrl string                              `json:"documentationUrl,omitempty"`
 	VideoUrl         string                              `json:"videoUrl,omitempty"`
 	Availability     MarketplaceAvailability             `json:"availability,omitempty"`
+	ConnectSteps     []string                            `json:"connectSteps,omitempty"`
+	OAuthRedirectUrl string                              `json:"oAuthRedirectUrl,omitempty"`
 	IsOfficial       bool                                `json:"isOfficial,omitempty"`
 	Tags             []string                            `json:"tags,omitempty"`
 	SpecVersion      float64                             `json:"specVersion,omitempty"`
@@ -5732,6 +5738,8 @@ type MarketplaceIntegrationListProjection struct {
 	LastIntegrationTestErrors         []string             `json:"lastIntegrationTestErrors,omitempty"`
 	HumanDeliveryConfirmedAtUtc       string               `json:"humanDeliveryConfirmedAtUtc,omitempty"`
 	RequiresHumanDeliveryConfirmation bool                 `json:"requiresHumanDeliveryConfirmation,omitempty"`
+	SignedIn                          bool                 `json:"signedIn,omitempty"`
+	SignedInAt                        string               `json:"signedInAt,omitempty"`
 }
 
 // MarketplaceMcpToolDto DTO.
@@ -7651,6 +7659,14 @@ type GetMarketplaceIntegrationToolsResponse struct {
 	ListedAt    string                   `json:"listedAt,omitempty"`
 	CatalogHash string                   `json:"catalogHash,omitempty"`
 	Truncated   bool                     `json:"truncated,omitempty"`
+}
+
+// StartMarketplaceIntegrationSignInResponse DTO.
+type StartMarketplaceIntegrationSignInResponse struct {
+	ResponseBase
+	AuthorizeUrl string `json:"authorizeUrl,omitempty"`
+	RedirectUrl  string `json:"redirectUrl,omitempty"`
+	ExpiresAt    string `json:"expiresAt,omitempty"`
 }
 
 // EmptyMarketplaceSecretsResponse DTO.
@@ -11094,6 +11110,12 @@ type SaveMarketplaceIntegrationCustomAccess struct {
 
 // GetMarketplaceIntegrationTools DTO.
 type GetMarketplaceIntegrationTools struct {
+	CodeMashRequestBase
+	IntegrationViewId string `json:"integrationViewId,omitempty"`
+}
+
+// StartMarketplaceIntegrationSignIn DTO.
+type StartMarketplaceIntegrationSignIn struct {
 	CodeMashRequestBase
 	IntegrationViewId string `json:"integrationViewId,omitempty"`
 }
