@@ -703,6 +703,24 @@ for _, run := range runs.Runs {
 }
 ```
 
+## Marketplace MCP connections — tool catalog
+
+An MCP connection stores its server's tool catalog when it is validated.
+`client.Hub.Code.GetMarketplaceIntegrationTools` reads it
+(`GET /{version}/code/marketplace/integrations/{IntegrationViewId}/tools`)
+into `dtos.GetMarketplaceIntegrationToolsResponse`: `Tools`
+(`Name`, `Title`, `Description`, `InputSchema` as JSON text, `ReadOnlyHint`,
+`DestructiveHint`), `ListedAt`, `CatalogHash`, `Truncated`. A connection that
+was never validated answers `CM-ERRORS-MARKETPLACE-020`.
+
+```go
+var catalog dtos.GetMarketplaceIntegrationToolsResponse
+err := client.Hub.Code.GetMarketplaceIntegrationTools(ctx, "int_…", map[string]any{}, &catalog)
+```
+
+Note: Go's generated `ReadOnlyHint` / `DestructiveHint` are plain `bool`, so
+"not set by the server" and `false` read the same.
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:

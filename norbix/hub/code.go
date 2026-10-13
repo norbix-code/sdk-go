@@ -470,6 +470,22 @@ func (m *CodeModule) TestMarketplaceIntegration(ctx context.Context, integration
 	}, out)
 }
 
+// GetMarketplaceIntegrationTools performs GET /{version}/code/marketplace/integrations/{IntegrationViewId}/tools (scope: project).
+// It returns the stored tool catalog of an MCP connection (dtos.GetMarketplaceIntegrationToolsResponse).
+func (m *CodeModule) GetMarketplaceIntegrationTools(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/tools",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ReplaceMarketplaceIntegrationSecrets performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/secrets (scope: project).
 func (m *CodeModule) ReplaceMarketplaceIntegrationSecrets(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
