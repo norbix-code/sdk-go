@@ -5678,6 +5678,16 @@ type MarketplaceIntegrationListProjection struct {
 	RequiresHumanDeliveryConfirmation bool                 `json:"requiresHumanDeliveryConfirmation,omitempty"`
 }
 
+// MarketplaceMcpToolDto DTO.
+type MarketplaceMcpToolDto struct {
+	Name            string `json:"name,omitempty"`
+	Title           string `json:"title,omitempty"`
+	Description     string `json:"description,omitempty"`
+	InputSchema     string `json:"inputSchema,omitempty"`
+	ReadOnlyHint    bool   `json:"readOnlyHint,omitempty"`
+	DestructiveHint bool   `json:"destructiveHint,omitempty"`
+}
+
 // MarketplaceFunctionProjection DTO.
 type MarketplaceFunctionProjection struct {
 	ViewId            string  `json:"viewId,omitempty"`
@@ -7552,6 +7562,15 @@ type GetMarketplaceIntegrationResponse struct {
 type GetMarketplaceIntegrationsResponse struct {
 	ResponseBase
 	List PaginatedResponse[*MarketplaceIntegrationListProjection] `json:"list,omitempty"`
+}
+
+// GetMarketplaceIntegrationToolsResponse DTO.
+type GetMarketplaceIntegrationToolsResponse struct {
+	ResponseBase
+	Tools       []*MarketplaceMcpToolDto `json:"tools,omitempty"`
+	ListedAt    string                   `json:"listedAt,omitempty"`
+	CatalogHash string                   `json:"catalogHash,omitempty"`
+	Truncated   bool                     `json:"truncated,omitempty"`
 }
 
 // EmptyMarketplaceSecretsResponse DTO.
@@ -10963,6 +10982,12 @@ type GetSmsCampaignMessagesRequest struct {
 	CampaignId            string `json:"campaignId,omitempty"`
 	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetMarketplaceIntegrationTools DTO.
+type GetMarketplaceIntegrationTools struct {
+	CodeMashRequestBase
+	IntegrationViewId string `json:"integrationViewId,omitempty"`
 }
 
 // ReplaceMarketplaceIntegrationSecretsRequest DTO.
