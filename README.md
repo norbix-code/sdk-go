@@ -674,6 +674,35 @@ data) and when the function was not called. There is no default Code
 integration: every call names the integration it means (`integrationId`),
 as the examples above do.
 
+## Marketplace function runs
+
+Each call of a marketplace function is one run row: an invoke (user, API
+key, AI), a trigger run or a scheduler fire.
+`client.Hub.Code.GetMarketplaceFunctionRuns` lists them — pass exactly one
+of `functionId` (every source, newest first, up to 50), `triggerId` or
+`taskId`. A row (`dtos.MarketplaceFunctionRunDto`) carries `Status` (`ok` /
+`failed` / `skipped`, empty on rows written before the field existed),
+`DurationMs`, `Source`, `Event`, `CorrelationId` and `HasDetails`.
+
+The input, steps and response of a run are written to the project log under
+the row's `CorrelationId`, only while the environment's Norbix Logging is on
+— then `HasDetails` is true. Read them with the logs route
+(`GET /{version}/logs/audit`); its query field is `targetCorrelationId`:
+
+```go
+var runs dtos.GetMarketplaceFunctionRunsResponse
+err := client.Hub.Code.GetMarketplaceFunctionRuns(ctx, map[string]any{"functionId": "func_…", "limit": 10}, &runs)
+
+for _, run := range runs.Runs {
+	if !run.HasDetails || run.CorrelationId == "" {
+		continue // logs were off for this run
+	}
+	var details dtos.GetLogsByCorrelationIdResponse
+	err = client.Hub.Logs.GetLogsByCorrelationId(ctx, map[string]any{"targetCorrelationId": run.CorrelationId}, &details)
+	// details.Items: marketplace:run:started → marketplace:run:step … → completed | failed | skipped
+}
+```
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:
