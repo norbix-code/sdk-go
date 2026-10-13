@@ -10,8 +10,8 @@ import (
 	"testing"
 )
 
-// The 23 marketplace routes of the Code module (gateway campaign audit/marketplace,
-// docs/architecture/Code.Marketplace.md §14) and the module method that calls each
+// The 24 marketplace routes of the Code module (gateway campaign audit/marketplace,
+// docs/architecture/Code.Marketplace.md §14; route 24 = MCP tool catalog, item mcp-step1) and the module method that calls each
 // one. Every case asserts the verb, the fully-resolved path (version and ids
 // substituted) and where the parameters land: the query string for GET / DELETE,
 // the JSON body for POST / PUT. Nothing leaves the process.
@@ -89,6 +89,10 @@ func marketplaceCases() []codeCase {
 		{"TestMarketplaceIntegration", http.MethodPost, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/test", nil, map[string]any{},
 			func(ctx context.Context, m *CodeModule) error {
 				return m.TestMarketplaceIntegration(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{}, nil)
+			}},
+		{"GetMarketplaceIntegrationTools", http.MethodGet, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/tools", nil, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetMarketplaceIntegrationTools(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{}, nil)
 			}},
 		{"ReplaceMarketplaceIntegrationSecrets", http.MethodPut, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/secrets", nil, map[string]any{"secrets": map[string]any{"botToken": "xoxb-new"}},
 			func(ctx context.Context, m *CodeModule) error {
@@ -169,7 +173,7 @@ func TestMarketplaceEndpointsHitTheExpectedRoute(t *testing.T) {
 }
 
 func TestMarketplaceCaseCount(t *testing.T) {
-	const want = 23
+	const want = 24
 	if got := len(marketplaceCases()); got != want {
 		t.Errorf("code/marketplace case count: got %d want %d", got, want)
 	}
