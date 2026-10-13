@@ -639,6 +639,18 @@ const (
 	EmailValidationProviderMailgunValidate EmailValidationProvider = "MailgunValidate"
 )
 
+// MarketplaceAccessLevel enum.
+type MarketplaceAccessLevel string
+
+const (
+	MarketplaceAccessLevelNone          MarketplaceAccessLevel = "None"
+	MarketplaceAccessLevelViewer        MarketplaceAccessLevel = "Viewer"
+	MarketplaceAccessLevelFunctionsOnly MarketplaceAccessLevel = "FunctionsOnly"
+	MarketplaceAccessLevelReadOnly      MarketplaceAccessLevel = "ReadOnly"
+	MarketplaceAccessLevelFullAccess    MarketplaceAccessLevel = "FullAccess"
+	MarketplaceAccessLevelManage        MarketplaceAccessLevel = "Manage"
+)
+
 // DeviceType enum.
 type DeviceType string
 
@@ -3148,6 +3160,7 @@ type MarketplaceValidationStepResultDto struct {
 	Succeeded            bool   `json:"succeeded,omitempty"`
 	Skipped              bool   `json:"skipped,omitempty"`
 	Message              string `json:"message,omitempty"`
+	ErrorCode            string `json:"errorCode,omitempty"`
 }
 
 // MarketplaceIntegrationDto DTO.
@@ -5662,6 +5675,49 @@ type MarketplaceListingProjection struct {
 	VideoUrl      string                  `json:"videoUrl,omitempty"`
 }
 
+// MarketplaceAccessCustomPolicyDto DTO.
+type MarketplaceAccessCustomPolicyDto struct {
+	PolicyId    string  `json:"policyId,omitempty"`
+	Name        string  `json:"name,omitempty"`
+	UsedByRoles float64 `json:"usedByRoles,omitempty"`
+}
+
+// MarketplaceAccessRoleDto DTO.
+type MarketplaceAccessRoleDto struct {
+	RoleId            string                              `json:"roleId,omitempty"`
+	Name              string                              `json:"name,omitempty"`
+	Scope             string                              `json:"scope,omitempty"`
+	IsSystem          bool                                `json:"isSystem,omitempty"`
+	Fixed             bool                                `json:"fixed,omitempty"`
+	Package           MarketplaceAccessLevel              `json:"package,omitempty"`
+	IsCustom          bool                                `json:"isCustom,omitempty"`
+	Manage            bool                                `json:"manage,omitempty"`
+	Custom            []*MarketplaceAccessCustomPolicyDto `json:"custom,omitempty"`
+	DefaultNotApplied string                              `json:"defaultNotApplied,omitempty"`
+}
+
+// MarketplaceAccessPackageDto DTO.
+type MarketplaceAccessPackageDto struct {
+	Kind     MarketplaceAccessLevel `json:"kind,omitempty"`
+	PolicyId string                 `json:"policyId,omitempty"`
+	Name     string                 `json:"name,omitempty"`
+	Exists   bool                   `json:"exists,omitempty"`
+}
+
+// MarketplaceAccessToolDto DTO.
+type MarketplaceAccessToolDto struct {
+	Name      string `json:"name,omitempty"`
+	ReadOnly  bool   `json:"readOnly,omitempty"`
+	Grantable bool   `json:"grantable,omitempty"`
+}
+
+// MarketplaceAccessFunctionDto DTO.
+type MarketplaceAccessFunctionDto struct {
+	FunctionId  string `json:"functionId,omitempty"`
+	Name        string `json:"name,omitempty"`
+	FunctionKey string `json:"functionKey,omitempty"`
+}
+
 // MarketplaceIntegrationListProjection DTO.
 type MarketplaceIntegrationListProjection struct {
 	ViewId                            string               `json:"viewId,omitempty"`
@@ -5686,6 +5742,13 @@ type MarketplaceMcpToolDto struct {
 	InputSchema     string `json:"inputSchema,omitempty"`
 	ReadOnlyHint    bool   `json:"readOnlyHint,omitempty"`
 	DestructiveHint bool   `json:"destructiveHint,omitempty"`
+}
+
+// MarketplaceAccessChangesDto DTO.
+type MarketplaceAccessChangesDto struct {
+	ReadOnlyAdded   []string `json:"readOnlyAdded,omitempty"`
+	ReadOnlyRemoved []string `json:"readOnlyRemoved,omitempty"`
+	NotGrantable    []string `json:"notGrantable,omitempty"`
 }
 
 // MarketplaceFunctionProjection DTO.
@@ -7552,6 +7615,23 @@ type GetMarketplaceListingsResponse struct {
 	List PaginatedResponse[*MarketplaceListingProjection] `json:"list,omitempty"`
 }
 
+// GetMarketplaceIntegrationAccessResponse DTO.
+type GetMarketplaceIntegrationAccessResponse struct {
+	ResponseBase
+	Roles     []*MarketplaceAccessRoleDto     `json:"roles,omitempty"`
+	Packages  []*MarketplaceAccessPackageDto  `json:"packages,omitempty"`
+	Tools     []*MarketplaceAccessToolDto     `json:"tools,omitempty"`
+	Functions []*MarketplaceAccessFunctionDto `json:"functions,omitempty"`
+}
+
+// SaveMarketplaceIntegrationCustomAccessResponse DTO.
+type SaveMarketplaceIntegrationCustomAccessResponse struct {
+	ResponseBase
+	PolicyId    string  `json:"policyId,omitempty"`
+	Created     bool    `json:"created,omitempty"`
+	UsedByRoles float64 `json:"usedByRoles,omitempty"`
+}
+
 // GetMarketplaceIntegrationResponse DTO.
 type GetMarketplaceIntegrationResponse struct {
 	ResponseBase
@@ -7587,8 +7667,9 @@ type RevealMarketplaceIntegrationSecretsResponse struct {
 // TestMarketplaceIntegrationResponse DTO.
 type TestMarketplaceIntegrationResponse struct {
 	ResponseBase
-	Items []*IntegrationTestResultItemDto       `json:"items,omitempty"`
-	Steps []*MarketplaceValidationStepResultDto `json:"steps,omitempty"`
+	Items         []*IntegrationTestResultItemDto       `json:"items,omitempty"`
+	Steps         []*MarketplaceValidationStepResultDto `json:"steps,omitempty"`
+	AccessChanges *MarketplaceAccessChangesDto          `json:"accessChanges,omitempty"`
 }
 
 // SetMarketplaceIntegrationTokenMappingsResponse DTO.
@@ -10982,6 +11063,33 @@ type GetSmsCampaignMessagesRequest struct {
 	CampaignId            string `json:"campaignId,omitempty"`
 	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetMarketplaceIntegrationAccess DTO.
+type GetMarketplaceIntegrationAccess struct {
+	CodeMashRequestBase
+	IntegrationViewId string `json:"integrationViewId,omitempty"`
+}
+
+// SetMarketplaceIntegrationRoleAccess DTO.
+type SetMarketplaceIntegrationRoleAccess struct {
+	CodeMashRequestBase
+	IntegrationViewId string                 `json:"integrationViewId,omitempty"`
+	RoleId            string                 `json:"roleId,omitempty"`
+	Package           MarketplaceAccessLevel `json:"package,omitempty"`
+	Manage            bool                   `json:"manage,omitempty"`
+}
+
+// SaveMarketplaceIntegrationCustomAccess DTO.
+type SaveMarketplaceIntegrationCustomAccess struct {
+	CodeMashRequestBase
+	IntegrationViewId        string                 `json:"integrationViewId,omitempty"`
+	RoleId                   string                 `json:"roleId,omitempty"`
+	BasePackage              MarketplaceAccessLevel `json:"basePackage,omitempty"`
+	Tools                    []string               `json:"tools,omitempty"`
+	Functions                []string               `json:"functions,omitempty"`
+	Manage                   bool                   `json:"manage,omitempty"`
+	NewPolicyForThisRoleOnly bool                   `json:"newPolicyForThisRoleOnly,omitempty"`
 }
 
 // GetMarketplaceIntegrationTools DTO.
