@@ -534,6 +534,22 @@ func (m *CodeModule) SaveMarketplaceIntegrationCustomAccess(ctx context.Context,
 	}, out)
 }
 
+// StartMarketplaceIntegrationSignIn performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/oauth/start (scope: project).
+// It starts the OAuth sign-in of an MCP connection and returns the vendor's authorizeUrl to open, the redirectUrl and expiresAt (dtos.StartMarketplaceIntegrationSignInResponse).
+func (m *CodeModule) StartMarketplaceIntegrationSignIn(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/oauth/start",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ReplaceMarketplaceIntegrationSecrets performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/secrets (scope: project).
 func (m *CodeModule) ReplaceMarketplaceIntegrationSecrets(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
