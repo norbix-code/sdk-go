@@ -10,9 +10,10 @@ import (
 	"testing"
 )
 
-// The 27 marketplace routes of the Code module (gateway campaign audit/marketplace,
+// The 28 marketplace routes of the Code module (gateway campaign audit/marketplace,
 // docs/architecture/Code.Marketplace.md §14; route 24 = MCP tool catalog, item mcp-step1;
-// routes 25–27 = connection access matrix, role package, custom policy, item access) and the module method that calls each
+// routes 25–27 = connection access matrix, role package, custom policy, item access;
+// route 28 = OAuth sign-in start, item oauth — route 29, the callback, is not in the metadata) and the module method that calls each
 // one. Every case asserts the verb, the fully-resolved path (version and ids
 // substituted) and where the parameters land: the query string for GET / DELETE,
 // the JSON body for POST / PUT. Nothing leaves the process.
@@ -107,6 +108,10 @@ func marketplaceCases() []codeCase {
 			func(ctx context.Context, m *CodeModule) error {
 				return m.SaveMarketplaceIntegrationCustomAccess(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{"roleId": "acc_6Qp1dW2kRm8NsT4vYc0Hb_nr_3kLm9QwErTyU", "basePackage": "ReadOnly", "tools": []any{"create_issue"}, "functions": []any{"func_4hT2b9QkLm3XcT1yRfGh7a"}, "manage": false, "newPolicyForThisRoleOnly": true}, nil)
 			}},
+		{"StartMarketplaceIntegrationSignIn", http.MethodPost, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/oauth/start", nil, map[string]any{},
+			func(ctx context.Context, m *CodeModule) error {
+				return m.StartMarketplaceIntegrationSignIn(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{}, nil)
+			}},
 		{"ReplaceMarketplaceIntegrationSecrets", http.MethodPut, "/v2/code/marketplace/integrations/int_6Qp1dW2kRm8NsT4vYc0Hb/secrets", nil, map[string]any{"secrets": map[string]any{"botToken": "xoxb-new"}},
 			func(ctx context.Context, m *CodeModule) error {
 				return m.ReplaceMarketplaceIntegrationSecrets(ctx, "int_6Qp1dW2kRm8NsT4vYc0Hb", map[string]any{"secrets": map[string]any{"botToken": "xoxb-new"}}, nil)
@@ -186,7 +191,7 @@ func TestMarketplaceEndpointsHitTheExpectedRoute(t *testing.T) {
 }
 
 func TestMarketplaceCaseCount(t *testing.T) {
-	const want = 27
+	const want = 28
 	if got := len(marketplaceCases()); got != want {
 		t.Errorf("code/marketplace case count: got %d want %d", got, want)
 	}

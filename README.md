@@ -733,6 +733,11 @@ Who may use a connection is set per role with generated access packages
 | `SetMarketplaceIntegrationRoleAccess` | `PUT …/access/roles`, body `roleId`, `package`, `manage` → `dtos.IdResponse` (the role id) |
 | `SaveMarketplaceIntegrationCustomAccess` | `POST …/access/roles/custom`, body `roleId`, `basePackage`, `tools`, `functions`, `manage`, `newPolicyForThisRoleOnly` → `dtos.SaveMarketplaceIntegrationCustomAccessResponse` |
 
+`StartMarketplaceIntegrationSignIn` (`POST …/integrations/{IntegrationViewId}/oauth/start`
+→ `dtos.StartMarketplaceIntegrationSignInResponse`) starts the OAuth sign-in of
+an MCP connection: open `AuthorizeUrl` in a browser. A signed-in connection
+shows `SignedIn`, `SignedInBy`, `SignedInAt`, `TokenExpiresAt`.
+
 `TestMarketplaceIntegration` also answers `AccessChanges` (`ReadOnlyAdded`,
 `ReadOnlyRemoved`, `NotGrantable`) and each step's `ErrorCode`.
 
