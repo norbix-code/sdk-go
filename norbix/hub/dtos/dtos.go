@@ -5696,9 +5696,14 @@ type MarketplaceFunctionRunDto struct {
 	FunctionId      string  `json:"functionId,omitempty"`
 	RunAsUserId     string  `json:"runAsUserId,omitempty"`
 	Succeeded       bool    `json:"succeeded,omitempty"`
+	Status          string  `json:"status,omitempty"`
 	DurationMs      float64 `json:"durationMs,omitempty"`
 	Error           string  `json:"error,omitempty"`
 	VendorRequestId string  `json:"vendorRequestId,omitempty"`
+	CorrelationId   string  `json:"correlationId,omitempty"`
+	HasDetails      bool    `json:"hasDetails,omitempty"`
+	TriggerId       string  `json:"triggerId,omitempty"`
+	TaskId          string  `json:"taskId,omitempty"`
 	Input           string  `json:"input,omitempty"`
 }
 
@@ -10989,9 +10994,10 @@ type GetMarketplaceFunctionCatalog struct {
 // GetMarketplaceFunctionRuns DTO.
 type GetMarketplaceFunctionRuns struct {
 	CodeMashRequestBase
-	TriggerId string  `json:"triggerId,omitempty"`
-	TaskId    string  `json:"taskId,omitempty"`
-	Limit     float64 `json:"limit,omitempty"`
+	FunctionId string  `json:"functionId,omitempty"`
+	TriggerId  string  `json:"triggerId,omitempty"`
+	TaskId     string  `json:"taskId,omitempty"`
+	Limit      float64 `json:"limit,omitempty"`
 }
 
 // GetCodeFunctions DTO.
