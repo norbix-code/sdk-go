@@ -721,6 +721,27 @@ err := client.Hub.Code.GetMarketplaceIntegrationTools(ctx, "int_…", map[string
 Note: Go's generated `ReadOnlyHint` / `DestructiveHint` are plain `bool`, so
 "not set by the server" and `false` read the same.
 
+## Marketplace connections — access
+
+Who may use a connection is set per role with generated access packages
+(`dtos.MarketplaceAccessLevel`: `None`, `Viewer`, `FunctionsOnly`, `ReadOnly`,
+`FullAccess`, plus the `manage` flag):
+
+| Method | Call |
+| --- | --- |
+| `GetMarketplaceIntegrationAccess` | `GET …/integrations/{IntegrationViewId}/access` → `dtos.GetMarketplaceIntegrationAccessResponse` (`Roles`, `Packages`, `Tools`, `Functions`) |
+| `SetMarketplaceIntegrationRoleAccess` | `PUT …/access/roles`, body `roleId`, `package`, `manage` → `dtos.IdResponse` (the role id) |
+| `SaveMarketplaceIntegrationCustomAccess` | `POST …/access/roles/custom`, body `roleId`, `basePackage`, `tools`, `functions`, `manage`, `newPolicyForThisRoleOnly` → `dtos.SaveMarketplaceIntegrationCustomAccessResponse` |
+
+`TestMarketplaceIntegration` also answers `AccessChanges` (`ReadOnlyAdded`,
+`ReadOnlyRemoved`, `NotGrantable`) and each step's `ErrorCode`.
+
+```go
+err := client.Hub.Code.SetMarketplaceIntegrationRoleAccess(ctx, "int_…", map[string]any{
+	"roleId": "acc_…_nr_…", "package": dtos.MarketplaceAccessLevelReadOnly, "manage": false,
+}, nil)
+```
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:
