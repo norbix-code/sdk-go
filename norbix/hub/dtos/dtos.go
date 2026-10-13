@@ -4908,6 +4908,7 @@ type ServiceUserApiKeyDto struct {
 	Name          string   `json:"name,omitempty"`
 	VisibleKey    string   `json:"visibleKey,omitempty"`
 	Scopes        []string `json:"scopes,omitempty"`
+	Environment   string   `json:"environment,omitempty"`
 	CreatedDate   string   `json:"createdDate,omitempty"`
 	ExpiryDate    string   `json:"expiryDate,omitempty"`
 	CancelledDate string   `json:"cancelledDate,omitempty"`
@@ -5700,6 +5701,7 @@ type MarketplaceAccessRoleDto struct {
 	Manage            bool                                `json:"manage,omitempty"`
 	Custom            []*MarketplaceAccessCustomPolicyDto `json:"custom,omitempty"`
 	DefaultNotApplied string                              `json:"defaultNotApplied,omitempty"`
+	CanChange         bool                                `json:"canChange,omitempty"`
 }
 
 // MarketplaceAccessPackageDto DTO.
@@ -5712,9 +5714,11 @@ type MarketplaceAccessPackageDto struct {
 
 // MarketplaceAccessToolDto DTO.
 type MarketplaceAccessToolDto struct {
-	Name      string `json:"name,omitempty"`
-	ReadOnly  bool   `json:"readOnly,omitempty"`
-	Grantable bool   `json:"grantable,omitempty"`
+	Name                   string `json:"name,omitempty"`
+	ReadOnly               bool   `json:"readOnly,omitempty"`
+	Grantable              bool   `json:"grantable,omitempty"`
+	Curated                bool   `json:"curated,omitempty"`
+	ExcludedFromFullAccess bool   `json:"excludedFromFullAccess,omitempty"`
 }
 
 // MarketplaceAccessFunctionDto DTO.
@@ -5754,9 +5758,11 @@ type MarketplaceMcpToolDto struct {
 
 // MarketplaceAccessChangesDto DTO.
 type MarketplaceAccessChangesDto struct {
-	ReadOnlyAdded   []string `json:"readOnlyAdded,omitempty"`
-	ReadOnlyRemoved []string `json:"readOnlyRemoved,omitempty"`
-	NotGrantable    []string `json:"notGrantable,omitempty"`
+	ReadOnlyAdded          []string `json:"readOnlyAdded,omitempty"`
+	ReadOnlyRemoved        []string `json:"readOnlyRemoved,omitempty"`
+	NotGrantable           []string `json:"notGrantable,omitempty"`
+	ReadOnlyHintOverridden []string `json:"readOnlyHintOverridden,omitempty"`
+	ExcludedFromFullAccess []string `json:"excludedFromFullAccess,omitempty"`
 }
 
 // MarketplaceFunctionProjection DTO.
@@ -5786,6 +5792,8 @@ type MarketplaceFunctionRunDto struct {
 	TriggerId       string  `json:"triggerId,omitempty"`
 	TaskId          string  `json:"taskId,omitempty"`
 	Input           string  `json:"input,omitempty"`
+	IntegrationId   string  `json:"integrationId,omitempty"`
+	ToolName        string  `json:"toolName,omitempty"`
 }
 
 // CodeIntegrationListProjection DTO.
@@ -5859,6 +5867,12 @@ type PushDeviceListProjection struct {
 	OsName           string  `json:"osName,omitempty"`
 	OsVersion        string  `json:"osVersion,omitempty"`
 	PlatformApiLevel float64 `json:"platformApiLevel,omitempty"`
+	Platform         string  `json:"platform,omitempty"`
+	AppVersion       string  `json:"appVersion,omitempty"`
+	InstallationId   string  `json:"installationId,omitempty"`
+	Locale           string  `json:"locale,omitempty"`
+	TimeZone         string  `json:"timeZone,omitempty"`
+	UpdatedAtUtc     string  `json:"updatedAtUtc,omitempty"`
 }
 
 // PushAudienceCountDto DTO.
@@ -5899,12 +5913,19 @@ type PushCampaignBatchDto struct {
 	Recipients *PushRecipientsDto `json:"recipients,omitempty"`
 }
 
+// NotificationReadMarkDto DTO.
+type NotificationReadMarkDto struct {
+	UserId    string `json:"userId,omitempty"`
+	ReadAtUtc string `json:"readAtUtc,omitempty"`
+}
+
 // PushCampaignBatchNotificationDto DTO.
 type PushCampaignBatchNotificationDto struct {
 	CampaignBatchNotificationDto
-	Subject    string                 `json:"subject,omitempty"`
-	Recipients *PushRecipientsDto     `json:"recipients,omitempty"`
-	Content    *PushMessageContentDto `json:"content,omitempty"`
+	Subject    string                     `json:"subject,omitempty"`
+	Recipients *PushRecipientsDto         `json:"recipients,omitempty"`
+	Content    *PushMessageContentDto     `json:"content,omitempty"`
+	ReadBy     []*NotificationReadMarkDto `json:"readBy,omitempty"`
 }
 
 // PaymentsWebhookLogEntry DTO.
@@ -6985,14 +7006,17 @@ type RotateAiServiceUserKeyResponse struct {
 
 // IssueServiceUserApiKeyResponse DTO.
 type IssueServiceUserApiKeyResponse struct {
-	Id   float64 `json:"id,omitempty"`
-	Name string  `json:"name,omitempty"`
-	Key  string  `json:"key,omitempty"`
+	Id             float64                 `json:"id,omitempty"`
+	Name           string                  `json:"name,omitempty"`
+	Key            string                  `json:"key,omitempty"`
+	Environment    string                  `json:"environment,omitempty"`
+	ResponseStatus *CodeMashResponseStatus `json:"responseStatus,omitempty"`
 }
 
 // ListServiceUserApiKeysResponse DTO.
 type ListServiceUserApiKeysResponse struct {
-	Keys []*ServiceUserApiKeyDto `json:"keys,omitempty"`
+	Keys           []*ServiceUserApiKeyDto `json:"keys,omitempty"`
+	ResponseStatus *CodeMashResponseStatus `json:"responseStatus,omitempty"`
 }
 
 // GetMembershipTriggerResponse DTO.
@@ -7630,6 +7654,7 @@ type GetMarketplaceIntegrationAccessResponse struct {
 	Packages  []*MarketplaceAccessPackageDto  `json:"packages,omitempty"`
 	Tools     []*MarketplaceAccessToolDto     `json:"tools,omitempty"`
 	Functions []*MarketplaceAccessFunctionDto `json:"functions,omitempty"`
+	CanManage bool                            `json:"canManage,omitempty"`
 }
 
 // SaveMarketplaceIntegrationCustomAccessResponse DTO.
@@ -7667,6 +7692,13 @@ type StartMarketplaceIntegrationSignInResponse struct {
 	AuthorizeUrl string `json:"authorizeUrl,omitempty"`
 	RedirectUrl  string `json:"redirectUrl,omitempty"`
 	ExpiresAt    string `json:"expiresAt,omitempty"`
+}
+
+// SignOutMarketplaceIntegrationResponse DTO.
+type SignOutMarketplaceIntegrationResponse struct {
+	ResponseBase
+	WasSignedIn bool   `json:"wasSignedIn,omitempty"`
+	Revoke      string `json:"revoke,omitempty"`
 }
 
 // EmptyMarketplaceSecretsResponse DTO.
@@ -10176,6 +10208,7 @@ type FindRecords struct {
 	SortBy                string      `json:"sortBy,omitempty"`
 	SortOrder             float64     `json:"sortOrder,omitempty"`
 	ExpandReferences      bool        `json:"expandReferences,omitempty"`
+	AllLanguages          bool        `json:"allLanguages,omitempty"`
 }
 
 // FindOneRecord DTO.
@@ -10185,6 +10218,7 @@ type FindOneRecord struct {
 	Id                    string `json:"id,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	ExpandReferences      bool   `json:"expandReferences,omitempty"`
+	AllLanguages          bool   `json:"allLanguages,omitempty"`
 }
 
 // GetCollectionIndexes DTO.
@@ -11120,6 +11154,12 @@ type StartMarketplaceIntegrationSignIn struct {
 	IntegrationViewId string `json:"integrationViewId,omitempty"`
 }
 
+// SignOutMarketplaceIntegration DTO.
+type SignOutMarketplaceIntegration struct {
+	CodeMashRequestBase
+	IntegrationViewId string `json:"integrationViewId,omitempty"`
+}
+
 // ReplaceMarketplaceIntegrationSecretsRequest DTO.
 type ReplaceMarketplaceIntegrationSecretsRequest struct {
 	CodeMashRequestBase
@@ -11149,10 +11189,11 @@ type GetMarketplaceFunctionCatalog struct {
 // GetMarketplaceFunctionRuns DTO.
 type GetMarketplaceFunctionRuns struct {
 	CodeMashRequestBase
-	FunctionId string  `json:"functionId,omitempty"`
-	TriggerId  string  `json:"triggerId,omitempty"`
-	TaskId     string  `json:"taskId,omitempty"`
-	Limit      float64 `json:"limit,omitempty"`
+	FunctionId    string  `json:"functionId,omitempty"`
+	TriggerId     string  `json:"triggerId,omitempty"`
+	TaskId        string  `json:"taskId,omitempty"`
+	IntegrationId string  `json:"integrationId,omitempty"`
+	Limit         float64 `json:"limit,omitempty"`
 }
 
 // GetCodeFunctions DTO.
