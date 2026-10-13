@@ -550,6 +550,22 @@ func (m *CodeModule) StartMarketplaceIntegrationSignIn(ctx context.Context, inte
 	}, out)
 }
 
+// SignOutMarketplaceIntegration performs POST /{version}/code/marketplace/integrations/{IntegrationViewId}/oauth/sign-out (scope: project).
+// It signs an MCP connection out of OAuth and returns wasSignedIn and revoke: Revoked, NoRevocationEndpoint, Failed or empty (dtos.SignOutMarketplaceIntegrationResponse).
+func (m *CodeModule) SignOutMarketplaceIntegration(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationViewId": integrationViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/integrations/{IntegrationViewId}/oauth/sign-out",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ReplaceMarketplaceIntegrationSecrets performs PUT /{version}/code/marketplace/integrations/{IntegrationViewId}/secrets (scope: project).
 func (m *CodeModule) ReplaceMarketplaceIntegrationSecrets(ctx context.Context, integrationViewId string, req map[string]any, out any) error {
 	pathParams := map[string]string{

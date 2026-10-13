@@ -738,6 +738,8 @@ Who may use a connection is set per role with generated access packages
 an MCP connection: open `AuthorizeUrl` in a browser. A signed-in connection
 shows `SignedIn`, `SignedInBy`, `SignedInAt`, `TokenExpiresAt`.
 
+`SignOutMarketplaceIntegration` (`POST …/oauth/sign-out` → `dtos.SignOutMarketplaceIntegrationResponse`) signs an MCP connection out: `WasSignedIn`, `Revoke` (`Revoked`, `NoRevocationEndpoint`, `Failed` or empty).
+
 `TestMarketplaceIntegration` also answers `AccessChanges` (`ReadOnlyAdded`,
 `ReadOnlyRemoved`, `NotGrantable`) and each step's `ErrorCode`.
 
