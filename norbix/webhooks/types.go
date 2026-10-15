@@ -57,6 +57,11 @@ type EventMetadata struct {
 	RecordID      string   `json:"recordId,omitempty"`
 	RecordIDs     []string `json:"recordIds,omitempty"`
 	IntegrationID string   `json:"integrationId,omitempty"`
+	// payments.* events: the provider and its own event id and name
+	// (e.g. "Stripe", "evt_…", "payment_intent.succeeded").
+	PaymentProvider        string `json:"paymentProvider,omitempty"`
+	PaymentProviderEventID string `json:"paymentProviderEventId,omitempty"`
+	PaymentEventName       string `json:"paymentEventName,omitempty"`
 }
 
 // Event is the metadata passed to a handler alongside the decoded payload.

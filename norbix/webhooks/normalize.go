@@ -38,6 +38,7 @@ func rawString(data map[string]json.RawMessage, key string) string {
 //   - Entity events  -> payload is the entity (user / document / file).
 //   - Mutation events -> payload is {from, to}.
 //   - Batch events   -> payload is the array.
+//   - Payments events -> payload is the normalized payment fact.
 //
 // Wrapper ids (record id, schema, user id, ...) are lifted onto Metadata.
 // Unknown events fall back to payload = data, metadata = {}.
@@ -120,6 +121,17 @@ func Normalize(env Envelope) Normalized {
 		default:
 			return Normalized{Payload: env.Data, Metadata: meta}
 		}
+
+	case strings.HasPrefix(event, "payments."):
+		// The whole data object IS the normalized payment fact; the provider
+		// ids are lifted onto Metadata so a handler can de-duplicate on them.
+		meta := EventMetadata{
+			IntegrationID:          rawString(d, "integrationId"),
+			PaymentProvider:        rawString(d, "provider"),
+			PaymentProviderEventID: rawString(d, "providerEventId"),
+			PaymentEventName:       rawString(d, "eventName"),
+		}
+		return Normalized{Payload: env.Data, Metadata: meta}
 	}
 
 	return Normalized{Payload: env.Data, Metadata: EventMetadata{}}

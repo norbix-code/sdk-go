@@ -20,6 +20,7 @@ var EventNames = []string{
 	"membership.user.reactivated",
 	"files.file.uploaded",
 	"files.file.deleted",
+	"payments.webhook.received",
 }
 
 // Named event constants — use these instead of raw strings.
@@ -41,4 +42,9 @@ const (
 	EventMembershipUserReactivated           = "membership.user.reactivated"
 	EventFilesFileUploaded                   = "files.file.uploaded"
 	EventFilesFileDeleted                    = "files.file.deleted"
+	// EventPaymentsWebhookReceived: a payment provider (Stripe, Apple In-App,
+	// Google In-App, …) called the project's payments webhook. The payload is the
+	// normalized payment fact (decode into dtos.PaymentFactDto); the provider's
+	// own event name is its EventName.
+	EventPaymentsWebhookReceived = "payments.webhook.received"
 )
