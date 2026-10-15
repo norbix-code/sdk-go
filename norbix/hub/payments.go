@@ -35,6 +35,20 @@ func (m *PaymentsModule) EnablePayments(ctx context.Context, req map[string]any,
 	}, out)
 }
 
+// GetPaymentsWebhookLog performs GET /{version}/payments/webhooks/log (scope: project).
+// The received payment webhooks of the project, newest first; optional
+// integrationId and limit (request type dtos.GetPaymentsWebhookLog).
+func (m *PaymentsModule) GetPaymentsWebhookLog(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/webhooks/log",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // DeletePaymentsTrigger performs DELETE /{version}/payments/triggers/{triggerId} (scope: project).
 func (m *PaymentsModule) DeletePaymentsTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
