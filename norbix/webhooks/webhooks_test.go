@@ -191,3 +191,38 @@ func TestReceiverEventIDFallsBackToID(t *testing.T) {
 		t.Errorf("fallback failed: event=%q result=%q", got, res.EventID)
 	}
 }
+
+// payments.webhook.received (gateway campaign audit/payments): the payload is
+// the normalized payment fact, the provider ids land on Metadata.
+func TestReceiverPaymentsWebhookReceived(t *testing.T) {
+	fact := `{"integrationId":"int_stripe","provider":"Stripe","providerEventId":"evt_1","eventName":"payment_intent.succeeded","status":"Succeeded","amountMinor":1099,"currency":"USD","externalIds":{"customer":"cus_1"},"receivedOn":"2026-10-15T08:00:00Z"}`
+	body := []byte(`{"id":"d3","eventId":"e3","event":"payments.webhook.received","accountId":"a","projectId":"p","triggerId":"trg_p","data":` + fact + `}`)
+	r := New(Options{})
+	type payment struct {
+		EventName   string `json:"eventName"`
+		Status      string `json:"status"`
+		AmountMinor int64  `json:"amountMinor"`
+		Currency    string `json:"currency"`
+	}
+	var got payment
+	var meta EventMetadata
+	r.On(EventPaymentsWebhookReceived, func(ctx context.Context, payload json.RawMessage, e Event) error {
+		v, err := DecodePayload[payment](payload)
+		if err != nil {
+			return err
+		}
+		got = v
+		meta = e.Metadata
+		return nil
+	})
+	res, err := r.Handle(context.Background(), HandleInput{RawBody: body})
+	if err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if !res.Handled || got.EventName != "payment_intent.succeeded" || got.AmountMinor != 1099 || got.Currency != "USD" || got.Status != "Succeeded" {
+		t.Errorf("payload wrong: handled=%v got=%+v", res.Handled, got)
+	}
+	if meta.IntegrationID != "int_stripe" || meta.PaymentProvider != "Stripe" || meta.PaymentProviderEventID != "evt_1" || meta.PaymentEventName != "payment_intent.succeeded" {
+		t.Errorf("metadata wrong: %+v", meta)
+	}
+}
