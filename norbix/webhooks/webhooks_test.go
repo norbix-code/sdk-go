@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/norbix-code/sdk-go/v2/norbix"
 )
 
 func sign(secret, ts string, body []byte) string { return ComputeSignature(secret, ts, body) }
@@ -224,5 +226,55 @@ func TestReceiverPaymentsWebhookReceived(t *testing.T) {
 	}
 	if meta.IntegrationID != "int_stripe" || meta.PaymentProvider != "Stripe" || meta.PaymentProviderEventID != "evt_1" || meta.PaymentEventName != "payment_intent.succeeded" {
 		t.Errorf("metadata wrong: %+v", meta)
+	}
+}
+
+// payments.order.paid (gateway campaign audit/payments-checkout): the payload is
+// the order event (norbix.PaymentOrderEvent); the order ids and the provider
+// ids of its payment land on Metadata.
+func TestReceiverPaymentsOrderPaid(t *testing.T) {
+	orderEvent := `{"orderEventId":"ord_2ToIiRM03X63TZaJ2dJdv2:2","event":"payments.order.paid","from":"CheckoutStarted","to":"Paid","reason":"paid in attempt 1",` +
+		`"order":{"id":"ord_2ToIiRM03X63TZaJ2dJdv2","env":"PROD","buyerUserId":"usr_1","merchantReference":"ad-1042-promo-1","currency":"EUR","priceVersion":"2026-10-01",` +
+		`"lines":[{"sku":"star-day","title":"Star × day","quantity":21,"unitAmountMinor":30,"amountMinor":630}],"totalMinor":630,"metadata":{"adId":"ad_1042"},` +
+		`"status":"Paid","checkouts":[],"settledMinor":630,"refundedMinor":0,"providerPaymentId":"mnt-1","mismatches":[]},` +
+		`"payment":{"integrationId":"int_montonio","provider":"Montonio","providerEventId":"order:mnt-1:PAID","orderId":"ord_2ToIiRM03X63TZaJ2dJdv2","eventName":"order.paid","status":"Succeeded","amountMinor":630,"currency":"EUR","receivedOn":"2026-10-19T09:54:43Z"}}`
+	body := []byte(`{"id":"dlv_o","eventId":"evt_order_1","event":"payments.order.paid","accountId":"a","projectId":"p","triggerId":"trg_o","data":` + orderEvent + `}`)
+	r := New(Options{})
+	var got norbix.PaymentOrderEvent
+	var meta EventMetadata
+	r.On(EventPaymentsOrderPaid, func(ctx context.Context, payload json.RawMessage, e Event) error {
+		v, err := DecodePayload[norbix.PaymentOrderEvent](payload)
+		if err != nil {
+			return err
+		}
+		got = v
+		meta = e.Metadata
+		return nil
+	})
+	res, err := r.Handle(context.Background(), HandleInput{RawBody: body})
+	if err != nil {
+		t.Fatalf("handle: %v", err)
+	}
+	if !res.Handled || got.OrderEventID != "ord_2ToIiRM03X63TZaJ2dJdv2:2" || got.To != "Paid" || got.Order.Status != "Paid" || got.Order.TotalMinor != 630 || got.Payment == nil || got.Payment.ProviderEventID != "order:mnt-1:PAID" {
+		t.Errorf("payload wrong: handled=%v got=%+v", res.Handled, got)
+	}
+	if meta.IntegrationID != "int_montonio" || meta.PaymentProvider != "Montonio" || meta.PaymentProviderEventID != "order:mnt-1:PAID" || meta.PaymentEventName != "order.paid" {
+		t.Errorf("payment metadata wrong: %+v", meta)
+	}
+	if meta.OrderID != "ord_2ToIiRM03X63TZaJ2dJdv2" || meta.OrderEventID != "ord_2ToIiRM03X63TZaJ2dJdv2:2" || meta.OrderStatus != "Paid" {
+		t.Errorf("order metadata wrong: %+v", meta)
+	}
+}
+
+func TestPaymentsOrderEventsAreInTheCatalog(t *testing.T) {
+	want := []string{EventPaymentsOrderPaid, EventPaymentsOrderPartiallyRefunded, EventPaymentsOrderRefunded, EventPaymentsOrderReversed, EventPaymentsOrderExpired}
+	names := map[string]bool{}
+	for _, n := range EventNames {
+		names[n] = true
+	}
+	for i, n := range []string{"payments.order.paid", "payments.order.partially_refunded", "payments.order.refunded", "payments.order.reversed", "payments.order.expired"} {
+		if want[i] != n || !names[n] {
+			t.Errorf("event %q: constant %q, in catalog %v", n, want[i], names[n])
+		}
 	}
 }
