@@ -84,6 +84,7 @@ type FunctionData struct {
 	User     json.RawMessage `json:"user"`
 	File     json.RawMessage `json:"file"`
 	Payment  json.RawMessage `json:"payment"`
+	Order    json.RawMessage `json:"order"` // payments.order.* only
 	AI       json.RawMessage `json:"ai"`
 	Task     json.RawMessage `json:"task"`
 	Payload  json.RawMessage `json:"payload"` // manual invoke, scheduler static payload
@@ -135,12 +136,72 @@ type Payment struct {
 	Provider        string            `json:"provider"`
 	ProviderEventID string            `json:"providerEventId"`
 	EventName       string            `json:"eventName"`
+	OrderID         string            `json:"orderId"` // the payment order (ord_…) the callback is about, when it is about one
 	Status          string            `json:"status"`
 	AmountMinor     *int64            `json:"amountMinor"`
 	Currency        string            `json:"currency"`
 	ExternalIDs     map[string]string `json:"externalIds"`
 	OccurredOn      *time.Time        `json:"occurredOn"`
 	ReceivedOn      time.Time         `json:"receivedOn"`
+}
+
+// PaymentOrderEvent is the Payments order slot (payments.order.*): a stored
+// payment order changed. Order is the order as stored after the change,
+// Payment the provider callback that changed it. OrderEventID is the
+// de-duplication key: it is the same on every retry of the same change.
+type PaymentOrderEvent struct {
+	OrderEventID string       `json:"orderEventId"`
+	Event        string       `json:"event"` // payments.order.paid | partially_refunded | refunded | reversed | expired
+	From         string       `json:"from"`  // order status before the change
+	To           string       `json:"to"`    // order status after the change
+	Reason       string       `json:"reason"`
+	Order        PaymentOrder `json:"order"`
+	Payment      *Payment     `json:"payment"`
+}
+
+// PaymentOrder is a stored payment order: lines priced in minor units, the
+// total, its status and the provider checkouts started for it.
+type PaymentOrder struct {
+	ID                string                 `json:"id"`
+	Env               string                 `json:"env"`
+	BuyerUserID       string                 `json:"buyerUserId"`
+	MerchantReference string                 `json:"merchantReference"`
+	Currency          string                 `json:"currency"`
+	PriceVersion      string                 `json:"priceVersion"`
+	Lines             []PaymentOrderLine     `json:"lines"`
+	TotalMinor        int64                  `json:"totalMinor"`
+	Metadata          map[string]string      `json:"metadata"`
+	Status            string                 `json:"status"` // Created | CheckoutStarted | Paid | PartiallyRefunded | Refunded | Reversed | Expired | …
+	CreatedOnUtc      *time.Time             `json:"createdOnUtc"`
+	UpdatedOnUtc      *time.Time             `json:"updatedOnUtc"`
+	Checkouts         []PaymentOrderCheckout `json:"checkouts"`
+	SettledMinor      *int64                 `json:"settledMinor"`
+	RefundedMinor     int64                  `json:"refundedMinor"`
+	PaidOnUtc         *time.Time             `json:"paidOnUtc"`
+	ProviderPaymentID string                 `json:"providerPaymentId"`
+	Mismatches        []string               `json:"mismatches"`
+}
+
+// PaymentOrderLine is one priced line of a payment order.
+type PaymentOrderLine struct {
+	SKU             string `json:"sku"`
+	Title           string `json:"title"`
+	Quantity        int64  `json:"quantity"`
+	UnitAmountMinor int64  `json:"unitAmountMinor"`
+	AmountMinor     int64  `json:"amountMinor"`
+}
+
+// PaymentOrderCheckout is one provider checkout started for a payment order.
+type PaymentOrderCheckout struct {
+	Attempt           int        `json:"attempt"`
+	IntegrationID     string     `json:"integrationId"`
+	Provider          string     `json:"provider"`
+	ProviderOrderID   string     `json:"providerOrderId"`
+	ProviderReference string     `json:"providerReference"`
+	PaymentURL        string     `json:"paymentUrl"`
+	Method            string     `json:"method"`
+	StartedOnUtc      *time.Time `json:"startedOnUtc"`
+	ExpiresAtUtc      *time.Time `json:"expiresAtUtc"`
 }
 
 // AIUsage is the AI slot: the usage payload and the user it concerns.
@@ -190,6 +251,7 @@ func ParseFunctionEvent(raw []byte) (*CodeFunctionEvent, error) {
 	ev.Data.User = presentOrNil(ev.Data.User)
 	ev.Data.File = presentOrNil(ev.Data.File)
 	ev.Data.Payment = presentOrNil(ev.Data.Payment)
+	ev.Data.Order = presentOrNil(ev.Data.Order)
 	ev.Data.AI = presentOrNil(ev.Data.AI)
 	ev.Data.Task = presentOrNil(ev.Data.Task)
 	ev.Data.Payload = presentOrNil(ev.Data.Payload)
@@ -257,13 +319,26 @@ func (e *CodeFunctionEvent) AsFileChange(oldOut, newOut any) (FileChange, error)
 	return change, nil
 }
 
-// AsPayment reads the Payments slot.
+// AsPayment reads the Payments slot. On a payments.order.* event it is the
+// provider callback that changed the order.
 func (e *CodeFunctionEvent) AsPayment() (Payment, error) {
 	var payment Payment
 	if err := e.decodeSlot("payment", e.Data.Payment, &payment); err != nil {
 		return Payment{}, err
 	}
 	return payment, nil
+}
+
+// AsPaymentOrder reads the Payments order slot (payments.order.*): the
+// stored order after the change, with OrderEventID to de-duplicate on.
+// AsPayment still returns the callback that made the change. Errors with
+// NORBIX_FUNCTION_EVENT_NO_SLOT when the envelope carries no data.order.
+func (e *CodeFunctionEvent) AsPaymentOrder() (PaymentOrderEvent, error) {
+	var order PaymentOrderEvent
+	if err := e.decodeSlot("order", e.Data.Order, &order); err != nil {
+		return PaymentOrderEvent{}, err
+	}
+	return order, nil
 }
 
 // AsAIUsage reads the AI slot and decodes its payload into payloadOut (may be nil).
