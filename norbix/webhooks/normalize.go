@@ -38,7 +38,8 @@ func rawString(data map[string]json.RawMessage, key string) string {
 //   - Entity events  -> payload is the entity (user / document / file).
 //   - Mutation events -> payload is {from, to}.
 //   - Batch events   -> payload is the array.
-//   - Payments events -> payload is the normalized payment fact.
+//   - Payments events -> payload is the normalized payment fact
+//     (payments.order.*: the order event, with the fact in its payment).
 //
 // Wrapper ids (record id, schema, user id, ...) are lifted onto Metadata.
 // Unknown events fall back to payload = data, metadata = {}.
@@ -123,13 +124,28 @@ func Normalize(env Envelope) Normalized {
 		}
 
 	case strings.HasPrefix(event, "payments."):
-		// The whole data object IS the normalized payment fact; the provider
-		// ids are lifted onto Metadata so a handler can de-duplicate on them.
+		// payments.webhook.received: the whole data object IS the normalized
+		// payment fact. payments.order.*: the data is the order event and its
+		// payment is the fact. Either way the provider ids are lifted onto
+		// Metadata so a handler can de-duplicate on them.
+		isOrderEvent := strings.HasPrefix(event, "payments.order.")
+		fact := d
+		if isOrderEvent {
+			fact = nil
+			_ = json.Unmarshal(rawField(d, "payment"), &fact)
+		}
 		meta := EventMetadata{
-			IntegrationID:          rawString(d, "integrationId"),
-			PaymentProvider:        rawString(d, "provider"),
-			PaymentProviderEventID: rawString(d, "providerEventId"),
-			PaymentEventName:       rawString(d, "eventName"),
+			IntegrationID:          rawString(fact, "integrationId"),
+			PaymentProvider:        rawString(fact, "provider"),
+			PaymentProviderEventID: rawString(fact, "providerEventId"),
+			PaymentEventName:       rawString(fact, "eventName"),
+		}
+		if isOrderEvent {
+			var order map[string]json.RawMessage
+			_ = json.Unmarshal(rawField(d, "order"), &order)
+			meta.OrderID = rawString(order, "id")
+			meta.OrderEventID = rawString(d, "orderEventId")
+			meta.OrderStatus = rawString(order, "status")
 		}
 		return Normalized{Payload: env.Data, Metadata: meta}
 	}

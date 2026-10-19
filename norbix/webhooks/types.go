@@ -62,6 +62,11 @@ type EventMetadata struct {
 	PaymentProvider        string `json:"paymentProvider,omitempty"`
 	PaymentProviderEventID string `json:"paymentProviderEventId,omitempty"`
 	PaymentEventName       string `json:"paymentEventName,omitempty"`
+	// payments.order.* events: the stored order, its status after the change
+	// and OrderEventID — the de-duplication key (the same on every retry).
+	OrderID      string `json:"orderId,omitempty"`
+	OrderEventID string `json:"orderEventId,omitempty"`
+	OrderStatus  string `json:"orderStatus,omitempty"`
 }
 
 // Event is the metadata passed to a handler alongside the decoded payload.

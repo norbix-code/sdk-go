@@ -21,6 +21,11 @@ var EventNames = []string{
 	"files.file.uploaded",
 	"files.file.deleted",
 	"payments.webhook.received",
+	"payments.order.paid",
+	"payments.order.partially_refunded",
+	"payments.order.refunded",
+	"payments.order.reversed",
+	"payments.order.expired",
 }
 
 // Named event constants — use these instead of raw strings.
@@ -47,4 +52,19 @@ const (
 	// normalized payment fact (decode into dtos.PaymentFactDto); the provider's
 	// own event name is its EventName.
 	EventPaymentsWebhookReceived = "payments.webhook.received"
+	// EventPaymentsOrderPaid: a verified provider callback made a stored payment
+	// order Paid. The payload is the order event (decode with
+	// DecodePayload[norbix.PaymentOrderEvent]): Order is the order as stored
+	// after the change, Payment the callback. De-duplicate on its OrderEventID
+	// (also Metadata.OrderEventID) — it is the same on every retry.
+	EventPaymentsOrderPaid = "payments.order.paid"
+	// EventPaymentsOrderPartiallyRefunded: part of a paid order was refunded
+	// (Order.RefundedMinor).
+	EventPaymentsOrderPartiallyRefunded = "payments.order.partially_refunded"
+	// EventPaymentsOrderRefunded: the whole order was refunded.
+	EventPaymentsOrderRefunded = "payments.order.refunded"
+	// EventPaymentsOrderReversed: the provider reversed (voided) the payment.
+	EventPaymentsOrderReversed = "payments.order.reversed"
+	// EventPaymentsOrderExpired: the checkout ran out without a payment.
+	EventPaymentsOrderExpired = "payments.order.expired"
 )
