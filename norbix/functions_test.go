@@ -120,6 +120,55 @@ var (
     }
   }`, "")
 
+	samplePaymentOrderPaid = functionEventSample("payments.order.paid", "payments", `{
+    "order": {
+      "orderEventId": "ord_2ToIiRM03X63TZaJ2dJdv2:2",
+      "event": "payments.order.paid",
+      "from": "CheckoutStarted",
+      "to": "Paid",
+      "reason": "paid in attempt 1",
+      "order": {
+        "id": "ord_2ToIiRM03X63TZaJ2dJdv2",
+        "env": "PROD",
+        "buyerUserId": "usr_1szWVIyZFBV8HfvC4SfVw",
+        "merchantReference": "ad-1042-promo-1",
+        "currency": "EUR",
+        "priceVersion": "2026-10-01",
+        "lines": [{ "sku": "star-day", "title": "Star × day", "quantity": 21, "unitAmountMinor": 30, "amountMinor": 630 }],
+        "totalMinor": 630,
+        "metadata": { "adId": "ad_1042" },
+        "status": "Paid",
+        "checkouts": [],
+        "settledMinor": 630,
+        "refundedMinor": 0,
+        "providerPaymentId": "mnt-1",
+        "mismatches": []
+      },
+      "payment": {
+        "integrationId": "int_montonio",
+        "provider": "Montonio",
+        "providerEventId": "order:mnt-1:PAID",
+        "orderId": "ord_2ToIiRM03X63TZaJ2dJdv2",
+        "eventName": "order.paid",
+        "status": "Succeeded",
+        "amountMinor": 630,
+        "currency": "EUR",
+        "receivedOn": "2026-10-19T09:54:43Z"
+      }
+    },
+    "payment": {
+      "integrationId": "int_montonio",
+      "provider": "Montonio",
+      "providerEventId": "order:mnt-1:PAID",
+      "orderId": "ord_2ToIiRM03X63TZaJ2dJdv2",
+      "eventName": "order.paid",
+      "status": "Succeeded",
+      "amountMinor": 630,
+      "currency": "EUR",
+      "receivedOn": "2026-10-19T09:54:43Z"
+    }
+  }`, "")
+
 	sampleAICreditsWarning = functionEventSample("ai.credits.warning", "ai", `{
     "ai": {
       "payload": { "creditsLeft": 120, "threshold": 0.1, "plan": "starter" },
@@ -336,6 +385,51 @@ func TestAsPaymentReadsTheWebhookFact(t *testing.T) {
 	}
 	if p.OccurredOn == nil || !p.OccurredOn.Equal(time.Date(2026, 10, 12, 7, 59, 58, 0, time.UTC)) || !p.ReceivedOn.Equal(time.Date(2026, 10, 12, 8, 0, 0, 0, time.UTC)) {
 		t.Errorf("times: %v %v", p.OccurredOn, p.ReceivedOn)
+	}
+}
+
+func TestAsPaymentOrderReadsTheStoredOrderAndAsPaymentIsItsCallback(t *testing.T) {
+	ev := mustParseFunctionEvent(t, samplePaymentOrderPaid)
+
+	o, err := ev.AsPaymentOrder()
+	if err != nil {
+		t.Fatalf("AsPaymentOrder: %v", err)
+	}
+	if o.OrderEventID != "ord_2ToIiRM03X63TZaJ2dJdv2:2" || o.Event != "payments.order.paid" || o.From != "CheckoutStarted" || o.To != "Paid" || o.Reason != "paid in attempt 1" {
+		t.Errorf("order event: %+v", o)
+	}
+	ord := o.Order
+	if ord.ID != "ord_2ToIiRM03X63TZaJ2dJdv2" || ord.Status != "Paid" || ord.TotalMinor != 630 || ord.RefundedMinor != 0 || ord.Metadata["adId"] != "ad_1042" {
+		t.Errorf("order: %+v", ord)
+	}
+	if ord.SettledMinor == nil || *ord.SettledMinor != 630 {
+		t.Errorf("settledMinor: %v", ord.SettledMinor)
+	}
+	if len(ord.Lines) != 1 || ord.Lines[0].SKU != "star-day" || ord.Lines[0].Quantity != 21 || ord.Lines[0].UnitAmountMinor != 30 || ord.Lines[0].AmountMinor != 630 {
+		t.Errorf("lines: %+v", ord.Lines)
+	}
+	if o.Payment == nil || o.Payment.Provider != "Montonio" {
+		t.Errorf("order event payment: %+v", o.Payment)
+	}
+
+	p, err := ev.AsPayment()
+	if err != nil {
+		t.Fatalf("AsPayment: %v", err)
+	}
+	if p.ProviderEventID != "order:mnt-1:PAID" || p.OrderID != "ord_2ToIiRM03X63TZaJ2dJdv2" {
+		t.Errorf("payment: %+v", p)
+	}
+}
+
+func TestAsPaymentOrderOnAPlainPaymentEventNamesTheSlot(t *testing.T) {
+	ev := mustParseFunctionEvent(t, samplePaymentReceived)
+
+	_, err := ev.AsPaymentOrder()
+	if errorCode(err) != norbixerr.CodeFunctionEventNoSlot {
+		t.Fatalf("want %s, got %v", norbixerr.CodeFunctionEventNoSlot, err)
+	}
+	if !strings.Contains(err.Error(), `"payments.webhook.received"`) || !strings.Contains(err.Error(), "data.order") {
+		t.Errorf("message must name the event and the slot: %v", err)
 	}
 }
 
