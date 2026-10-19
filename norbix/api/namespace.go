@@ -12,6 +12,7 @@ type Namespace struct {
 	Echo       *EchoModule
 	Files      *FilesModule
 	Membership *MembershipModule
+	Payments   *PaymentsModule
 	Public     *PublicModule
 }
 
@@ -23,6 +24,7 @@ func NewNamespace(t *transport.Transport) *Namespace {
 		Echo:       &EchoModule{t: t},
 		Files:      &FilesModule{t: t},
 		Membership: &MembershipModule{t: t},
+		Payments:   &PaymentsModule{t: t},
 		Public:     &PublicModule{t: t},
 	}
 }

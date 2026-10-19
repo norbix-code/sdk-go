@@ -496,6 +496,48 @@ Now each taxonomy node's `terms` holds that taxonomy's full term tree (same shap
 
 > Every term-reading call also accepts an optional `databaseIntegrationId` key in the request map to target a non-default database.
 
+## Payment orders and checkout
+
+`c.API.Payments` takes a payment on the project: a payment order is what a
+buyer pays for (lines priced in minor units, a merchant reference, a price
+version), and a checkout sends the buyer to the provider (Montonio, …).
+
+| Method | Route |
+| --- | --- |
+| `CreatePaymentOrder(ctx, req, &out)` | `POST /{version}/payments/orders` → `{id: "ord_…"}` |
+| `GetPaymentOrder(ctx, id, nil, &out)` | `GET /{version}/payments/orders/{Id}` → `{item: order}` |
+| `GetPaymentOrders(ctx, req, &out)` | `GET /{version}/payments/orders` (query `buyerUserId`, `merchantReference`, `status`) → `{list: {items, …}}` |
+| `StartPaymentCheckout(ctx, id, req, &out)` | `POST /{version}/payments/orders/{Id}/checkout` → `{checkout, reused, order}` |
+
+```go
+var created struct{ ID string `json:"id"` }
+err := c.API.Payments.CreatePaymentOrder(ctx, map[string]any{
+	"buyerUserId":       userID,
+	"merchantReference": "ad-1042-promo-1",
+	"idempotencyKey":    "ad-1042-promo-1", // same body + same key → same id
+	"currency":          "EUR",
+	"priceVersion":      "2026-10-01",
+	"lines":             []any{map[string]any{"sku": "star-day", "title": "Star × day", "quantity": 21, "unitAmountMinor": 30}},
+	"metadata":          map[string]string{"adId": "ad_1042"},
+}, &created)
+
+var started struct {
+	Checkout struct{ PaymentURL string `json:"paymentUrl"` } `json:"checkout"`
+	Reused   bool `json:"reused"`
+}
+err = c.API.Payments.StartPaymentCheckout(ctx, created.ID, map[string]any{
+	"integrationId": montonioIntegrationID,
+	"returnUrl":     "https://shop.example.com/orders/return",
+}, &started)
+// redirect the buyer to started.Checkout.PaymentURL
+```
+
+When the provider confirms the payment the order becomes `Paid`, and a webhook
+destination or a Code function hears `payments.order.paid` (also
+`…partially_refunded`, `…refunded`, `…reversed`, `…expired`). Decode the
+webhook payload with `webhooks.DecodePayload[norbix.PaymentOrderEvent]`, or read
+`event.AsPaymentOrder()` in a Code function; de-duplicate on `OrderEventID`.
+
 ## Webhooks
 
 The `norbix/webhooks` package verifies, parses, normalises, and dispatches
@@ -536,7 +578,10 @@ In your HTTP handler, respond `401` on `*webhooks.SignatureError` and `400` on
 
 Normalisation matches the JS SDK: entity events hand you the entity, mutation
 events `{from, to}`, batch events the array; wrapper ids (record id, schema,
-user id) are lifted onto `event.Metadata`.
+user id) are lifted onto `event.Metadata`. Payments events lift the provider
+ids (`PaymentProvider`, `PaymentProviderEventID`, `PaymentEventName`,
+`IntegrationID`); `payments.order.*` also lifts `OrderID`, `OrderStatus` and
+`OrderEventID` — the de-duplication key of an order change.
 
 ### `id` vs `eventId` — de-duplication
 
@@ -635,7 +680,8 @@ func main() { lambda.Start(handler) }
 | `AsDatabaseRecordChange(&old, &new)` | `database` | `Collection`, `SchemaID`, `SchemaVersion`, `RecordID`, `Truncated`, `OldRef` / `NewRef` (documents above 200 KB are left out; fetch them with the refs); `old` / `new` decoded into your type, untouched when absent |
 | `AsUserChange(&old, &new)` | `membership` | `UserID`; the user documents decoded |
 | `AsFileChange(&old, &new)` | `files` | `Path`; the file documents decoded |
-| `AsPayment()` | `payments` | the webhook fact (`Provider`, `EventName`, `Status`, `AmountMinor`, `Currency`, `ExternalIDs`, …) |
+| `AsPayment()` | `payments` | the webhook fact (`Provider`, `EventName`, `OrderID`, `Status`, `AmountMinor`, `Currency`, `ExternalIDs`, …); on `payments.order.*` the callback that changed the order |
+| `AsPaymentOrder()` | `payments` (`payments.order.*`) | `OrderEventID` (the de-duplication key, the same on every retry), `Event`, `From`, `To`, `Reason`, `Order` (`ID`, `Status`, `Lines`, `TotalMinor`, `SettledMinor`, `RefundedMinor`, `Metadata`, `Checkouts`, …), `Payment` |
 | `AsAIUsage(&payload)` | `ai` | `TargetUserID`; the usage payload decoded |
 | `AsScheduledTask()` | `scheduler` | `TaskID`, `Name`, `FiredAt` |
 | `Payload(&out)` | `manual`, `scheduler` | the caller's JSON object decoded; untouched when none |
