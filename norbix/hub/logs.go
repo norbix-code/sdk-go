@@ -120,6 +120,9 @@ func (m *LogsModule) SaveLoggingIntegration(ctx context.Context, req map[string]
 }
 
 // TestLoggingIntegration performs POST /{version}/logs/integrations/test (scope: project).
+// Body: integrationId (request type dtos.TestLoggingIntegration). Call it after
+// every SaveLoggingIntegration: nothing is delivered to an integration until
+// its last test passed. Answers dtos.TestLoggingIntegrationResponse.
 func (m *LogsModule) TestLoggingIntegration(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -137,6 +140,86 @@ func (m *LogsModule) GetLogsByCorrelationId(ctx context.Context, req map[string]
 		Target:     transport.TargetHub,
 		Path:       "/{version}/logs/audit",
 		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetLogs performs GET /{version}/logs (scope: project).
+// The project's log list for the request env, newest first (request type
+// dtos.GetLogs). Optional query: level, module, logCorrelationId (not
+// correlationId — that one is the current request's own id), eventCode,
+// search (title and message), metaKey + metaValue, fromUtc, toUtc, and the
+// paging fields pageSize, startingAfter, endingBefore. Answers
+// dtos.GetLogsResponse. A project without a Norbix Logging integration gets
+// empty pages.
+func (m *LogsModule) GetLogs(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/logs",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetLog performs GET /{version}/logs/{Id} (scope: project).
+// One log entry by its id (request type dtos.GetLog). Answers
+// dtos.GetLogResponse, whose Item is the entry.
+func (m *LogsModule) GetLog(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/logs/{Id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CleanLogs performs POST /{version}/logs/clean (scope: project).
+// Removes the request env's log entries (request type dtos.CleanLogs).
+// Entries of other envs stay. Answers dtos.CleanLogsResponse.
+func (m *LogsModule) CleanLogs(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/logs/clean",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetLogSettings performs GET /{version}/logs/settings (scope: project).
+// Answers dtos.GetLogSettingsResponse: skipCloudDashboardLogs,
+// skipHttpBodyMeta, aiChatLoggingEnabled and hasNorbixLogging.
+func (m *LogsModule) GetLogSettings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/logs/settings",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SaveLogSettings performs POST /{version}/logs/settings (scope: project).
+// Body: skipCloudDashboardLogs, skipHttpBodyMeta, aiChatLoggingEnabled (request
+// type dtos.SaveLogSettings). Send all three as a map: the generated struct
+// tags every field omitempty, so a false in the struct is left out of the body.
+// Answers dtos.SaveLogSettingsResponse.
+func (m *LogsModule) SaveLogSettings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/logs/settings",
+		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,
