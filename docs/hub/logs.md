@@ -84,8 +84,20 @@ Refusals:
 | 429 | `CM-ERRORS-LOGGING-003` | the project's per-minute quota (entries and bytes) is used up; the whole call is refused | `*errors.RateLimitError` |
 
 The SDK never resends a `POST`. On a 429 the gateway sends a `Retry-After`
-header with the seconds to wait; the SDK does not surface response headers on
-its errors yet, so wait and try again (a few seconds up to a minute).
+header with the seconds to wait; the SDK hands it over as
+`RateLimitError.RetryAfterSeconds()` (a `*int`, nil when the header is absent
+or unreadable — also on the base error as `Error.RetryAfterSeconds`):
+
+```go
+var rl *norbixerr.RateLimitError
+if errors.As(err, &rl) {
+	wait := 60 * time.Second
+	if s := rl.RetryAfterSeconds(); s != nil {
+		wait = time.Duration(*s) * time.Second
+	}
+	time.Sleep(wait) // then send the entries again
+}
+```
 
 A narrow key for an app: a service user whose only grant is the built-in
 policy "Logs — write" (`logging:create`).
