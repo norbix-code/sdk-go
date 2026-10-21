@@ -117,6 +117,12 @@ Types: `AuthenticationError` (401/403), `NotFoundError` (404),
 `RateLimitError` (429), `ValidationError` (400/422), base `Error` otherwise.
 Idempotent verbs (GET/DELETE) retry on 429/5xx with exponential backoff.
 
+`Error.RetryAfterSeconds` (`*int`) is the answer's `Retry-After` header in whole
+seconds — the number itself, or the seconds until the HTTP date it names (never
+below 0); nil when the header is absent or unreadable. `RateLimitError` also
+has it as `RetryAfterSeconds()`. A 429 `CM-ERRORS-LOGGING-003` from
+`API.Logs.WriteLogs` carries it: wait that long, then send again.
+
 `Message` and `Code` are the gateway's own. The gateway puts them inside
 `responseStatus.errors[]`, so the SDK reads that list first, takes the first
 entry for `Message` / `Code`, and keeps every entry in `Errors`. Only when the
