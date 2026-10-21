@@ -133,3 +133,108 @@ func TestAPILogsWriteLogsQuotaRefusal(t *testing.T) {
 		t.Errorf("calls: got %d want 1 (a POST is not retried)", n)
 	}
 }
+
+// answerLogs starts a fake gateway that counts the calls and answers every one
+// with the given status, Retry-After (none when empty) and body.
+func answerLogs(t *testing.T, status int, retryAfter, body string) (*LogsModule, *int32) {
+	t.Helper()
+	var calls int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		w.Header().Set("Content-Type", "application/json")
+		if retryAfter != "" {
+			w.Header().Set("Retry-After", retryAfter)
+		}
+		w.WriteHeader(status)
+		_, _ = io.WriteString(w, body)
+	}))
+	t.Cleanup(srv.Close)
+	return newAPILogsTestModule(srv.URL), &calls
+}
+
+const logsQuotaBody = `{"responseStatus":{"errorCode":"CM-ERRORS-LOGGING-003","message":"Log quota used up.","errors":[{"errorCode":"CM-ERRORS-LOGGING-003","message":"Log quota used up."}]}}`
+
+func writeOneLog(m *LogsModule) error {
+	return m.WriteLogs(context.Background(),
+		map[string]any{"entries": []any{map[string]any{"title": "x"}}}, nil)
+}
+
+// A 429 with Retry-After: 37 hands the 37 seconds to the caller, on the
+// RateLimitError and on its base error, and the POST is still sent once.
+func TestAPILogsWriteLogsQuotaRefusalCarriesRetryAfter(t *testing.T) {
+	m, calls := answerLogs(t, http.StatusTooManyRequests, "37", logsQuotaBody)
+
+	err := writeOneLog(m)
+
+	var rl *norbixerr.RateLimitError
+	if !stderrors.As(err, &rl) {
+		t.Fatalf("error: got %T %v, want *errors.RateLimitError", err, err)
+	}
+	if rl.Base.Code != "CM-ERRORS-LOGGING-003" {
+		t.Errorf("code: got %q want CM-ERRORS-LOGGING-003", rl.Base.Code)
+	}
+	if got := rl.RetryAfterSeconds(); got == nil || *got != 37 {
+		t.Errorf("RetryAfterSeconds(): got %v want 37", got)
+	}
+	var base *norbixerr.Error
+	if !stderrors.As(err, &base) || base.RetryAfterSeconds == nil || *base.RetryAfterSeconds != 37 {
+		t.Errorf("base RetryAfterSeconds: got %v want 37", base.RetryAfterSeconds)
+	}
+	if n := atomic.LoadInt32(calls); n != 1 {
+		t.Errorf("calls: got %d want 1 (a POST is not retried)", n)
+	}
+}
+
+// A 429 that names an HTTP date gives the seconds until that date.
+func TestAPILogsWriteLogsQuotaRefusalWithAnHTTPDate(t *testing.T) {
+	at := time.Now().Add(120 * time.Second).UTC().Format(http.TimeFormat)
+	m, _ := answerLogs(t, http.StatusTooManyRequests, at, logsQuotaBody)
+
+	var rl *norbixerr.RateLimitError
+	if err := writeOneLog(m); !stderrors.As(err, &rl) {
+		t.Fatalf("error: got %T %v, want *errors.RateLimitError", err, err)
+	}
+	if got := rl.RetryAfterSeconds(); got == nil || *got < 115 || *got > 121 {
+		t.Errorf("RetryAfterSeconds(): got %v want about 120", got)
+	}
+}
+
+// A 429 without Retry-After, or with one that cannot be read, leaves it nil.
+func TestAPILogsWriteLogsQuotaRefusalWithoutRetryAfter(t *testing.T) {
+	for _, header := range []string{"", "soon", "-5"} {
+		m, calls := answerLogs(t, http.StatusTooManyRequests, header, logsQuotaBody)
+
+		var rl *norbixerr.RateLimitError
+		if err := writeOneLog(m); !stderrors.As(err, &rl) {
+			t.Fatalf("Retry-After %q: got %T %v, want *errors.RateLimitError", header, err, err)
+		}
+		if got := rl.RetryAfterSeconds(); got != nil {
+			t.Errorf("Retry-After %q: RetryAfterSeconds() got %d want nil", header, *got)
+		}
+		if n := atomic.LoadInt32(calls); n != 1 {
+			t.Errorf("Retry-After %q: calls got %d want 1", header, n)
+		}
+	}
+}
+
+// A 500 has no Retry-After: the base error leaves it nil.
+func TestAPILogsWriteLogs500HasNoRetryAfter(t *testing.T) {
+	m, calls := answerLogs(t, http.StatusInternalServerError, "",
+		`{"responseStatus":{"errorCode":"CM-ERRORS-500","message":"Boom"}}`)
+
+	err := writeOneLog(m)
+
+	var base *norbixerr.Error
+	if !stderrors.As(err, &base) {
+		t.Fatalf("error: got %T %v, want *errors.Error", err, err)
+	}
+	if base.Status != http.StatusInternalServerError {
+		t.Errorf("status: got %d want 500", base.Status)
+	}
+	if base.RetryAfterSeconds != nil {
+		t.Errorf("RetryAfterSeconds: got %d want nil", *base.RetryAfterSeconds)
+	}
+	if n := atomic.LoadInt32(calls); n != 1 {
+		t.Errorf("calls: got %d want 1 (a POST is not retried)", n)
+	}
+}

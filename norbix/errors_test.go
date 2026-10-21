@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/norbix-code/sdk-go/v2/norbix/api/dtos"
 	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
@@ -186,3 +187,32 @@ func TestReadsTheTopOfTheBodyWhenThereIsNoResponseStatus(t *testing.T) {
 		t.Errorf("code: got %q", base.Code)
 	}
 }
+
+// Retry-After is delta seconds or an HTTP date; anything else is no value.
+func TestRetryAfterSecondsOf(t *testing.T) {
+	now := time.Date(2026, 10, 21, 8, 0, 0, 0, time.UTC)
+	cases := []struct {
+		value string
+		want  *int
+	}{
+		{"37", intPtr(37)},
+		{" 0 ", intPtr(0)},
+		{"1.2", intPtr(2)},
+		{"Wed, 21 Oct 2026 08:01:30 GMT", intPtr(90)},
+		{"Wed, 21 Oct 2026 07:00:00 GMT", intPtr(0)},
+		{"", nil},
+		{"soon", nil},
+		{"-1", nil},
+	}
+	for _, c := range cases {
+		got := norbixerr.RetryAfterSecondsOf(c.value, now)
+		switch {
+		case c.want == nil && got != nil:
+			t.Errorf("%q: got %d want nil", c.value, *got)
+		case c.want != nil && (got == nil || *got != *c.want):
+			t.Errorf("%q: got %v want %d", c.value, got, *c.want)
+		}
+	}
+}
+
+func intPtr(n int) *int { return &n }
