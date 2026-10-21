@@ -212,7 +212,7 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 	}
 
 	if resp.status >= 400 {
-		return norbixerr.FromBody(resp.body, resp.status)
+		return norbixerr.FromResponse(resp.body, resp.status, resp.headers)
 	}
 
 	// An endpoint that answers with a file, not a document: hand the bytes
@@ -229,7 +229,7 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 	// refusal with HTTP 200 and responseStatus.isSuccess=false, and that is a
 	// failure the caller must see (10b-files, issue #67).
 	if norbixerr.SaysItFailed(resp.body) {
-		return norbixerr.FromBody(resp.body, resp.status)
+		return norbixerr.FromResponse(resp.body, resp.status, resp.headers)
 	}
 
 	if out == nil || resp.status == http.StatusNoContent || len(resp.body) == 0 {
