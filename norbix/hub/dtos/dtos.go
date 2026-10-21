@@ -3823,6 +3823,25 @@ type MarketplaceFunctionSchedulerTaskRequest struct {
 	Payload    map[string]string `json:"payload,omitempty"`
 }
 
+// AwsCloudWatchLoggingIntegrationRequest DTO.
+type AwsCloudWatchLoggingIntegrationRequest struct {
+	LoggingIntegrationRequest
+	Provider  LoggingProvider `json:"provider,omitempty"`
+	Region    string          `json:"region,omitempty"`
+	LogGroup  string          `json:"logGroup,omitempty"`
+	LogStream string          `json:"logStream,omitempty"`
+	AccessKey string          `json:"accessKey,omitempty"`
+	SecretKey string          `json:"secretKey,omitempty"`
+}
+
+// AwsCloudWatchLoggingIntegrationDto DTO.
+type AwsCloudWatchLoggingIntegrationDto struct {
+	LoggingIntegrationDto
+	Region    string `json:"region,omitempty"`
+	LogGroup  string `json:"logGroup,omitempty"`
+	LogStream string `json:"logStream,omitempty"`
+}
+
 // JsonSchemaFieldDto DTO.
 type JsonSchemaFieldDto struct {
 	FieldName string `json:"fieldName,omitempty"`
@@ -6384,6 +6403,7 @@ type TenantLogEntryDto struct {
 	TraceId       string            `json:"traceId,omitempty"`
 	SpanId        string            `json:"spanId,omitempty"`
 	Env           string            `json:"env,omitempty"`
+	Origin        string            `json:"origin,omitempty"`
 	Meta          map[string]string `json:"meta,omitempty"`
 }
 
@@ -8522,6 +8542,12 @@ type GetLogsByCorrelationIdResponse struct {
 	Items []*TenantLogEntryDto `json:"items,omitempty"`
 }
 
+// GetLogResponse DTO.
+type GetLogResponse struct {
+	ResponseBase
+	Item *TenantLogEntryDto `json:"item,omitempty"`
+}
+
 // GetLogsResponse DTO.
 type GetLogsResponse struct {
 	ResponseBase
@@ -9465,6 +9491,8 @@ type InternalsTypeGen struct {
 	Typegen_282_FakeCodeIntegrationRequest                       *FakeCodeIntegrationRequest                        `json:"typegen_282_FakeCodeIntegrationRequest,omitempty"`
 	Typegen_283_CodeFunctionSchedulerTaskRequest                 *CodeFunctionSchedulerTaskRequest                  `json:"typegen_283_CodeFunctionSchedulerTaskRequest,omitempty"`
 	Typegen_284_MarketplaceFunctionSchedulerTaskRequest          *MarketplaceFunctionSchedulerTaskRequest           `json:"typegen_284_MarketplaceFunctionSchedulerTaskRequest,omitempty"`
+	Typegen_285_AwsCloudWatchLoggingIntegrationRequest           *AwsCloudWatchLoggingIntegrationRequest            `json:"typegen_285_AwsCloudWatchLoggingIntegrationRequest,omitempty"`
+	Typegen_286_AwsCloudWatchLoggingIntegrationDto               *AwsCloudWatchLoggingIntegrationDto                `json:"typegen_286_AwsCloudWatchLoggingIntegrationDto,omitempty"`
 }
 
 // SharedTypeGen DTO.
@@ -12334,6 +12362,12 @@ type CleanLogs struct {
 type GetLogsByCorrelationId struct {
 	CodeMashRequestBase
 	TargetCorrelationId string `json:"targetCorrelationId,omitempty"`
+}
+
+// GetLog DTO.
+type GetLog struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
 }
 
 // GetLogs DTO.

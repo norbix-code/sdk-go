@@ -395,6 +395,17 @@ type RegisterFileItem struct {
 	FileName    string  `json:"fileName,omitempty"`
 }
 
+// WriteLogEntry DTO.
+type WriteLogEntry struct {
+	Level         string            `json:"level,omitempty"`
+	Title         string            `json:"title,omitempty"`
+	Message       string            `json:"message,omitempty"`
+	EventCode     string            `json:"eventCode,omitempty"`
+	CorrelationId string            `json:"correlationId,omitempty"`
+	Timestamp     string            `json:"timestamp,omitempty"`
+	Meta          map[string]string `json:"meta,omitempty"`
+}
+
 // PaymentOrderLineInput DTO.
 type PaymentOrderLineInput struct {
 	Sku             string  `json:"sku,omitempty"`
@@ -1264,6 +1275,12 @@ type GetOwnPushDevicesResponse struct {
 type GetOwnPushMessagesResponse struct {
 	ResponseBase
 	List PaginatedResponse[*OwnPushMessageDto] `json:"list,omitempty"`
+}
+
+// WriteLogsResponse DTO.
+type WriteLogsResponse struct {
+	ResponseBase
+	Accepted float64 `json:"accepted,omitempty"`
 }
 
 // GetPaymentOrderResponse DTO.
@@ -2195,6 +2212,12 @@ type MarkOwnPushMessageReadRequest struct {
 // MarkAllOwnPushMessagesReadRequest DTO.
 type MarkAllOwnPushMessagesReadRequest struct {
 	CodeMashRequestBase
+}
+
+// WriteLogs DTO.
+type WriteLogs struct {
+	CodeMashRequestBase
+	Entries []*WriteLogEntry `json:"entries,omitempty"`
 }
 
 // CreatePaymentOrderRequest DTO.
