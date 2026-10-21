@@ -8,6 +8,11 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // Code values used by the SDK itself (network / client-side failures). HTTP
@@ -60,6 +65,11 @@ type Error struct {
 	Details map[string]any
 	// Body is the answer exactly as it arrived, for whoever needs the rest of it.
 	Body []byte
+	// RetryAfterSeconds is the answer's Retry-After header in whole seconds:
+	// the number itself, or the seconds until the HTTP date it names (never
+	// below 0). Nil when the header is absent or unreadable. A 429
+	// CM-ERRORS-LOGGING-003 from WriteLogs carries it.
+	RetryAfterSeconds *int
 	// wrapped is an optional underlying error (e.g. the net/http error).
 	wrapped error
 }
@@ -103,6 +113,11 @@ type RateLimitError struct{ Base *Error }
 
 func (e *RateLimitError) Error() string { return e.Base.Error() }
 func (e *RateLimitError) Unwrap() error { return e.Base }
+
+// RetryAfterSeconds is how many seconds to wait before sending again, from
+// the answer's Retry-After header; nil when the gateway sent none. Same value
+// as Base.RetryAfterSeconds.
+func (e *RateLimitError) RetryAfterSeconds() *int { return e.Base.RetryAfterSeconds }
 
 // ValidationError is returned for HTTP 400 / 422.
 type ValidationError struct{ Base *Error }
@@ -158,6 +173,39 @@ func FromBody(raw []byte, status int) error {
 	base.Errors = items
 	base.Body = raw
 	return err
+}
+
+// FromResponse is FromBody plus the answer's headers: it also reads
+// Retry-After into RetryAfterSeconds.
+func FromResponse(raw []byte, status int, header http.Header) error {
+	err := FromBody(raw, status)
+	baseOf(err).RetryAfterSeconds = RetryAfterSecondsOf(header.Get("Retry-After"), time.Now())
+	return err
+}
+
+// RetryAfterSecondsOf reads a Retry-After header value as whole seconds: the
+// number itself, or the seconds from now until the HTTP date it names (never
+// below 0). Nil when the value is empty or unreadable.
+func RetryAfterSecondsOf(value string, now time.Time) *int {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+	if f, err := strconv.ParseFloat(value, 64); err == nil {
+		if f < 0 || f > math.MaxInt32 || math.IsNaN(f) {
+			return nil
+		}
+		n := int(math.Ceil(f))
+		return &n
+	}
+	if at, err := http.ParseTime(value); err == nil {
+		n := int(math.Ceil(at.Sub(now).Seconds()))
+		if n < 0 {
+			n = 0
+		}
+		return &n
+	}
+	return nil
 }
 
 // responseStatusOf returns the responseStatus block, whatever its casing.

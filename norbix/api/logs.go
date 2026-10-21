@@ -31,8 +31,9 @@ type LogsModule struct{ t *transport.Transport }
 // Refusals: HTTP 400 for a broken entry, HTTP 400 CM-ERRORS-LOGGING-002 when
 // the Logs module is off, and HTTP 429 CM-ERRORS-LOGGING-003 (a
 // *errors.RateLimitError) when the project's per-minute quota is used up — the
-// whole call is refused; the gateway's Retry-After header says how many
-// seconds to wait. The SDK does not retry a POST.
+// whole call is refused; RateLimitError.RetryAfterSeconds() (from the
+// gateway's Retry-After header) says how many seconds to wait. The SDK does
+// not retry a POST.
 func (m *LogsModule) WriteLogs(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
