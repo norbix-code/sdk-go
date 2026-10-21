@@ -11,6 +11,7 @@ type Namespace struct {
 	Database   *DatabaseModule
 	Echo       *EchoModule
 	Files      *FilesModule
+	Logs       *LogsModule
 	Membership *MembershipModule
 	Payments   *PaymentsModule
 	Public     *PublicModule
@@ -23,6 +24,7 @@ func NewNamespace(t *transport.Transport) *Namespace {
 		Database:   &DatabaseModule{t: t},
 		Echo:       &EchoModule{t: t},
 		Files:      &FilesModule{t: t},
+		Logs:       &LogsModule{t: t},
 		Membership: &MembershipModule{t: t},
 		Payments:   &PaymentsModule{t: t},
 		Public:     &PublicModule{t: t},
