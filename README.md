@@ -829,6 +829,10 @@ Project owners configure the assistant on the Hub: `client.Hub.Account`
 - [Database](docs/hub/database.md) — schemas, records (Hub + Api), taxonomies and
   term trees, schema triggers, database integrations, saved aggregates
 - [Push](docs/hub/push.md) — push integrations, templates, campaigns, devices
+- [Logs](docs/hub/logs.md) — write your app's entries (`API.Logs.WriteLogs`), read
+  and clean the log list, log settings, log integrations (MongoDB, Datadog, AWS
+  CloudWatch, …) — test an integration after saving it: nothing is delivered
+  until its last test passed
 - [Scheduler](docs/hub/scheduler.md) — cron tasks (email campaigns), module enable / disable (PUT)
 
 ## Package layout
