@@ -386,6 +386,15 @@ type PagingArgs struct {
 	EndingBefore  string      `json:"endingBefore,omitempty"`
 }
 
+// RegisterFileItem DTO.
+type RegisterFileItem struct {
+	Path        string  `json:"path,omitempty"`
+	OwnerUserId string  `json:"ownerUserId,omitempty"`
+	ContentType string  `json:"contentType,omitempty"`
+	SizeBytes   float64 `json:"sizeBytes,omitempty"`
+	FileName    string  `json:"fileName,omitempty"`
+}
+
 // PaymentOrderLineInput DTO.
 type PaymentOrderLineInput struct {
 	Sku             string  `json:"sku,omitempty"`
@@ -706,10 +715,11 @@ type SchemaUniqueIndexDto struct {
 
 // SchemaSettingsDto DTO.
 type SchemaSettingsDto struct {
-	SoftDelete     bool                    `json:"softDelete,omitempty"`
-	HasRecordOwner bool                    `json:"hasRecordOwner,omitempty"`
-	Description    string                  `json:"description,omitempty"`
-	UniqueIndexes  []*SchemaUniqueIndexDto `json:"uniqueIndexes,omitempty"`
+	SoftDelete        bool                    `json:"softDelete,omitempty"`
+	HasRecordOwner    bool                    `json:"hasRecordOwner,omitempty"`
+	Description       string                  `json:"description,omitempty"`
+	UniqueIndexes     []*SchemaUniqueIndexDto `json:"uniqueIndexes,omitempty"`
+	EndUserOwnRecords bool                    `json:"endUserOwnRecords,omitempty"`
 }
 
 // SchemaEmbedSettingsDto DTO.
@@ -799,6 +809,20 @@ type PublicFolderDto struct {
 	PublicId  string `json:"publicId,omitempty"`
 	PublicUrl string `json:"publicUrl,omitempty"`
 	Inherited bool   `json:"inherited,omitempty"`
+}
+
+// RegisterFileResult DTO.
+type RegisterFileResult struct {
+	Index       float64 `json:"index,omitempty"`
+	Path        string  `json:"path,omitempty"`
+	OwnerUserId string  `json:"ownerUserId,omitempty"`
+	Status      string  `json:"status,omitempty"`
+	FileId      string  `json:"fileId,omitempty"`
+	Verified    bool    `json:"verified,omitempty"`
+	Warning     string  `json:"warning,omitempty"`
+	ErrorCode   string  `json:"errorCode,omitempty"`
+	ErrorStatus float64 `json:"errorStatus,omitempty"`
+	Error       string  `json:"error,omitempty"`
 }
 
 // IntegrationTestResultItemDto DTO.
@@ -1206,6 +1230,16 @@ type ListFilesResponse struct {
 	List          PaginatedResponse[*FileResourceRefDto] `json:"list,omitempty"`
 	Folders       []string                               `json:"folders,omitempty"`
 	PublicFolders []*PublicFolderDto                     `json:"publicFolders,omitempty"`
+}
+
+// RegisterFilesResponse DTO.
+type RegisterFilesResponse struct {
+	ResponseBase
+	DryRun     bool                  `json:"dryRun,omitempty"`
+	Registered float64               `json:"registered,omitempty"`
+	Unchanged  float64               `json:"unchanged,omitempty"`
+	Failed     float64               `json:"failed,omitempty"`
+	Items      []*RegisterFileResult `json:"items,omitempty"`
 }
 
 // RequestUploadUrlResponse DTO.
@@ -1999,6 +2033,8 @@ type CommitUploadRequest struct {
 	ContentType        string  `json:"contentType,omitempty"`
 	SizeBytes          float64 `json:"sizeBytes,omitempty"`
 	FileName           string  `json:"fileName,omitempty"`
+	OwnerUserId        string  `json:"ownerUserId,omitempty"`
+	ReassignOwner      bool    `json:"reassignOwner,omitempty"`
 }
 
 // GetFileContentRequest DTO.
@@ -2074,6 +2110,15 @@ type GetPublicFileRequest struct {
 	Name     string `json:"name,omitempty"`
 }
 
+// RegisterFilesRequest DTO.
+type RegisterFilesRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string              `json:"filesIntegrationId,omitempty"`
+	Items              []*RegisterFileItem `json:"items,omitempty"`
+	ReassignOwner      bool                `json:"reassignOwner,omitempty"`
+	DryRun             bool                `json:"dryRun,omitempty"`
+}
+
 // RequestUploadUrlRequest DTO.
 type RequestUploadUrlRequest struct {
 	CodeMashRequestBase
@@ -2081,6 +2126,8 @@ type RequestUploadUrlRequest struct {
 	Path               string  `json:"path,omitempty"`
 	ContentType        string  `json:"contentType,omitempty"`
 	ExpirationSeconds  float64 `json:"expirationSeconds,omitempty"`
+	OwnerUserId        string  `json:"ownerUserId,omitempty"`
+	ReassignOwner      bool    `json:"reassignOwner,omitempty"`
 }
 
 // TestFilesIntegrationRequest DTO.
@@ -2094,6 +2141,8 @@ type UseFileRequest struct {
 	CodeMashRequestBase
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
 	Path               string `json:"path,omitempty"`
+	OwnerUserId        string `json:"ownerUserId,omitempty"`
+	ReassignOwner      bool   `json:"reassignOwner,omitempty"`
 }
 
 // RegisterOwnPushDeviceRequest DTO.
