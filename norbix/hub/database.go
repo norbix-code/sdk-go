@@ -1009,6 +1009,7 @@ func (m *DatabaseModule) ChangeRecordResponsibility(ctx context.Context, collect
 // ApplyDatabaseSchemaBundle performs POST /{version}/database/schemas/apply-bundle (scope: project).
 //
 // It creates or updates schemas from a bundle ("entities" or "bundleJson", "tier", "translatable", "publish").
+// "publish" left out = true (publish v1); send false to keep every collection a draft.
 func (m *DatabaseModule) ApplyDatabaseSchemaBundle(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
