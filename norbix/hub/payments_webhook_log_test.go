@@ -43,7 +43,7 @@ func TestGetPaymentsWebhookLog(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	reqDto := dtos.GetPaymentsWebhookLog{IntegrationId: "int_stripe", Limit: 20}
+	reqDto := dtos.GetPaymentsWebhookLog{IntegrationId: "int_stripe", Limit: ptr(20.0)}
 	raw, _ := json.Marshal(reqDto)
 	var req map[string]any
 	if err := json.Unmarshal(raw, &req); err != nil {

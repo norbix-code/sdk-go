@@ -4,8 +4,11 @@
 // types"). Editing this file by hand is lost on the next run.
 
 // Package dtos holds the data types of the Norbix Hub surface. A field
-// that holds another generated type is a pointer; every field carries a JSON
-// tag with omitempty, because the gateway leaves absent values out.
+// that holds another generated type is a pointer. A nullable true/false or
+// number field is a pointer too (*bool, *float64): nil is left out of the
+// request, false and 0 are sent. A required true/false field is always sent.
+// Every other field carries omitempty, because the gateway leaves absent
+// values out.
 package dtos
 
 // EmailProvider enum.
@@ -1056,7 +1059,7 @@ type EmailIntegrationRequest struct {
 	IntegrationId   string        `json:"integrationId,omitempty"`
 	Provider        EmailProvider `json:"provider,omitempty"`
 	IntegrationName string        `json:"integrationName,omitempty"`
-	IsEnabled       bool          `json:"isEnabled,omitempty"`
+	IsEnabled       bool          `json:"isEnabled"`
 	EmailAddress    string        `json:"emailAddress,omitempty"`
 	EmailSenderName string        `json:"emailSenderName,omitempty"`
 }
@@ -1121,7 +1124,7 @@ type EmailCampaignRequest struct {
 	InitiatorId             string                             `json:"initiatorId,omitempty"`
 	Notes                   string                             `json:"notes,omitempty"`
 	MappedTokens            []*TokenMappingDto                 `json:"mappedTokens,omitempty"`
-	CampaignTime            float64                            `json:"campaignTime,omitempty"`
+	CampaignTime            *float64                           `json:"campaignTime,omitempty"`
 }
 
 // EmailToAllUsersDeliverySettingsRequest DTO.
@@ -1139,7 +1142,7 @@ type EmailToAccountUsersDeliverySettingsRequest struct {
 	UserRecipients      []string                           `json:"userRecipients,omitempty"`
 	UserCc              []string                           `json:"userCc,omitempty"`
 	UserBcc             []string                           `json:"userBcc,omitempty"`
-	SingleEmailStrategy bool                               `json:"singleEmailStrategy,omitempty"`
+	SingleEmailStrategy bool                               `json:"singleEmailStrategy"`
 }
 
 // EmailToCollectionRecordsDeliverySettingsRequest DTO.
@@ -1160,7 +1163,7 @@ type EmailToEmailsDeliverySettingsRequest struct {
 	Recipients          []string                           `json:"recipients,omitempty"`
 	RecipientsCc        []string                           `json:"recipientsCc,omitempty"`
 	RecipientsBcc       []string                           `json:"recipientsBcc,omitempty"`
-	SingleEmailStrategy bool                               `json:"singleEmailStrategy,omitempty"`
+	SingleEmailStrategy bool                               `json:"singleEmailStrategy"`
 }
 
 // EmailToUsersDeliverySettingsRequest DTO.
@@ -1170,7 +1173,7 @@ type EmailToUsersDeliverySettingsRequest struct {
 	UserRecipients      []string                           `json:"userRecipients,omitempty"`
 	UserCc              []string                           `json:"userCc,omitempty"`
 	UserBcc             []string                           `json:"userBcc,omitempty"`
-	SingleEmailStrategy bool                               `json:"singleEmailStrategy,omitempty"`
+	SingleEmailStrategy bool                               `json:"singleEmailStrategy"`
 }
 
 // TriggerActionDto DTO.
@@ -1185,10 +1188,10 @@ type SaveTriggerRequest struct {
 	TriggerId      string            `json:"triggerId,omitempty"`
 	Name           string            `json:"name,omitempty"`
 	Description    string            `json:"description,omitempty"`
-	IsEnabled      bool              `json:"isEnabled,omitempty"`
+	IsEnabled      bool              `json:"isEnabled"`
 	PreExecuteCode string            `json:"preExecuteCode,omitempty"`
-	Order          float64           `json:"order,omitempty"`
-	BreakOnError   bool              `json:"breakOnError,omitempty"`
+	Order          *float64          `json:"order,omitempty"`
+	BreakOnError   bool              `json:"breakOnError"`
 	Action         *TriggerActionDto `json:"action,omitempty"`
 }
 
@@ -1230,7 +1233,7 @@ type DatabaseIntegrationRequest struct {
 	IntegrationId   string           `json:"integrationId,omitempty"`
 	Provider        DatabaseProvider `json:"provider,omitempty"`
 	IntegrationName string           `json:"integrationName,omitempty"`
-	IsEnabled       bool             `json:"isEnabled,omitempty"`
+	IsEnabled       bool             `json:"isEnabled"`
 }
 
 // MongoDbConnectionStringDatabaseIntegrationRequest DTO.
@@ -1253,7 +1256,7 @@ type FilesIntegrationRequest struct {
 	IntegrationId   string       `json:"integrationId,omitempty"`
 	Provider        FileProvider `json:"provider,omitempty"`
 	IntegrationName string       `json:"integrationName,omitempty"`
-	IsEnabled       bool         `json:"isEnabled,omitempty"`
+	IsEnabled       bool         `json:"isEnabled"`
 }
 
 // GoogleDriveFilesIntegrationRequest DTO.
@@ -1271,7 +1274,7 @@ type FtpFilesIntegrationRequest struct {
 	Host     string       `json:"host,omitempty"`
 	Port     float64      `json:"port,omitempty"`
 	RootPath string       `json:"rootPath,omitempty"`
-	UseSsl   bool         `json:"useSsl,omitempty"`
+	UseSsl   bool         `json:"useSsl"`
 	Username string       `json:"username,omitempty"`
 	Password string       `json:"password,omitempty"`
 }
@@ -1337,7 +1340,7 @@ type LoggingIntegrationRequest struct {
 	IntegrationId   string          `json:"integrationId,omitempty"`
 	Provider        LoggingProvider `json:"provider,omitempty"`
 	IntegrationName string          `json:"integrationName,omitempty"`
-	IsEnabled       bool            `json:"isEnabled,omitempty"`
+	IsEnabled       bool            `json:"isEnabled"`
 }
 
 // AmqpLoggingIntegrationRequest DTO.
@@ -1483,7 +1486,7 @@ type MembershipIntegrationRequest struct {
 	IntegrationId   string             `json:"integrationId,omitempty"`
 	Provider        MembershipProvider `json:"provider,omitempty"`
 	IntegrationName string             `json:"integrationName,omitempty"`
-	IsEnabled       bool               `json:"isEnabled,omitempty"`
+	IsEnabled       bool               `json:"isEnabled"`
 }
 
 // DisplayName DTO.
@@ -1495,14 +1498,14 @@ type DisplayName struct {
 type RoleName struct {
 	Name                string `json:"name,omitempty"`
 	DisplayName         string `json:"displayName,omitempty"`
-	IsAdministrator     bool   `json:"isAdministrator,omitempty"`
-	IsAuthenticated     bool   `json:"isAuthenticated,omitempty"`
-	IsGuest             bool   `json:"isGuest,omitempty"`
-	IsRootRole          bool   `json:"isRootRole,omitempty"`
-	IsCollaboratorRole  bool   `json:"isCollaboratorRole,omitempty"`
-	IsProjectSystemRole bool   `json:"isProjectSystemRole,omitempty"`
-	IsAccountSystemRole bool   `json:"isAccountSystemRole,omitempty"`
-	IsSystemRole        bool   `json:"isSystemRole,omitempty"`
+	IsAdministrator     bool   `json:"isAdministrator"`
+	IsAuthenticated     bool   `json:"isAuthenticated"`
+	IsGuest             bool   `json:"isGuest"`
+	IsRootRole          bool   `json:"isRootRole"`
+	IsCollaboratorRole  bool   `json:"isCollaboratorRole"`
+	IsProjectSystemRole bool   `json:"isProjectSystemRole"`
+	IsAccountSystemRole bool   `json:"isAccountSystemRole"`
+	IsSystemRole        bool   `json:"isSystemRole"`
 }
 
 // OAuthModeConfig DTO.
@@ -1579,7 +1582,7 @@ type AppleMembershipIntegrationRequest struct {
 	ServiceId    string             `json:"serviceId,omitempty"`
 	KeyId        string             `json:"keyId,omitempty"`
 	PrivateKey   string             `json:"privateKey,omitempty"`
-	IsProduction bool               `json:"isProduction,omitempty"`
+	IsProduction bool               `json:"isProduction"`
 	OAuthModes   []*OAuthModeConfig `json:"oAuthModes,omitempty"`
 }
 
@@ -1588,7 +1591,7 @@ type PaymentIntegrationRequest struct {
 	IntegrationId   string                 `json:"integrationId,omitempty"`
 	Provider        PaymentGatewayPlatform `json:"provider,omitempty"`
 	IntegrationName string                 `json:"integrationName,omitempty"`
-	IsEnabled       bool                   `json:"isEnabled,omitempty"`
+	IsEnabled       bool                   `json:"isEnabled"`
 }
 
 // LemonSqueezyPaymentIntegrationRequest DTO.
@@ -1598,7 +1601,7 @@ type LemonSqueezyPaymentIntegrationRequest struct {
 	StoreId              string                 `json:"storeId,omitempty"`
 	ApiKey               string                 `json:"apiKey,omitempty"`
 	WebhookSigningSecret string                 `json:"webhookSigningSecret,omitempty"`
-	IsTestMode           bool                   `json:"isTestMode,omitempty"`
+	IsTestMode           bool                   `json:"isTestMode"`
 }
 
 // AdyenPaymentIntegrationRequest DTO.
@@ -1618,7 +1621,7 @@ type MolliePaymentIntegrationRequest struct {
 	Provider             PaymentGatewayPlatform `json:"provider,omitempty"`
 	ProfileId            string                 `json:"profileId,omitempty"`
 	ApiKey               string                 `json:"apiKey,omitempty"`
-	IsTestMode           bool                   `json:"isTestMode,omitempty"`
+	IsTestMode           bool                   `json:"isTestMode"`
 	WebhookSigningSecret string                 `json:"webhookSigningSecret,omitempty"`
 }
 
@@ -1686,7 +1689,7 @@ type MontonioPaymentIntegrationRequest struct {
 	Provider  PaymentGatewayPlatform `json:"provider,omitempty"`
 	AccessKey string                 `json:"accessKey,omitempty"`
 	SecretKey string                 `json:"secretKey,omitempty"`
-	IsSandbox bool                   `json:"isSandbox,omitempty"`
+	IsSandbox bool                   `json:"isSandbox"`
 	Locale    string                 `json:"locale,omitempty"`
 }
 
@@ -1759,7 +1762,7 @@ type PushIntegrationRequest struct {
 	IntegrationId   string       `json:"integrationId,omitempty"`
 	Provider        PushProvider `json:"provider,omitempty"`
 	IntegrationName string       `json:"integrationName,omitempty"`
-	IsEnabled       bool         `json:"isEnabled,omitempty"`
+	IsEnabled       bool         `json:"isEnabled"`
 }
 
 // EdgeWebPushIntegrationRequest DTO.
@@ -1825,7 +1828,7 @@ type AppleApnsPushIntegrationRequest struct {
 	AppBundleId  string       `json:"appBundleId,omitempty"`
 	KeyId        string       `json:"keyId,omitempty"`
 	PrivateKey   string       `json:"privateKey,omitempty"`
-	IsProduction bool         `json:"isProduction,omitempty"`
+	IsProduction bool         `json:"isProduction"`
 }
 
 // CodeIntegrationRequest DTO.
@@ -1833,7 +1836,7 @@ type CodeIntegrationRequest struct {
 	IntegrationId   string       `json:"integrationId,omitempty"`
 	Provider        CodeProvider `json:"provider,omitempty"`
 	IntegrationName string       `json:"integrationName,omitempty"`
-	IsEnabled       bool         `json:"isEnabled,omitempty"`
+	IsEnabled       bool         `json:"isEnabled"`
 }
 
 // AwsLambdaCodeIntegrationRequest DTO.
@@ -1877,10 +1880,10 @@ type LlmIntegrationRequest struct {
 	IntegrationId   string                   `json:"integrationId,omitempty"`
 	Provider        LlmProvider              `json:"provider,omitempty"`
 	IntegrationName string                   `json:"integrationName,omitempty"`
-	IsEnabled       bool                     `json:"isEnabled,omitempty"`
+	IsEnabled       bool                     `json:"isEnabled"`
 	Endpoint        string                   `json:"endpoint,omitempty"`
 	DefaultModel    string                   `json:"defaultModel,omitempty"`
-	IsDefault       bool                     `json:"isDefault,omitempty"`
+	IsDefault       bool                     `json:"isDefault"`
 	Models          []*LlmModelOptionRequest `json:"models,omitempty"`
 }
 
@@ -1945,7 +1948,7 @@ type McpIntegrationRequest struct {
 	Provider        McpProvider  `json:"provider,omitempty"`
 	Transport       McpTransport `json:"transport,omitempty"`
 	IntegrationName string       `json:"integrationName,omitempty"`
-	IsEnabled       bool         `json:"isEnabled,omitempty"`
+	IsEnabled       bool         `json:"isEnabled"`
 	Name            string       `json:"name,omitempty"`
 	Category        string       `json:"category,omitempty"`
 	Description     string       `json:"description,omitempty"`
@@ -2017,7 +2020,7 @@ type TemplateDto struct {
 	Description          string               `json:"description,omitempty"`
 	CommunicationChannel CommunicationChannel `json:"communicationChannel,omitempty"`
 	Medium               NotificationMedium   `json:"medium,omitempty"`
-	IsActive             bool                 `json:"isActive,omitempty"`
+	IsActive             bool                 `json:"isActive"`
 	Tags                 []string             `json:"tags,omitempty"`
 	Env                  string               `json:"env,omitempty"`
 }
@@ -2041,7 +2044,7 @@ type FileResourceDto struct {
 	OriginalFileName string           `json:"originalFileName,omitempty"`
 	Extension        string           `json:"extension,omitempty"`
 	StoredFileName   string           `json:"storedFileName,omitempty"`
-	SizeBytes        float64          `json:"sizeBytes,omitempty"`
+	SizeBytes        *float64         `json:"sizeBytes,omitempty"`
 	Checksum         *FileChecksumDto `json:"checksum,omitempty"`
 }
 
@@ -2052,7 +2055,7 @@ type FileResourceRefDto struct {
 	Provider      FileProvider     `json:"provider,omitempty"`
 	Path          string           `json:"path,omitempty"`
 	PublicUrl     string           `json:"publicUrl,omitempty"`
-	IsPublic      bool             `json:"isPublic,omitempty"`
+	IsPublic      bool             `json:"isPublic"`
 }
 
 // EmailMessageContentDto DTO.
@@ -2119,14 +2122,14 @@ type SystemEmailTemplateDto struct {
 	SystemGroup               string                   `json:"systemGroup,omitempty"`
 	SystemTags                []string                 `json:"systemTags,omitempty"`
 	ForTrigger                TriggerType              `json:"forTrigger,omitempty"`
-	HiddenSystemEmailTemplate bool                     `json:"hiddenSystemEmailTemplate,omitempty"`
+	HiddenSystemEmailTemplate bool                     `json:"hiddenSystemEmailTemplate"`
 }
 
 // EmailCampaignDeliverySettingsDto DTO.
 type EmailCampaignDeliverySettingsDto struct {
 	RecipientsSourceType    EmailCampaignRecipientsSourceTypes `json:"recipientsSourceType,omitempty"`
 	MappedTokens            []*TokenMappingDto                 `json:"mappedTokens,omitempty"`
-	CampaignTime            float64                            `json:"campaignTime,omitempty"`
+	CampaignTime            *float64                           `json:"campaignTime,omitempty"`
 	RespectTimeZoneSettings RespectTimeZoneSettings            `json:"respectTimeZoneSettings,omitempty"`
 }
 
@@ -2143,7 +2146,7 @@ type TriggerActionEmailDto struct {
 type PushCampaignDeliverySettingsDto struct {
 	RecipientsSourceType    PushCampaignRecipientsSourceTypes `json:"recipientsSourceType,omitempty"`
 	MappedTokens            []*TokenMappingDto                `json:"mappedTokens,omitempty"`
-	CampaignTime            float64                           `json:"campaignTime,omitempty"`
+	CampaignTime            *float64                          `json:"campaignTime,omitempty"`
 	RespectTimeZoneSettings RespectTimeZoneSettings           `json:"respectTimeZoneSettings,omitempty"`
 }
 
@@ -2188,7 +2191,7 @@ type WebhookDeliverySettingsDto struct {
 	DestinationIds    []string           `json:"destinationIds,omitempty"`
 	EventName         string             `json:"eventName,omitempty"`
 	ContentType       string             `json:"contentType,omitempty"`
-	IncludeRawPayload bool               `json:"includeRawPayload,omitempty"`
+	IncludeRawPayload bool               `json:"includeRawPayload"`
 	MappedTokens      []*TokenMappingDto `json:"mappedTokens,omitempty"`
 }
 
@@ -2202,7 +2205,7 @@ type TriggerActionWebhookDto struct {
 type SmsCampaignDeliverySettingsDto struct {
 	RecipientsSourceType    SmsCampaignRecipientsSourceTypes `json:"recipientsSourceType,omitempty"`
 	MappedTokens            []*TokenMappingDto               `json:"mappedTokens,omitempty"`
-	CampaignTime            float64                          `json:"campaignTime,omitempty"`
+	CampaignTime            *float64                         `json:"campaignTime,omitempty"`
 	RespectTimeZoneSettings RespectTimeZoneSettings          `json:"respectTimeZoneSettings,omitempty"`
 }
 
@@ -2222,7 +2225,7 @@ type SseDeliverySettingsDto struct {
 	EventName       string             `json:"eventName,omitempty"`
 	PayloadType     string             `json:"payloadType,omitempty"`
 	PayloadTemplate string             `json:"payloadTemplate,omitempty"`
-	Persist         bool               `json:"persist,omitempty"`
+	Persist         bool               `json:"persist"`
 	MappedTokens    []*TokenMappingDto `json:"mappedTokens,omitempty"`
 }
 
@@ -2250,11 +2253,11 @@ type RequestBase struct {
 // CodeMashListPaginationRequestBase DTO.
 type CodeMashListPaginationRequestBase struct {
 	RequestBase
-	ProjectId     string  `json:"projectId,omitempty"`
-	Env           string  `json:"env,omitempty"`
-	StartingAfter string  `json:"startingAfter,omitempty"`
-	EndingBefore  string  `json:"endingBefore,omitempty"`
-	PageSize      float64 `json:"pageSize,omitempty"`
+	ProjectId     string   `json:"projectId,omitempty"`
+	Env           string   `json:"env,omitempty"`
+	StartingAfter string   `json:"startingAfter,omitempty"`
+	EndingBefore  string   `json:"endingBefore,omitempty"`
+	PageSize      *float64 `json:"pageSize,omitempty"`
 }
 
 // GetTriggers DTO.
@@ -2273,7 +2276,7 @@ type ErrorDto struct {
 
 // CodeMashResponseStatus DTO.
 type CodeMashResponseStatus struct {
-	IsSuccess bool        `json:"isSuccess,omitempty"`
+	IsSuccess bool        `json:"isSuccess"`
 	Errors    []*ErrorDto `json:"errors,omitempty"`
 }
 
@@ -2300,7 +2303,7 @@ type EmailToAccountUsersDeliverySettingsDto struct {
 	UserRecipients      []string `json:"userRecipients,omitempty"`
 	UserCc              []string `json:"userCc,omitempty"`
 	UserBcc             []string `json:"userBcc,omitempty"`
-	SingleEmailStrategy bool     `json:"singleEmailStrategy,omitempty"`
+	SingleEmailStrategy bool     `json:"singleEmailStrategy"`
 }
 
 // EmailToUsersDeliverySettingsDto DTO.
@@ -2309,7 +2312,7 @@ type EmailToUsersDeliverySettingsDto struct {
 	UserRecipients      []string `json:"userRecipients,omitempty"`
 	UserCc              []string `json:"userCc,omitempty"`
 	UserBcc             []string `json:"userBcc,omitempty"`
-	SingleEmailStrategy bool     `json:"singleEmailStrategy,omitempty"`
+	SingleEmailStrategy bool     `json:"singleEmailStrategy"`
 }
 
 // EmailToEmailAddressesDeliverySettingsDto DTO.
@@ -2318,7 +2321,7 @@ type EmailToEmailAddressesDeliverySettingsDto struct {
 	Recipients          []string `json:"recipients,omitempty"`
 	RecipientsCc        []string `json:"recipientsCc,omitempty"`
 	RecipientsBcc       []string `json:"recipientsBcc,omitempty"`
-	SingleEmailStrategy bool     `json:"singleEmailStrategy,omitempty"`
+	SingleEmailStrategy bool     `json:"singleEmailStrategy"`
 }
 
 // EmailToCollectionRecordsDeliverySettingsDto DTO.
@@ -2416,13 +2419,13 @@ type SmsToPhoneNumbersDeliverySettingsDto struct {
 type IntegrationDto struct {
 	ViewId                            string   `json:"viewId,omitempty"`
 	IntegrationName                   string   `json:"integrationName,omitempty"`
-	IsEnabled                         bool     `json:"isEnabled,omitempty"`
+	IsEnabled                         bool     `json:"isEnabled"`
 	Env                               string   `json:"env,omitempty"`
 	LastIntegrationTestAtUtc          string   `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded      bool     `json:"lastIntegrationTestSucceeded,omitempty"`
+	LastIntegrationTestSucceeded      *bool    `json:"lastIntegrationTestSucceeded,omitempty"`
 	LastIntegrationTestErrors         []string `json:"lastIntegrationTestErrors,omitempty"`
 	HumanDeliveryConfirmedAtUtc       string   `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	RequiresHumanDeliveryConfirmation bool     `json:"requiresHumanDeliveryConfirmation,omitempty"`
+	RequiresHumanDeliveryConfirmation bool     `json:"requiresHumanDeliveryConfirmation"`
 }
 
 // LlmModelOptionDto DTO.
@@ -2439,9 +2442,9 @@ type LlmIntegrationDto struct {
 	Provider      LlmProvider          `json:"provider,omitempty"`
 	BaseUrl       string               `json:"baseUrl,omitempty"`
 	DefaultModel  string               `json:"defaultModel,omitempty"`
-	IsConfigured  bool                 `json:"isConfigured,omitempty"`
-	IsSystemOwned bool                 `json:"isSystemOwned,omitempty"`
-	IsDefault     bool                 `json:"isDefault,omitempty"`
+	IsConfigured  bool                 `json:"isConfigured"`
+	IsSystemOwned bool                 `json:"isSystemOwned"`
+	IsDefault     bool                 `json:"isDefault"`
 	Models        []*LlmModelOptionDto `json:"models,omitempty"`
 }
 
@@ -2499,8 +2502,8 @@ type McpIntegrationDto struct {
 	Provider      McpProvider  `json:"provider,omitempty"`
 	Transport     McpTransport `json:"transport,omitempty"`
 	Metadata      *McpMetadata `json:"metadata,omitempty"`
-	IsConfigured  bool         `json:"isConfigured,omitempty"`
-	IsSystemOwned bool         `json:"isSystemOwned,omitempty"`
+	IsConfigured  bool         `json:"isConfigured"`
+	IsSystemOwned bool         `json:"isSystemOwned"`
 	Command       string       `json:"command,omitempty"`
 	Args          []string     `json:"args,omitempty"`
 	ServerUrl     string       `json:"serverUrl,omitempty"`
@@ -2593,14 +2596,14 @@ type GoogleInAppPaymentIntegrationDto struct {
 type LemonSqueezyPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
 	StoreId    string `json:"storeId,omitempty"`
-	IsTestMode bool   `json:"isTestMode,omitempty"`
+	IsTestMode bool   `json:"isTestMode"`
 }
 
 // MolliePaymentIntegrationDto DTO.
 type MolliePaymentIntegrationDto struct {
 	PaymentsIntegrationDto
 	ProfileId  string `json:"profileId,omitempty"`
-	IsTestMode bool   `json:"isTestMode,omitempty"`
+	IsTestMode bool   `json:"isTestMode"`
 }
 
 // PaddlePaymentIntegrationDto DTO.
@@ -2676,7 +2679,7 @@ type WorldpayPaymentIntegrationDto struct {
 type MontonioPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
 	AccessKey string `json:"accessKey,omitempty"`
-	IsSandbox bool   `json:"isSandbox,omitempty"`
+	IsSandbox bool   `json:"isSandbox"`
 	Locale    string `json:"locale,omitempty"`
 }
 
@@ -2717,7 +2720,7 @@ type PaymentOrderDto struct {
 	CreatedOnUtc      string                     `json:"createdOnUtc,omitempty"`
 	UpdatedOnUtc      string                     `json:"updatedOnUtc,omitempty"`
 	Checkouts         []*PaymentOrderCheckoutDto `json:"checkouts,omitempty"`
-	SettledMinor      float64                    `json:"settledMinor,omitempty"`
+	SettledMinor      *float64                   `json:"settledMinor,omitempty"`
 	RefundedMinor     float64                    `json:"refundedMinor,omitempty"`
 	PaidOnUtc         string                     `json:"paidOnUtc,omitempty"`
 	ProviderPaymentId string                     `json:"providerPaymentId,omitempty"`
@@ -2732,7 +2735,7 @@ type PaymentEventDto struct {
 	OrderId         string            `json:"orderId,omitempty"`
 	EventName       string            `json:"eventName,omitempty"`
 	Status          string            `json:"status,omitempty"`
-	AmountMinor     float64           `json:"amountMinor,omitempty"`
+	AmountMinor     *float64          `json:"amountMinor,omitempty"`
 	Currency        string            `json:"currency,omitempty"`
 	ExternalIds     map[string]string `json:"externalIds,omitempty"`
 	OccurredOn      string            `json:"occurredOn,omitempty"`
@@ -2966,7 +2969,7 @@ type FtpFilesIntegrationDto struct {
 	Host     string  `json:"host,omitempty"`
 	Port     float64 `json:"port,omitempty"`
 	RootPath string  `json:"rootPath,omitempty"`
-	UseSsl   bool    `json:"useSsl,omitempty"`
+	UseSsl   bool    `json:"useSsl"`
 }
 
 // GoogleCloudFilesIntegrationDto DTO.
@@ -2991,8 +2994,8 @@ type LocalFilesIntegrationDto struct {
 type DatabaseIntegrationDto struct {
 	IntegrationDto
 	Provider         DatabaseProvider `json:"provider,omitempty"`
-	IsSystemOwned    bool             `json:"isSystemOwned,omitempty"`
-	CanManageIndexes bool             `json:"canManageIndexes,omitempty"`
+	IsSystemOwned    bool             `json:"isSystemOwned"`
+	CanManageIndexes *bool            `json:"canManageIndexes,omitempty"`
 }
 
 // MongoDbConnectionStringIntegrationDto DTO.
@@ -3092,7 +3095,7 @@ type AppleApnsPushIntegrationDto struct {
 	TeamId       string `json:"teamId,omitempty"`
 	AppBundleId  string `json:"appBundleId,omitempty"`
 	KeyId        string `json:"keyId,omitempty"`
-	IsProduction bool   `json:"isProduction,omitempty"`
+	IsProduction bool   `json:"isProduction"`
 }
 
 // ChromePluginPushIntegrationDto DTO.
@@ -3194,13 +3197,13 @@ type WebhookDestinationDto struct {
 	EndpointUrl     string            `json:"endpointUrl,omitempty"`
 	SelectedEvents  []string          `json:"selectedEvents,omitempty"`
 	ExtraHeaders    map[string]string `json:"extraHeaders,omitempty"`
-	IsEnabled       bool              `json:"isEnabled,omitempty"`
+	IsEnabled       bool              `json:"isEnabled"`
 }
 
 // WebhookIntegrationDto DTO.
 type WebhookIntegrationDto struct {
 	IntegrationDto
-	IsConfigured bool                     `json:"isConfigured,omitempty"`
+	IsConfigured bool                     `json:"isConfigured"`
 	Destinations []*WebhookDestinationDto `json:"destinations,omitempty"`
 	ExtraHeaders map[string]string        `json:"extraHeaders,omitempty"`
 }
@@ -3215,16 +3218,16 @@ type SchedulerTaskDto struct {
 	Type              SchedulerTaskType `json:"type,omitempty"`
 	PayloadJson       string            `json:"payloadJson,omitempty"`
 	InitiatorId       string            `json:"initiatorId,omitempty"`
-	IsEnabled         bool              `json:"isEnabled,omitempty"`
-	StopOnError       bool              `json:"stopOnError,omitempty"`
+	IsEnabled         bool              `json:"isEnabled"`
+	StopOnError       bool              `json:"stopOnError"`
 	Env               string            `json:"env,omitempty"`
-	CreatedAtUnix     float64           `json:"createdAtUnix,omitempty"`
-	UpdatedAtUnix     float64           `json:"updatedAtUnix,omitempty"`
-	EndsAtUnix        float64           `json:"endsAtUnix,omitempty"`
-	HasEnded          bool              `json:"hasEnded,omitempty"`
-	IsFailing         bool              `json:"isFailing,omitempty"`
+	CreatedAtUnix     *float64          `json:"createdAtUnix,omitempty"`
+	UpdatedAtUnix     *float64          `json:"updatedAtUnix,omitempty"`
+	EndsAtUnix        *float64          `json:"endsAtUnix,omitempty"`
+	HasEnded          bool              `json:"hasEnded"`
+	IsFailing         bool              `json:"isFailing"`
 	LastFailureReason string            `json:"lastFailureReason,omitempty"`
-	LastFailedAtUnix  float64           `json:"lastFailedAtUnix,omitempty"`
+	LastFailedAtUnix  *float64          `json:"lastFailedAtUnix,omitempty"`
 }
 
 // SchedulerTaskRequest DTO.
@@ -3269,7 +3272,7 @@ type CreateSmsCampaignRequest struct {
 	AccountUsers          *SmsToAccountUsersDeliverySettingsDto      `json:"accountUsers,omitempty"`
 	Collection            *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
 	PhoneNumbers          *SmsToPhoneNumbersDeliverySettingsDto      `json:"phoneNumbers,omitempty"`
-	SendNow               bool                                       `json:"sendNow,omitempty"`
+	SendNow               *bool                                      `json:"sendNow,omitempty"`
 }
 
 // SmsCampaignSchedulerTaskRequest DTO.
@@ -3289,7 +3292,7 @@ type PushCampaignRequest struct {
 	InitiatorId   string                            `json:"initiatorId,omitempty"`
 	Notes         string                            `json:"notes,omitempty"`
 	MappedTokens  []*TokenMappingDto                `json:"mappedTokens,omitempty"`
-	CampaignTime  float64                           `json:"campaignTime,omitempty"`
+	CampaignTime  *float64                          `json:"campaignTime,omitempty"`
 }
 
 // PushCampaignSchedulerTaskRequest DTO.
@@ -3314,9 +3317,9 @@ type MongoDbAggregateDto struct {
 type MarketplaceValidationStepResultDto struct {
 	Key                  string `json:"key,omitempty"`
 	Label                string `json:"label,omitempty"`
-	RequiredForFunctions bool   `json:"requiredForFunctions,omitempty"`
-	Succeeded            bool   `json:"succeeded,omitempty"`
-	Skipped              bool   `json:"skipped,omitempty"`
+	RequiredForFunctions bool   `json:"requiredForFunctions"`
+	Succeeded            bool   `json:"succeeded"`
+	Skipped              bool   `json:"skipped"`
 	Message              string `json:"message,omitempty"`
 	ErrorCode            string `json:"errorCode,omitempty"`
 }
@@ -3331,7 +3334,7 @@ type MarketplaceIntegrationDto struct {
 	Description         string                                `json:"description,omitempty"`
 	Config              map[string]string                     `json:"config,omitempty"`
 	LastValidationSteps []*MarketplaceValidationStepResultDto `json:"lastValidationSteps,omitempty"`
-	SignedIn            bool                                  `json:"signedIn,omitempty"`
+	SignedIn            bool                                  `json:"signedIn"`
 	SignedInBy          string                                `json:"signedInBy,omitempty"`
 	SignedInAt          string                                `json:"signedInAt,omitempty"`
 	TokenExpiresAt      string                                `json:"tokenExpiresAt,omitempty"`
@@ -3342,7 +3345,7 @@ type MarketplaceFunctionParameterDto struct {
 	Name         string `json:"name,omitempty"`
 	Type         string `json:"type,omitempty"`
 	Description  string `json:"description,omitempty"`
-	IsRequired   bool   `json:"isRequired,omitempty"`
+	IsRequired   bool   `json:"isRequired"`
 	DefaultValue string `json:"defaultValue,omitempty"`
 }
 
@@ -3353,7 +3356,7 @@ type MarketplaceFunctionDto struct {
 	FunctionKey       string                             `json:"functionKey,omitempty"`
 	DisplayName       string                             `json:"displayName,omitempty"`
 	Description       string                             `json:"description,omitempty"`
-	IsEnabled         bool                               `json:"isEnabled,omitempty"`
+	IsEnabled         bool                               `json:"isEnabled"`
 	RequestTemplate   string                             `json:"requestTemplate,omitempty"`
 	Arguments         map[string]string                  `json:"arguments,omitempty"`
 	Inputs            []*MarketplaceFunctionParameterDto `json:"inputs,omitempty"`
@@ -3367,7 +3370,7 @@ type MarketplaceFieldDefinitionDto struct {
 	Description       string               `json:"description,omitempty"`
 	DocumentationUrl  string               `json:"documentationUrl,omitempty"`
 	Type              MarketplaceFieldType `json:"type,omitempty"`
-	IsRequired        bool                 `json:"isRequired,omitempty"`
+	IsRequired        bool                 `json:"isRequired"`
 	DefaultValue      string               `json:"defaultValue,omitempty"`
 	Placeholder       string               `json:"placeholder,omitempty"`
 	ValidationPattern string               `json:"validationPattern,omitempty"`
@@ -3390,7 +3393,7 @@ type MarketplaceParameterSpecDto struct {
 	Description      string                       `json:"description,omitempty"`
 	DocumentationUrl string                       `json:"documentationUrl,omitempty"`
 	Type             string                       `json:"type,omitempty"`
-	IsRequired       bool                         `json:"isRequired,omitempty"`
+	IsRequired       bool                         `json:"isRequired"`
 }
 
 // MarketplaceHttpRequestSpecDto DTO.
@@ -3406,7 +3409,7 @@ type MarketplaceValidationStepDto struct {
 	Key                  string                         `json:"key,omitempty"`
 	Label                string                         `json:"label,omitempty"`
 	Description          string                         `json:"description,omitempty"`
-	RequiredForFunctions bool                           `json:"requiredForFunctions,omitempty"`
+	RequiredForFunctions bool                           `json:"requiredForFunctions"`
 	Probe                *MarketplaceHttpRequestSpecDto `json:"probe,omitempty"`
 }
 
@@ -3441,7 +3444,7 @@ type MarketplaceListingDto struct {
 	Availability     MarketplaceAvailability             `json:"availability,omitempty"`
 	ConnectSteps     []string                            `json:"connectSteps,omitempty"`
 	OAuthRedirectUrl string                              `json:"oAuthRedirectUrl,omitempty"`
-	IsOfficial       bool                                `json:"isOfficial,omitempty"`
+	IsOfficial       bool                                `json:"isOfficial"`
 	Tags             []string                            `json:"tags,omitempty"`
 	SpecVersion      float64                             `json:"specVersion,omitempty"`
 	ConfigFields     []*MarketplaceFieldDefinitionDto    `json:"configFields,omitempty"`
@@ -3455,7 +3458,7 @@ type MarketplaceListingDto struct {
 type AdminPortalModuleDto struct {
 	Key         string `json:"key,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
-	Enabled     bool   `json:"enabled,omitempty"`
+	Enabled     bool   `json:"enabled"`
 }
 
 // AiChatEntryWireDto DTO.
@@ -3487,19 +3490,19 @@ type UserMessageEntryWireDto struct {
 
 // AiChatEntrySourceWireDto DTO.
 type AiChatEntrySourceWireDto struct {
-	Kind          string  `json:"kind,omitempty"`
-	RequirementId string  `json:"requirementId,omitempty"`
-	SessionId     string  `json:"sessionId,omitempty"`
-	EntryId       string  `json:"entryId,omitempty"`
-	EntrySeq      float64 `json:"entrySeq,omitempty"`
-	ArtifactId    string  `json:"artifactId,omitempty"`
-	Label         string  `json:"label,omitempty"`
-	Step          float64 `json:"step,omitempty"`
-	Number        float64 `json:"number,omitempty"`
-	SourceKind    string  `json:"sourceKind,omitempty"`
-	SourceId      string  `json:"sourceId,omitempty"`
-	Score         float64 `json:"score,omitempty"`
-	Cited         bool    `json:"cited,omitempty"`
+	Kind          string   `json:"kind,omitempty"`
+	RequirementId string   `json:"requirementId,omitempty"`
+	SessionId     string   `json:"sessionId,omitempty"`
+	EntryId       string   `json:"entryId,omitempty"`
+	EntrySeq      *float64 `json:"entrySeq,omitempty"`
+	ArtifactId    string   `json:"artifactId,omitempty"`
+	Label         string   `json:"label,omitempty"`
+	Step          *float64 `json:"step,omitempty"`
+	Number        *float64 `json:"number,omitempty"`
+	SourceKind    string   `json:"sourceKind,omitempty"`
+	SourceId      string   `json:"sourceId,omitempty"`
+	Score         *float64 `json:"score,omitempty"`
+	Cited         *bool    `json:"cited,omitempty"`
 }
 
 // AssistantTextEntryWireDto DTO.
@@ -3507,7 +3510,7 @@ type AssistantTextEntryWireDto struct {
 	AiChatEntryWireDto
 	Kind        string                      `json:"kind,omitempty"`
 	Text        string                      `json:"text,omitempty"`
-	IsStreaming bool                        `json:"isStreaming,omitempty"`
+	IsStreaming bool                        `json:"isStreaming"`
 	Sources     []*AiChatEntrySourceWireDto `json:"sources,omitempty"`
 }
 
@@ -3523,7 +3526,7 @@ type AiChatQuestionWireDto struct {
 	Text          string                         `json:"text,omitempty"`
 	Options       []*AiChatQuestionOptionWireDto `json:"options,omitempty"`
 	Default       string                         `json:"default,omitempty"`
-	AllowFreeText bool                           `json:"allowFreeText,omitempty"`
+	AllowFreeText bool                           `json:"allowFreeText"`
 }
 
 // AiChatGateResultWireDto DTO.
@@ -3564,8 +3567,8 @@ type AiChatPlanStepDoneCheckWireDto struct {
 
 // AiChatPlanStepLoopWireDto DTO.
 type AiChatPlanStepLoopWireDto struct {
-	MaxIterations float64 `json:"maxIterations,omitempty"`
-	MaxToolCalls  float64 `json:"maxToolCalls,omitempty"`
+	MaxIterations *float64 `json:"maxIterations,omitempty"`
+	MaxToolCalls  float64  `json:"maxToolCalls,omitempty"`
 }
 
 // AiChatPlanStepWireDto DTO.
@@ -3576,10 +3579,10 @@ type AiChatPlanStepWireDto struct {
 	Goal       string                            `json:"goal,omitempty"`
 	Inputs     *AiChatPlanStepInputsWireDto      `json:"inputs,omitempty"`
 	DependsOn  []float64                         `json:"dependsOn,omitempty"`
-	Replaces   float64                           `json:"replaces,omitempty"`
+	Replaces   *float64                          `json:"replaces,omitempty"`
 	Done       []*AiChatPlanStepDoneCheckWireDto `json:"done,omitempty"`
 	Loop       *AiChatPlanStepLoopWireDto        `json:"loop,omitempty"`
-	Difficulty float64                           `json:"difficulty,omitempty"`
+	Difficulty *float64                          `json:"difficulty,omitempty"`
 }
 
 // PlanEntryWireDto DTO.
@@ -3590,7 +3593,7 @@ type PlanEntryWireDto struct {
 	Steps            []*AiChatPlanStepWireDto `json:"steps,omitempty"`
 	Status           string                   `json:"status,omitempty"`
 	Gate             *AiChatGateResultWireDto `json:"gate,omitempty"`
-	Difficulty       float64                  `json:"difficulty,omitempty"`
+	Difficulty       *float64                 `json:"difficulty,omitempty"`
 	DifficultyReason string                   `json:"difficultyReason,omitempty"`
 	DeltaOf          string                   `json:"deltaOf,omitempty"`
 }
@@ -3700,7 +3703,7 @@ type DocumentRefDto struct {
 type DatabaseRecordsBatchDto struct {
 	Ids       []string         `json:"ids,omitempty"`
 	Count     float64          `json:"count,omitempty"`
-	Truncated bool             `json:"truncated,omitempty"`
+	Truncated bool             `json:"truncated"`
 	Documents []map[string]any `json:"documents,omitempty"`
 }
 
@@ -3708,11 +3711,11 @@ type DatabaseRecordsBatchDto struct {
 type DatabaseRecordChangeDto struct {
 	Collection    string                   `json:"collection,omitempty"`
 	SchemaId      string                   `json:"schemaId,omitempty"`
-	SchemaVersion float64                  `json:"schemaVersion,omitempty"`
+	SchemaVersion *float64                 `json:"schemaVersion,omitempty"`
 	RecordId      string                   `json:"recordId,omitempty"`
 	Old           map[string]any           `json:"old,omitempty"`
 	New           map[string]any           `json:"new,omitempty"`
-	Truncated     bool                     `json:"truncated,omitempty"`
+	Truncated     bool                     `json:"truncated"`
 	OldRef        *DocumentRefDto          `json:"oldRef,omitempty"`
 	NewRef        *DocumentRefDto          `json:"newRef,omitempty"`
 	Records       *DatabaseRecordsBatchDto `json:"records,omitempty"`
@@ -3740,7 +3743,7 @@ type PaymentFactDto struct {
 	OrderId         string            `json:"orderId,omitempty"`
 	EventName       string            `json:"eventName,omitempty"`
 	Status          string            `json:"status,omitempty"`
-	AmountMinor     float64           `json:"amountMinor,omitempty"`
+	AmountMinor     *float64          `json:"amountMinor,omitempty"`
 	Currency        string            `json:"currency,omitempty"`
 	ExternalIds     map[string]string `json:"externalIds,omitempty"`
 	OccurredOn      string            `json:"occurredOn,omitempty"`
@@ -3852,21 +3855,21 @@ type StringFieldDto struct {
 	JsonSchemaFieldDto
 	Format           string            `json:"format,omitempty"`
 	Pattern          string            `json:"pattern,omitempty"`
-	MinLength        float64           `json:"minLength,omitempty"`
-	MaxLength        float64           `json:"maxLength,omitempty"`
+	MinLength        *float64          `json:"minLength,omitempty"`
+	MaxLength        *float64          `json:"maxLength,omitempty"`
 	TranslateOptions map[string]string `json:"translateOptions,omitempty"`
 	Default          string            `json:"default,omitempty"`
-	Unique           bool              `json:"unique,omitempty"`
+	Unique           *bool             `json:"unique,omitempty"`
 }
 
 // DecimalFieldDto DTO.
 type DecimalFieldDto struct {
 	JsonSchemaFieldDto
-	Minimum    float64 `json:"minimum,omitempty"`
-	Maximum    float64 `json:"maximum,omitempty"`
-	MultipleOf float64 `json:"multipleOf,omitempty"`
-	Default    float64 `json:"default,omitempty"`
-	Unique     bool    `json:"unique,omitempty"`
+	Minimum    *float64 `json:"minimum,omitempty"`
+	Maximum    *float64 `json:"maximum,omitempty"`
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	Default    *float64 `json:"default,omitempty"`
+	Unique     *bool    `json:"unique,omitempty"`
 }
 
 // CurrencyDefaultDto DTO.
@@ -3879,33 +3882,33 @@ type CurrencyDefaultDto struct {
 type CurrencyFieldDto struct {
 	JsonSchemaFieldDto
 	AllowedCurrencies []string            `json:"allowedCurrencies,omitempty"`
-	MultipleOf        float64             `json:"multipleOf,omitempty"`
-	Minimum           float64             `json:"minimum,omitempty"`
-	Maximum           float64             `json:"maximum,omitempty"`
+	MultipleOf        *float64            `json:"multipleOf,omitempty"`
+	Minimum           *float64            `json:"minimum,omitempty"`
+	Maximum           *float64            `json:"maximum,omitempty"`
 	Default           *CurrencyDefaultDto `json:"default,omitempty"`
 }
 
 // BooleanFieldDto DTO.
 type BooleanFieldDto struct {
 	JsonSchemaFieldDto
-	Default bool `json:"default,omitempty"`
+	Default *bool `json:"default,omitempty"`
 }
 
 // DateFieldDto DTO.
 type DateFieldDto struct {
 	JsonSchemaFieldDto
-	Minimum float64 `json:"minimum,omitempty"`
-	Maximum float64 `json:"maximum,omitempty"`
-	Default float64 `json:"default,omitempty"`
+	Minimum *float64 `json:"minimum,omitempty"`
+	Maximum *float64 `json:"maximum,omitempty"`
+	Default *float64 `json:"default,omitempty"`
 }
 
 // IntegerFieldDto DTO.
 type IntegerFieldDto struct {
 	JsonSchemaFieldDto
-	Minimum float64 `json:"minimum,omitempty"`
-	Maximum float64 `json:"maximum,omitempty"`
-	Default float64 `json:"default,omitempty"`
-	Unique  bool    `json:"unique,omitempty"`
+	Minimum *float64 `json:"minimum,omitempty"`
+	Maximum *float64 `json:"maximum,omitempty"`
+	Default *float64 `json:"default,omitempty"`
+	Unique  *bool    `json:"unique,omitempty"`
 }
 
 // GeolocationFieldDto DTO.
@@ -3917,8 +3920,8 @@ type GeolocationFieldDto struct {
 // TagsFieldDto DTO.
 type TagsFieldDto struct {
 	JsonSchemaFieldDto
-	MinItems float64  `json:"minItems,omitempty"`
-	MaxItems float64  `json:"maxItems,omitempty"`
+	MinItems *float64 `json:"minItems,omitempty"`
+	MaxItems *float64 `json:"maxItems,omitempty"`
 	Default  []string `json:"default,omitempty"`
 }
 
@@ -3926,17 +3929,17 @@ type TagsFieldDto struct {
 type FileFieldDto struct {
 	JsonSchemaFieldDto
 	Storages        []string `json:"storages,omitempty"`
-	MinItems        float64  `json:"minItems,omitempty"`
-	MaxItems        float64  `json:"maxItems,omitempty"`
+	MinItems        *float64 `json:"minItems,omitempty"`
+	MaxItems        *float64 `json:"maxItems,omitempty"`
 	AllowedFileType string   `json:"allowedFileType,omitempty"`
-	MaxSizeMb       float64  `json:"maxSizeMb,omitempty"`
+	MaxSizeMb       *float64 `json:"maxSizeMb,omitempty"`
 }
 
 // TaxonomySelectionFieldDto DTO.
 type TaxonomySelectionFieldDto struct {
 	JsonSchemaFieldDto
 	TaxonomyId   string `json:"taxonomyId,omitempty"`
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 	DisplayField string `json:"displayField,omitempty"`
 }
 
@@ -3945,20 +3948,20 @@ type CollectionSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	CollectionId string `json:"collectionId,omitempty"`
 	DisplayField string `json:"displayField,omitempty"`
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 }
 
 // UserSelectionFieldDto DTO.
 type UserSelectionFieldDto struct {
 	JsonSchemaFieldDto
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 	DisplayField string `json:"displayField,omitempty"`
 }
 
 // RoleSelectionFieldDto DTO.
 type RoleSelectionFieldDto struct {
 	JsonSchemaFieldDto
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 	DisplayField string `json:"displayField,omitempty"`
 }
 
@@ -3966,7 +3969,7 @@ type RoleSelectionFieldDto struct {
 type EnumSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	Values   []string `json:"values,omitempty"`
-	Multiple bool     `json:"multiple,omitempty"`
+	Multiple bool     `json:"multiple"`
 	Default  []string `json:"default,omitempty"`
 }
 
@@ -3981,15 +3984,15 @@ type ObjectFieldDto struct {
 type ArrayFieldDto struct {
 	JsonSchemaFieldDto
 	Items       *JsonSchemaFieldDto `json:"items,omitempty"`
-	MinItems    float64             `json:"minItems,omitempty"`
-	MaxItems    float64             `json:"maxItems,omitempty"`
-	UniqueItems bool                `json:"uniqueItems,omitempty"`
+	MinItems    *float64            `json:"minItems,omitempty"`
+	MaxItems    *float64            `json:"maxItems,omitempty"`
+	UniqueItems *bool               `json:"uniqueItems,omitempty"`
 }
 
 // JsonFieldDto DTO.
 type JsonFieldDto struct {
 	JsonSchemaFieldDto
-	MaxBytes float64 `json:"maxBytes,omitempty"`
+	MaxBytes *float64 `json:"maxBytes,omitempty"`
 }
 
 // IVersionBasedRequest DTO.
@@ -4056,9 +4059,9 @@ type AiPlanModelDto struct {
 
 // AiPlanFeaturesDto DTO.
 type AiPlanFeaturesDto struct {
-	Attachments bool `json:"attachments,omitempty"`
-	Rag         bool `json:"rag,omitempty"`
-	Memory      bool `json:"memory,omitempty"`
+	Attachments bool `json:"attachments"`
+	Rag         bool `json:"rag"`
+	Memory      bool `json:"memory"`
 }
 
 // AiPlanDto DTO.
@@ -4088,11 +4091,11 @@ type ProjectAiAssistantRequestBase struct {
 	Toolsets           []string `json:"toolsets,omitempty"`
 	LlmIntegrationId   string   `json:"llmIntegrationId,omitempty"`
 	Model              string   `json:"model,omitempty"`
-	MemoryEnabled      bool     `json:"memoryEnabled,omitempty"`
+	MemoryEnabled      bool     `json:"memoryEnabled"`
 	RagSourceIds       []string `json:"ragSourceIds,omitempty"`
-	WeakMatchThreshold float64  `json:"weakMatchThreshold,omitempty"`
+	WeakMatchThreshold *float64 `json:"weakMatchThreshold,omitempty"`
 	PlanId             string   `json:"planId,omitempty"`
-	IsDefault          bool     `json:"isDefault,omitempty"`
+	IsDefault          bool     `json:"isDefault"`
 }
 
 // TeamMemberRoleInput DTO.
@@ -4129,10 +4132,10 @@ type UserGeneralInfoDto struct {
 	PostalCode                string                 `json:"postalCode,omitempty"`
 	Company                   string                 `json:"company,omitempty"`
 	Gender                    Gender                 `json:"gender,omitempty"`
-	BirthDate                 float64                `json:"birthDate,omitempty"`
+	BirthDate                 *float64               `json:"birthDate,omitempty"`
 	TimeZone                  string                 `json:"timeZone,omitempty"`
 	Language                  string                 `json:"language,omitempty"`
-	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages,omitempty"`
+	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages"`
 	BlockedTags               map[string][]string    `json:"blockedTags,omitempty"`
 	BlockReasons              []MarketingBlockReason `json:"blockReasons,omitempty"`
 	ExtraMetadata             string                 `json:"extraMetadata,omitempty"`
@@ -4145,7 +4148,7 @@ type ImportUserRowDto struct {
 	UserName        string              `json:"userName,omitempty"`
 	UserGeneralInfo *UserGeneralInfoDto `json:"userGeneralInfo,omitempty"`
 	Roles           []string            `json:"roles,omitempty"`
-	CreatedOn       float64             `json:"createdOn,omitempty"`
+	CreatedOn       *float64            `json:"createdOn,omitempty"`
 	HashFormat      string              `json:"hashFormat,omitempty"`
 	PasswordHash    string              `json:"passwordHash,omitempty"`
 	PasswordSalt    string              `json:"passwordSalt,omitempty"`
@@ -4203,7 +4206,7 @@ type CursorArgs struct {
 // PagingArgs DTO.
 type PagingArgs struct {
 	CursorArgs    *CursorArgs `json:"cursorArgs,omitempty"`
-	PageSize      float64     `json:"pageSize,omitempty"`
+	PageSize      *float64    `json:"pageSize,omitempty"`
 	StartingAfter string      `json:"startingAfter,omitempty"`
 	EndingBefore  string      `json:"endingBefore,omitempty"`
 }
@@ -4215,26 +4218,26 @@ type SchemaUniqueIndexDto struct {
 
 // SchemaSettingsDto DTO.
 type SchemaSettingsDto struct {
-	SoftDelete        bool                    `json:"softDelete,omitempty"`
-	HasRecordOwner    bool                    `json:"hasRecordOwner,omitempty"`
+	SoftDelete        bool                    `json:"softDelete"`
+	HasRecordOwner    bool                    `json:"hasRecordOwner"`
 	Description       string                  `json:"description,omitempty"`
 	UniqueIndexes     []*SchemaUniqueIndexDto `json:"uniqueIndexes,omitempty"`
-	EndUserOwnRecords bool                    `json:"endUserOwnRecords,omitempty"`
+	EndUserOwnRecords *bool                   `json:"endUserOwnRecords,omitempty"`
 }
 
 // SchemaEmbedSettingsDto DTO.
 type SchemaEmbedSettingsDto struct {
-	Enabled                bool     `json:"enabled,omitempty"`
+	Enabled                bool     `json:"enabled"`
 	Fields                 []string `json:"fields,omitempty"`
 	EmbeddingIntegrationId string   `json:"embeddingIntegrationId,omitempty"`
-	PerUser                bool     `json:"perUser,omitempty"`
+	PerUser                bool     `json:"perUser"`
 }
 
 // SchemaListColumnDto DTO.
 type SchemaListColumnDto struct {
 	Field         string `json:"field,omitempty"`
-	Primary       bool   `json:"primary,omitempty"`
-	LinkReference bool   `json:"linkReference,omitempty"`
+	Primary       bool   `json:"primary"`
+	LinkReference bool   `json:"linkReference"`
 }
 
 // SchemaListSortDto DTO.
@@ -4255,7 +4258,7 @@ type ImportColumnMappingDto struct {
 	CsvColumnIndex    float64 `json:"csvColumnIndex,omitempty"`
 	CsvHeader         string  `json:"csvHeader,omitempty"`
 	PropertyName      string  `json:"propertyName,omitempty"`
-	DontImportOnError bool    `json:"dontImportOnError,omitempty"`
+	DontImportOnError bool    `json:"dontImportOnError"`
 }
 
 // EmailValidationIntegrationRequest DTO.
@@ -4263,7 +4266,7 @@ type EmailValidationIntegrationRequest struct {
 	IntegrationId   string                  `json:"integrationId,omitempty"`
 	Provider        EmailValidationProvider `json:"provider,omitempty"`
 	IntegrationName string                  `json:"integrationName,omitempty"`
-	IsEnabled       bool                    `json:"isEnabled,omitempty"`
+	IsEnabled       bool                    `json:"isEnabled"`
 }
 
 // SaveEmailTemplate DTO.
@@ -4298,7 +4301,7 @@ type SmsIntegrationRequest struct {
 	IntegrationId   string      `json:"integrationId,omitempty"`
 	Provider        SmsProvider `json:"provider,omitempty"`
 	IntegrationName string      `json:"integrationName,omitempty"`
-	IsEnabled       bool        `json:"isEnabled,omitempty"`
+	IsEnabled       bool        `json:"isEnabled"`
 }
 
 // SavePushTemplate DTO.
@@ -4323,7 +4326,7 @@ type PushDeviceDto struct {
 	DeviceType       DeviceType `json:"deviceType,omitempty"`
 	OsName           string     `json:"osName,omitempty"`
 	OsVersion        string     `json:"osVersion,omitempty"`
-	PlatformApiLevel float64    `json:"platformApiLevel,omitempty"`
+	PlatformApiLevel *float64   `json:"platformApiLevel,omitempty"`
 }
 
 // ChatScreenContextDto DTO.
@@ -4341,7 +4344,7 @@ type EmbeddingIntegrationRequest struct {
 	IntegrationId   string            `json:"integrationId,omitempty"`
 	Provider        EmbeddingProvider `json:"provider,omitempty"`
 	IntegrationName string            `json:"integrationName,omitempty"`
-	IsEnabled       bool              `json:"isEnabled,omitempty"`
+	IsEnabled       bool              `json:"isEnabled"`
 	Endpoint        string            `json:"endpoint,omitempty"`
 	Model           string            `json:"model,omitempty"`
 	Dimension       float64           `json:"dimension,omitempty"`
@@ -4370,7 +4373,7 @@ type EchoRegionDto struct {
 type EchoAgentSnippetDto struct {
 	Client      string `json:"client,omitempty"`
 	Kind        string `json:"kind,omitempty"`
-	Recommended bool   `json:"recommended,omitempty"`
+	Recommended bool   `json:"recommended"`
 	Auth        string `json:"auth,omitempty"`
 	Config      string `json:"config,omitempty"`
 }
@@ -4392,7 +4395,7 @@ type EchoAgentDto struct {
 // EchoHostingPlatformDto DTO.
 type EchoHostingPlatformDto struct {
 	Provider string `json:"provider,omitempty"`
-	IsAws    bool   `json:"isAws,omitempty"`
+	IsAws    bool   `json:"isAws"`
 }
 
 // PublicBrandDto DTO.
@@ -4406,19 +4409,19 @@ type PublicBrandDto struct {
 
 // PublicPasswordPolicyDto DTO.
 type PublicPasswordPolicyDto struct {
-	MinLength      float64 `json:"minLength,omitempty"`
-	MaxLength      float64 `json:"maxLength,omitempty"`
-	MinNumbers     float64 `json:"minNumbers,omitempty"`
-	MinUpper       float64 `json:"minUpper,omitempty"`
-	MinLower       float64 `json:"minLower,omitempty"`
-	MinSpecial     float64 `json:"minSpecial,omitempty"`
-	AllowedSpecial string  `json:"allowedSpecial,omitempty"`
+	MinLength      float64  `json:"minLength,omitempty"`
+	MaxLength      *float64 `json:"maxLength,omitempty"`
+	MinNumbers     *float64 `json:"minNumbers,omitempty"`
+	MinUpper       *float64 `json:"minUpper,omitempty"`
+	MinLower       *float64 `json:"minLower,omitempty"`
+	MinSpecial     *float64 `json:"minSpecial,omitempty"`
+	AllowedSpecial string   `json:"allowedSpecial,omitempty"`
 }
 
 // PublicAuthDto DTO.
 type PublicAuthDto struct {
 	SocialProviders []string                 `json:"socialProviders,omitempty"`
-	Passkey         bool                     `json:"passkey,omitempty"`
+	Passkey         bool                     `json:"passkey"`
 	Methods         []string                 `json:"methods,omitempty"`
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
 }
@@ -4432,7 +4435,7 @@ type PublicAiAssistantDto struct {
 
 // PublicAiChatDto DTO.
 type PublicAiChatDto struct {
-	Enabled    bool                    `json:"enabled,omitempty"`
+	Enabled    bool                    `json:"enabled"`
 	Assistants []*PublicAiAssistantDto `json:"assistants,omitempty"`
 }
 
@@ -4473,9 +4476,9 @@ type AccountStatusDto struct {
 	Permissions        []string      `json:"permissions,omitempty"`
 	Roles              []string      `json:"roles,omitempty"`
 	AllowedProjects    []string      `json:"allowedProjects,omitempty"`
-	TrialWasIssued     bool          `json:"trialWasIssued,omitempty"`
-	EmailVerified      bool          `json:"emailVerified,omitempty"`
-	JoinedByInvitation bool          `json:"joinedByInvitation,omitempty"`
+	TrialWasIssued     bool          `json:"trialWasIssued"`
+	EmailVerified      bool          `json:"emailVerified"`
+	JoinedByInvitation bool          `json:"joinedByInvitation"`
 }
 
 // UsageBillingClusterChargeDto DTO.
@@ -4522,20 +4525,20 @@ type PromotionSummaryDto struct {
 	IntegrationsSkipped float64 `json:"integrationsSkipped,omitempty"`
 	IntegrationsMapped  float64 `json:"integrationsMapped,omitempty"`
 	IntegrationsRemoved float64 `json:"integrationsRemoved,omitempty"`
-	IsNoOp              bool    `json:"isNoOp,omitempty"`
+	IsNoOp              bool    `json:"isNoOp"`
 }
 
 // PromotionItemChangeDto DTO.
 type PromotionItemChangeDto struct {
-	Type             string  `json:"type,omitempty"`
-	Id               string  `json:"id,omitempty"`
-	Name             string  `json:"name,omitempty"`
-	Status           string  `json:"status,omitempty"`
-	MatchedBy        string  `json:"matchedBy,omitempty"`
-	PreviousTargetId string  `json:"previousTargetId,omitempty"`
-	BuiltIn          bool    `json:"builtIn,omitempty"`
-	RecordCount      float64 `json:"recordCount,omitempty"`
-	Note             string  `json:"note,omitempty"`
+	Type             string   `json:"type,omitempty"`
+	Id               string   `json:"id,omitempty"`
+	Name             string   `json:"name,omitempty"`
+	Status           string   `json:"status,omitempty"`
+	MatchedBy        string   `json:"matchedBy,omitempty"`
+	PreviousTargetId string   `json:"previousTargetId,omitempty"`
+	BuiltIn          bool     `json:"builtIn"`
+	RecordCount      *float64 `json:"recordCount,omitempty"`
+	Note             string   `json:"note,omitempty"`
 }
 
 // PromotionIntegrationTargetDto DTO.
@@ -4543,7 +4546,7 @@ type PromotionIntegrationTargetDto struct {
 	Id        string `json:"id,omitempty"`
 	Name      string `json:"name,omitempty"`
 	Provider  string `json:"provider,omitempty"`
-	IsDefault bool   `json:"isDefault,omitempty"`
+	IsDefault bool   `json:"isDefault"`
 }
 
 // PromotionIntegrationChangeDto DTO.
@@ -4557,9 +4560,9 @@ type PromotionIntegrationChangeDto struct {
 	Action        string                           `json:"action,omitempty"`
 	TargetId      string                           `json:"targetId,omitempty"`
 	MapToId       string                           `json:"mapToId,omitempty"`
-	HoldsSecret   bool                             `json:"holdsSecret,omitempty"`
-	IsFake        bool                             `json:"isFake,omitempty"`
-	RealSender    bool                             `json:"realSender,omitempty"`
+	HoldsSecret   bool                             `json:"holdsSecret"`
+	IsFake        bool                             `json:"isFake"`
+	RealSender    bool                             `json:"realSender"`
 	Targets       []*PromotionIntegrationTargetDto `json:"targets,omitempty"`
 	Warning       string                           `json:"warning,omitempty"`
 	Note          string                           `json:"note,omitempty"`
@@ -4567,10 +4570,10 @@ type PromotionIntegrationChangeDto struct {
 
 // PromotionNotPromotedDto DTO.
 type PromotionNotPromotedDto struct {
-	Area   string  `json:"area,omitempty"`
-	Scope  string  `json:"scope,omitempty"`
-	Reason string  `json:"reason,omitempty"`
-	Count  float64 `json:"count,omitempty"`
+	Area   string   `json:"area,omitempty"`
+	Scope  string   `json:"scope,omitempty"`
+	Reason string   `json:"reason,omitempty"`
+	Count  *float64 `json:"count,omitempty"`
 }
 
 // PromotionItemDto DTO.
@@ -4601,7 +4604,7 @@ type PromotionResultDto struct {
 	Items                   []*PromotionItemChangeDto        `json:"items,omitempty"`
 	Integrations            []*PromotionIntegrationChangeDto `json:"integrations,omitempty"`
 	NotPromoted             []*PromotionNotPromotedDto       `json:"notPromoted,omitempty"`
-	RequiresConfirmation    bool                             `json:"requiresConfirmation,omitempty"`
+	RequiresConfirmation    bool                             `json:"requiresConfirmation"`
 	ContentMirrored         []*PromotionItemDto              `json:"contentMirrored,omitempty"`
 	ContentDeleted          []*PromotionItemDto              `json:"contentDeleted,omitempty"`
 	IntegrationsSeeded      []*PromotionItemDto              `json:"integrationsSeeded,omitempty"`
@@ -4610,9 +4613,9 @@ type PromotionResultDto struct {
 	Blockers                []*PromotionBlockerDto           `json:"blockers,omitempty"`
 	TermChanges             []*PromotionTermChangeDto        `json:"termChanges,omitempty"`
 	Warnings                []*PromotionBlockerDto           `json:"warnings,omitempty"`
-	FromVersion             float64                          `json:"fromVersion,omitempty"`
-	WasDryRun               bool                             `json:"wasDryRun,omitempty"`
-	Promoted                bool                             `json:"promoted,omitempty"`
+	FromVersion             *float64                         `json:"fromVersion,omitempty"`
+	WasDryRun               bool                             `json:"wasDryRun"`
+	Promoted                *bool                            `json:"promoted,omitempty"`
 	Message                 string                           `json:"message,omitempty"`
 }
 
@@ -4620,7 +4623,7 @@ type PromotionResultDto struct {
 type BuiltInRepairDto struct {
 	Env    string                    `json:"env,omitempty"`
 	Items  []*PromotionItemChangeDto `json:"items,omitempty"`
-	IsNoOp bool                      `json:"isNoOp,omitempty"`
+	IsNoOp bool                      `json:"isNoOp"`
 }
 
 // ProjectEnvironmentsDto DTO.
@@ -4665,13 +4668,13 @@ type NotificationSettingsDto struct {
 
 // AuthenticationFlowPasswordPolicyDto DTO.
 type AuthenticationFlowPasswordPolicyDto struct {
-	MinLength      float64 `json:"minLength,omitempty"`
-	MaxLength      float64 `json:"maxLength,omitempty"`
-	MinNumbers     float64 `json:"minNumbers,omitempty"`
-	MinUpper       float64 `json:"minUpper,omitempty"`
-	MinLower       float64 `json:"minLower,omitempty"`
-	MinSpecial     float64 `json:"minSpecial,omitempty"`
-	AllowedSpecial string  `json:"allowedSpecial,omitempty"`
+	MinLength      float64  `json:"minLength,omitempty"`
+	MaxLength      *float64 `json:"maxLength,omitempty"`
+	MinNumbers     *float64 `json:"minNumbers,omitempty"`
+	MinUpper       *float64 `json:"minUpper,omitempty"`
+	MinLower       *float64 `json:"minLower,omitempty"`
+	MinSpecial     *float64 `json:"minSpecial,omitempty"`
+	AllowedSpecial string   `json:"allowedSpecial,omitempty"`
 }
 
 // AuthenticationFlowSummaryDto DTO.
@@ -4690,20 +4693,20 @@ type AiAssistantDto struct {
 	Toolsets           []string `json:"toolsets,omitempty"`
 	LlmIntegrationId   string   `json:"llmIntegrationId,omitempty"`
 	Model              string   `json:"model,omitempty"`
-	MemoryEnabled      bool     `json:"memoryEnabled,omitempty"`
+	MemoryEnabled      bool     `json:"memoryEnabled"`
 	RagSourceIds       []string `json:"ragSourceIds,omitempty"`
-	WeakMatchThreshold float64  `json:"weakMatchThreshold,omitempty"`
+	WeakMatchThreshold *float64 `json:"weakMatchThreshold,omitempty"`
 	PlanId             string   `json:"planId,omitempty"`
-	IsDefault          bool     `json:"isDefault,omitempty"`
+	IsDefault          bool     `json:"isDefault"`
 }
 
 // ProjectAiSettingsDto DTO.
 type ProjectAiSettingsDto struct {
-	Enabled                 bool                       `json:"enabled,omitempty"`
+	Enabled                 bool                       `json:"enabled"`
 	DefaultLlmIntegrationId string                     `json:"defaultLlmIntegrationId,omitempty"`
 	DefaultModel            string                     `json:"defaultModel,omitempty"`
 	Assistants              []*AiAssistantDto          `json:"assistants,omitempty"`
-	EmbedFiles              bool                       `json:"embedFiles,omitempty"`
+	EmbedFiles              bool                       `json:"embedFiles"`
 	Plans                   []*AiPlanDto               `json:"plans,omitempty"`
 	PlanRoleAssignments     []*AiPlanRoleAssignmentDto `json:"planRoleAssignments,omitempty"`
 	DefaultPlanId           string                     `json:"defaultPlanId,omitempty"`
@@ -4716,10 +4719,10 @@ type TriggerDto struct {
 	Name           string            `json:"name,omitempty"`
 	ThenAction     *TriggerActionDto `json:"thenAction,omitempty"`
 	Description    string            `json:"description,omitempty"`
-	IsEnabled      bool              `json:"isEnabled,omitempty"`
+	IsEnabled      bool              `json:"isEnabled"`
 	ActivationCode string            `json:"activationCode,omitempty"`
-	Order          float64           `json:"order,omitempty"`
-	BreakOnError   bool              `json:"breakOnError,omitempty"`
+	Order          *float64          `json:"order,omitempty"`
+	BreakOnError   bool              `json:"breakOnError"`
 	SavedByAuthId  string            `json:"savedByAuthId,omitempty"`
 }
 
@@ -4734,20 +4737,20 @@ type SchemaTriggerDto struct {
 
 // DatabaseDto DTO.
 type DatabaseDto struct {
-	IsEnabled                 bool                `json:"isEnabled,omitempty"`
+	IsEnabled                 bool                `json:"isEnabled"`
 	Triggers                  []*SchemaTriggerDto `json:"triggers,omitempty"`
 	DefaultIntegrationViewIds map[string]string   `json:"defaultIntegrationViewIds,omitempty"`
 }
 
 // EmailDto DTO.
 type EmailDto struct {
-	IsEnabled                 bool              `json:"isEnabled,omitempty"`
+	IsEnabled                 bool              `json:"isEnabled"`
 	DefaultIntegrationViewIds map[string]string `json:"defaultIntegrationViewIds,omitempty"`
 }
 
 // AiDto DTO.
 type AiDto struct {
-	IsEnabled                 bool              `json:"isEnabled,omitempty"`
+	IsEnabled                 bool              `json:"isEnabled"`
 	DefaultIntegrationViewIds map[string]string `json:"defaultIntegrationViewIds,omitempty"`
 	DefaultIntegrationViewId  string            `json:"defaultIntegrationViewId,omitempty"`
 }
@@ -4764,7 +4767,7 @@ type RoleItemDto struct {
 	Name             string   `json:"name,omitempty"`
 	DisplayName      string   `json:"displayName,omitempty"`
 	Description      string   `json:"description,omitempty"`
-	IsSystem         bool     `json:"isSystem,omitempty"`
+	IsSystem         bool     `json:"isSystem"`
 	AttachedPolicies []string `json:"attachedPolicies,omitempty"`
 }
 
@@ -4781,7 +4784,7 @@ type PolicyItemDto struct {
 	Id          string           `json:"id,omitempty"`
 	Name        string           `json:"name,omitempty"`
 	Description string           `json:"description,omitempty"`
-	IsSystem    bool             `json:"isSystem,omitempty"`
+	IsSystem    bool             `json:"isSystem"`
 	Version     string           `json:"version,omitempty"`
 	Permissions []*PermissionDto `json:"permissions,omitempty"`
 }
@@ -4795,29 +4798,29 @@ type AuthorizationDto struct {
 
 // MembershipDto DTO.
 type MembershipDto struct {
-	IsEnabled              bool                    `json:"isEnabled,omitempty"`
+	IsEnabled              bool                    `json:"isEnabled"`
 	Triggers               []*MembershipTriggerDto `json:"triggers,omitempty"`
 	CustomRoles            []*RoleItemDto          `json:"customRoles,omitempty"`
 	CustomPolicies         []*PolicyItemDto        `json:"customPolicies,omitempty"`
 	SystemRoleAttachments  []*RoleItemDto          `json:"systemRoleAttachments,omitempty"`
 	Authorization          *AuthorizationDto       `json:"authorization,omitempty"`
-	RequireEmailValidation bool                    `json:"requireEmailValidation,omitempty"`
+	RequireEmailValidation bool                    `json:"requireEmailValidation"`
 }
 
 // LoggingDto DTO.
 type LoggingDto struct {
-	IsEnabled     bool `json:"isEnabled,omitempty"`
-	IsEstablished bool `json:"isEstablished,omitempty"`
+	IsEnabled     bool `json:"isEnabled"`
+	IsEstablished bool `json:"isEstablished"`
 }
 
 // ServerEventsDto DTO.
 type ServerEventsDto struct {
-	IsEnabled bool `json:"isEnabled,omitempty"`
+	IsEnabled bool `json:"isEnabled"`
 }
 
 // PushDto DTO.
 type PushDto struct {
-	IsEnabled                 bool                `json:"isEnabled,omitempty"`
+	IsEnabled                 bool                `json:"isEnabled"`
 	DefaultIntegrationViewIds map[string]string   `json:"defaultIntegrationViewIds,omitempty"`
 	MarketingTags             []*TagDefinitionDto `json:"marketingTags,omitempty"`
 	TransactionalTags         []*TagDefinitionDto `json:"transactionalTags,omitempty"`
@@ -4825,12 +4828,12 @@ type PushDto struct {
 
 // SchedulerDto DTO.
 type SchedulerDto struct {
-	IsEnabled bool `json:"isEnabled,omitempty"`
+	IsEnabled bool `json:"isEnabled"`
 }
 
 // CodeDto DTO.
 type CodeDto struct {
-	IsEnabled bool `json:"isEnabled,omitempty"`
+	IsEnabled bool `json:"isEnabled"`
 }
 
 // FilesTriggerDto DTO.
@@ -4842,7 +4845,7 @@ type FilesTriggerDto struct {
 
 // FilesDto DTO.
 type FilesDto struct {
-	IsEnabled                 bool               `json:"isEnabled,omitempty"`
+	IsEnabled                 bool               `json:"isEnabled"`
 	Triggers                  []*FilesTriggerDto `json:"triggers,omitempty"`
 	DefaultIntegrationViewIds map[string]string  `json:"defaultIntegrationViewIds,omitempty"`
 }
@@ -4857,13 +4860,13 @@ type PaymentTriggerDto struct {
 
 // PaymentsDto DTO.
 type PaymentsDto struct {
-	IsEnabled bool                 `json:"isEnabled,omitempty"`
+	IsEnabled bool                 `json:"isEnabled"`
 	Triggers  []*PaymentTriggerDto `json:"triggers,omitempty"`
 }
 
 // SmsDto DTO.
 type SmsDto struct {
-	IsEnabled                 bool              `json:"isEnabled,omitempty"`
+	IsEnabled                 bool              `json:"isEnabled"`
 	DefaultIntegrationViewIds map[string]string `json:"defaultIntegrationViewIds,omitempty"`
 }
 
@@ -4871,7 +4874,7 @@ type SmsDto struct {
 type ProjectDto struct {
 	AccountViewId                 string                          `json:"accountViewId,omitempty"`
 	ProjectStatus                 ProjectStatus                   `json:"projectStatus,omitempty"`
-	IsActive                      bool                            `json:"isActive,omitempty"`
+	IsActive                      bool                            `json:"isActive"`
 	ViewId                        string                          `json:"viewId,omitempty"`
 	Name                          string                          `json:"name,omitempty"`
 	UniqueName                    string                          `json:"uniqueName,omitempty"`
@@ -4886,16 +4889,16 @@ type ProjectDto struct {
 	Languages                     []string                        `json:"languages,omitempty"`
 	PrimaryRegion                 *ProjectRegionDto               `json:"primaryRegion,omitempty"`
 	AdditionalRegions             []*ProjectRegionDto             `json:"additionalRegions,omitempty"`
-	IsMultiRegionEligible         bool                            `json:"isMultiRegionEligible,omitempty"`
+	IsMultiRegionEligible         bool                            `json:"isMultiRegionEligible"`
 	Brand                         *ProjectBrandDto                `json:"brand,omitempty"`
 	NotificationSettings          *NotificationSettingsDto        `json:"notificationSettings,omitempty"`
 	AllowedOrigins                []string                        `json:"allowedOrigins,omitempty"`
-	ExposeBrandToAdminPortal      bool                            `json:"exposeBrandToAdminPortal,omitempty"`
-	ExposeAuthToAdminPortal       bool                            `json:"exposeAuthToAdminPortal,omitempty"`
-	AdminPortalEnabled            bool                            `json:"adminPortalEnabled,omitempty"`
+	ExposeBrandToAdminPortal      bool                            `json:"exposeBrandToAdminPortal"`
+	ExposeAuthToAdminPortal       bool                            `json:"exposeAuthToAdminPortal"`
+	AdminPortalEnabled            bool                            `json:"adminPortalEnabled"`
 	AdminPortalServiceUserId      string                          `json:"adminPortalServiceUserId,omitempty"`
 	MembershipAuthenticationFlows []*AuthenticationFlowSummaryDto `json:"membershipAuthenticationFlows,omitempty"`
-	ExposeLegalToAdminPortal      bool                            `json:"exposeLegalToAdminPortal,omitempty"`
+	ExposeLegalToAdminPortal      bool                            `json:"exposeLegalToAdminPortal"`
 	AiChat                        *ProjectAiSettingsDto           `json:"aiChat,omitempty"`
 	LegalTermsMarkdown            string                          `json:"legalTermsMarkdown,omitempty"`
 	LegalPrivacyMarkdown          string                          `json:"legalPrivacyMarkdown,omitempty"`
@@ -4913,17 +4916,17 @@ type ProjectDto struct {
 	Files                         *FilesDto                       `json:"files,omitempty"`
 	Payments                      *PaymentsDto                    `json:"payments,omitempty"`
 	Sms                           *SmsDto                         `json:"sms,omitempty"`
-	DatabaseEnabled               bool                            `json:"databaseEnabled,omitempty"`
-	EmailEnabled                  bool                            `json:"emailEnabled,omitempty"`
-	MembershipEnabled             bool                            `json:"membershipEnabled,omitempty"`
-	LoggingEnabled                bool                            `json:"loggingEnabled,omitempty"`
-	ServerEventsEnabled           bool                            `json:"serverEventsEnabled,omitempty"`
-	PushEnabled                   bool                            `json:"pushEnabled,omitempty"`
-	SchedulerEnabled              bool                            `json:"schedulerEnabled,omitempty"`
-	CodeEnabled                   bool                            `json:"codeEnabled,omitempty"`
-	FilesEnabled                  bool                            `json:"filesEnabled,omitempty"`
-	PaymentsEnabled               bool                            `json:"paymentsEnabled,omitempty"`
-	SmsEnabled                    bool                            `json:"smsEnabled,omitempty"`
+	DatabaseEnabled               bool                            `json:"databaseEnabled"`
+	EmailEnabled                  bool                            `json:"emailEnabled"`
+	MembershipEnabled             bool                            `json:"membershipEnabled"`
+	LoggingEnabled                bool                            `json:"loggingEnabled"`
+	ServerEventsEnabled           bool                            `json:"serverEventsEnabled"`
+	PushEnabled                   bool                            `json:"pushEnabled"`
+	SchedulerEnabled              bool                            `json:"schedulerEnabled"`
+	CodeEnabled                   bool                            `json:"codeEnabled"`
+	FilesEnabled                  bool                            `json:"filesEnabled"`
+	PaymentsEnabled               bool                            `json:"paymentsEnabled"`
+	SmsEnabled                    bool                            `json:"smsEnabled"`
 	DefaultLlmIntegrationViewId   string                          `json:"defaultLlmIntegrationViewId,omitempty"`
 	Connections                   float64                         `json:"connections,omitempty"`
 }
@@ -4931,7 +4934,7 @@ type ProjectDto struct {
 // ProjectListItemDto DTO.
 type ProjectListItemDto struct {
 	ViewId            string              `json:"viewId,omitempty"`
-	IsActive          bool                `json:"isActive,omitempty"`
+	IsActive          bool                `json:"isActive"`
 	ProjectStatus     ProjectStatus       `json:"projectStatus,omitempty"`
 	Name              string              `json:"name,omitempty"`
 	UniqueName        string              `json:"uniqueName,omitempty"`
@@ -4984,13 +4987,13 @@ type AiUsageGroupDto struct {
 
 // AiWalletLineDto DTO.
 type AiWalletLineDto struct {
-	Kind             string  `json:"kind,omitempty"`
-	Credits          float64 `json:"credits,omitempty"`
-	Reference        string  `json:"reference,omitempty"`
-	PurchasedBalance float64 `json:"purchasedBalance,omitempty"`
-	IncludedUsed     float64 `json:"includedUsed,omitempty"`
-	PurchasedUsed    float64 `json:"purchasedUsed,omitempty"`
-	AtUtc            string  `json:"atUtc,omitempty"`
+	Kind             string   `json:"kind,omitempty"`
+	Credits          float64  `json:"credits,omitempty"`
+	Reference        string   `json:"reference,omitempty"`
+	PurchasedBalance float64  `json:"purchasedBalance,omitempty"`
+	IncludedUsed     *float64 `json:"includedUsed,omitempty"`
+	PurchasedUsed    *float64 `json:"purchasedUsed,omitempty"`
+	AtUtc            string   `json:"atUtc,omitempty"`
 }
 
 // ProjectAiWalletDto DTO.
@@ -5026,8 +5029,8 @@ type TemplateLanguageGapDto struct {
 // PaginatedResponse DTO.
 type PaginatedResponse[TViewModelProjection any] struct {
 	Items         []TViewModelProjection `json:"items,omitempty"`
-	HasMore       bool                   `json:"hasMore,omitempty"`
-	HasPrevious   bool                   `json:"hasPrevious,omitempty"`
+	HasMore       bool                   `json:"hasMore"`
+	HasPrevious   bool                   `json:"hasPrevious"`
 	StartingAfter string                 `json:"startingAfter,omitempty"`
 	EndingBefore  string                 `json:"endingBefore,omitempty"`
 }
@@ -5046,7 +5049,7 @@ type RegistrationDto struct {
 
 // LoginDto DTO.
 type LoginDto struct {
-	NeedChangePasswordOnNextLogin bool                  `json:"needChangePasswordOnNextLogin,omitempty"`
+	NeedChangePasswordOnNextLogin bool                  `json:"needChangePasswordOnNextLogin"`
 	LastAccessInformation         *AccessInformationDto `json:"lastAccessInformation,omitempty"`
 }
 
@@ -5069,17 +5072,17 @@ type AuthDto struct {
 
 // AccountPasswordPolicyDto DTO.
 type AccountPasswordPolicyDto struct {
-	MinLength      float64 `json:"minLength,omitempty"`
-	MaxLength      float64 `json:"maxLength,omitempty"`
-	MinNumbers     float64 `json:"minNumbers,omitempty"`
-	MaxNumbers     float64 `json:"maxNumbers,omitempty"`
-	MinUpper       float64 `json:"minUpper,omitempty"`
-	MaxUpper       float64 `json:"maxUpper,omitempty"`
-	MinLower       float64 `json:"minLower,omitempty"`
-	MaxLower       float64 `json:"maxLower,omitempty"`
-	MinSpecial     float64 `json:"minSpecial,omitempty"`
-	MaxSpecial     float64 `json:"maxSpecial,omitempty"`
-	AllowedSpecial string  `json:"allowedSpecial,omitempty"`
+	MinLength      float64  `json:"minLength,omitempty"`
+	MaxLength      *float64 `json:"maxLength,omitempty"`
+	MinNumbers     *float64 `json:"minNumbers,omitempty"`
+	MaxNumbers     *float64 `json:"maxNumbers,omitempty"`
+	MinUpper       *float64 `json:"minUpper,omitempty"`
+	MaxUpper       *float64 `json:"maxUpper,omitempty"`
+	MinLower       *float64 `json:"minLower,omitempty"`
+	MaxLower       *float64 `json:"maxLower,omitempty"`
+	MinSpecial     *float64 `json:"minSpecial,omitempty"`
+	MaxSpecial     *float64 `json:"maxSpecial,omitempty"`
+	AllowedSpecial string   `json:"allowedSpecial,omitempty"`
 }
 
 // AccountTeamRoleDto DTO.
@@ -5087,7 +5090,7 @@ type AccountTeamRoleDto struct {
 	Id          string   `json:"id,omitempty"`
 	Name        string   `json:"name,omitempty"`
 	Description string   `json:"description,omitempty"`
-	IsSystem    bool     `json:"isSystem,omitempty"`
+	IsSystem    bool     `json:"isSystem"`
 	Policies    []string `json:"policies,omitempty"`
 }
 
@@ -5106,21 +5109,21 @@ type AccountPasskeyListItemDto struct {
 	FriendlyName    string `json:"friendlyName,omitempty"`
 	RegisteredOnUtc string `json:"registeredOnUtc,omitempty"`
 	LastUsedOnUtc   string `json:"lastUsedOnUtc,omitempty"`
-	IsRevoked       bool   `json:"isRevoked,omitempty"`
+	IsRevoked       bool   `json:"isRevoked"`
 }
 
 // LicenseDomainDnsRecordDto DTO.
 type LicenseDomainDnsRecordDto struct {
 	Host       string `json:"host,omitempty"`
 	RecordType string `json:"recordType,omitempty"`
-	Resolved   bool   `json:"resolved,omitempty"`
-	Required   bool   `json:"required,omitempty"`
+	Resolved   bool   `json:"resolved"`
+	Required   bool   `json:"required"`
 }
 
 // LicenseDomainDnsStatusDto DTO.
 type LicenseDomainDnsStatusDto struct {
 	Domain              string                       `json:"domain,omitempty"`
-	AllRequiredResolved bool                         `json:"allRequiredResolved,omitempty"`
+	AllRequiredResolved bool                         `json:"allRequiredResolved"`
 	Records             []*LicenseDomainDnsRecordDto `json:"records,omitempty"`
 }
 
@@ -5130,16 +5133,16 @@ type LicenseDomainVerificationChallengeDto struct {
 	TxtHost       string `json:"txtHost,omitempty"`
 	TxtValue      string `json:"txtValue,omitempty"`
 	ExpiresAtUtc  string `json:"expiresAtUtc,omitempty"`
-	Verified      bool   `json:"verified,omitempty"`
+	Verified      bool   `json:"verified"`
 	VerifiedAtUtc string `json:"verifiedAtUtc,omitempty"`
-	Skipped       bool   `json:"skipped,omitempty"`
+	Skipped       bool   `json:"skipped"`
 }
 
 // LicenseDomainVerificationStatusDto DTO.
 type LicenseDomainVerificationStatusDto struct {
 	Domain           string `json:"domain,omitempty"`
-	Verified         bool   `json:"verified,omitempty"`
-	Skipped          bool   `json:"skipped,omitempty"`
+	Verified         bool   `json:"verified"`
+	Skipped          bool   `json:"skipped"`
 	TxtHost          string `json:"txtHost,omitempty"`
 	ExpectedTxtValue string `json:"expectedTxtValue,omitempty"`
 	ObservedTxtValue string `json:"observedTxtValue,omitempty"`
@@ -5154,14 +5157,14 @@ type CodeMashSubscriptionDto struct {
 	Domain            string `json:"domain,omitempty"`
 	WillExpireOn      string `json:"willExpireOn,omitempty"`
 	IssuedOn          string `json:"issuedOn,omitempty"`
-	IsTrial           bool   `json:"isTrial,omitempty"`
+	IsTrial           bool   `json:"isTrial"`
 	SubscriptionRefId string `json:"subscriptionRefId,omitempty"`
 }
 
 // LicenseDto DTO.
 type LicenseDto struct {
 	CodeMashSubscriptionDto
-	IsEnterprise bool    `json:"isEnterprise,omitempty"`
+	IsEnterprise bool    `json:"isEnterprise"`
 	ProjectCap   float64 `json:"projectCap,omitempty"`
 }
 
@@ -5185,7 +5188,7 @@ type InstallationLicenseDetailsDto struct {
 	Email     string  `json:"email,omitempty"`
 	Release   string  `json:"release,omitempty"`
 	Expire    float64 `json:"expire,omitempty"`
-	IsTrial   bool    `json:"isTrial,omitempty"`
+	IsTrial   bool    `json:"isTrial"`
 	Cap       float64 `json:"cap,omitempty"`
 }
 
@@ -5193,15 +5196,15 @@ type InstallationLicenseDetailsDto struct {
 type InstallationLicenseStatusDto struct {
 	StoredMode                   string                         `json:"storedMode,omitempty"`
 	EffectiveMode                string                         `json:"effectiveMode,omitempty"`
-	IsProduction                 bool                           `json:"isProduction,omitempty"`
-	GraceDaysLeft                float64                        `json:"graceDaysLeft,omitempty"`
+	IsProduction                 bool                           `json:"isProduction"`
+	GraceDaysLeft                *float64                       `json:"graceDaysLeft,omitempty"`
 	GraceUntilUtc                string                         `json:"graceUntilUtc,omitempty"`
 	LastProvenAtUtc              string                         `json:"lastProvenAtUtc,omitempty"`
 	LastHeartbeatAtUtc           string                         `json:"lastHeartbeatAtUtc,omitempty"`
 	InstallationDomain           string                         `json:"installationDomain,omitempty"`
 	LicensedDomain               string                         `json:"licensedDomain,omitempty"`
 	HostKind                     string                         `json:"hostKind,omitempty"`
-	IsTrialLicense               bool                           `json:"isTrialLicense,omitempty"`
+	IsTrialLicense               bool                           `json:"isTrialLicense"`
 	LicenseExpireUtc             string                         `json:"licenseExpireUtc,omitempty"`
 	LastHeartbeatOutcome         string                         `json:"lastHeartbeatOutcome,omitempty"`
 	LastHeartbeatError           string                         `json:"lastHeartbeatError,omitempty"`
@@ -5216,7 +5219,7 @@ type AiRoleDto struct {
 	Id           string   `json:"id,omitempty"`
 	Name         string   `json:"name,omitempty"`
 	Description  string   `json:"description,omitempty"`
-	IsSystem     bool     `json:"isSystem,omitempty"`
+	IsSystem     bool     `json:"isSystem"`
 	Environments []string `json:"environments,omitempty"`
 }
 
@@ -5261,7 +5264,7 @@ type ImportUserOutcomeDto struct {
 
 // UsersImportDto DTO.
 type UsersImportDto struct {
-	DryRun   bool                    `json:"dryRun,omitempty"`
+	DryRun   bool                    `json:"dryRun"`
 	Received float64                 `json:"received,omitempty"`
 	Imported float64                 `json:"imported,omitempty"`
 	Valid    float64                 `json:"valid,omitempty"`
@@ -5273,7 +5276,7 @@ type UsersImportDto struct {
 
 // LoginProjectRepairDto DTO.
 type LoginProjectRepairDto struct {
-	DryRun                    bool    `json:"dryRun,omitempty"`
+	DryRun                    bool    `json:"dryRun"`
 	LoginsWithoutProject      float64 `json:"loginsWithoutProject,omitempty"`
 	LoginsToRepair            float64 `json:"loginsToRepair,omitempty"`
 	LoginsRepaired            float64 `json:"loginsRepaired,omitempty"`
@@ -5292,7 +5295,7 @@ type ServiceUserApiKeyDto struct {
 	CreatedDate   string   `json:"createdDate,omitempty"`
 	ExpiryDate    string   `json:"expiryDate,omitempty"`
 	CancelledDate string   `json:"cancelledDate,omitempty"`
-	Active        bool     `json:"active,omitempty"`
+	Active        bool     `json:"active"`
 }
 
 // GetTriggerResponse DTO.
@@ -5305,10 +5308,10 @@ type TriggerProjectionList struct {
 	ViewId            string            `json:"viewId,omitempty"`
 	Name              string            `json:"name,omitempty"`
 	ActionType        TriggerActionType `json:"actionType,omitempty"`
-	HasPreExecuteCode bool              `json:"hasPreExecuteCode,omitempty"`
-	IsEnabled         bool              `json:"isEnabled,omitempty"`
-	Order             float64           `json:"order,omitempty"`
-	BreakOnError      bool              `json:"breakOnError,omitempty"`
+	HasPreExecuteCode bool              `json:"hasPreExecuteCode"`
+	IsEnabled         bool              `json:"isEnabled"`
+	Order             *float64          `json:"order,omitempty"`
+	BreakOnError      bool              `json:"breakOnError"`
 }
 
 // MembershipTriggerProjectionList DTO.
@@ -5323,19 +5326,19 @@ type RoleListProjectionDto struct {
 	ViewId      string  `json:"viewId,omitempty"`
 	Name        string  `json:"name,omitempty"`
 	DisplayName string  `json:"displayName,omitempty"`
-	IsSystem    bool    `json:"isSystem,omitempty"`
+	IsSystem    bool    `json:"isSystem"`
 	PolicyCount float64 `json:"policyCount,omitempty"`
 }
 
 // PasskeySettingsDto DTO.
 type PasskeySettingsDto struct {
-	Enabled                       bool    `json:"enabled,omitempty"`
+	Enabled                       bool    `json:"enabled"`
 	CodeTtlMinutes                float64 `json:"codeTtlMinutes,omitempty"`
 	MaxCredentialsPerUser         float64 `json:"maxCredentialsPerUser,omitempty"`
 	RecoveryCodeCount             float64 `json:"recoveryCodeCount,omitempty"`
-	GenerateRecoveryCodesAtSignup bool    `json:"generateRecoveryCodesAtSignup,omitempty"`
+	GenerateRecoveryCodesAtSignup bool    `json:"generateRecoveryCodesAtSignup"`
 	AuthenticatorAttachment       string  `json:"authenticatorAttachment,omitempty"`
-	AllowMagicLinkRecovery        bool    `json:"allowMagicLinkRecovery,omitempty"`
+	AllowMagicLinkRecovery        bool    `json:"allowMagicLinkRecovery"`
 	RefreshTokenTtlDays           float64 `json:"refreshTokenTtlDays,omitempty"`
 	RpId                          string  `json:"rpId,omitempty"`
 }
@@ -5344,12 +5347,12 @@ type PasskeySettingsDto struct {
 type IntegrationListProjection struct {
 	ViewId                            string   `json:"viewId,omitempty"`
 	IntegrationName                   string   `json:"integrationName,omitempty"`
-	IsEnabled                         bool     `json:"isEnabled,omitempty"`
+	IsEnabled                         bool     `json:"isEnabled"`
 	LastIntegrationTestAtUtc          string   `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded      bool     `json:"lastIntegrationTestSucceeded,omitempty"`
+	LastIntegrationTestSucceeded      *bool    `json:"lastIntegrationTestSucceeded,omitempty"`
 	LastIntegrationTestErrors         []string `json:"lastIntegrationTestErrors,omitempty"`
 	HumanDeliveryConfirmedAtUtc       string   `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	RequiresHumanDeliveryConfirmation bool     `json:"requiresHumanDeliveryConfirmation,omitempty"`
+	RequiresHumanDeliveryConfirmation bool     `json:"requiresHumanDeliveryConfirmation"`
 }
 
 // MembershipIntegrationListProjection DTO.
@@ -5365,7 +5368,7 @@ type MembershipMessageTemplateDto struct {
 
 // MembershipEmailActionSettingsDto DTO.
 type MembershipEmailActionSettingsDto struct {
-	SendEmail bool                          `json:"sendEmail,omitempty"`
+	SendEmail bool                          `json:"sendEmail"`
 	Template  *MembershipMessageTemplateDto `json:"template,omitempty"`
 	Callback  string                        `json:"callback,omitempty"`
 }
@@ -5381,17 +5384,17 @@ type MembershipEmailPreferencesDto struct {
 
 // PasswordComplexityDto DTO.
 type PasswordComplexityDto struct {
-	MinLength      float64 `json:"minLength,omitempty"`
-	MaxLength      float64 `json:"maxLength,omitempty"`
-	MinNumbers     float64 `json:"minNumbers,omitempty"`
-	MaxNumbers     float64 `json:"maxNumbers,omitempty"`
-	MinUpper       float64 `json:"minUpper,omitempty"`
-	MaxUpper       float64 `json:"maxUpper,omitempty"`
-	MinLower       float64 `json:"minLower,omitempty"`
-	MaxLower       float64 `json:"maxLower,omitempty"`
-	MinSpecial     float64 `json:"minSpecial,omitempty"`
-	MaxSpecial     float64 `json:"maxSpecial,omitempty"`
-	AllowedSpecial string  `json:"allowedSpecial,omitempty"`
+	MinLength      float64  `json:"minLength,omitempty"`
+	MaxLength      *float64 `json:"maxLength,omitempty"`
+	MinNumbers     *float64 `json:"minNumbers,omitempty"`
+	MaxNumbers     *float64 `json:"maxNumbers,omitempty"`
+	MinUpper       *float64 `json:"minUpper,omitempty"`
+	MaxUpper       *float64 `json:"maxUpper,omitempty"`
+	MinLower       *float64 `json:"minLower,omitempty"`
+	MaxLower       *float64 `json:"maxLower,omitempty"`
+	MinSpecial     *float64 `json:"minSpecial,omitempty"`
+	MaxSpecial     *float64 `json:"maxSpecial,omitempty"`
+	AllowedSpecial string   `json:"allowedSpecial,omitempty"`
 }
 
 // MembershipAuthorizationViewDto DTO.
@@ -5401,20 +5404,20 @@ type MembershipAuthorizationViewDto struct {
 	GuestRegistersAsRole         string                         `json:"guestRegistersAsRole,omitempty"`
 	AllowedRegisterRoles         []string                       `json:"allowedRegisterRoles,omitempty"`
 	AllowedProviderRegisterRoles []string                       `json:"allowedProviderRegisterRoles,omitempty"`
-	ResetPasswordTokenExpiration float64                        `json:"resetPasswordTokenExpiration,omitempty"`
-	InvitationExpiration         float64                        `json:"invitationExpiration,omitempty"`
-	EmailVerificationExpiration  float64                        `json:"emailVerificationExpiration,omitempty"`
-	DeactivationExpiration       float64                        `json:"deactivationExpiration,omitempty"`
-	DefaultSubscribeToNews       bool                           `json:"defaultSubscribeToNews,omitempty"`
+	ResetPasswordTokenExpiration *float64                       `json:"resetPasswordTokenExpiration,omitempty"`
+	InvitationExpiration         *float64                       `json:"invitationExpiration,omitempty"`
+	EmailVerificationExpiration  *float64                       `json:"emailVerificationExpiration,omitempty"`
+	DeactivationExpiration       *float64                       `json:"deactivationExpiration,omitempty"`
+	DefaultSubscribeToNews       bool                           `json:"defaultSubscribeToNews"`
 	PasswordComplexity           *PasswordComplexityDto         `json:"passwordComplexity,omitempty"`
 	DefaultRoles                 []string                       `json:"defaultRoles,omitempty"`
 	AllowedRegistrationRoles     []string                       `json:"allowedRegistrationRoles,omitempty"`
-	AllowGuestUsers              bool                           `json:"allowGuestUsers,omitempty"`
-	GuestCleanupPeriodDays       float64                        `json:"guestCleanupPeriodDays,omitempty"`
-	AllowEmailRegistration       bool                           `json:"allowEmailRegistration,omitempty"`
-	AllowUsernameRegistration    bool                           `json:"allowUsernameRegistration,omitempty"`
-	InviteOnly                   bool                           `json:"inviteOnly,omitempty"`
-	AllowAnyoneToSignUp          bool                           `json:"allowAnyoneToSignUp,omitempty"`
+	AllowGuestUsers              bool                           `json:"allowGuestUsers"`
+	GuestCleanupPeriodDays       *float64                       `json:"guestCleanupPeriodDays,omitempty"`
+	AllowEmailRegistration       bool                           `json:"allowEmailRegistration"`
+	AllowUsernameRegistration    bool                           `json:"allowUsernameRegistration"`
+	InviteOnly                   bool                           `json:"inviteOnly"`
+	AllowAnyoneToSignUp          bool                           `json:"allowAnyoneToSignUp"`
 }
 
 // MembershipCredentialsSettingsModeDto DTO.
@@ -5426,7 +5429,7 @@ type MembershipCredentialsSettingsModeDto struct {
 // MembershipCredentialsSettingsDto DTO.
 type MembershipCredentialsSettingsDto struct {
 	LogoutUrl      string                                  `json:"logoutUrl,omitempty"`
-	AllowUsernames bool                                    `json:"allowUsernames,omitempty"`
+	AllowUsernames bool                                    `json:"allowUsernames"`
 	Modes          []*MembershipCredentialsSettingsModeDto `json:"modes,omitempty"`
 }
 
@@ -5500,7 +5503,7 @@ type TermTreeDto struct {
 	TaxonomyId   string                `json:"taxonomyId,omitempty"`
 	TaxonomyName string                `json:"taxonomyName,omitempty"`
 	ParentId     string                `json:"parentId,omitempty"`
-	Order        float64               `json:"order,omitempty"`
+	Order        *float64              `json:"order,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Names        map[string]string     `json:"names,omitempty"`
 	Slug         string                `json:"slug,omitempty"`
@@ -5527,7 +5530,7 @@ type TermDto struct {
 	TaxonomyId   string                `json:"taxonomyId,omitempty"`
 	TaxonomyName string                `json:"taxonomyName,omitempty"`
 	ParentId     string                `json:"parentId,omitempty"`
-	Order        float64               `json:"order,omitempty"`
+	Order        *float64              `json:"order,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Names        map[string]string     `json:"names,omitempty"`
 	Slug         string                `json:"slug,omitempty"`
@@ -5555,7 +5558,7 @@ type AppliedCollectionDto struct {
 	Name         string   `json:"name,omitempty"`
 	Title        string   `json:"title,omitempty"`
 	Action       string   `json:"action,omitempty"`
-	Published    bool     `json:"published,omitempty"`
+	Published    bool     `json:"published"`
 	LinkedFields []string `json:"linkedFields,omitempty"`
 }
 
@@ -5563,14 +5566,14 @@ type AppliedCollectionDto struct {
 type EndUserOwnRecordsRowDto struct {
 	SchemaId          string `json:"schemaId,omitempty"`
 	SchemaName        string `json:"schemaName,omitempty"`
-	HasRecordOwner    bool   `json:"hasRecordOwner,omitempty"`
-	EndUserOwnRecords bool   `json:"endUserOwnRecords,omitempty"`
+	HasRecordOwner    bool   `json:"hasRecordOwner"`
+	EndUserOwnRecords bool   `json:"endUserOwnRecords"`
 	Action            string `json:"action,omitempty"`
 }
 
 // EndUserOwnRecordsReportDto DTO.
 type EndUserOwnRecordsReportDto struct {
-	DryRun  bool                       `json:"dryRun,omitempty"`
+	DryRun  bool                       `json:"dryRun"`
 	Env     string                     `json:"env,omitempty"`
 	Schemas []*EndUserOwnRecordsRowDto `json:"schemas,omitempty"`
 }
@@ -5592,14 +5595,14 @@ type SchemaDto struct {
 
 // SchemaListProjection DTO.
 type SchemaListProjection struct {
-	ViewId            string  `json:"viewId,omitempty"`
-	SchemaName        string  `json:"schemaName,omitempty"`
-	SchemaTitle       string  `json:"schemaTitle,omitempty"`
-	LatestVersion     float64 `json:"latestVersion,omitempty"`
-	HasDraft          bool    `json:"hasDraft,omitempty"`
-	MetaSchemaVersion float64 `json:"metaSchemaVersion,omitempty"`
-	Description       string  `json:"description,omitempty"`
-	Env               string  `json:"env,omitempty"`
+	ViewId            string   `json:"viewId,omitempty"`
+	SchemaName        string   `json:"schemaName,omitempty"`
+	SchemaTitle       string   `json:"schemaTitle,omitempty"`
+	LatestVersion     *float64 `json:"latestVersion,omitempty"`
+	HasDraft          bool     `json:"hasDraft"`
+	MetaSchemaVersion float64  `json:"metaSchemaVersion,omitempty"`
+	Description       string   `json:"description,omitempty"`
+	Env               string   `json:"env,omitempty"`
 }
 
 // SchemaDraftDto DTO.
@@ -5613,7 +5616,7 @@ type SchemaDraftDto struct {
 type SchemaIndexDto struct {
 	Name   string   `json:"name,omitempty"`
 	Keys   []string `json:"keys,omitempty"`
-	Unique bool     `json:"unique,omitempty"`
+	Unique bool     `json:"unique"`
 	Reason string   `json:"reason,omitempty"`
 	Field  string   `json:"field,omitempty"`
 }
@@ -5667,7 +5670,7 @@ type CollectionIndexKeyDto struct {
 type CollectionIndexDto struct {
 	Name            string                   `json:"name,omitempty"`
 	Keys            []*CollectionIndexKeyDto `json:"keys,omitempty"`
-	CreatedByNorbix bool                     `json:"createdByNorbix,omitempty"`
+	CreatedByNorbix bool                     `json:"createdByNorbix"`
 }
 
 // SeedCollectionReportItemDto DTO.
@@ -5720,7 +5723,7 @@ type CollectionImportDto struct {
 	File          *FileResourceRefDto       `json:"file,omitempty"`
 	ErrorFile     *FileResourceRefDto       `json:"errorFile,omitempty"`
 	Delimiter     string                    `json:"delimiter,omitempty"`
-	HasHeader     bool                      `json:"hasHeader,omitempty"`
+	HasHeader     bool                      `json:"hasHeader"`
 	Status        string                    `json:"status,omitempty"`
 	TotalRows     float64                   `json:"totalRows,omitempty"`
 	TotalImported float64                   `json:"totalImported,omitempty"`
@@ -5779,7 +5782,7 @@ type PublicFolderDto struct {
 	Path      string `json:"path,omitempty"`
 	PublicId  string `json:"publicId,omitempty"`
 	PublicUrl string `json:"publicUrl,omitempty"`
-	Inherited bool   `json:"inherited,omitempty"`
+	Inherited bool   `json:"inherited"`
 }
 
 // NotificationModuleDependencyItemDto DTO.
@@ -5799,10 +5802,10 @@ type NotificationModuleDisableDependenciesDto struct {
 
 // TestEmailValidationItemDto DTO.
 type TestEmailValidationItemDto struct {
-	Address string  `json:"address,omitempty"`
-	Verdict string  `json:"verdict,omitempty"`
-	Reason  string  `json:"reason,omitempty"`
-	Score   float64 `json:"score,omitempty"`
+	Address string   `json:"address,omitempty"`
+	Verdict string   `json:"verdict,omitempty"`
+	Reason  string   `json:"reason,omitempty"`
+	Score   *float64 `json:"score,omitempty"`
 }
 
 // TemplateListProjection DTO.
@@ -5810,7 +5813,7 @@ type TemplateListProjection struct {
 	Id           string               `json:"id,omitempty"`
 	ViewId       string               `json:"viewId,omitempty"`
 	TemplateName string               `json:"templateName,omitempty"`
-	IsActive     bool                 `json:"isActive,omitempty"`
+	IsActive     bool                 `json:"isActive"`
 	Type         CommunicationChannel `json:"type,omitempty"`
 	Tags         []string             `json:"tags,omitempty"`
 	Env          string               `json:"env,omitempty"`
@@ -5819,7 +5822,7 @@ type TemplateListProjection struct {
 // EmailTemplateListProjection DTO.
 type EmailTemplateListProjection struct {
 	TemplateListProjection
-	HasAttachments bool     `json:"hasAttachments,omitempty"`
+	HasAttachments bool     `json:"hasAttachments"`
 	Languages      []string `json:"languages,omitempty"`
 }
 
@@ -5895,7 +5898,7 @@ type EmailIntegrationListProjection struct {
 // EmailLinkPreferencesDto DTO.
 type EmailLinkPreferencesDto struct {
 	EmailAddress              string   `json:"emailAddress,omitempty"`
-	UnsubscribedFromMarketing bool     `json:"unsubscribedFromMarketing,omitempty"`
+	UnsubscribedFromMarketing bool     `json:"unsubscribedFromMarketing"`
 	BlockReasons              []string `json:"blockReasons,omitempty"`
 }
 
@@ -5911,7 +5914,7 @@ type CampaignDto struct {
 	ViewId                          string                          `json:"viewId,omitempty"`
 	CreatedOn                       string                          `json:"createdOn,omitempty"`
 	Language                        string                          `json:"language,omitempty"`
-	ForceCampaignLanguage           bool                            `json:"forceCampaignLanguage,omitempty"`
+	ForceCampaignLanguage           bool                            `json:"forceCampaignLanguage"`
 	CampaignProcessingIntegrationId string                          `json:"campaignProcessingIntegrationId,omitempty"`
 	StatusHistory                   []*CampaignStatusChangeEntryDto `json:"statusHistory,omitempty"`
 	Status                          *CampaignStatusChangeEntryDto   `json:"status,omitempty"`
@@ -5929,7 +5932,7 @@ type EmailCampaignDto struct {
 	DeliverySettings        *EmailCampaignDeliverySettingsDto `json:"deliverySettings,omitempty"`
 	Template                *EmailTemplateDto                 `json:"template,omitempty"`
 	ValidationIntegrationId string                            `json:"validationIntegrationId,omitempty"`
-	TemplateIsSystem        bool                              `json:"templateIsSystem,omitempty"`
+	TemplateIsSystem        bool                              `json:"templateIsSystem"`
 }
 
 // EmailCampaignListProjection DTO.
@@ -5974,7 +5977,7 @@ type EmailRecipientsDto struct {
 	Cc            []*EmailRecipientDto `json:"cc,omitempty"`
 	Bcc           []*EmailRecipientDto `json:"bcc,omitempty"`
 	StartingAfter string               `json:"startingAfter,omitempty"`
-	HasMore       bool                 `json:"hasMore,omitempty"`
+	HasMore       bool                 `json:"hasMore"`
 }
 
 // EmailCampaignBatchDto DTO.
@@ -6058,7 +6061,7 @@ type SmsRecipientDto struct {
 type SmsRecipientsDto struct {
 	To            []*SmsRecipientDto `json:"to,omitempty"`
 	StartingAfter string             `json:"startingAfter,omitempty"`
-	HasMore       bool               `json:"hasMore,omitempty"`
+	HasMore       bool               `json:"hasMore"`
 }
 
 // SmsCampaignBatchDto DTO.
@@ -6083,7 +6086,7 @@ type MarketplaceListingProjection struct {
 	Category      MarketplaceCategory     `json:"category,omitempty"`
 	Transport     MarketplaceTransport    `json:"transport,omitempty"`
 	IconUrl       string                  `json:"iconUrl,omitempty"`
-	IsOfficial    bool                    `json:"isOfficial,omitempty"`
+	IsOfficial    bool                    `json:"isOfficial"`
 	Tags          []string                `json:"tags,omitempty"`
 	FunctionCount float64                 `json:"functionCount,omitempty"`
 	Availability  MarketplaceAvailability `json:"availability,omitempty"`
@@ -6102,14 +6105,14 @@ type MarketplaceAccessRoleDto struct {
 	RoleId            string                              `json:"roleId,omitempty"`
 	Name              string                              `json:"name,omitempty"`
 	Scope             string                              `json:"scope,omitempty"`
-	IsSystem          bool                                `json:"isSystem,omitempty"`
-	Fixed             bool                                `json:"fixed,omitempty"`
+	IsSystem          bool                                `json:"isSystem"`
+	Fixed             bool                                `json:"fixed"`
 	Package           MarketplaceAccessLevel              `json:"package,omitempty"`
-	IsCustom          bool                                `json:"isCustom,omitempty"`
-	Manage            bool                                `json:"manage,omitempty"`
+	IsCustom          bool                                `json:"isCustom"`
+	Manage            bool                                `json:"manage"`
 	Custom            []*MarketplaceAccessCustomPolicyDto `json:"custom,omitempty"`
 	DefaultNotApplied string                              `json:"defaultNotApplied,omitempty"`
-	CanChange         bool                                `json:"canChange,omitempty"`
+	CanChange         bool                                `json:"canChange"`
 }
 
 // MarketplaceAccessPackageDto DTO.
@@ -6117,16 +6120,16 @@ type MarketplaceAccessPackageDto struct {
 	Kind     MarketplaceAccessLevel `json:"kind,omitempty"`
 	PolicyId string                 `json:"policyId,omitempty"`
 	Name     string                 `json:"name,omitempty"`
-	Exists   bool                   `json:"exists,omitempty"`
+	Exists   bool                   `json:"exists"`
 }
 
 // MarketplaceAccessToolDto DTO.
 type MarketplaceAccessToolDto struct {
 	Name                   string `json:"name,omitempty"`
-	ReadOnly               bool   `json:"readOnly,omitempty"`
-	Grantable              bool   `json:"grantable,omitempty"`
-	Curated                bool   `json:"curated,omitempty"`
-	ExcludedFromFullAccess bool   `json:"excludedFromFullAccess,omitempty"`
+	ReadOnly               bool   `json:"readOnly"`
+	Grantable              bool   `json:"grantable"`
+	Curated                bool   `json:"curated"`
+	ExcludedFromFullAccess bool   `json:"excludedFromFullAccess"`
 }
 
 // MarketplaceAccessFunctionDto DTO.
@@ -6140,17 +6143,17 @@ type MarketplaceAccessFunctionDto struct {
 type MarketplaceIntegrationListProjection struct {
 	ViewId                            string               `json:"viewId,omitempty"`
 	IntegrationName                   string               `json:"integrationName,omitempty"`
-	IsEnabled                         bool                 `json:"isEnabled,omitempty"`
+	IsEnabled                         bool                 `json:"isEnabled"`
 	ListingViewId                     string               `json:"listingViewId,omitempty"`
 	Vendor                            string               `json:"vendor,omitempty"`
 	Category                          MarketplaceCategory  `json:"category,omitempty"`
 	Transport                         MarketplaceTransport `json:"transport,omitempty"`
 	LastIntegrationTestAtUtc          string               `json:"lastIntegrationTestAtUtc,omitempty"`
-	LastIntegrationTestSucceeded      bool                 `json:"lastIntegrationTestSucceeded,omitempty"`
+	LastIntegrationTestSucceeded      *bool                `json:"lastIntegrationTestSucceeded,omitempty"`
 	LastIntegrationTestErrors         []string             `json:"lastIntegrationTestErrors,omitempty"`
 	HumanDeliveryConfirmedAtUtc       string               `json:"humanDeliveryConfirmedAtUtc,omitempty"`
-	RequiresHumanDeliveryConfirmation bool                 `json:"requiresHumanDeliveryConfirmation,omitempty"`
-	SignedIn                          bool                 `json:"signedIn,omitempty"`
+	RequiresHumanDeliveryConfirmation bool                 `json:"requiresHumanDeliveryConfirmation"`
+	SignedIn                          bool                 `json:"signedIn"`
 	SignedInAt                        string               `json:"signedInAt,omitempty"`
 }
 
@@ -6160,8 +6163,8 @@ type MarketplaceMcpToolDto struct {
 	Title           string `json:"title,omitempty"`
 	Description     string `json:"description,omitempty"`
 	InputSchema     string `json:"inputSchema,omitempty"`
-	ReadOnlyHint    bool   `json:"readOnlyHint,omitempty"`
-	DestructiveHint bool   `json:"destructiveHint,omitempty"`
+	ReadOnlyHint    *bool  `json:"readOnlyHint,omitempty"`
+	DestructiveHint *bool  `json:"destructiveHint,omitempty"`
 }
 
 // MarketplaceAccessChangesDto DTO.
@@ -6179,29 +6182,29 @@ type MarketplaceFunctionProjection struct {
 	IntegrationViewId string  `json:"integrationViewId,omitempty"`
 	FunctionKey       string  `json:"functionKey,omitempty"`
 	DisplayName       string  `json:"displayName,omitempty"`
-	IsEnabled         bool    `json:"isEnabled,omitempty"`
+	IsEnabled         bool    `json:"isEnabled"`
 	MappingCount      float64 `json:"mappingCount,omitempty"`
 }
 
 // MarketplaceFunctionRunDto DTO.
 type MarketplaceFunctionRunDto struct {
-	FiredAt         string  `json:"firedAt,omitempty"`
-	Event           string  `json:"event,omitempty"`
-	Source          string  `json:"source,omitempty"`
-	FunctionId      string  `json:"functionId,omitempty"`
-	RunAsUserId     string  `json:"runAsUserId,omitempty"`
-	Succeeded       bool    `json:"succeeded,omitempty"`
-	Status          string  `json:"status,omitempty"`
-	DurationMs      float64 `json:"durationMs,omitempty"`
-	Error           string  `json:"error,omitempty"`
-	VendorRequestId string  `json:"vendorRequestId,omitempty"`
-	CorrelationId   string  `json:"correlationId,omitempty"`
-	HasDetails      bool    `json:"hasDetails,omitempty"`
-	TriggerId       string  `json:"triggerId,omitempty"`
-	TaskId          string  `json:"taskId,omitempty"`
-	Input           string  `json:"input,omitempty"`
-	IntegrationId   string  `json:"integrationId,omitempty"`
-	ToolName        string  `json:"toolName,omitempty"`
+	FiredAt         string   `json:"firedAt,omitempty"`
+	Event           string   `json:"event,omitempty"`
+	Source          string   `json:"source,omitempty"`
+	FunctionId      string   `json:"functionId,omitempty"`
+	RunAsUserId     string   `json:"runAsUserId,omitempty"`
+	Succeeded       bool     `json:"succeeded"`
+	Status          string   `json:"status,omitempty"`
+	DurationMs      *float64 `json:"durationMs,omitempty"`
+	Error           string   `json:"error,omitempty"`
+	VendorRequestId string   `json:"vendorRequestId,omitempty"`
+	CorrelationId   string   `json:"correlationId,omitempty"`
+	HasDetails      bool     `json:"hasDetails"`
+	TriggerId       string   `json:"triggerId,omitempty"`
+	TaskId          string   `json:"taskId,omitempty"`
+	Input           string   `json:"input,omitempty"`
+	IntegrationId   string   `json:"integrationId,omitempty"`
+	ToolName        string   `json:"toolName,omitempty"`
 }
 
 // CodeIntegrationListProjection DTO.
@@ -6232,15 +6235,15 @@ type CodeFunctionQualifierDto struct {
 
 // CodeFunctionRunDto DTO.
 type CodeFunctionRunDto struct {
-	FiredAt    string  `json:"firedAt,omitempty"`
-	Event      string  `json:"event,omitempty"`
-	Source     string  `json:"source,omitempty"`
-	Succeeded  bool    `json:"succeeded,omitempty"`
-	StatusCode float64 `json:"statusCode,omitempty"`
-	DurationMs float64 `json:"durationMs,omitempty"`
-	Error      string  `json:"error,omitempty"`
-	RequestId  string  `json:"requestId,omitempty"`
-	Input      string  `json:"input,omitempty"`
+	FiredAt    string   `json:"firedAt,omitempty"`
+	Event      string   `json:"event,omitempty"`
+	Source     string   `json:"source,omitempty"`
+	Succeeded  bool     `json:"succeeded"`
+	StatusCode *float64 `json:"statusCode,omitempty"`
+	DurationMs *float64 `json:"durationMs,omitempty"`
+	Error      string   `json:"error,omitempty"`
+	RequestId  string   `json:"requestId,omitempty"`
+	Input      string   `json:"input,omitempty"`
 }
 
 // PushTemplateListProjection DTO.
@@ -6263,24 +6266,24 @@ type PushIntegrationListProjection struct {
 
 // PushDeviceListProjection DTO.
 type PushDeviceListProjection struct {
-	Id               string  `json:"id,omitempty"`
-	UserId           string  `json:"userId,omitempty"`
-	DeviceOs         string  `json:"deviceOs,omitempty"`
-	Token            string  `json:"token,omitempty"`
-	Brand            string  `json:"brand,omitempty"`
-	Manufacturer     string  `json:"manufacturer,omitempty"`
-	ModelName        string  `json:"modelName,omitempty"`
-	DeviceName       string  `json:"deviceName,omitempty"`
-	DeviceType       string  `json:"deviceType,omitempty"`
-	OsName           string  `json:"osName,omitempty"`
-	OsVersion        string  `json:"osVersion,omitempty"`
-	PlatformApiLevel float64 `json:"platformApiLevel,omitempty"`
-	Platform         string  `json:"platform,omitempty"`
-	AppVersion       string  `json:"appVersion,omitempty"`
-	InstallationId   string  `json:"installationId,omitempty"`
-	Locale           string  `json:"locale,omitempty"`
-	TimeZone         string  `json:"timeZone,omitempty"`
-	UpdatedAtUtc     string  `json:"updatedAtUtc,omitempty"`
+	Id               string   `json:"id,omitempty"`
+	UserId           string   `json:"userId,omitempty"`
+	DeviceOs         string   `json:"deviceOs,omitempty"`
+	Token            string   `json:"token,omitempty"`
+	Brand            string   `json:"brand,omitempty"`
+	Manufacturer     string   `json:"manufacturer,omitempty"`
+	ModelName        string   `json:"modelName,omitempty"`
+	DeviceName       string   `json:"deviceName,omitempty"`
+	DeviceType       string   `json:"deviceType,omitempty"`
+	OsName           string   `json:"osName,omitempty"`
+	OsVersion        string   `json:"osVersion,omitempty"`
+	PlatformApiLevel *float64 `json:"platformApiLevel,omitempty"`
+	Platform         string   `json:"platform,omitempty"`
+	AppVersion       string   `json:"appVersion,omitempty"`
+	InstallationId   string   `json:"installationId,omitempty"`
+	Locale           string   `json:"locale,omitempty"`
+	TimeZone         string   `json:"timeZone,omitempty"`
+	UpdatedAtUtc     string   `json:"updatedAtUtc,omitempty"`
 }
 
 // TeamPushDeviceListProjection DTO.
@@ -6296,7 +6299,7 @@ type PushAudienceCountDto struct {
 	Devices        float64 `json:"devices,omitempty"`
 	Recipients     float64 `json:"recipients,omitempty"`
 	SkippedUserIds float64 `json:"skippedUserIds,omitempty"`
-	IsCapped       bool    `json:"isCapped,omitempty"`
+	IsCapped       bool    `json:"isCapped"`
 }
 
 // PushCampaignDto DTO.
@@ -6320,7 +6323,7 @@ type PushRecipientDto struct {
 type PushRecipientsDto struct {
 	To            []*PushRecipientDto `json:"to,omitempty"`
 	StartingAfter string              `json:"startingAfter,omitempty"`
-	HasMore       bool                `json:"hasMore,omitempty"`
+	HasMore       bool                `json:"hasMore"`
 }
 
 // PushCampaignBatchDto DTO.
@@ -6352,7 +6355,7 @@ type InAppNotificationDto struct {
 	Channel      string `json:"channel,omitempty"`
 	EventName    string `json:"eventName,omitempty"`
 	PayloadJson  string `json:"payloadJson,omitempty"`
-	IsRead       bool   `json:"isRead,omitempty"`
+	IsRead       bool   `json:"isRead"`
 	SeenAtUtc    string `json:"seenAtUtc,omitempty"`
 	ReadAtUtc    string `json:"readAtUtc,omitempty"`
 	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
@@ -6413,7 +6416,7 @@ type AgentOnboardingSnippet struct {
 	Config      string `json:"config,omitempty"`
 	Auth        string `json:"auth,omitempty"`
 	Kind        string `json:"kind,omitempty"`
-	Recommended bool   `json:"recommended,omitempty"`
+	Recommended bool   `json:"recommended"`
 }
 
 // AiProjectContextCallerWireDto DTO.
@@ -6428,7 +6431,7 @@ type AiProjectContextIntegrationWireDto struct {
 	Id        string   `json:"id,omitempty"`
 	Name      string   `json:"name,omitempty"`
 	Kind      string   `json:"kind,omitempty"`
-	Enabled   bool     `json:"enabled,omitempty"`
+	Enabled   *bool    `json:"enabled,omitempty"`
 	DefaultIn []string `json:"defaultIn,omitempty"`
 	Env       string   `json:"env,omitempty"`
 }
@@ -6436,7 +6439,7 @@ type AiProjectContextIntegrationWireDto struct {
 // AiProjectContextModuleWireDto DTO.
 type AiProjectContextModuleWireDto struct {
 	Name                 string                                `json:"name,omitempty"`
-	IntegrationsReadable bool                                  `json:"integrationsReadable,omitempty"`
+	IntegrationsReadable *bool                                 `json:"integrationsReadable,omitempty"`
 	Integrations         []*AiProjectContextIntegrationWireDto `json:"integrations,omitempty"`
 }
 
@@ -6456,7 +6459,7 @@ type AiProjectContextProjectWireDto struct {
 	ApiHost            string                           `json:"apiHost,omitempty"`
 	AdminUrl           string                           `json:"adminUrl,omitempty"`
 	MarketingUrl       string                           `json:"marketingUrl,omitempty"`
-	AdminPortalEnabled bool                             `json:"adminPortalEnabled,omitempty"`
+	AdminPortalEnabled *bool                            `json:"adminPortalEnabled,omitempty"`
 	Modules            []*AiProjectContextModuleWireDto `json:"modules,omitempty"`
 }
 
@@ -6472,7 +6475,7 @@ type AiProjectContextWireDto struct {
 type AiToolManifestParameter struct {
 	Name        string `json:"name,omitempty"`
 	Type        string `json:"type,omitempty"`
-	Required    bool   `json:"required,omitempty"`
+	Required    bool   `json:"required"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -6481,7 +6484,7 @@ type AiToolManifestItem struct {
 	Name                 string                     `json:"name,omitempty"`
 	Description          string                     `json:"description,omitempty"`
 	Toolsets             []string                   `json:"toolsets,omitempty"`
-	RequiresConfirmation bool                       `json:"requiresConfirmation,omitempty"`
+	RequiresConfirmation bool                       `json:"requiresConfirmation"`
 	Parameters           []*AiToolManifestParameter `json:"parameters,omitempty"`
 }
 
@@ -6492,8 +6495,8 @@ type ChatModelOption struct {
 	Provider         string  `json:"provider,omitempty"`
 	Model            string  `json:"model,omitempty"`
 	Label            string  `json:"label,omitempty"`
-	IsDefault        bool    `json:"isDefault,omitempty"`
-	IsAuto           bool    `json:"isAuto,omitempty"`
+	IsDefault        bool    `json:"isDefault"`
+	IsAuto           bool    `json:"isAuto"`
 	ContextWindow    float64 `json:"contextWindow,omitempty"`
 }
 
@@ -6514,8 +6517,8 @@ type ChatSessionListItem struct {
 	Env          string `json:"env,omitempty"`
 	Title        string `json:"title,omitempty"`
 	UpdatedAtUtc string `json:"updatedAtUtc,omitempty"`
-	IsArchived   bool   `json:"isArchived,omitempty"`
-	IsPinned     bool   `json:"isPinned,omitempty"`
+	IsArchived   bool   `json:"isArchived"`
+	IsPinned     bool   `json:"isPinned"`
 }
 
 // ScaffoldStep DTO.
@@ -6550,7 +6553,7 @@ type ScaffoldStepReportWithLink struct {
 
 // ScaffoldApplyReport DTO.
 type ScaffoldApplyReport struct {
-	Completed  bool                          `json:"completed,omitempty"`
+	Completed  bool                          `json:"completed"`
 	ProjectId  string                        `json:"projectId,omitempty"`
 	ProjectUrl string                        `json:"projectUrl,omitempty"`
 	Summary    string                        `json:"summary,omitempty"`
@@ -6567,30 +6570,30 @@ type TemplatePreviewPartResult struct {
 // TemplatePreview DTO.
 type TemplatePreview struct {
 	Channel string                       `json:"channel,omitempty"`
-	Ok      bool                         `json:"ok,omitempty"`
+	Ok      bool                         `json:"ok"`
 	Parts   []*TemplatePreviewPartResult `json:"parts,omitempty"`
 	Errors  []string                     `json:"errors,omitempty"`
 }
 
 // ProjectBriefSourceWireDto DTO.
 type ProjectBriefSourceWireDto struct {
-	Kind       string  `json:"kind,omitempty"`
-	SessionId  string  `json:"sessionId,omitempty"`
-	EntryId    string  `json:"entryId,omitempty"`
-	EntrySeq   float64 `json:"entrySeq,omitempty"`
-	EventId    string  `json:"eventId,omitempty"`
-	UserAuthId string  `json:"userAuthId,omitempty"`
-	AtUtc      string  `json:"atUtc,omitempty"`
-	Surface    string  `json:"surface,omitempty"`
-	Quote      string  `json:"quote,omitempty"`
-	WorkItemId string  `json:"workItemId,omitempty"`
+	Kind       string   `json:"kind,omitempty"`
+	SessionId  string   `json:"sessionId,omitempty"`
+	EntryId    string   `json:"entryId,omitempty"`
+	EntrySeq   *float64 `json:"entrySeq,omitempty"`
+	EventId    string   `json:"eventId,omitempty"`
+	UserAuthId string   `json:"userAuthId,omitempty"`
+	AtUtc      string   `json:"atUtc,omitempty"`
+	Surface    string   `json:"surface,omitempty"`
+	Quote      string   `json:"quote,omitempty"`
+	WorkItemId string   `json:"workItemId,omitempty"`
 }
 
 // ProjectBriefSatisfiedByWireDto DTO.
 type ProjectBriefSatisfiedByWireDto struct {
 	ArtifactId string `json:"artifactId,omitempty"`
 	Tool       string `json:"tool,omitempty"`
-	Orphaned   bool   `json:"orphaned,omitempty"`
+	Orphaned   bool   `json:"orphaned"`
 }
 
 // ProjectBriefRequirementWireDto DTO.
@@ -6599,7 +6602,7 @@ type ProjectBriefRequirementWireDto struct {
 	Text         string                            `json:"text,omitempty"`
 	Status       string                            `json:"status,omitempty"`
 	Confidence   float64                           `json:"confidence,omitempty"`
-	IsAssumption bool                              `json:"isAssumption,omitempty"`
+	IsAssumption bool                              `json:"isAssumption"`
 	Sources      []*ProjectBriefSourceWireDto      `json:"sources,omitempty"`
 	SatisfiedBy  []*ProjectBriefSatisfiedByWireDto `json:"satisfiedBy,omitempty"`
 	SinceEventId string                            `json:"sinceEventId,omitempty"`
@@ -6688,7 +6691,7 @@ type WorkItemNeedsYouWireDto struct {
 	Text             string                   `json:"text,omitempty"`
 	Kind             string                   `json:"kind,omitempty"`
 	EntryRef         *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	Done             bool                     `json:"done,omitempty"`
+	Done             bool                     `json:"done"`
 	DoneAtUtc        string                   `json:"doneAtUtc,omitempty"`
 	DoneByUserAuthId string                   `json:"doneByUserAuthId,omitempty"`
 }
@@ -6696,7 +6699,7 @@ type WorkItemNeedsYouWireDto struct {
 // WorkItemOpenQuestionWireDto DTO.
 type WorkItemOpenQuestionWireDto struct {
 	EntryRef *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	Blocking bool                     `json:"blocking,omitempty"`
+	Blocking bool                     `json:"blocking"`
 	Text     string                   `json:"text,omitempty"`
 	AtUtc    string                   `json:"atUtc,omitempty"`
 }
@@ -6704,7 +6707,7 @@ type WorkItemOpenQuestionWireDto struct {
 // WorkItemDoneConditionWireDto DTO.
 type WorkItemDoneConditionWireDto struct {
 	Condition float64 `json:"condition,omitempty"`
-	Holds     bool    `json:"holds,omitempty"`
+	Holds     bool    `json:"holds"`
 	Reason    string  `json:"reason,omitempty"`
 }
 
@@ -6716,7 +6719,7 @@ type WorkItemWireDto struct {
 	Goal                string                          `json:"goal,omitempty"`
 	NotInScope          []string                        `json:"notInScope,omitempty"`
 	ScopeRequirementIds []string                        `json:"scopeRequirementIds,omitempty"`
-	Difficulty          float64                         `json:"difficulty,omitempty"`
+	Difficulty          *float64                        `json:"difficulty,omitempty"`
 	DifficultyReason    string                          `json:"difficultyReason,omitempty"`
 	PlanEntryRefs       []*WorkItemEntryRefWireDto      `json:"planEntryRefs,omitempty"`
 	RunRefs             []*WorkItemRunRefWireDto        `json:"runRefs,omitempty"`
@@ -6754,7 +6757,7 @@ type EmbeddingIntegrationDto struct {
 	Model        string            `json:"model,omitempty"`
 	Dimension    float64           `json:"dimension,omitempty"`
 	BaseUrl      string            `json:"baseUrl,omitempty"`
-	IsConfigured bool              `json:"isConfigured,omitempty"`
+	IsConfigured bool              `json:"isConfigured"`
 }
 
 // EmbeddingIntegrationListProjection DTO.
@@ -6763,7 +6766,7 @@ type EmbeddingIntegrationListProjection struct {
 	EmbeddingProvider EmbeddingProvider `json:"embeddingProvider,omitempty"`
 	Model             string            `json:"model,omitempty"`
 	Dimension         float64           `json:"dimension,omitempty"`
-	IsConfigured      bool              `json:"isConfigured,omitempty"`
+	IsConfigured      bool              `json:"isConfigured"`
 }
 
 // LlmIntegrationListProjection DTO.
@@ -6772,7 +6775,7 @@ type LlmIntegrationListProjection struct {
 	LlmProvider  LlmProvider          `json:"llmProvider,omitempty"`
 	BaseUrl      string               `json:"baseUrl,omitempty"`
 	DefaultModel string               `json:"defaultModel,omitempty"`
-	IsDefault    bool                 `json:"isDefault,omitempty"`
+	IsDefault    bool                 `json:"isDefault"`
 	Models       []*LlmModelOptionDto `json:"models,omitempty"`
 }
 
@@ -6824,12 +6827,12 @@ type SchedulerTaskListProjection struct {
 	Name              string            `json:"name,omitempty"`
 	Cron              string            `json:"cron,omitempty"`
 	Type              SchedulerTaskType `json:"type,omitempty"`
-	IsEnabled         bool              `json:"isEnabled,omitempty"`
-	IsFailing         bool              `json:"isFailing,omitempty"`
+	IsEnabled         bool              `json:"isEnabled"`
+	IsFailing         bool              `json:"isFailing"`
 	LastFailureReason string            `json:"lastFailureReason,omitempty"`
-	LastFailedAtUnix  float64           `json:"lastFailedAtUnix,omitempty"`
-	EndsAtUnix        float64           `json:"endsAtUnix,omitempty"`
-	HasEnded          bool              `json:"hasEnded,omitempty"`
+	LastFailedAtUnix  *float64          `json:"lastFailedAtUnix,omitempty"`
+	EndsAtUnix        *float64          `json:"endsAtUnix,omitempty"`
+	HasEnded          bool              `json:"hasEnded"`
 	ViewId            string            `json:"viewId,omitempty"`
 }
 
@@ -6854,7 +6857,7 @@ type ResolvedResourceEntry struct {
 
 // ChannelSubscriptionStateDto DTO.
 type ChannelSubscriptionStateDto struct {
-	Unsubscribed bool                `json:"unsubscribed,omitempty"`
+	Unsubscribed bool                `json:"unsubscribed"`
 	BlockedTags  map[string][]string `json:"blockedTags,omitempty"`
 }
 
@@ -6872,7 +6875,7 @@ type UserDto struct {
 	Locale               string                                  `json:"locale,omitempty"`
 	TimeZone             string                                  `json:"timeZone,omitempty"`
 	Gender               string                                  `json:"gender,omitempty"`
-	BirthDate            float64                                 `json:"birthDate,omitempty"`
+	BirthDate            *float64                                `json:"birthDate,omitempty"`
 	AddressLine1         string                                  `json:"addressLine1,omitempty"`
 	AddressLine2         string                                  `json:"addressLine2,omitempty"`
 	Country              string                                  `json:"country,omitempty"`
@@ -6892,7 +6895,7 @@ type UserDto struct {
 
 // ContactRolesRepairDto DTO.
 type ContactRolesRepairDto struct {
-	DryRun                      bool    `json:"dryRun,omitempty"`
+	DryRun                      bool    `json:"dryRun"`
 	ContactsWithoutRoles        float64 `json:"contactsWithoutRoles,omitempty"`
 	ContactsToRepair            float64 `json:"contactsToRepair,omitempty"`
 	ContactsRepaired            float64 `json:"contactsRepaired,omitempty"`
@@ -6908,7 +6911,7 @@ type ConsentPurposeDto struct {
 	MappedTags      []string `json:"mappedTags,omitempty"`
 	RegulatoryBasis []string `json:"regulatoryBasis,omitempty"`
 	Description     string   `json:"description,omitempty"`
-	IsDeprecated    bool     `json:"isDeprecated,omitempty"`
+	IsDeprecated    bool     `json:"isDeprecated"`
 }
 
 // RetentionWindowDto DTO.
@@ -6966,7 +6969,7 @@ type ComplianceAuditEntryDto struct {
 type AccountComplianceDto struct {
 	DsarMode              string  `json:"dsarMode,omitempty"`
 	DsarDelayDays         float64 `json:"dsarDelayDays,omitempty"`
-	AutoForwardAdvisories bool    `json:"autoForwardAdvisories,omitempty"`
+	AutoForwardAdvisories bool    `json:"autoForwardAdvisories"`
 	SecurityContact       string  `json:"securityContact,omitempty"`
 }
 
@@ -6987,12 +6990,12 @@ type SupportCaseDto struct {
 	Region          string                `json:"region,omitempty"`
 	PlanTier        string                `json:"planTier,omitempty"`
 	OpenedOn        float64               `json:"openedOn,omitempty"`
-	FirstResponseOn float64               `json:"firstResponseOn,omitempty"`
-	ResolvedOn      float64               `json:"resolvedOn,omitempty"`
-	ClosedOn        float64               `json:"closedOn,omitempty"`
+	FirstResponseOn *float64              `json:"firstResponseOn,omitempty"`
+	ResolvedOn      *float64              `json:"resolvedOn,omitempty"`
+	ClosedOn        *float64              `json:"closedOn,omitempty"`
 	Resolution      string                `json:"resolution,omitempty"`
 	MessageCount    float64               `json:"messageCount,omitempty"`
-	LastMessageOn   float64               `json:"lastMessageOn,omitempty"`
+	LastMessageOn   *float64              `json:"lastMessageOn,omitempty"`
 }
 
 // SupportCaseMessageDto DTO.
@@ -7023,7 +7026,7 @@ type SupportCaseListProjection struct {
 	Subject        string                `json:"subject,omitempty"`
 	OpenedOn       float64               `json:"openedOn,omitempty"`
 	MessageCount   float64               `json:"messageCount,omitempty"`
-	LastMessageOn  float64               `json:"lastMessageOn,omitempty"`
+	LastMessageOn  *float64              `json:"lastMessageOn,omitempty"`
 }
 
 // DiagnosticPackStepDescriptorDto DTO.
@@ -7046,7 +7049,7 @@ type DiagnosticPackDescriptorDto struct {
 type DiagnosticPackStepResultDto struct {
 	StepId       string         `json:"stepId,omitempty"`
 	Kind         string         `json:"kind,omitempty"`
-	IsSuccess    bool           `json:"isSuccess,omitempty"`
+	IsSuccess    bool           `json:"isSuccess"`
 	Result       map[string]any `json:"result,omitempty"`
 	ErrorMessage string         `json:"errorMessage,omitempty"`
 }
@@ -7066,14 +7069,14 @@ type DiagnosticEchoRegionDto struct {
 // DiagnosticEchoDto DTO.
 type DiagnosticEchoDto struct {
 	ContainerName    string                     `json:"containerName,omitempty"`
-	IsManagedService bool                       `json:"isManagedService,omitempty"`
+	IsManagedService bool                       `json:"isManagedService"`
 	ApiVersion       string                     `json:"apiVersion,omitempty"`
 	HubVersion       string                     `json:"hubVersion,omitempty"`
 	Release          string                     `json:"release,omitempty"`
 	Runtime          string                     `json:"runtime,omitempty"`
 	HubUrl           string                     `json:"hubUrl,omitempty"`
 	ApiUrl           string                     `json:"apiUrl,omitempty"`
-	LicensePresent   bool                       `json:"licensePresent,omitempty"`
+	LicensePresent   bool                       `json:"licensePresent"`
 	Regions          []*DiagnosticEchoRegionDto `json:"regions,omitempty"`
 }
 
@@ -7089,7 +7092,7 @@ type DiagnosticEventsPageDto struct {
 	Stream   string                    `json:"stream,omitempty"`
 	From     float64                   `json:"from,omitempty"`
 	Count    float64                   `json:"count,omitempty"`
-	HasMore  bool                      `json:"hasMore,omitempty"`
+	HasMore  bool                      `json:"hasMore"`
 	NextFrom float64                   `json:"nextFrom,omitempty"`
 	Items    []*DiagnosticEventItemDto `json:"items,omitempty"`
 }
@@ -7110,17 +7113,17 @@ type DiagnosticRedisListItemDto struct {
 type DiagnosticRedisInspectDto struct {
 	KeyPattern    string                        `json:"keyPattern,omitempty"`
 	CacheKey      string                        `json:"cacheKey,omitempty"`
-	IsList        bool                          `json:"isList,omitempty"`
+	IsList        bool                          `json:"isList"`
 	Item          map[string]any                `json:"item,omitempty"`
 	ListItems     []*DiagnosticRedisListItemDto `json:"listItems,omitempty"`
-	HasMore       bool                          `json:"hasMore,omitempty"`
+	HasMore       bool                          `json:"hasMore"`
 	StartingAfter string                        `json:"startingAfter,omitempty"`
 }
 
 // DiagnosticHealthCheckDto DTO.
 type DiagnosticHealthCheckDto struct {
 	CheckId    string  `json:"checkId,omitempty"`
-	IsHealthy  bool    `json:"isHealthy,omitempty"`
+	IsHealthy  bool    `json:"isHealthy"`
 	StatusCode float64 `json:"statusCode,omitempty"`
 	Detail     string  `json:"detail,omitempty"`
 }
@@ -7185,7 +7188,7 @@ type EchoResponse struct {
 	ApiVersion                  string                  `json:"apiVersion,omitempty"`
 	HubVersion                  string                  `json:"hubVersion,omitempty"`
 	AdminUrlTemplate            string                  `json:"adminUrlTemplate,omitempty"`
-	EmailServiceConfigured      bool                    `json:"emailServiceConfigured,omitempty"`
+	EmailServiceConfigured      bool                    `json:"emailServiceConfigured"`
 	RootBootstrapPasswordSource string                  `json:"rootBootstrapPasswordSource,omitempty"`
 	Regions                     []*EchoRegionDto        `json:"regions,omitempty"`
 	Agent                       *EchoAgentDto           `json:"agent,omitempty"`
@@ -7195,7 +7198,7 @@ type EchoResponse struct {
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
 	DisplayName        string           `json:"displayName,omitempty"`
-	AdminPortalEnabled bool             `json:"adminPortalEnabled,omitempty"`
+	AdminPortalEnabled bool             `json:"adminPortalEnabled"`
 	Branding           *PublicBrandDto  `json:"branding,omitempty"`
 	Auth               *PublicAuthDto   `json:"auth,omitempty"`
 	AiChat             *PublicAiChatDto `json:"aiChat,omitempty"`
@@ -7206,7 +7209,7 @@ type PublicLegalDocumentDto struct {
 	Kind      string `json:"kind,omitempty"`
 	Title     string `json:"title,omitempty"`
 	Body      string `json:"body,omitempty"`
-	Available bool   `json:"available,omitempty"`
+	Available bool   `json:"available"`
 }
 
 // GetTriggerDefinitionResponse DTO.
@@ -7225,7 +7228,7 @@ type GetTriggersNeedingAttentionResponse struct {
 type TestTriggerPreExecuteCodeResponse struct {
 	ResponseBase
 	Outcome     string                          `json:"outcome,omitempty"`
-	TriggerRuns bool                            `json:"triggerRuns,omitempty"`
+	TriggerRuns bool                            `json:"triggerRuns"`
 	Problems    []*TriggerActivationTestProblem `json:"problems,omitempty"`
 }
 
@@ -7249,7 +7252,7 @@ type GetAccountStatusResponse struct {
 // CreateStripeCheckoutSessionResponse DTO.
 type CreateStripeCheckoutSessionResponse struct {
 	IdResponse
-	TrialIncluded bool   `json:"trialIncluded,omitempty"`
+	TrialIncluded bool   `json:"trialIncluded"`
 	NoTrialReason string `json:"noTrialReason,omitempty"`
 }
 
@@ -7310,7 +7313,7 @@ type GetAccountRegionsResponse struct {
 type WaitForProjectActiveResponse struct {
 	ResponseBase
 	Status        string  `json:"status,omitempty"`
-	IsActive      bool    `json:"isActive,omitempty"`
+	IsActive      bool    `json:"isActive"`
 	WaitedSeconds float64 `json:"waitedSeconds,omitempty"`
 	Message       string  `json:"message,omitempty"`
 }
@@ -7324,7 +7327,7 @@ type GetProjectTokensResponse struct {
 // AdminPortalStructureDto DTO.
 type AdminPortalStructureDto struct {
 	ProjectId          string                  `json:"projectId,omitempty"`
-	AdminPortalEnabled bool                    `json:"adminPortalEnabled,omitempty"`
+	AdminPortalEnabled bool                    `json:"adminPortalEnabled"`
 	DisplayName        string                  `json:"displayName,omitempty"`
 	Modules            []*AdminPortalModuleDto `json:"modules,omitempty"`
 }
@@ -7605,7 +7608,7 @@ type GetAuthorizationSettingsResponse struct {
 // UpdatePasswordComplexityResponse DTO.
 type UpdatePasswordComplexityResponse struct {
 	ResponseBase
-	Result bool `json:"result,omitempty"`
+	Result bool `json:"result"`
 }
 
 // GetAuthenticationSettingsResponse DTO.
@@ -7877,7 +7880,7 @@ type TestFilesIntegrationResponse struct {
 type GetFileResponse struct {
 	ResponseBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
-	IsPublic  bool                `json:"isPublic,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
 	PublicUrl string              `json:"publicUrl,omitempty"`
 }
 
@@ -7885,7 +7888,7 @@ type GetFileResponse struct {
 type GetFileByIdResponse struct {
 	ResponseBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
-	IsPublic  bool                `json:"isPublic,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
 	PublicUrl string              `json:"publicUrl,omitempty"`
 }
 
@@ -8183,14 +8186,14 @@ type GetMarketplaceIntegrationAccessResponse struct {
 	Packages  []*MarketplaceAccessPackageDto  `json:"packages,omitempty"`
 	Tools     []*MarketplaceAccessToolDto     `json:"tools,omitempty"`
 	Functions []*MarketplaceAccessFunctionDto `json:"functions,omitempty"`
-	CanManage bool                            `json:"canManage,omitempty"`
+	CanManage bool                            `json:"canManage"`
 }
 
 // SaveMarketplaceIntegrationCustomAccessResponse DTO.
 type SaveMarketplaceIntegrationCustomAccessResponse struct {
 	ResponseBase
 	PolicyId    string  `json:"policyId,omitempty"`
-	Created     bool    `json:"created,omitempty"`
+	Created     bool    `json:"created"`
 	UsedByRoles float64 `json:"usedByRoles,omitempty"`
 }
 
@@ -8212,7 +8215,7 @@ type GetMarketplaceIntegrationToolsResponse struct {
 	Tools       []*MarketplaceMcpToolDto `json:"tools,omitempty"`
 	ListedAt    string                   `json:"listedAt,omitempty"`
 	CatalogHash string                   `json:"catalogHash,omitempty"`
-	Truncated   bool                     `json:"truncated,omitempty"`
+	Truncated   bool                     `json:"truncated"`
 }
 
 // StartMarketplaceIntegrationSignInResponse DTO.
@@ -8226,7 +8229,7 @@ type StartMarketplaceIntegrationSignInResponse struct {
 // SignOutMarketplaceIntegrationResponse DTO.
 type SignOutMarketplaceIntegrationResponse struct {
 	ResponseBase
-	WasSignedIn bool   `json:"wasSignedIn,omitempty"`
+	WasSignedIn bool   `json:"wasSignedIn"`
 	Revoke      string `json:"revoke,omitempty"`
 }
 
@@ -8281,7 +8284,7 @@ type GetMarketplaceFunctionRunsResponse struct {
 // InvokeMarketplaceFunctionResponse DTO.
 type InvokeMarketplaceFunctionResponse struct {
 	ResponseBase
-	IsSuccess       bool           `json:"isSuccess,omitempty"`
+	IsSuccess       bool           `json:"isSuccess"`
 	Output          map[string]any `json:"output,omitempty"`
 	VendorRequestId string         `json:"vendorRequestId,omitempty"`
 }
@@ -8557,10 +8560,10 @@ type GetLogsResponse struct {
 // GetLogSettingsResponse DTO.
 type GetLogSettingsResponse struct {
 	ResponseBase
-	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs,omitempty"`
-	SkipHttpBodyMeta       bool `json:"skipHttpBodyMeta,omitempty"`
-	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled,omitempty"`
-	HasNorbixLogging       bool `json:"hasNorbixLogging,omitempty"`
+	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs"`
+	SkipHttpBodyMeta       bool `json:"skipHttpBodyMeta"`
+	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled"`
+	HasNorbixLogging       bool `json:"hasNorbixLogging"`
 }
 
 // SaveLogSettingsResponse DTO.
@@ -8584,7 +8587,7 @@ type GetAgentOnboardingResponse struct {
 type GetAiContextResponse struct {
 	ResponseBase
 	Version   string                   `json:"version,omitempty"`
-	Unchanged bool                     `json:"unchanged,omitempty"`
+	Unchanged bool                     `json:"unchanged"`
 	Context   *AiProjectContextWireDto `json:"context,omitempty"`
 	Markdown  string                   `json:"markdown,omitempty"`
 }
@@ -8611,7 +8614,7 @@ type UploadChatAttachmentResponse struct {
 // ChatAvailabilityResponse DTO.
 type ChatAvailabilityResponse struct {
 	ResponseBase
-	Available bool               `json:"available,omitempty"`
+	Available bool               `json:"available"`
 	Reason    string             `json:"reason,omitempty"`
 	Profiles  []string           `json:"profiles,omitempty"`
 	Models    []*ChatModelOption `json:"models,omitempty"`
@@ -8655,7 +8658,7 @@ type ScaffoldProjectResponse struct {
 	ResponseBase
 	Mode     string               `json:"mode,omitempty"`
 	Env      string               `json:"env,omitempty"`
-	Valid    bool                 `json:"valid,omitempty"`
+	Valid    bool                 `json:"valid"`
 	Plan     []*ScaffoldStep      `json:"plan,omitempty"`
 	Defaults []string             `json:"defaults,omitempty"`
 	Issues   []*ScaffoldIssue     `json:"issues,omitempty"`
@@ -8665,7 +8668,7 @@ type ScaffoldProjectResponse struct {
 // ValidateSchemaResponse DTO.
 type ValidateSchemaResponse struct {
 	ResponseBase
-	Valid       bool             `json:"valid,omitempty"`
+	Valid       bool             `json:"valid"`
 	Issues      []*ScaffoldIssue `json:"issues,omitempty"`
 	Collections []string         `json:"collections,omitempty"`
 	Warnings    []*ScaffoldIssue `json:"warnings,omitempty"`
@@ -8734,19 +8737,19 @@ type AuthDeviceStartResponse struct {
 // AuthDeviceTokenResponse DTO.
 type AuthDeviceTokenResponse struct {
 	ResponseBase
-	Error            string  `json:"error,omitempty"`
-	ErrorDescription string  `json:"errorDescription,omitempty"`
-	ErrorCode        string  `json:"errorCode,omitempty"`
-	Reason           string  `json:"reason,omitempty"`
-	BearerToken      string  `json:"bearerToken,omitempty"`
-	RefreshToken     string  `json:"refreshToken,omitempty"`
-	ExpiresIn        float64 `json:"expiresIn,omitempty"`
-	ClientId         string  `json:"clientId,omitempty"`
-	UserId           string  `json:"userId,omitempty"`
-	UserName         string  `json:"userName,omitempty"`
-	DisplayName      string  `json:"displayName,omitempty"`
-	AccountId        string  `json:"accountId,omitempty"`
-	ProjectId        string  `json:"projectId,omitempty"`
+	Error            string   `json:"error,omitempty"`
+	ErrorDescription string   `json:"errorDescription,omitempty"`
+	ErrorCode        string   `json:"errorCode,omitempty"`
+	Reason           string   `json:"reason,omitempty"`
+	BearerToken      string   `json:"bearerToken,omitempty"`
+	RefreshToken     string   `json:"refreshToken,omitempty"`
+	ExpiresIn        *float64 `json:"expiresIn,omitempty"`
+	ClientId         string   `json:"clientId,omitempty"`
+	UserId           string   `json:"userId,omitempty"`
+	UserName         string   `json:"userName,omitempty"`
+	DisplayName      string   `json:"displayName,omitempty"`
+	AccountId        string   `json:"accountId,omitempty"`
+	ProjectId        string   `json:"projectId,omitempty"`
 }
 
 // AuthDeviceConsentResponse DTO.
@@ -8771,7 +8774,7 @@ type OAuthConsentResponse struct {
 	ClientName         string               `json:"clientName,omitempty"`
 	RedirectHost       string               `json:"redirectHost,omitempty"`
 	ClientHost         string               `json:"clientHost,omitempty"`
-	RedirectIsLoopback bool                 `json:"redirectIsLoopback,omitempty"`
+	RedirectIsLoopback bool                 `json:"redirectIsLoopback"`
 	ConsentTicket      string               `json:"consentTicket,omitempty"`
 	AccountRoles       []*AiRoleDto         `json:"accountRoles,omitempty"`
 	Projects           []*AiProjectRolesDto `json:"projects,omitempty"`
@@ -8798,9 +8801,9 @@ type GetEmbeddingIntegrationsResponse struct {
 // TestEmbeddingIntegrationResponse DTO.
 type TestEmbeddingIntegrationResponse struct {
 	ResponseBase
-	Dimension   float64 `json:"dimension,omitempty"`
-	LatencyMs   float64 `json:"latencyMs,omitempty"`
-	TotalTokens float64 `json:"totalTokens,omitempty"`
+	Dimension   *float64 `json:"dimension,omitempty"`
+	LatencyMs   *float64 `json:"latencyMs,omitempty"`
+	TotalTokens *float64 `json:"totalTokens,omitempty"`
 }
 
 // GetLlmIntegrationResponse DTO.
@@ -8869,7 +8872,7 @@ type HttpResult struct {
 	LastModified          string              `json:"lastModified,omitempty"`
 	CacheControl          CacheControl        `json:"cacheControl,omitempty"`
 	ResultScope           any                 `json:"resultScope,omitempty"`
-	AllowsPartialResponse bool                `json:"allowsPartialResponse,omitempty"`
+	AllowsPartialResponse bool                `json:"allowsPartialResponse"`
 	Options               map[string]string   `json:"options,omitempty"`
 	Status                float64             `json:"status,omitempty"`
 	StatusCode            any                 `json:"statusCode,omitempty"`
@@ -8880,7 +8883,7 @@ type HttpResult struct {
 	View                  string              `json:"view,omitempty"`
 	Template              string              `json:"template,omitempty"`
 	PaddingLength         float64             `json:"paddingLength,omitempty"`
-	IsPartialRequest      bool                `json:"isPartialRequest,omitempty"`
+	IsPartialRequest      bool                `json:"isPartialRequest"`
 }
 
 // SaveWebhookDestinationResponse DTO.
@@ -8904,7 +8907,7 @@ type GetSchedulerTasksResponse struct {
 // GetSchedulerTaskRunsResponse DTO.
 type GetSchedulerTaskRunsResponse struct {
 	ResponseBase
-	LogsEnabled bool                   `json:"logsEnabled,omitempty"`
+	LogsEnabled bool                   `json:"logsEnabled"`
 	Runs        []*SchedulerTaskRunDto `json:"runs,omitempty"`
 }
 
@@ -9105,7 +9108,7 @@ type GetMarketplaceListings struct {
 	Categories   []MarketplaceCategory  `json:"categories,omitempty"`
 	Transports   []MarketplaceTransport `json:"transports,omitempty"`
 	Search       string                 `json:"search,omitempty"`
-	OfficialOnly bool                   `json:"officialOnly,omitempty"`
+	OfficialOnly *bool                  `json:"officialOnly,omitempty"`
 	Tags         []string               `json:"tags,omitempty"`
 }
 
@@ -9703,8 +9706,8 @@ type PromoteEnvironmentRequest struct {
 	CodeMashRequestBase
 	SourceEnv          string                           `json:"sourceEnv,omitempty"`
 	TargetEnv          string                           `json:"targetEnv,omitempty"`
-	DryRun             bool                             `json:"dryRun,omitempty"`
-	ConfirmRecordLoss  bool                             `json:"confirmRecordLoss,omitempty"`
+	DryRun             bool                             `json:"dryRun"`
+	ConfirmRecordLoss  bool                             `json:"confirmRecordLoss"`
 	IntegrationChoices []*PromotionIntegrationChoiceDto `json:"integrationChoices,omitempty"`
 }
 
@@ -9713,15 +9716,15 @@ type RollbackPromotionRequest struct {
 	CodeMashRequestBase
 	TargetEnv         string  `json:"targetEnv,omitempty"`
 	FromVersion       float64 `json:"fromVersion,omitempty"`
-	DryRun            bool    `json:"dryRun,omitempty"`
-	ConfirmRecordLoss bool    `json:"confirmRecordLoss,omitempty"`
+	DryRun            bool    `json:"dryRun"`
+	ConfirmRecordLoss bool    `json:"confirmRecordLoss"`
 }
 
 // RepairEnvironmentBuiltInsRequest DTO.
 type RepairEnvironmentBuiltInsRequest struct {
 	CodeMashRequestBase
 	EnvironmentName string `json:"environmentName,omitempty"`
-	DryRun          bool   `json:"dryRun,omitempty"`
+	DryRun          bool   `json:"dryRun"`
 }
 
 // GetProjectEnvironments DTO.
@@ -9747,7 +9750,7 @@ type GetAccountRegions struct {
 // WaitForProjectActiveRequest DTO.
 type WaitForProjectActiveRequest struct {
 	CodeMashRequestBase
-	TimeoutSeconds float64 `json:"timeoutSeconds,omitempty"`
+	TimeoutSeconds *float64 `json:"timeoutSeconds,omitempty"`
 }
 
 // GetProjectTokens DTO.
@@ -9763,19 +9766,19 @@ type GetProjectTokens struct {
 // SetAdminPortalEnabledRequest DTO.
 type SetAdminPortalEnabledRequest struct {
 	CodeMashRequestBase
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled"`
 }
 
 // UpdateProjectExposeBrand DTO.
 type UpdateProjectExposeBrand struct {
 	CodeMashRequestBase
-	Exposed bool `json:"exposed,omitempty"`
+	Exposed bool `json:"exposed"`
 }
 
 // UpdateProjectExposeAuth DTO.
 type UpdateProjectExposeAuth struct {
 	CodeMashRequestBase
-	Exposed bool `json:"exposed,omitempty"`
+	Exposed bool `json:"exposed"`
 }
 
 // AssignAdminPortalServiceUserRequest DTO.
@@ -9833,7 +9836,7 @@ type GetProjectAiSettings struct {
 // UpdateProjectAiSettings DTO.
 type UpdateProjectAiSettings struct {
 	CodeMashRequestBase
-	Enabled                 bool   `json:"enabled,omitempty"`
+	Enabled                 bool   `json:"enabled"`
 	DefaultLlmIntegrationId string `json:"defaultLlmIntegrationId,omitempty"`
 	DefaultModel            string `json:"defaultModel,omitempty"`
 }
@@ -9841,7 +9844,7 @@ type UpdateProjectAiSettings struct {
 // UpdateProjectAiKnowledge DTO.
 type UpdateProjectAiKnowledge struct {
 	CodeMashRequestBase
-	EmbedFiles bool `json:"embedFiles,omitempty"`
+	EmbedFiles bool `json:"embedFiles"`
 }
 
 // CreateProjectAiAssistant DTO.
@@ -9864,7 +9867,7 @@ type DeleteProjectAiAssistant struct {
 // GetProjectAiUsage DTO.
 type GetProjectAiUsage struct {
 	CodeMashRequestBase
-	Top float64 `json:"top,omitempty"`
+	Top *float64 `json:"top,omitempty"`
 }
 
 // UpdateProjectAccentColor DTO.
@@ -9895,7 +9898,7 @@ type UpdateProjectMainColor struct {
 type UpdateProjectAllowedOrigins struct {
 	CodeMashRequestBase
 	Origins                 []string `json:"origins,omitempty"`
-	RemoveAdminPortalOrigin bool     `json:"removeAdminPortalOrigin,omitempty"`
+	RemoveAdminPortalOrigin *bool    `json:"removeAdminPortalOrigin,omitempty"`
 }
 
 // UpdateProjectDefaultLanguage DTO.
@@ -9943,7 +9946,7 @@ type UpdateProjectLegalDocuments struct {
 // UpdateProjectExposeLegal DTO.
 type UpdateProjectExposeLegal struct {
 	CodeMashRequestBase
-	Exposed bool `json:"exposed,omitempty"`
+	Exposed bool `json:"exposed"`
 }
 
 // UpdateProjectUrl DTO.
@@ -9988,7 +9991,7 @@ type CreateTeamMember struct {
 	DisplayName    string   `json:"displayName,omitempty"`
 	Password       string   `json:"password,omitempty"`
 	Roles          []string `json:"roles,omitempty"`
-	SendInvitation bool     `json:"sendInvitation,omitempty"`
+	SendInvitation bool     `json:"sendInvitation"`
 }
 
 // CreateAccountPolicy DTO.
@@ -10022,14 +10025,14 @@ type DeleteAccountRole struct {
 // GetAccountCollaborators DTO.
 type GetAccountCollaborators struct {
 	RequestBase
-	IncludeAccountOwner      bool     `json:"includeAccountOwner,omitempty"`
-	UserShouldHavePushDevice bool     `json:"userShouldHavePushDevice,omitempty"`
+	IncludeAccountOwner      bool     `json:"includeAccountOwner"`
+	UserShouldHavePushDevice bool     `json:"userShouldHavePushDevice"`
 	ProjectId                string   `json:"projectId,omitempty"`
 	UserIds                  []string `json:"userIds,omitempty"`
 	RoleNames                []string `json:"roleNames,omitempty"`
 	StartingAfter            string   `json:"startingAfter,omitempty"`
 	EndingBefore             string   `json:"endingBefore,omitempty"`
-	PageSize                 float64  `json:"pageSize,omitempty"`
+	PageSize                 *float64 `json:"pageSize,omitempty"`
 }
 
 // GetAccountPasswordPolicy DTO.
@@ -10294,15 +10297,15 @@ type EnableMembership struct {
 // ImportUsersRequest DTO.
 type ImportUsersRequest struct {
 	CodeMashRequestBase
-	DryRun             bool                `json:"dryRun,omitempty"`
-	IgnoreDefaultRoles bool                `json:"ignoreDefaultRoles,omitempty"`
+	DryRun             bool                `json:"dryRun"`
+	IgnoreDefaultRoles bool                `json:"ignoreDefaultRoles"`
 	Users              []*ImportUserRowDto `json:"users,omitempty"`
 }
 
 // RepairLoginProjectIdsRequest DTO.
 type RepairLoginProjectIdsRequest struct {
 	CodeMashRequestBase
-	DryRun bool `json:"dryRun,omitempty"`
+	DryRun bool `json:"dryRun"`
 }
 
 // IssueServiceUserApiKeyRequest DTO.
@@ -10312,7 +10315,7 @@ type IssueServiceUserApiKeyRequest struct {
 	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
 	Name                  string   `json:"name,omitempty"`
 	Scopes                []string `json:"scopes,omitempty"`
-	ExpiresInDays         float64  `json:"expiresInDays,omitempty"`
+	ExpiresInDays         *float64 `json:"expiresInDays,omitempty"`
 	Notes                 string   `json:"notes,omitempty"`
 }
 
@@ -10435,13 +10438,13 @@ type GetPasskeySettings struct {
 // SavePasskeySettings DTO.
 type SavePasskeySettings struct {
 	CodeMashRequestBase
-	Enabled                       bool    `json:"enabled,omitempty"`
+	Enabled                       bool    `json:"enabled"`
 	CodeTtlMinutes                float64 `json:"codeTtlMinutes,omitempty"`
 	MaxCredentialsPerUser         float64 `json:"maxCredentialsPerUser,omitempty"`
 	RecoveryCodeCount             float64 `json:"recoveryCodeCount,omitempty"`
-	GenerateRecoveryCodesAtSignup bool    `json:"generateRecoveryCodesAtSignup,omitempty"`
+	GenerateRecoveryCodesAtSignup bool    `json:"generateRecoveryCodesAtSignup"`
 	AuthenticatorAttachment       string  `json:"authenticatorAttachment,omitempty"`
-	AllowMagicLinkRecovery        bool    `json:"allowMagicLinkRecovery,omitempty"`
+	AllowMagicLinkRecovery        bool    `json:"allowMagicLinkRecovery"`
 	RefreshTokenTtlDays           float64 `json:"refreshTokenTtlDays,omitempty"`
 	RpId                          string  `json:"rpId,omitempty"`
 }
@@ -10498,51 +10501,51 @@ type UpdateAuthorizationSettings struct {
 	Setting                     string   `json:"setting,omitempty"`
 	DefaultRoles                []string `json:"defaultRoles,omitempty"`
 	AllowedRegistrationRoles    []string `json:"allowedRegistrationRoles,omitempty"`
-	AllowGuestUsers             bool     `json:"allowGuestUsers,omitempty"`
-	GuestCleanupPeriodDays      float64  `json:"guestCleanupPeriodDays,omitempty"`
+	AllowGuestUsers             *bool    `json:"allowGuestUsers,omitempty"`
+	GuestCleanupPeriodDays      *float64 `json:"guestCleanupPeriodDays,omitempty"`
 	UserRegistersAsRole         string   `json:"userRegistersAsRole,omitempty"`
 	GuestRegistersAsRole        string   `json:"guestRegistersAsRole,omitempty"`
 	AllowedRegisterRoles        []string `json:"allowedRegisterRoles,omitempty"`
-	NeedVerification            bool     `json:"needVerification,omitempty"`
+	NeedVerification            bool     `json:"needVerification"`
 	VerificationEmailTemplate   string   `json:"verificationEmailTemplate,omitempty"`
 	DeactivationEmailTemplate   string   `json:"deactivationEmailTemplate,omitempty"`
-	AllowInviteUsers            bool     `json:"allowInviteUsers,omitempty"`
-	AllowDeactivateUsers        bool     `json:"allowDeactivateUsers,omitempty"`
+	AllowInviteUsers            bool     `json:"allowInviteUsers"`
+	AllowDeactivateUsers        bool     `json:"allowDeactivateUsers"`
 	InviteUserEmailTemplate     string   `json:"inviteUserEmailTemplate,omitempty"`
-	InvitationExpiration        float64  `json:"invitationExpiration,omitempty"`
-	EmailVerificationExpiration float64  `json:"emailVerificationExpiration,omitempty"`
-	DeactivationExpiration      float64  `json:"deactivationExpiration,omitempty"`
-	DefaultSubscribeToNews      bool     `json:"defaultSubscribeToNews,omitempty"`
-	AllowEmailRegistration      bool     `json:"allowEmailRegistration,omitempty"`
-	InviteOnly                  bool     `json:"inviteOnly,omitempty"`
-	AllowAnyoneToSignUp         bool     `json:"allowAnyoneToSignUp,omitempty"`
+	InvitationExpiration        *float64 `json:"invitationExpiration,omitempty"`
+	EmailVerificationExpiration *float64 `json:"emailVerificationExpiration,omitempty"`
+	DeactivationExpiration      *float64 `json:"deactivationExpiration,omitempty"`
+	DefaultSubscribeToNews      bool     `json:"defaultSubscribeToNews"`
+	AllowEmailRegistration      *bool    `json:"allowEmailRegistration,omitempty"`
+	InviteOnly                  *bool    `json:"inviteOnly,omitempty"`
+	AllowAnyoneToSignUp         *bool    `json:"allowAnyoneToSignUp,omitempty"`
 	MinLength                   float64  `json:"minLength,omitempty"`
-	MaxLength                   float64  `json:"maxLength,omitempty"`
-	MinNumbers                  float64  `json:"minNumbers,omitempty"`
-	MaxNumbers                  float64  `json:"maxNumbers,omitempty"`
-	MinUpper                    float64  `json:"minUpper,omitempty"`
-	MaxUpper                    float64  `json:"maxUpper,omitempty"`
-	MinLower                    float64  `json:"minLower,omitempty"`
-	MaxLower                    float64  `json:"maxLower,omitempty"`
-	MinSpecial                  float64  `json:"minSpecial,omitempty"`
-	MaxSpecial                  float64  `json:"maxSpecial,omitempty"`
+	MaxLength                   *float64 `json:"maxLength,omitempty"`
+	MinNumbers                  *float64 `json:"minNumbers,omitempty"`
+	MaxNumbers                  *float64 `json:"maxNumbers,omitempty"`
+	MinUpper                    *float64 `json:"minUpper,omitempty"`
+	MaxUpper                    *float64 `json:"maxUpper,omitempty"`
+	MinLower                    *float64 `json:"minLower,omitempty"`
+	MaxLower                    *float64 `json:"maxLower,omitempty"`
+	MinSpecial                  *float64 `json:"minSpecial,omitempty"`
+	MaxSpecial                  *float64 `json:"maxSpecial,omitempty"`
 	AllowedSpecial              string   `json:"allowedSpecial,omitempty"`
 }
 
 // UpdatePasswordComplexity DTO.
 type UpdatePasswordComplexity struct {
 	CodeMashRequestBase
-	MinLength      float64 `json:"minLength,omitempty"`
-	MaxLength      float64 `json:"maxLength,omitempty"`
-	MinNumbers     float64 `json:"minNumbers,omitempty"`
-	MaxNumbers     float64 `json:"maxNumbers,omitempty"`
-	MinUpper       float64 `json:"minUpper,omitempty"`
-	MaxUpper       float64 `json:"maxUpper,omitempty"`
-	MinLower       float64 `json:"minLower,omitempty"`
-	MaxLower       float64 `json:"maxLower,omitempty"`
-	MinSpecial     float64 `json:"minSpecial,omitempty"`
-	MaxSpecial     float64 `json:"maxSpecial,omitempty"`
-	AllowedSpecial string  `json:"allowedSpecial,omitempty"`
+	MinLength      float64  `json:"minLength,omitempty"`
+	MaxLength      *float64 `json:"maxLength,omitempty"`
+	MinNumbers     *float64 `json:"minNumbers,omitempty"`
+	MaxNumbers     *float64 `json:"maxNumbers,omitempty"`
+	MinUpper       *float64 `json:"minUpper,omitempty"`
+	MaxUpper       *float64 `json:"maxUpper,omitempty"`
+	MinLower       *float64 `json:"minLower,omitempty"`
+	MaxLower       *float64 `json:"maxLower,omitempty"`
+	MinSpecial     *float64 `json:"minSpecial,omitempty"`
+	MaxSpecial     *float64 `json:"maxSpecial,omitempty"`
+	AllowedSpecial string   `json:"allowedSpecial,omitempty"`
 }
 
 // GetAuthenticationSettings DTO.
@@ -10554,7 +10557,7 @@ type GetAuthenticationSettings struct {
 type UpdateAuthenticationSettings struct {
 	CodeMashRequestBase
 	LogoutUrl      string                        `json:"logoutUrl,omitempty"`
-	AllowUsernames bool                          `json:"allowUsernames,omitempty"`
+	AllowUsernames bool                          `json:"allowUsernames"`
 	Modes          []*CredentialsSettingsModeDto `json:"modes,omitempty"`
 }
 
@@ -10619,8 +10622,8 @@ type GetDatabaseTaxonomies struct {
 // GetDatabaseTaxonomyTreeRequest DTO.
 type GetDatabaseTaxonomyTreeRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
-	IncludeTerms          bool   `json:"includeTerms,omitempty"`
+	AllLanguages          bool   `json:"allLanguages"`
+	IncludeTerms          bool   `json:"includeTerms"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
@@ -10655,7 +10658,7 @@ type DeleteManyDatabaseTaxonomyTermsRequest struct {
 // GetDatabaseTaxonomyTermRequest DTO.
 type GetDatabaseTaxonomyTermRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
+	AllLanguages          bool   `json:"allLanguages"`
 	TaxonomyId            string `json:"taxonomyId,omitempty"`
 	Id                    string `json:"id,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
@@ -10664,7 +10667,7 @@ type GetDatabaseTaxonomyTermRequest struct {
 // GetDatabaseMergedTermTreeRequest DTO.
 type GetDatabaseMergedTermTreeRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
+	AllLanguages          bool   `json:"allLanguages"`
 	TaxonomyName          string `json:"taxonomyName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
@@ -10672,11 +10675,11 @@ type GetDatabaseMergedTermTreeRequest struct {
 // GetDatabaseTaxonomyTermTreeRequest DTO.
 type GetDatabaseTaxonomyTermTreeRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool    `json:"allLanguages,omitempty"`
-	TaxonomyName          string  `json:"taxonomyName,omitempty"`
-	RootTermId            string  `json:"rootTermId,omitempty"`
-	Depth                 float64 `json:"depth,omitempty"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
+	AllLanguages          bool     `json:"allLanguages"`
+	TaxonomyName          string   `json:"taxonomyName,omitempty"`
+	RootTermId            string   `json:"rootTermId,omitempty"`
+	Depth                 *float64 `json:"depth,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
 }
 
 // SaveDatabaseTaxonomyTermRequest DTO.
@@ -10702,8 +10705,8 @@ type ApplyDatabaseSchemaBundleRequest struct {
 	Entities     string `json:"entities,omitempty"`
 	BundleJson   string `json:"bundleJson,omitempty"`
 	Tier         string `json:"tier,omitempty"`
-	Translatable bool   `json:"translatable,omitempty"`
-	Publish      bool   `json:"publish,omitempty"`
+	Translatable bool   `json:"translatable"`
+	Publish      bool   `json:"publish"`
 }
 
 // DeleteDatabaseSchemaRequest DTO.
@@ -10721,15 +10724,15 @@ type DiscardDatabaseSchemaDraftRequest struct {
 // EndUserOwnRecordsReportRequest DTO.
 type EndUserOwnRecordsReportRequest struct {
 	CodeMashRequestBase
-	DryRun bool     `json:"dryRun,omitempty"`
+	DryRun bool     `json:"dryRun"`
 	Enable []string `json:"enable,omitempty"`
 }
 
 // GetDatabaseSchema DTO.
 type GetDatabaseSchema struct {
 	CodeMashRequestBase
-	Id      string  `json:"id,omitempty"`
-	Version float64 `json:"version,omitempty"`
+	Id      string   `json:"id,omitempty"`
+	Version *float64 `json:"version,omitempty"`
 }
 
 // GetDatabaseSchemas DTO.
@@ -10774,7 +10777,7 @@ type GetDatabaseSchemaVersions struct {
 type PublishDatabaseSchemaRequest struct {
 	CodeMashRequestBase
 	Id        string `json:"id,omitempty"`
-	Confirmed bool   `json:"confirmed,omitempty"`
+	Confirmed bool   `json:"confirmed"`
 }
 
 // RenameDatabaseSchemaRequest DTO.
@@ -10843,10 +10846,10 @@ type ChangeRecordResponsibility struct {
 // CountRecords DTO.
 type CountRecords struct {
 	CodeMashRequestBase
-	CollectionName        string  `json:"collectionName,omitempty"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	Filter                string  `json:"filter,omitempty"`
-	SchemaVersion         float64 `json:"schemaVersion,omitempty"`
+	CollectionName        string   `json:"collectionName,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	Filter                string   `json:"filter,omitempty"`
+	SchemaVersion         *float64 `json:"schemaVersion,omitempty"`
 }
 
 // DeleteManyRecords DTO.
@@ -10855,7 +10858,7 @@ type DeleteManyRecords struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
-	AllRecords            bool   `json:"allRecords,omitempty"`
+	AllRecords            *bool  `json:"allRecords,omitempty"`
 }
 
 // DeleteRecord DTO.
@@ -10869,11 +10872,11 @@ type DeleteRecord struct {
 // DistinctRecordValues DTO.
 type DistinctRecordValues struct {
 	CodeMashRequestBase
-	CollectionName        string  `json:"collectionName,omitempty"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	Field                 string  `json:"field,omitempty"`
-	Filter                string  `json:"filter,omitempty"`
-	SchemaVersion         float64 `json:"schemaVersion,omitempty"`
+	CollectionName        string   `json:"collectionName,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	Field                 string   `json:"field,omitempty"`
+	Filter                string   `json:"filter,omitempty"`
+	SchemaVersion         *float64 `json:"schemaVersion,omitempty"`
 }
 
 // ExecuteRecordsAggregate DTO.
@@ -10892,12 +10895,12 @@ type FindRecords struct {
 	DatabaseIntegrationId string      `json:"databaseIntegrationId,omitempty"`
 	Filter                string      `json:"filter,omitempty"`
 	ContactId             string      `json:"contactId,omitempty"`
-	SchemaVersion         float64     `json:"schemaVersion,omitempty"`
+	SchemaVersion         *float64    `json:"schemaVersion,omitempty"`
 	PagingArgs            *PagingArgs `json:"pagingArgs,omitempty"`
 	SortBy                string      `json:"sortBy,omitempty"`
-	SortOrder             float64     `json:"sortOrder,omitempty"`
-	ExpandReferences      bool        `json:"expandReferences,omitempty"`
-	AllLanguages          bool        `json:"allLanguages,omitempty"`
+	SortOrder             *float64    `json:"sortOrder,omitempty"`
+	ExpandReferences      bool        `json:"expandReferences"`
+	AllLanguages          bool        `json:"allLanguages"`
 }
 
 // FindOneRecord DTO.
@@ -10906,8 +10909,8 @@ type FindOneRecord struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	Id                    string `json:"id,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
-	ExpandReferences      bool   `json:"expandReferences,omitempty"`
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
+	ExpandReferences      bool   `json:"expandReferences"`
+	AllLanguages          bool   `json:"allLanguages"`
 }
 
 // GetCollectionIndexes DTO.
@@ -10956,7 +10959,7 @@ type UpdateManyRecords struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
-	AllRecords            bool   `json:"allRecords,omitempty"`
+	AllRecords            *bool  `json:"allRecords,omitempty"`
 	Update                string `json:"update,omitempty"`
 	ArrayFilters          string `json:"arrayFilters,omitempty"`
 }
@@ -11038,7 +11041,7 @@ type CreateCollectionImport struct {
 	CollectionName        string                    `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string                    `json:"databaseIntegrationId,omitempty"`
 	Delimiter             string                    `json:"delimiter,omitempty"`
-	HasHeader             bool                      `json:"hasHeader,omitempty"`
+	HasHeader             bool                      `json:"hasHeader"`
 	Mapping               []*ImportColumnMappingDto `json:"mapping,omitempty"`
 }
 
@@ -11074,7 +11077,7 @@ type AnalyzeImportFileRequest struct {
 	CodeMashRequestBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
 	Delimiter string              `json:"delimiter,omitempty"`
-	HasHeader bool                `json:"hasHeader,omitempty"`
+	HasHeader bool                `json:"hasHeader"`
 }
 
 // DeleteDatabaseAggregateRequest DTO.
@@ -11315,7 +11318,7 @@ type GetEmailTemplate struct {
 // GetEmailTemplates DTO.
 type GetEmailTemplates struct {
 	CodeMashListPaginationRequestBase
-	ShowArchived bool   `json:"showArchived,omitempty"`
+	ShowArchived *bool  `json:"showArchived,omitempty"`
 	TemplateId   string `json:"templateId,omitempty"`
 }
 
@@ -11324,7 +11327,7 @@ type GetMjml struct {
 	CodeMashRequestBase
 	Code         string             `json:"code,omitempty"`
 	Tokens       []*TokenMappingDto `json:"tokens,omitempty"`
-	IsForPreview bool               `json:"isForPreview,omitempty"`
+	IsForPreview bool               `json:"isForPreview"`
 }
 
 // GetSystemEmailTemplate DTO.
@@ -11505,7 +11508,7 @@ type CreateEmailCampaignRequest struct {
 	CodeMashRequestBase
 	Campaign              *EmailCampaignRequest `json:"campaign,omitempty"`
 	DatabaseIntegrationId string                `json:"databaseIntegrationId,omitempty"`
-	SendNow               bool                  `json:"sendNow,omitempty"`
+	SendNow               *bool                 `json:"sendNow,omitempty"`
 }
 
 // DeleteEmailCampaignRequest DTO.
@@ -11525,12 +11528,12 @@ type GetEmailCampaign struct {
 // GetEmailCampaigns DTO.
 type GetEmailCampaigns struct {
 	CodeMashListPaginationRequestBase
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	CampaignId            string  `json:"campaignId,omitempty"`
-	EmailAddress          string  `json:"emailAddress,omitempty"`
-	TemplateId            string  `json:"templateId,omitempty"`
-	From                  float64 `json:"from,omitempty"`
-	To                    float64 `json:"to,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	CampaignId            string   `json:"campaignId,omitempty"`
+	EmailAddress          string   `json:"emailAddress,omitempty"`
+	TemplateId            string   `json:"templateId,omitempty"`
+	From                  *float64 `json:"from,omitempty"`
+	To                    *float64 `json:"to,omitempty"`
 }
 
 // GetEmailCampaignBatches DTO.
@@ -11636,7 +11639,7 @@ type GetSmsTemplate struct {
 // GetSmsTemplates DTO.
 type GetSmsTemplates struct {
 	CodeMashListPaginationRequestBase
-	ShowArchived bool   `json:"showArchived,omitempty"`
+	ShowArchived *bool  `json:"showArchived,omitempty"`
 	TemplateId   string `json:"templateId,omitempty"`
 }
 
@@ -11651,7 +11654,7 @@ type RenderSms struct {
 	CodeMashRequestBase
 	Code         string             `json:"code,omitempty"`
 	Tokens       []*TokenMappingDto `json:"tokens,omitempty"`
-	IsForPreview bool               `json:"isForPreview,omitempty"`
+	IsForPreview bool               `json:"isForPreview"`
 }
 
 // UnArchiveSmsTemplateRequest DTO.
@@ -11743,11 +11746,11 @@ type GetSmsCampaign struct {
 // GetSmsCampaigns DTO.
 type GetSmsCampaigns struct {
 	CodeMashListPaginationRequestBase
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	CampaignId            string  `json:"campaignId,omitempty"`
-	TemplateId            string  `json:"templateId,omitempty"`
-	From                  float64 `json:"from,omitempty"`
-	To                    float64 `json:"to,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	CampaignId            string   `json:"campaignId,omitempty"`
+	TemplateId            string   `json:"templateId,omitempty"`
+	From                  *float64 `json:"from,omitempty"`
+	To                    *float64 `json:"to,omitempty"`
 }
 
 // GetSmsCampaignBatches DTO.
@@ -11816,7 +11819,7 @@ type SetMarketplaceIntegrationRoleAccess struct {
 	IntegrationViewId string                 `json:"integrationViewId,omitempty"`
 	RoleId            string                 `json:"roleId,omitempty"`
 	Package           MarketplaceAccessLevel `json:"package,omitempty"`
-	Manage            bool                   `json:"manage,omitempty"`
+	Manage            bool                   `json:"manage"`
 }
 
 // SaveMarketplaceIntegrationCustomAccess DTO.
@@ -11827,8 +11830,8 @@ type SaveMarketplaceIntegrationCustomAccess struct {
 	BasePackage              MarketplaceAccessLevel `json:"basePackage,omitempty"`
 	Tools                    []string               `json:"tools,omitempty"`
 	Functions                []string               `json:"functions,omitempty"`
-	Manage                   bool                   `json:"manage,omitempty"`
-	NewPolicyForThisRoleOnly bool                   `json:"newPolicyForThisRoleOnly,omitempty"`
+	Manage                   bool                   `json:"manage"`
+	NewPolicyForThisRoleOnly bool                   `json:"newPolicyForThisRoleOnly"`
 }
 
 // GetMarketplaceIntegrationTools DTO.
@@ -11878,11 +11881,11 @@ type GetMarketplaceFunctionCatalog struct {
 // GetMarketplaceFunctionRuns DTO.
 type GetMarketplaceFunctionRuns struct {
 	CodeMashRequestBase
-	FunctionId    string  `json:"functionId,omitempty"`
-	TriggerId     string  `json:"triggerId,omitempty"`
-	TaskId        string  `json:"taskId,omitempty"`
-	IntegrationId string  `json:"integrationId,omitempty"`
-	Limit         float64 `json:"limit,omitempty"`
+	FunctionId    string   `json:"functionId,omitempty"`
+	TriggerId     string   `json:"triggerId,omitempty"`
+	TaskId        string   `json:"taskId,omitempty"`
+	IntegrationId string   `json:"integrationId,omitempty"`
+	Limit         *float64 `json:"limit,omitempty"`
 }
 
 // GetCodeFunctions DTO.
@@ -11911,9 +11914,9 @@ type GetCodeFunctionQualifiers struct {
 // GetCodeFunctionRuns DTO.
 type GetCodeFunctionRuns struct {
 	CodeMashRequestBase
-	TriggerId string  `json:"triggerId,omitempty"`
-	TaskId    string  `json:"taskId,omitempty"`
-	Limit     float64 `json:"limit,omitempty"`
+	TriggerId string   `json:"triggerId,omitempty"`
+	TaskId    string   `json:"taskId,omitempty"`
+	Limit     *float64 `json:"limit,omitempty"`
 }
 
 // InvokeCodeFunction DTO.
@@ -11973,7 +11976,7 @@ type GetPushTemplate struct {
 // GetPushTemplates DTO.
 type GetPushTemplates struct {
 	CodeMashListPaginationRequestBase
-	ShowArchived bool   `json:"showArchived,omitempty"`
+	ShowArchived *bool  `json:"showArchived,omitempty"`
 	TemplateId   string `json:"templateId,omitempty"`
 }
 
@@ -11988,7 +11991,7 @@ type RenderPush struct {
 	CodeMashRequestBase
 	Code         string             `json:"code,omitempty"`
 	Tokens       []*TokenMappingDto `json:"tokens,omitempty"`
-	IsForPreview bool               `json:"isForPreview,omitempty"`
+	IsForPreview bool               `json:"isForPreview"`
 }
 
 // UnArchivePushTemplateRequest DTO.
@@ -12102,7 +12105,7 @@ type CreatePushCampaignRequest struct {
 	CodeMashRequestBase
 	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
 	DatabaseIntegrationId string               `json:"databaseIntegrationId,omitempty"`
-	SendNow               bool                 `json:"sendNow,omitempty"`
+	SendNow               *bool                `json:"sendNow,omitempty"`
 }
 
 // DeletePushCampaignRequest DTO.
@@ -12122,10 +12125,10 @@ type GetPushCampaign struct {
 // GetPushCampaigns DTO.
 type GetPushCampaigns struct {
 	CodeMashListPaginationRequestBase
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	TemplateId            string  `json:"templateId,omitempty"`
-	From                  float64 `json:"from,omitempty"`
-	To                    float64 `json:"to,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	TemplateId            string   `json:"templateId,omitempty"`
+	From                  *float64 `json:"from,omitempty"`
+	To                    *float64 `json:"to,omitempty"`
 }
 
 // GetPushCampaignBatches DTO.
@@ -12186,7 +12189,7 @@ type GetPushCampaignMessagesRequest struct {
 // GetNotificationInboxRequest DTO.
 type GetNotificationInboxRequest struct {
 	CodeMashListPaginationRequestBase
-	UnreadOnly bool   `json:"unreadOnly,omitempty"`
+	UnreadOnly bool   `json:"unreadOnly"`
 	Channel    string `json:"channel,omitempty"`
 }
 
@@ -12219,8 +12222,8 @@ type EnablePayments struct {
 // GetPaymentsWebhookLog DTO.
 type GetPaymentsWebhookLog struct {
 	CodeMashRequestBase
-	IntegrationId string  `json:"integrationId,omitempty"`
-	Limit         float64 `json:"limit,omitempty"`
+	IntegrationId string   `json:"integrationId,omitempty"`
+	Limit         *float64 `json:"limit,omitempty"`
 }
 
 // DeletePaymentsTrigger DTO.
@@ -12308,14 +12311,14 @@ type DisableLogging struct {
 // EnableLogging DTO.
 type EnableLogging struct {
 	CodeMashRequestBase
-	CreateNorbixLogging bool `json:"createNorbixLogging,omitempty"`
+	CreateNorbixLogging bool `json:"createNorbixLogging"`
 }
 
 // DeleteLoggingIntegrationRequest DTO.
 type DeleteLoggingIntegrationRequest struct {
 	CodeMashRequestBase
 	Id       string `json:"id,omitempty"`
-	WipeLogs bool   `json:"wipeLogs,omitempty"`
+	WipeLogs bool   `json:"wipeLogs"`
 }
 
 // DisableLoggingIntegrationRequest DTO.
@@ -12392,9 +12395,9 @@ type GetLogSettings struct {
 // SaveLogSettings DTO.
 type SaveLogSettings struct {
 	CodeMashRequestBase
-	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs,omitempty"`
-	SkipHttpBodyMeta       bool `json:"skipHttpBodyMeta,omitempty"`
-	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled,omitempty"`
+	SkipCloudDashboardLogs *bool `json:"skipCloudDashboardLogs,omitempty"`
+	SkipHttpBodyMeta       *bool `json:"skipHttpBodyMeta,omitempty"`
+	AiChatLoggingEnabled   *bool `json:"aiChatLoggingEnabled,omitempty"`
 }
 
 // GetAgentOnboardingRequest DTO.
@@ -12465,35 +12468,35 @@ type DeleteChatSessionRequest struct {
 type SetChatSessionArchivedRequest struct {
 	RequestBase
 	SessionId string `json:"sessionId,omitempty"`
-	Archived  bool   `json:"archived,omitempty"`
+	Archived  bool   `json:"archived"`
 }
 
 // SetChatSessionPinnedRequest DTO.
 type SetChatSessionPinnedRequest struct {
 	RequestBase
 	SessionId string `json:"sessionId,omitempty"`
-	Pinned    bool   `json:"pinned,omitempty"`
+	Pinned    bool   `json:"pinned"`
 }
 
 // SetChatSessionSharingRequest DTO.
 type SetChatSessionSharingRequest struct {
 	RequestBase
 	SessionId  string `json:"sessionId,omitempty"`
-	DoNotShare bool   `json:"doNotShare,omitempty"`
+	DoNotShare bool   `json:"doNotShare"`
 }
 
 // GetChatSessionsRequest DTO.
 type GetChatSessionsRequest struct {
 	RequestBase
-	Take            float64 `json:"take,omitempty"`
-	IncludeArchived bool    `json:"includeArchived,omitempty"`
+	Take            *float64 `json:"take,omitempty"`
+	IncludeArchived *bool    `json:"includeArchived,omitempty"`
 }
 
 // GetChatSessionEntriesRequest DTO.
 type GetChatSessionEntriesRequest struct {
 	RequestBase
-	SessionId string  `json:"sessionId,omitempty"`
-	SinceSeq  float64 `json:"sinceSeq,omitempty"`
+	SessionId string   `json:"sessionId,omitempty"`
+	SinceSeq  *float64 `json:"sinceSeq,omitempty"`
 }
 
 // SetChatEntryFeedbackRequest DTO.
@@ -12578,7 +12581,7 @@ type McpRequest struct {
 // GetProjectBriefRequest DTO.
 type GetProjectBriefRequest struct {
 	CodeMashRequestBase
-	SinceSeq float64 `json:"sinceSeq,omitempty"`
+	SinceSeq *float64 `json:"sinceSeq,omitempty"`
 }
 
 // GetWorkItemsRequest DTO.
@@ -12604,7 +12607,7 @@ type MarkNeedsYouDoneRequest struct {
 	CodeMashRequestBase
 	WorkItemId string  `json:"workItemId,omitempty"`
 	Index      float64 `json:"index,omitempty"`
-	Done       bool    `json:"done,omitempty"`
+	Done       *bool   `json:"done,omitempty"`
 }
 
 // SaveAiProjectTrigger DTO.
@@ -12899,7 +12902,7 @@ type SaveWebhookDestinationRequest struct {
 	EndpointUrl     string            `json:"endpointUrl,omitempty"`
 	SelectedEvents  []string          `json:"selectedEvents,omitempty"`
 	ExtraHeaders    map[string]string `json:"extraHeaders,omitempty"`
-	IsEnabled       bool              `json:"isEnabled,omitempty"`
+	IsEnabled       bool              `json:"isEnabled"`
 }
 
 // DisableScheduler DTO.
@@ -12940,14 +12943,14 @@ type GetSchedulerTask struct {
 type GetSchedulerTasks struct {
 	CodeMashListPaginationRequestBase
 	Type    SchedulerTaskType `json:"type,omitempty"`
-	Enabled bool              `json:"enabled,omitempty"`
+	Enabled *bool             `json:"enabled,omitempty"`
 }
 
 // GetSchedulerTaskRuns DTO.
 type GetSchedulerTaskRuns struct {
 	CodeMashRequestBase
-	Id   string  `json:"id,omitempty"`
-	Take float64 `json:"take,omitempty"`
+	Id   string   `json:"id,omitempty"`
+	Take *float64 `json:"take,omitempty"`
 }
 
 // SaveSchedulerTaskRequest DTO.
@@ -12958,9 +12961,9 @@ type SaveSchedulerTaskRequest struct {
 	Description     string                `json:"description,omitempty"`
 	Cron            string                `json:"cron,omitempty"`
 	InitiatorUserId string                `json:"initiatorUserId,omitempty"`
-	IsEnabled       bool                  `json:"isEnabled,omitempty"`
-	StopOnError     bool                  `json:"stopOnError,omitempty"`
-	EndsAtUnix      float64               `json:"endsAtUnix,omitempty"`
+	IsEnabled       bool                  `json:"isEnabled"`
+	StopOnError     bool                  `json:"stopOnError"`
+	EndsAtUnix      *float64              `json:"endsAtUnix,omitempty"`
 	Task            *SchedulerTaskRequest `json:"task,omitempty"`
 }
 
@@ -13004,7 +13007,7 @@ type GetContact struct {
 type GetAllContacts struct {
 	CodeMashRequestBase
 	StartingAfter string   `json:"startingAfter,omitempty"`
-	PageSize      float64  `json:"pageSize,omitempty"`
+	PageSize      *float64 `json:"pageSize,omitempty"`
 	Search        string   `json:"search,omitempty"`
 	Email         string   `json:"email,omitempty"`
 	UserName      string   `json:"userName,omitempty"`
@@ -13023,29 +13026,29 @@ type MergeContactsRequest struct {
 // RepairContactRolesRequest DTO.
 type RepairContactRolesRequest struct {
 	CodeMashRequestBase
-	DryRun bool `json:"dryRun,omitempty"`
+	DryRun bool `json:"dryRun"`
 }
 
 // UpdateContactRequest DTO.
 type UpdateContactRequest struct {
 	CodeMashRequestBase
-	ContactId    string  `json:"contactId,omitempty"`
-	DisplayName  string  `json:"displayName,omitempty"`
-	FirstName    string  `json:"firstName,omitempty"`
-	LastName     string  `json:"lastName,omitempty"`
-	FullName     string  `json:"fullName,omitempty"`
-	Company      string  `json:"company,omitempty"`
-	Notes        string  `json:"notes,omitempty"`
-	Gender       string  `json:"gender,omitempty"`
-	BirthDate    float64 `json:"birthDate,omitempty"`
-	TimeZone     string  `json:"timeZone,omitempty"`
-	Language     string  `json:"language,omitempty"`
-	AddressLine1 string  `json:"addressLine1,omitempty"`
-	AddressLine2 string  `json:"addressLine2,omitempty"`
-	Country      string  `json:"country,omitempty"`
-	City         string  `json:"city,omitempty"`
-	State        string  `json:"state,omitempty"`
-	PostalCode   string  `json:"postalCode,omitempty"`
+	ContactId    string   `json:"contactId,omitempty"`
+	DisplayName  string   `json:"displayName,omitempty"`
+	FirstName    string   `json:"firstName,omitempty"`
+	LastName     string   `json:"lastName,omitempty"`
+	FullName     string   `json:"fullName,omitempty"`
+	Company      string   `json:"company,omitempty"`
+	Notes        string   `json:"notes,omitempty"`
+	Gender       string   `json:"gender,omitempty"`
+	BirthDate    *float64 `json:"birthDate,omitempty"`
+	TimeZone     string   `json:"timeZone,omitempty"`
+	Language     string   `json:"language,omitempty"`
+	AddressLine1 string   `json:"addressLine1,omitempty"`
+	AddressLine2 string   `json:"addressLine2,omitempty"`
+	Country      string   `json:"country,omitempty"`
+	City         string   `json:"city,omitempty"`
+	State        string   `json:"state,omitempty"`
+	PostalCode   string   `json:"postalCode,omitempty"`
 }
 
 // AddContactIdentityRequest DTO.
@@ -13186,7 +13189,7 @@ type SaveDsarPolicyRequest struct {
 // SaveIncidentRoutingRequest DTO.
 type SaveIncidentRoutingRequest struct {
 	RequestBase
-	AutoForwardAdvisories bool   `json:"autoForwardAdvisories,omitempty"`
+	AutoForwardAdvisories bool   `json:"autoForwardAdvisories"`
 	SecurityContact       string `json:"securityContact,omitempty"`
 }
 
@@ -13247,9 +13250,9 @@ type GetDiagnosticPacks struct {
 // RunDiagnosticPackRequest DTO.
 type RunDiagnosticPackRequest struct {
 	CodeMashRequestBase
-	PackName    string  `json:"packName,omitempty"`
-	PackVersion float64 `json:"packVersion,omitempty"`
-	CaseId      string  `json:"caseId,omitempty"`
+	PackName    string   `json:"packName,omitempty"`
+	PackVersion *float64 `json:"packVersion,omitempty"`
+	CaseId      string   `json:"caseId,omitempty"`
 }
 
 // GetDiagnosticEcho DTO.
@@ -13299,7 +13302,7 @@ type Authenticate struct {
 	Provider          string            `json:"provider,omitempty"`
 	UserName          string            `json:"userName,omitempty"`
 	Password          string            `json:"password,omitempty"`
-	RememberMe        bool              `json:"rememberMe,omitempty"`
+	RememberMe        *bool             `json:"rememberMe,omitempty"`
 	AccessToken       string            `json:"accessToken,omitempty"`
 	AccessTokenSecret string            `json:"accessTokenSecret,omitempty"`
 	ReturnUrl         string            `json:"returnUrl,omitempty"`

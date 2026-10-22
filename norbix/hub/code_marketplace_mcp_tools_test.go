@@ -47,10 +47,10 @@ func TestGetMarketplaceIntegrationToolsDecodesTheCatalog(t *testing.T) {
 	if len(out.Tools) != 2 || out.CatalogHash != "4ce4259bec02f283" || out.Truncated {
 		t.Fatalf("catalog: got %+v", out)
 	}
-	if out.Tools[0].Name != "create_issue" || out.Tools[0].InputSchema != `{"type":"object","required":["title"]}` || out.Tools[0].ReadOnlyHint {
+	if out.Tools[0].Name != "create_issue" || out.Tools[0].InputSchema != `{"type":"object","required":["title"]}` || out.Tools[0].ReadOnlyHint == nil || *out.Tools[0].ReadOnlyHint {
 		t.Errorf("tool 0: got %+v", *out.Tools[0])
 	}
-	if out.Tools[1].Name != "get_me" || !out.Tools[1].ReadOnlyHint {
+	if out.Tools[1].Name != "get_me" || out.Tools[1].ReadOnlyHint == nil || !*out.Tools[1].ReadOnlyHint {
 		t.Errorf("tool 1: got %+v", *out.Tools[1])
 	}
 }

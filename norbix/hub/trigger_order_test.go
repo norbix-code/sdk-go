@@ -50,7 +50,7 @@ func TestSchemaTriggerReadDecodesOrderAndBreakOnError(t *testing.T) {
 	if err := newHubDatabaseTestModule(srv.URL).GetSchemaTrigger(context.Background(), "trg_1", nil, &one); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if one.Trigger == nil || one.Trigger.Order != 2 || !one.Trigger.BreakOnError {
+	if one.Trigger == nil || one.Trigger.Order == nil || *one.Trigger.Order != 2 || !one.Trigger.BreakOnError {
 		t.Errorf("trigger: got %+v, want order 2 and breakOnError true", one.Trigger)
 	}
 }
