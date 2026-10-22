@@ -4,8 +4,11 @@
 // types"). Editing this file by hand is lost on the next run.
 
 // Package dtos holds the data types of the Norbix API surface. A field
-// that holds another generated type is a pointer; every field carries a JSON
-// tag with omitempty, because the gateway leaves absent values out.
+// that holds another generated type is a pointer. A nullable true/false or
+// number field is a pointer too (*bool, *float64): nil is left out of the
+// request, false and 0 are sent. A required true/false field is always sent.
+// Every other field carries omitempty, because the gateway leaves absent
+// values out.
 package dtos
 
 // Gender enum.
@@ -143,21 +146,21 @@ type StringFieldDto struct {
 	JsonSchemaFieldDto
 	Format           string            `json:"format,omitempty"`
 	Pattern          string            `json:"pattern,omitempty"`
-	MinLength        float64           `json:"minLength,omitempty"`
-	MaxLength        float64           `json:"maxLength,omitempty"`
+	MinLength        *float64          `json:"minLength,omitempty"`
+	MaxLength        *float64          `json:"maxLength,omitempty"`
 	TranslateOptions map[string]string `json:"translateOptions,omitempty"`
 	Default          string            `json:"default,omitempty"`
-	Unique           bool              `json:"unique,omitempty"`
+	Unique           *bool             `json:"unique,omitempty"`
 }
 
 // DecimalFieldDto DTO.
 type DecimalFieldDto struct {
 	JsonSchemaFieldDto
-	Minimum    float64 `json:"minimum,omitempty"`
-	Maximum    float64 `json:"maximum,omitempty"`
-	MultipleOf float64 `json:"multipleOf,omitempty"`
-	Default    float64 `json:"default,omitempty"`
-	Unique     bool    `json:"unique,omitempty"`
+	Minimum    *float64 `json:"minimum,omitempty"`
+	Maximum    *float64 `json:"maximum,omitempty"`
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	Default    *float64 `json:"default,omitempty"`
+	Unique     *bool    `json:"unique,omitempty"`
 }
 
 // CurrencyDefaultDto DTO.
@@ -170,33 +173,33 @@ type CurrencyDefaultDto struct {
 type CurrencyFieldDto struct {
 	JsonSchemaFieldDto
 	AllowedCurrencies []string            `json:"allowedCurrencies,omitempty"`
-	MultipleOf        float64             `json:"multipleOf,omitempty"`
-	Minimum           float64             `json:"minimum,omitempty"`
-	Maximum           float64             `json:"maximum,omitempty"`
+	MultipleOf        *float64            `json:"multipleOf,omitempty"`
+	Minimum           *float64            `json:"minimum,omitempty"`
+	Maximum           *float64            `json:"maximum,omitempty"`
 	Default           *CurrencyDefaultDto `json:"default,omitempty"`
 }
 
 // BooleanFieldDto DTO.
 type BooleanFieldDto struct {
 	JsonSchemaFieldDto
-	Default bool `json:"default,omitempty"`
+	Default *bool `json:"default,omitempty"`
 }
 
 // DateFieldDto DTO.
 type DateFieldDto struct {
 	JsonSchemaFieldDto
-	Minimum float64 `json:"minimum,omitempty"`
-	Maximum float64 `json:"maximum,omitempty"`
-	Default float64 `json:"default,omitempty"`
+	Minimum *float64 `json:"minimum,omitempty"`
+	Maximum *float64 `json:"maximum,omitempty"`
+	Default *float64 `json:"default,omitempty"`
 }
 
 // IntegerFieldDto DTO.
 type IntegerFieldDto struct {
 	JsonSchemaFieldDto
-	Minimum float64 `json:"minimum,omitempty"`
-	Maximum float64 `json:"maximum,omitempty"`
-	Default float64 `json:"default,omitempty"`
-	Unique  bool    `json:"unique,omitempty"`
+	Minimum *float64 `json:"minimum,omitempty"`
+	Maximum *float64 `json:"maximum,omitempty"`
+	Default *float64 `json:"default,omitempty"`
+	Unique  *bool    `json:"unique,omitempty"`
 }
 
 // GeolocationFieldDto DTO.
@@ -208,8 +211,8 @@ type GeolocationFieldDto struct {
 // TagsFieldDto DTO.
 type TagsFieldDto struct {
 	JsonSchemaFieldDto
-	MinItems float64  `json:"minItems,omitempty"`
-	MaxItems float64  `json:"maxItems,omitempty"`
+	MinItems *float64 `json:"minItems,omitempty"`
+	MaxItems *float64 `json:"maxItems,omitempty"`
 	Default  []string `json:"default,omitempty"`
 }
 
@@ -217,17 +220,17 @@ type TagsFieldDto struct {
 type FileFieldDto struct {
 	JsonSchemaFieldDto
 	Storages        []string `json:"storages,omitempty"`
-	MinItems        float64  `json:"minItems,omitempty"`
-	MaxItems        float64  `json:"maxItems,omitempty"`
+	MinItems        *float64 `json:"minItems,omitempty"`
+	MaxItems        *float64 `json:"maxItems,omitempty"`
 	AllowedFileType string   `json:"allowedFileType,omitempty"`
-	MaxSizeMb       float64  `json:"maxSizeMb,omitempty"`
+	MaxSizeMb       *float64 `json:"maxSizeMb,omitempty"`
 }
 
 // TaxonomySelectionFieldDto DTO.
 type TaxonomySelectionFieldDto struct {
 	JsonSchemaFieldDto
 	TaxonomyId   string `json:"taxonomyId,omitempty"`
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 	DisplayField string `json:"displayField,omitempty"`
 }
 
@@ -236,20 +239,20 @@ type CollectionSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	CollectionId string `json:"collectionId,omitempty"`
 	DisplayField string `json:"displayField,omitempty"`
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 }
 
 // UserSelectionFieldDto DTO.
 type UserSelectionFieldDto struct {
 	JsonSchemaFieldDto
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 	DisplayField string `json:"displayField,omitempty"`
 }
 
 // RoleSelectionFieldDto DTO.
 type RoleSelectionFieldDto struct {
 	JsonSchemaFieldDto
-	Multiple     bool   `json:"multiple,omitempty"`
+	Multiple     bool   `json:"multiple"`
 	DisplayField string `json:"displayField,omitempty"`
 }
 
@@ -257,7 +260,7 @@ type RoleSelectionFieldDto struct {
 type EnumSelectionFieldDto struct {
 	JsonSchemaFieldDto
 	Values   []string `json:"values,omitempty"`
-	Multiple bool     `json:"multiple,omitempty"`
+	Multiple bool     `json:"multiple"`
 	Default  []string `json:"default,omitempty"`
 }
 
@@ -272,15 +275,15 @@ type ObjectFieldDto struct {
 type ArrayFieldDto struct {
 	JsonSchemaFieldDto
 	Items       *JsonSchemaFieldDto `json:"items,omitempty"`
-	MinItems    float64             `json:"minItems,omitempty"`
-	MaxItems    float64             `json:"maxItems,omitempty"`
-	UniqueItems bool                `json:"uniqueItems,omitempty"`
+	MinItems    *float64            `json:"minItems,omitempty"`
+	MaxItems    *float64            `json:"maxItems,omitempty"`
+	UniqueItems *bool               `json:"uniqueItems,omitempty"`
 }
 
 // JsonFieldDto DTO.
 type JsonFieldDto struct {
 	JsonSchemaFieldDto
-	MaxBytes float64 `json:"maxBytes,omitempty"`
+	MaxBytes *float64 `json:"maxBytes,omitempty"`
 }
 
 // RequestBase DTO.
@@ -329,10 +332,10 @@ type UserGeneralInfoDto struct {
 	PostalCode                string                 `json:"postalCode,omitempty"`
 	Company                   string                 `json:"company,omitempty"`
 	Gender                    Gender                 `json:"gender,omitempty"`
-	BirthDate                 float64                `json:"birthDate,omitempty"`
+	BirthDate                 *float64               `json:"birthDate,omitempty"`
 	TimeZone                  string                 `json:"timeZone,omitempty"`
 	Language                  string                 `json:"language,omitempty"`
-	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages,omitempty"`
+	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages"`
 	BlockedTags               map[string][]string    `json:"blockedTags,omitempty"`
 	BlockReasons              []MarketingBlockReason `json:"blockReasons,omitempty"`
 	ExtraMetadata             string                 `json:"extraMetadata,omitempty"`
@@ -345,7 +348,7 @@ type SaveUser struct {
 	DatabaseIntegrationId     string              `json:"databaseIntegrationId,omitempty"`
 	UserGeneralInfo           *UserGeneralInfoDto `json:"userGeneralInfo,omitempty"`
 	UserId                    string              `json:"userId,omitempty"`
-	IgnoreUserRegistersAsRole bool                `json:"ignoreUserRegistersAsRole,omitempty"`
+	IgnoreUserRegistersAsRole bool                `json:"ignoreUserRegistersAsRole"`
 }
 
 // SaveUserWithRolesBase DTO.
@@ -361,11 +364,11 @@ type IPublicRegistrationRequest struct {
 // CodeMashListPaginationRequestBase DTO.
 type CodeMashListPaginationRequestBase struct {
 	RequestBase
-	ProjectId     string  `json:"projectId,omitempty"`
-	Env           string  `json:"env,omitempty"`
-	StartingAfter string  `json:"startingAfter,omitempty"`
-	EndingBefore  string  `json:"endingBefore,omitempty"`
-	PageSize      float64 `json:"pageSize,omitempty"`
+	ProjectId     string   `json:"projectId,omitempty"`
+	Env           string   `json:"env,omitempty"`
+	StartingAfter string   `json:"startingAfter,omitempty"`
+	EndingBefore  string   `json:"endingBefore,omitempty"`
+	PageSize      *float64 `json:"pageSize,omitempty"`
 }
 
 // IPasskeyCeremonyRequest DTO.
@@ -381,18 +384,18 @@ type CursorArgs struct {
 // PagingArgs DTO.
 type PagingArgs struct {
 	CursorArgs    *CursorArgs `json:"cursorArgs,omitempty"`
-	PageSize      float64     `json:"pageSize,omitempty"`
+	PageSize      *float64    `json:"pageSize,omitempty"`
 	StartingAfter string      `json:"startingAfter,omitempty"`
 	EndingBefore  string      `json:"endingBefore,omitempty"`
 }
 
 // RegisterFileItem DTO.
 type RegisterFileItem struct {
-	Path        string  `json:"path,omitempty"`
-	OwnerUserId string  `json:"ownerUserId,omitempty"`
-	ContentType string  `json:"contentType,omitempty"`
-	SizeBytes   float64 `json:"sizeBytes,omitempty"`
-	FileName    string  `json:"fileName,omitempty"`
+	Path        string   `json:"path,omitempty"`
+	OwnerUserId string   `json:"ownerUserId,omitempty"`
+	ContentType string   `json:"contentType,omitempty"`
+	SizeBytes   *float64 `json:"sizeBytes,omitempty"`
+	FileName    string   `json:"fileName,omitempty"`
 }
 
 // WriteLogEntry DTO.
@@ -426,7 +429,7 @@ type EchoRegionDto struct {
 type EchoAgentSnippetDto struct {
 	Client      string `json:"client,omitempty"`
 	Kind        string `json:"kind,omitempty"`
-	Recommended bool   `json:"recommended,omitempty"`
+	Recommended bool   `json:"recommended"`
 	Auth        string `json:"auth,omitempty"`
 	Config      string `json:"config,omitempty"`
 }
@@ -448,7 +451,7 @@ type EchoAgentDto struct {
 // EchoHostingPlatformDto DTO.
 type EchoHostingPlatformDto struct {
 	Provider string `json:"provider,omitempty"`
-	IsAws    bool   `json:"isAws,omitempty"`
+	IsAws    bool   `json:"isAws"`
 }
 
 // PublicBrandDto DTO.
@@ -462,19 +465,19 @@ type PublicBrandDto struct {
 
 // PublicPasswordPolicyDto DTO.
 type PublicPasswordPolicyDto struct {
-	MinLength      float64 `json:"minLength,omitempty"`
-	MaxLength      float64 `json:"maxLength,omitempty"`
-	MinNumbers     float64 `json:"minNumbers,omitempty"`
-	MinUpper       float64 `json:"minUpper,omitempty"`
-	MinLower       float64 `json:"minLower,omitempty"`
-	MinSpecial     float64 `json:"minSpecial,omitempty"`
-	AllowedSpecial string  `json:"allowedSpecial,omitempty"`
+	MinLength      float64  `json:"minLength,omitempty"`
+	MaxLength      *float64 `json:"maxLength,omitempty"`
+	MinNumbers     *float64 `json:"minNumbers,omitempty"`
+	MinUpper       *float64 `json:"minUpper,omitempty"`
+	MinLower       *float64 `json:"minLower,omitempty"`
+	MinSpecial     *float64 `json:"minSpecial,omitempty"`
+	AllowedSpecial string   `json:"allowedSpecial,omitempty"`
 }
 
 // PublicAuthDto DTO.
 type PublicAuthDto struct {
 	SocialProviders []string                 `json:"socialProviders,omitempty"`
-	Passkey         bool                     `json:"passkey,omitempty"`
+	Passkey         bool                     `json:"passkey"`
 	Methods         []string                 `json:"methods,omitempty"`
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
 }
@@ -488,7 +491,7 @@ type PublicAiAssistantDto struct {
 
 // PublicAiChatDto DTO.
 type PublicAiChatDto struct {
-	Enabled    bool                    `json:"enabled,omitempty"`
+	Enabled    bool                    `json:"enabled"`
 	Assistants []*PublicAiAssistantDto `json:"assistants,omitempty"`
 }
 
@@ -502,7 +505,7 @@ type ErrorDto struct {
 
 // CodeMashResponseStatus DTO.
 type CodeMashResponseStatus struct {
-	IsSuccess bool        `json:"isSuccess,omitempty"`
+	IsSuccess bool        `json:"isSuccess"`
 	Errors    []*ErrorDto `json:"errors,omitempty"`
 }
 
@@ -537,8 +540,8 @@ type EndUserChatAssistant struct {
 	Id             string `json:"id,omitempty"`
 	Name           string `json:"name,omitempty"`
 	WelcomeMessage string `json:"welcomeMessage,omitempty"`
-	IsDefault      bool   `json:"isDefault,omitempty"`
-	MemoryEnabled  bool   `json:"memoryEnabled,omitempty"`
+	IsDefault      bool   `json:"isDefault"`
+	MemoryEnabled  bool   `json:"memoryEnabled"`
 }
 
 // EndUserChatPlan DTO.
@@ -549,9 +552,9 @@ type EndUserChatPlan struct {
 	MonthlyQuota float64 `json:"monthlyQuota,omitempty"`
 	Used         float64 `json:"used,omitempty"`
 	Remaining    float64 `json:"remaining,omitempty"`
-	Attachments  bool    `json:"attachments,omitempty"`
-	Rag          bool    `json:"rag,omitempty"`
-	Memory       bool    `json:"memory,omitempty"`
+	Attachments  bool    `json:"attachments"`
+	Rag          bool    `json:"rag"`
+	Memory       bool    `json:"memory"`
 }
 
 // EndUserChatSession DTO.
@@ -559,8 +562,8 @@ type EndUserChatSession struct {
 	Id           string  `json:"id,omitempty"`
 	AssistantId  string  `json:"assistantId,omitempty"`
 	Title        string  `json:"title,omitempty"`
-	IsPinned     bool    `json:"isPinned,omitempty"`
-	IsArchived   bool    `json:"isArchived,omitempty"`
+	IsPinned     bool    `json:"isPinned"`
+	IsArchived   bool    `json:"isArchived"`
 	LastSeq      float64 `json:"lastSeq,omitempty"`
 	CreatedAtUtc string  `json:"createdAtUtc,omitempty"`
 	UpdatedAtUtc string  `json:"updatedAtUtc,omitempty"`
@@ -583,7 +586,7 @@ type AiChatEntryWireDto struct {
 type EndUserAiToolParameter struct {
 	Name        string `json:"name,omitempty"`
 	Type        string `json:"type,omitempty"`
-	Required    bool   `json:"required,omitempty"`
+	Required    bool   `json:"required"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -592,7 +595,7 @@ type EndUserAiTool struct {
 	Name                 string                    `json:"name,omitempty"`
 	Description          string                    `json:"description,omitempty"`
 	Toolsets             []string                  `json:"toolsets,omitempty"`
-	RequiresConfirmation bool                      `json:"requiresConfirmation,omitempty"`
+	RequiresConfirmation bool                      `json:"requiresConfirmation"`
 	Parameters           []*EndUserAiToolParameter `json:"parameters,omitempty"`
 }
 
@@ -610,7 +613,7 @@ type RegistrationDto struct {
 
 // LoginDto DTO.
 type LoginDto struct {
-	NeedChangePasswordOnNextLogin bool                  `json:"needChangePasswordOnNextLogin,omitempty"`
+	NeedChangePasswordOnNextLogin bool                  `json:"needChangePasswordOnNextLogin"`
 	LastAccessInformation         *AccessInformationDto `json:"lastAccessInformation,omitempty"`
 }
 
@@ -634,15 +637,15 @@ type AuthDto struct {
 // PaginatedResponse DTO.
 type PaginatedResponse[TViewModelProjection any] struct {
 	Items         []TViewModelProjection `json:"items,omitempty"`
-	HasMore       bool                   `json:"hasMore,omitempty"`
-	HasPrevious   bool                   `json:"hasPrevious,omitempty"`
+	HasMore       bool                   `json:"hasMore"`
+	HasPrevious   bool                   `json:"hasPrevious"`
 	StartingAfter string                 `json:"startingAfter,omitempty"`
 	EndingBefore  string                 `json:"endingBefore,omitempty"`
 }
 
 // UserMarketingPreferencesDto DTO.
 type UserMarketingPreferencesDto struct {
-	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages,omitempty"`
+	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages"`
 	BlockedTags               map[string][]string    `json:"blockedTags,omitempty"`
 	BlockReasons              []MarketingBlockReason `json:"blockReasons,omitempty"`
 }
@@ -653,7 +656,7 @@ type PasskeyListItemDto struct {
 	FriendlyName    string `json:"friendlyName,omitempty"`
 	RegisteredOnUtc string `json:"registeredOnUtc,omitempty"`
 	LastUsedOnUtc   string `json:"lastUsedOnUtc,omitempty"`
-	IsRevoked       bool   `json:"isRevoked,omitempty"`
+	IsRevoked       bool   `json:"isRevoked"`
 }
 
 // TermMultiParentDto DTO.
@@ -670,7 +673,7 @@ type TermTreeDto struct {
 	TaxonomyId   string                `json:"taxonomyId,omitempty"`
 	TaxonomyName string                `json:"taxonomyName,omitempty"`
 	ParentId     string                `json:"parentId,omitempty"`
-	Order        float64               `json:"order,omitempty"`
+	Order        *float64              `json:"order,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Names        map[string]string     `json:"names,omitempty"`
 	Slug         string                `json:"slug,omitempty"`
@@ -697,7 +700,7 @@ type TermDto struct {
 	TaxonomyId   string                `json:"taxonomyId,omitempty"`
 	TaxonomyName string                `json:"taxonomyName,omitempty"`
 	ParentId     string                `json:"parentId,omitempty"`
-	Order        float64               `json:"order,omitempty"`
+	Order        *float64              `json:"order,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Names        map[string]string     `json:"names,omitempty"`
 	Slug         string                `json:"slug,omitempty"`
@@ -726,19 +729,19 @@ type SchemaUniqueIndexDto struct {
 
 // SchemaSettingsDto DTO.
 type SchemaSettingsDto struct {
-	SoftDelete        bool                    `json:"softDelete,omitempty"`
-	HasRecordOwner    bool                    `json:"hasRecordOwner,omitempty"`
+	SoftDelete        bool                    `json:"softDelete"`
+	HasRecordOwner    bool                    `json:"hasRecordOwner"`
 	Description       string                  `json:"description,omitempty"`
 	UniqueIndexes     []*SchemaUniqueIndexDto `json:"uniqueIndexes,omitempty"`
-	EndUserOwnRecords bool                    `json:"endUserOwnRecords,omitempty"`
+	EndUserOwnRecords *bool                   `json:"endUserOwnRecords,omitempty"`
 }
 
 // SchemaEmbedSettingsDto DTO.
 type SchemaEmbedSettingsDto struct {
-	Enabled                bool     `json:"enabled,omitempty"`
+	Enabled                bool     `json:"enabled"`
 	Fields                 []string `json:"fields,omitempty"`
 	EmbeddingIntegrationId string   `json:"embeddingIntegrationId,omitempty"`
-	PerUser                bool     `json:"perUser,omitempty"`
+	PerUser                bool     `json:"perUser"`
 }
 
 // TriggerActionDto DTO.
@@ -754,10 +757,10 @@ type TriggerDto struct {
 	Name           string            `json:"name,omitempty"`
 	ThenAction     *TriggerActionDto `json:"thenAction,omitempty"`
 	Description    string            `json:"description,omitempty"`
-	IsEnabled      bool              `json:"isEnabled,omitempty"`
+	IsEnabled      bool              `json:"isEnabled"`
 	ActivationCode string            `json:"activationCode,omitempty"`
-	Order          float64           `json:"order,omitempty"`
-	BreakOnError   bool              `json:"breakOnError,omitempty"`
+	Order          *float64          `json:"order,omitempty"`
+	BreakOnError   bool              `json:"breakOnError"`
 	SavedByAuthId  string            `json:"savedByAuthId,omitempty"`
 }
 
@@ -778,14 +781,14 @@ type SchemaDto struct {
 
 // SchemaListProjection DTO.
 type SchemaListProjection struct {
-	ViewId            string  `json:"viewId,omitempty"`
-	SchemaName        string  `json:"schemaName,omitempty"`
-	SchemaTitle       string  `json:"schemaTitle,omitempty"`
-	LatestVersion     float64 `json:"latestVersion,omitempty"`
-	HasDraft          bool    `json:"hasDraft,omitempty"`
-	MetaSchemaVersion float64 `json:"metaSchemaVersion,omitempty"`
-	Description       string  `json:"description,omitempty"`
-	Env               string  `json:"env,omitempty"`
+	ViewId            string   `json:"viewId,omitempty"`
+	SchemaName        string   `json:"schemaName,omitempty"`
+	SchemaTitle       string   `json:"schemaTitle,omitempty"`
+	LatestVersion     *float64 `json:"latestVersion,omitempty"`
+	HasDraft          bool     `json:"hasDraft"`
+	MetaSchemaVersion float64  `json:"metaSchemaVersion,omitempty"`
+	Description       string   `json:"description,omitempty"`
+	Env               string   `json:"env,omitempty"`
 }
 
 // FileChecksumDto DTO.
@@ -800,7 +803,7 @@ type FileResourceDto struct {
 	OriginalFileName string           `json:"originalFileName,omitempty"`
 	Extension        string           `json:"extension,omitempty"`
 	StoredFileName   string           `json:"storedFileName,omitempty"`
-	SizeBytes        float64          `json:"sizeBytes,omitempty"`
+	SizeBytes        *float64         `json:"sizeBytes,omitempty"`
 	Checksum         *FileChecksumDto `json:"checksum,omitempty"`
 }
 
@@ -811,7 +814,7 @@ type FileResourceRefDto struct {
 	Provider      FileProvider     `json:"provider,omitempty"`
 	Path          string           `json:"path,omitempty"`
 	PublicUrl     string           `json:"publicUrl,omitempty"`
-	IsPublic      bool             `json:"isPublic,omitempty"`
+	IsPublic      bool             `json:"isPublic"`
 }
 
 // PublicFolderDto DTO.
@@ -819,21 +822,21 @@ type PublicFolderDto struct {
 	Path      string `json:"path,omitempty"`
 	PublicId  string `json:"publicId,omitempty"`
 	PublicUrl string `json:"publicUrl,omitempty"`
-	Inherited bool   `json:"inherited,omitempty"`
+	Inherited bool   `json:"inherited"`
 }
 
 // RegisterFileResult DTO.
 type RegisterFileResult struct {
-	Index       float64 `json:"index,omitempty"`
-	Path        string  `json:"path,omitempty"`
-	OwnerUserId string  `json:"ownerUserId,omitempty"`
-	Status      string  `json:"status,omitempty"`
-	FileId      string  `json:"fileId,omitempty"`
-	Verified    bool    `json:"verified,omitempty"`
-	Warning     string  `json:"warning,omitempty"`
-	ErrorCode   string  `json:"errorCode,omitempty"`
-	ErrorStatus float64 `json:"errorStatus,omitempty"`
-	Error       string  `json:"error,omitempty"`
+	Index       float64  `json:"index,omitempty"`
+	Path        string   `json:"path,omitempty"`
+	OwnerUserId string   `json:"ownerUserId,omitempty"`
+	Status      string   `json:"status,omitempty"`
+	FileId      string   `json:"fileId,omitempty"`
+	Verified    *bool    `json:"verified,omitempty"`
+	Warning     string   `json:"warning,omitempty"`
+	ErrorCode   string   `json:"errorCode,omitempty"`
+	ErrorStatus *float64 `json:"errorStatus,omitempty"`
+	Error       string   `json:"error,omitempty"`
 }
 
 // IntegrationTestResultItemDto DTO.
@@ -868,7 +871,7 @@ type OwnPushMessageDto struct {
 	Title      string `json:"title,omitempty"`
 	Body       string `json:"body,omitempty"`
 	SentAtUtc  string `json:"sentAtUtc,omitempty"`
-	IsRead     bool   `json:"isRead,omitempty"`
+	IsRead     bool   `json:"isRead"`
 	ReadAtUtc  string `json:"readAtUtc,omitempty"`
 }
 
@@ -909,7 +912,7 @@ type PaymentOrderDto struct {
 	CreatedOnUtc      string                     `json:"createdOnUtc,omitempty"`
 	UpdatedOnUtc      string                     `json:"updatedOnUtc,omitempty"`
 	Checkouts         []*PaymentOrderCheckoutDto `json:"checkouts,omitempty"`
-	SettledMinor      float64                    `json:"settledMinor,omitempty"`
+	SettledMinor      *float64                   `json:"settledMinor,omitempty"`
 	RefundedMinor     float64                    `json:"refundedMinor,omitempty"`
 	PaidOnUtc         string                     `json:"paidOnUtc,omitempty"`
 	ProviderPaymentId string                     `json:"providerPaymentId,omitempty"`
@@ -924,7 +927,7 @@ type InAppNotificationDto struct {
 	Channel      string `json:"channel,omitempty"`
 	EventName    string `json:"eventName,omitempty"`
 	PayloadJson  string `json:"payloadJson,omitempty"`
-	IsRead       bool   `json:"isRead,omitempty"`
+	IsRead       bool   `json:"isRead"`
 	SeenAtUtc    string `json:"seenAtUtc,omitempty"`
 	ReadAtUtc    string `json:"readAtUtc,omitempty"`
 	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
@@ -974,7 +977,7 @@ type EchoResponse struct {
 	ApiVersion                  string                  `json:"apiVersion,omitempty"`
 	HubVersion                  string                  `json:"hubVersion,omitempty"`
 	AdminUrlTemplate            string                  `json:"adminUrlTemplate,omitempty"`
-	EmailServiceConfigured      bool                    `json:"emailServiceConfigured,omitempty"`
+	EmailServiceConfigured      bool                    `json:"emailServiceConfigured"`
 	RootBootstrapPasswordSource string                  `json:"rootBootstrapPasswordSource,omitempty"`
 	Regions                     []*EchoRegionDto        `json:"regions,omitempty"`
 	Agent                       *EchoAgentDto           `json:"agent,omitempty"`
@@ -984,7 +987,7 @@ type EchoResponse struct {
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
 	DisplayName        string           `json:"displayName,omitempty"`
-	AdminPortalEnabled bool             `json:"adminPortalEnabled,omitempty"`
+	AdminPortalEnabled bool             `json:"adminPortalEnabled"`
 	Branding           *PublicBrandDto  `json:"branding,omitempty"`
 	Auth               *PublicAuthDto   `json:"auth,omitempty"`
 	AiChat             *PublicAiChatDto `json:"aiChat,omitempty"`
@@ -995,7 +998,7 @@ type PublicLegalDocumentDto struct {
 	Kind      string `json:"kind,omitempty"`
 	Title     string `json:"title,omitempty"`
 	Body      string `json:"body,omitempty"`
-	Available bool   `json:"available,omitempty"`
+	Available bool   `json:"available"`
 }
 
 // IdResponse DTO.
@@ -1026,8 +1029,8 @@ type ListEndUserChatMemoryResponse struct {
 // GetEndUserChatAvailabilityResponse DTO.
 type GetEndUserChatAvailabilityResponse struct {
 	ResponseBase
-	Enabled            bool                    `json:"enabled,omitempty"`
-	Available          bool                    `json:"available,omitempty"`
+	Enabled            bool                    `json:"enabled"`
+	Available          bool                    `json:"available"`
 	Reason             string                  `json:"reason,omitempty"`
 	DefaultAssistantId string                  `json:"defaultAssistantId,omitempty"`
 	Assistants         []*EndUserChatAssistant `json:"assistants,omitempty"`
@@ -1052,7 +1055,7 @@ type GetEndUserChatEntriesResponse struct {
 	SessionId string                `json:"sessionId,omitempty"`
 	Entries   []*AiChatEntryWireDto `json:"entries,omitempty"`
 	LastSeq   float64               `json:"lastSeq,omitempty"`
-	HasMore   bool                  `json:"hasMore,omitempty"`
+	HasMore   bool                  `json:"hasMore"`
 }
 
 // StartEndUserChatTurnResponse DTO.
@@ -1217,7 +1220,7 @@ type FindOneResponse struct {
 type GetFileByIdResponse struct {
 	ResponseBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
-	IsPublic  bool                `json:"isPublic,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
 	PublicUrl string              `json:"publicUrl,omitempty"`
 }
 
@@ -1225,7 +1228,7 @@ type GetFileByIdResponse struct {
 type GetFileInfoResponse struct {
 	ResponseBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
-	IsPublic  bool                `json:"isPublic,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
 	PublicUrl string              `json:"publicUrl,omitempty"`
 }
 
@@ -1246,7 +1249,7 @@ type ListFilesResponse struct {
 // RegisterFilesResponse DTO.
 type RegisterFilesResponse struct {
 	ResponseBase
-	DryRun     bool                  `json:"dryRun,omitempty"`
+	DryRun     bool                  `json:"dryRun"`
 	Registered float64               `json:"registered,omitempty"`
 	Unchanged  float64               `json:"unchanged,omitempty"`
 	Failed     float64               `json:"failed,omitempty"`
@@ -1299,7 +1302,7 @@ type GetPaymentOrdersResponse struct {
 type StartPaymentCheckoutResponse struct {
 	ResponseBase
 	Checkout *PaymentOrderCheckoutDto `json:"checkout,omitempty"`
-	Reused   bool                     `json:"reused,omitempty"`
+	Reused   bool                     `json:"reused"`
 	Order    *PaymentOrderDto         `json:"order,omitempty"`
 }
 
@@ -1429,7 +1432,7 @@ type SetEndUserChatEntryFeedbackRequest struct {
 // ListEndUserChatMemoryRequest DTO.
 type ListEndUserChatMemoryRequest struct {
 	CodeMashRequestBase
-	Take float64 `json:"take,omitempty"`
+	Take *float64 `json:"take,omitempty"`
 }
 
 // ForgetEndUserChatMemoryRequest DTO.
@@ -1446,8 +1449,8 @@ type GetEndUserChatAvailabilityRequest struct {
 // ListEndUserChatSessionsRequest DTO.
 type ListEndUserChatSessionsRequest struct {
 	CodeMashRequestBase
-	Take            float64 `json:"take,omitempty"`
-	IncludeArchived bool    `json:"includeArchived,omitempty"`
+	Take            *float64 `json:"take,omitempty"`
+	IncludeArchived bool     `json:"includeArchived"`
 }
 
 // CreateEndUserChatSessionRequest DTO.
@@ -1474,14 +1477,14 @@ type RenameEndUserChatSessionRequest struct {
 type PinEndUserChatSessionRequest struct {
 	CodeMashRequestBase
 	SessionId string `json:"sessionId,omitempty"`
-	Pinned    bool   `json:"pinned,omitempty"`
+	Pinned    bool   `json:"pinned"`
 }
 
 // ArchiveEndUserChatSessionRequest DTO.
 type ArchiveEndUserChatSessionRequest struct {
 	CodeMashRequestBase
 	SessionId string `json:"sessionId,omitempty"`
-	Archived  bool   `json:"archived,omitempty"`
+	Archived  bool   `json:"archived"`
 }
 
 // DeleteEndUserChatSessionRequest DTO.
@@ -1493,9 +1496,9 @@ type DeleteEndUserChatSessionRequest struct {
 // GetEndUserChatEntriesRequest DTO.
 type GetEndUserChatEntriesRequest struct {
 	CodeMashRequestBase
-	SessionId string  `json:"sessionId,omitempty"`
-	AfterSeq  float64 `json:"afterSeq,omitempty"`
-	Take      float64 `json:"take,omitempty"`
+	SessionId string   `json:"sessionId,omitempty"`
+	AfterSeq  *float64 `json:"afterSeq,omitempty"`
+	Take      *float64 `json:"take,omitempty"`
 }
 
 // StartEndUserChatTurnRequest DTO.
@@ -1595,10 +1598,10 @@ type GetUserRequest struct {
 type GetUsersRequest struct {
 	CodeMashListPaginationRequestBase
 	DatabaseIntegrationId    string   `json:"databaseIntegrationId,omitempty"`
-	IncludePermissions       bool     `json:"includePermissions,omitempty"`
-	UserShouldHavePushDevice bool     `json:"userShouldHavePushDevice,omitempty"`
-	UserShouldHaveEmail      bool     `json:"userShouldHaveEmail,omitempty"`
-	IncludeMeta              bool     `json:"includeMeta,omitempty"`
+	IncludePermissions       bool     `json:"includePermissions"`
+	UserShouldHavePushDevice bool     `json:"userShouldHavePushDevice"`
+	UserShouldHaveEmail      bool     `json:"userShouldHaveEmail"`
+	IncludeMeta              bool     `json:"includeMeta"`
 	RoleNames                []string `json:"roleNames,omitempty"`
 	UserIds                  []string `json:"userIds,omitempty"`
 	Search                   string   `json:"search,omitempty"`
@@ -1687,7 +1690,7 @@ type SetContactTagSubscriptionRequest struct {
 	CommChannel string `json:"commChannel,omitempty"`
 	Channel     string `json:"channel,omitempty"`
 	Tag         string `json:"tag,omitempty"`
-	Subscribed  bool   `json:"subscribed,omitempty"`
+	Subscribed  bool   `json:"subscribed"`
 }
 
 // UnblockUserRequest DTO.
@@ -1715,7 +1718,7 @@ type UpdateUserRequest struct {
 type UpdateUserPreferencesRequest struct {
 	CodeMashRequestBase
 	Id                        string              `json:"id,omitempty"`
-	BlockAllMarketingMessages bool                `json:"blockAllMarketingMessages,omitempty"`
+	BlockAllMarketingMessages bool                `json:"blockAllMarketingMessages"`
 	BlockedTags               map[string][]string `json:"blockedTags,omitempty"`
 	DatabaseIntegrationId     string              `json:"databaseIntegrationId,omitempty"`
 }
@@ -1841,7 +1844,7 @@ type PasskeyLogoutRequest struct {
 // FindMergedTermTreeRequest DTO.
 type FindMergedTermTreeRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
+	AllLanguages          bool   `json:"allLanguages"`
 	TaxonomyName          string `json:"taxonomyName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
@@ -1849,26 +1852,26 @@ type FindMergedTermTreeRequest struct {
 // FindTaxonomyTreeRequest DTO.
 type FindTaxonomyTreeRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
-	IncludeTerms          bool   `json:"includeTerms,omitempty"`
+	AllLanguages          bool   `json:"allLanguages"`
+	IncludeTerms          bool   `json:"includeTerms"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
 // FindTermsRequest DTO.
 type FindTermsRequest struct {
 	CodeMashListPaginationRequestBase
-	AllLanguages          bool        `json:"allLanguages,omitempty"`
+	AllLanguages          bool        `json:"allLanguages"`
 	TaxonomyName          string      `json:"taxonomyName,omitempty"`
 	DatabaseIntegrationId string      `json:"databaseIntegrationId,omitempty"`
 	Filter                string      `json:"filter,omitempty"`
-	SortDescending        bool        `json:"sortDescending,omitempty"`
+	SortDescending        bool        `json:"sortDescending"`
 	PagingArgs            *PagingArgs `json:"pagingArgs,omitempty"`
 }
 
 // FindTermsChildrenRequest DTO.
 type FindTermsChildrenRequest struct {
 	CodeMashListPaginationRequestBase
-	AllLanguages          bool        `json:"allLanguages,omitempty"`
+	AllLanguages          bool        `json:"allLanguages"`
 	TaxonomyName          string      `json:"taxonomyName,omitempty"`
 	ParentId              string      `json:"parentId,omitempty"`
 	DatabaseIntegrationId string      `json:"databaseIntegrationId,omitempty"`
@@ -1879,11 +1882,11 @@ type FindTermsChildrenRequest struct {
 // FindTermTreeRequest DTO.
 type FindTermTreeRequest struct {
 	CodeMashRequestBase
-	AllLanguages          bool    `json:"allLanguages,omitempty"`
-	TaxonomyName          string  `json:"taxonomyName,omitempty"`
-	RootTermId            string  `json:"rootTermId,omitempty"`
-	Depth                 float64 `json:"depth,omitempty"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
+	AllLanguages          bool     `json:"allLanguages"`
+	TaxonomyName          string   `json:"taxonomyName,omitempty"`
+	RootTermId            string   `json:"rootTermId,omitempty"`
+	Depth                 *float64 `json:"depth,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
 }
 
 // GetDatabaseSchemaRequest DTO.
@@ -1918,10 +1921,10 @@ type ChangeResponsibilityRequest struct {
 // CountRequest DTO.
 type CountRequest struct {
 	CodeMashRequestBase
-	CollectionName        string  `json:"collectionName,omitempty"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	Filter                string  `json:"filter,omitempty"`
-	SchemaVersion         float64 `json:"schemaVersion,omitempty"`
+	CollectionName        string   `json:"collectionName,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	Filter                string   `json:"filter,omitempty"`
+	SchemaVersion         *float64 `json:"schemaVersion,omitempty"`
 }
 
 // DeleteManyRequest DTO.
@@ -1930,7 +1933,7 @@ type DeleteManyRequest struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
-	AllRecords            bool   `json:"allRecords,omitempty"`
+	AllRecords            *bool  `json:"allRecords,omitempty"`
 }
 
 // DeleteOneRequest DTO.
@@ -1944,11 +1947,11 @@ type DeleteOneRequest struct {
 // DistinctRequest DTO.
 type DistinctRequest struct {
 	CodeMashRequestBase
-	CollectionName        string  `json:"collectionName,omitempty"`
-	DatabaseIntegrationId string  `json:"databaseIntegrationId,omitempty"`
-	Field                 string  `json:"field,omitempty"`
-	Filter                string  `json:"filter,omitempty"`
-	SchemaVersion         float64 `json:"schemaVersion,omitempty"`
+	CollectionName        string   `json:"collectionName,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	Field                 string   `json:"field,omitempty"`
+	Filter                string   `json:"filter,omitempty"`
+	SchemaVersion         *float64 `json:"schemaVersion,omitempty"`
 }
 
 // ExecuteAggregateRequest DTO.
@@ -1966,12 +1969,12 @@ type FindRequest struct {
 	CollectionName        string      `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string      `json:"databaseIntegrationId,omitempty"`
 	Filter                string      `json:"filter,omitempty"`
-	SchemaVersion         float64     `json:"schemaVersion,omitempty"`
+	SchemaVersion         *float64    `json:"schemaVersion,omitempty"`
 	PagingArgs            *PagingArgs `json:"pagingArgs,omitempty"`
 	SortBy                string      `json:"sortBy,omitempty"`
-	SortOrder             float64     `json:"sortOrder,omitempty"`
-	ExpandReferences      bool        `json:"expandReferences,omitempty"`
-	AllLanguages          bool        `json:"allLanguages,omitempty"`
+	SortOrder             *float64    `json:"sortOrder,omitempty"`
+	ExpandReferences      bool        `json:"expandReferences"`
+	AllLanguages          bool        `json:"allLanguages"`
 }
 
 // FindOneRequest DTO.
@@ -1980,8 +1983,8 @@ type FindOneRequest struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	Id                    string `json:"id,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
-	ExpandReferences      bool   `json:"expandReferences,omitempty"`
-	AllLanguages          bool   `json:"allLanguages,omitempty"`
+	ExpandReferences      bool   `json:"expandReferences"`
+	AllLanguages          bool   `json:"allLanguages"`
 }
 
 // FindOwnRequest DTO.
@@ -1990,10 +1993,10 @@ type FindOwnRequest struct {
 	CollectionName        string      `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string      `json:"databaseIntegrationId,omitempty"`
 	Filter                string      `json:"filter,omitempty"`
-	SchemaVersion         float64     `json:"schemaVersion,omitempty"`
+	SchemaVersion         *float64    `json:"schemaVersion,omitempty"`
 	PagingArgs            *PagingArgs `json:"pagingArgs,omitempty"`
-	ExpandReferences      bool        `json:"expandReferences,omitempty"`
-	AllLanguages          bool        `json:"allLanguages,omitempty"`
+	ExpandReferences      bool        `json:"expandReferences"`
+	AllLanguages          bool        `json:"allLanguages"`
 }
 
 // InsertManyRequest DTO.
@@ -2027,7 +2030,7 @@ type UpdateManyRequest struct {
 	CollectionName        string `json:"collectionName,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Filter                string `json:"filter,omitempty"`
-	AllRecords            bool   `json:"allRecords,omitempty"`
+	AllRecords            *bool  `json:"allRecords,omitempty"`
 	Update                string `json:"update,omitempty"`
 	ArrayFilters          string `json:"arrayFilters,omitempty"`
 }
@@ -2045,13 +2048,13 @@ type UpdateOneRequest struct {
 // CommitUploadRequest DTO.
 type CommitUploadRequest struct {
 	CodeMashRequestBase
-	FilesIntegrationId string  `json:"filesIntegrationId,omitempty"`
-	Path               string  `json:"path,omitempty"`
-	ContentType        string  `json:"contentType,omitempty"`
-	SizeBytes          float64 `json:"sizeBytes,omitempty"`
-	FileName           string  `json:"fileName,omitempty"`
-	OwnerUserId        string  `json:"ownerUserId,omitempty"`
-	ReassignOwner      bool    `json:"reassignOwner,omitempty"`
+	FilesIntegrationId string   `json:"filesIntegrationId,omitempty"`
+	Path               string   `json:"path,omitempty"`
+	ContentType        string   `json:"contentType,omitempty"`
+	SizeBytes          *float64 `json:"sizeBytes,omitempty"`
+	FileName           string   `json:"fileName,omitempty"`
+	OwnerUserId        string   `json:"ownerUserId,omitempty"`
+	ReassignOwner      *bool    `json:"reassignOwner,omitempty"`
 }
 
 // GetFileContentRequest DTO.
@@ -2108,9 +2111,9 @@ type GetFileInfoRequest struct {
 // GetSignedUrlRequest DTO.
 type GetSignedUrlRequest struct {
 	CodeMashRequestBase
-	FilesIntegrationId string  `json:"filesIntegrationId,omitempty"`
-	Path               string  `json:"path,omitempty"`
-	ExpirationSeconds  float64 `json:"expirationSeconds,omitempty"`
+	FilesIntegrationId string   `json:"filesIntegrationId,omitempty"`
+	Path               string   `json:"path,omitempty"`
+	ExpirationSeconds  *float64 `json:"expirationSeconds,omitempty"`
 }
 
 // ListFilesRequest DTO.
@@ -2132,19 +2135,19 @@ type RegisterFilesRequest struct {
 	CodeMashRequestBase
 	FilesIntegrationId string              `json:"filesIntegrationId,omitempty"`
 	Items              []*RegisterFileItem `json:"items,omitempty"`
-	ReassignOwner      bool                `json:"reassignOwner,omitempty"`
-	DryRun             bool                `json:"dryRun,omitempty"`
+	ReassignOwner      *bool               `json:"reassignOwner,omitempty"`
+	DryRun             *bool               `json:"dryRun,omitempty"`
 }
 
 // RequestUploadUrlRequest DTO.
 type RequestUploadUrlRequest struct {
 	CodeMashRequestBase
-	FilesIntegrationId string  `json:"filesIntegrationId,omitempty"`
-	Path               string  `json:"path,omitempty"`
-	ContentType        string  `json:"contentType,omitempty"`
-	ExpirationSeconds  float64 `json:"expirationSeconds,omitempty"`
-	OwnerUserId        string  `json:"ownerUserId,omitempty"`
-	ReassignOwner      bool    `json:"reassignOwner,omitempty"`
+	FilesIntegrationId string   `json:"filesIntegrationId,omitempty"`
+	Path               string   `json:"path,omitempty"`
+	ContentType        string   `json:"contentType,omitempty"`
+	ExpirationSeconds  *float64 `json:"expirationSeconds,omitempty"`
+	OwnerUserId        string   `json:"ownerUserId,omitempty"`
+	ReassignOwner      *bool    `json:"reassignOwner,omitempty"`
 }
 
 // TestFilesIntegrationRequest DTO.
@@ -2159,7 +2162,7 @@ type UseFileRequest struct {
 	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
 	Path               string `json:"path,omitempty"`
 	OwnerUserId        string `json:"ownerUserId,omitempty"`
-	ReassignOwner      bool   `json:"reassignOwner,omitempty"`
+	ReassignOwner      *bool  `json:"reassignOwner,omitempty"`
 }
 
 // RegisterOwnPushDeviceRequest DTO.
@@ -2200,7 +2203,7 @@ type DeleteOwnPushDeviceByTokenRequest struct {
 // GetOwnPushMessagesRequest DTO.
 type GetOwnPushMessagesRequest struct {
 	CodeMashListPaginationRequestBase
-	UnreadOnly bool `json:"unreadOnly,omitempty"`
+	UnreadOnly bool `json:"unreadOnly"`
 }
 
 // MarkOwnPushMessageReadRequest DTO.
@@ -2260,7 +2263,7 @@ type StartPaymentCheckoutRequest struct {
 // GetNotificationInboxRequest DTO.
 type GetNotificationInboxRequest struct {
 	CodeMashListPaginationRequestBase
-	UnreadOnly bool   `json:"unreadOnly,omitempty"`
+	UnreadOnly bool   `json:"unreadOnly"`
 	Channel    string `json:"channel,omitempty"`
 }
 
@@ -2285,7 +2288,7 @@ type Authenticate struct {
 	Provider          string            `json:"provider,omitempty"`
 	UserName          string            `json:"userName,omitempty"`
 	Password          string            `json:"password,omitempty"`
-	RememberMe        bool              `json:"rememberMe,omitempty"`
+	RememberMe        *bool             `json:"rememberMe,omitempty"`
 	AccessToken       string            `json:"accessToken,omitempty"`
 	AccessTokenSecret string            `json:"accessTokenSecret,omitempty"`
 	ReturnUrl         string            `json:"returnUrl,omitempty"`

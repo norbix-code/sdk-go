@@ -422,10 +422,12 @@ func TestUpdateDatabaseSchemaEmbedSendsTheTypedSettings(t *testing.T) {
 	if gotPath != "/v2/database/schemas/sch_1/embed" {
 		t.Errorf("path: got %q", gotPath)
 	}
+	// perUser is a required bool: always sent, false included.
 	assertFields(t, got, map[string]any{"embed": map[string]any{
 		"enabled":                true,
 		"fields":                 []any{"title", "description"},
 		"embeddingIntegrationId": "emb_1",
+		"perUser":                false,
 	}})
 	if _, ok := got["id"]; ok {
 		t.Errorf("body: schema id must not be sent in the body, got %v", got["id"])

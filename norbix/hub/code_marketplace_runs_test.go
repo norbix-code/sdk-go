@@ -31,7 +31,7 @@ func TestGetMarketplaceFunctionRunsByFunctionId(t *testing.T) {
 	defer srv.Close()
 
 	// The request built from the generated type, sent as the module's map.
-	reqDto := dtos.GetMarketplaceFunctionRuns{FunctionId: "func_1p4R3gTobGZpD6fXvHT4rd", Limit: 50}
+	reqDto := dtos.GetMarketplaceFunctionRuns{FunctionId: "func_1p4R3gTobGZpD6fXvHT4rd", Limit: ptr(50.0)}
 	raw, _ := json.Marshal(reqDto)
 	var req map[string]any
 	if err := json.Unmarshal(raw, &req); err != nil {

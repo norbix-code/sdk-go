@@ -149,7 +149,7 @@ func TestHubGetFileById(t *testing.T) {
 	if got.query != "filesIntegrationId="+filesIntegrationID+"&id=nbfl_0f1e2d3c" {
 		t.Errorf("query: got %q", got.query)
 	}
-	if out.File == nil || out.File.Path != "invoices/invoice.pdf" || !out.IsPublic || out.PublicUrl != "https://cdn.example/invoice.pdf" {
+	if out.File == nil || out.File.Path != "invoices/invoice.pdf" || out.IsPublic == nil || !*out.IsPublic || out.PublicUrl != "https://cdn.example/invoice.pdf" {
 		t.Errorf("decoded response: %+v", out)
 	}
 }
@@ -300,7 +300,7 @@ func TestAPIGetFileById(t *testing.T) {
 	if got.query != "" {
 		t.Errorf("query: got %q want none", got.query)
 	}
-	if out.File == nil || out.File.Path != "invoices/invoice.pdf" || out.IsPublic {
+	if out.File == nil || out.File.Path != "invoices/invoice.pdf" || (out.IsPublic != nil && *out.IsPublic) {
 		t.Errorf("decoded response: %+v", out)
 	}
 }
