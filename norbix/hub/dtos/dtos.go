@@ -4628,10 +4628,20 @@ type BuiltInRepairDto struct {
 	IsNoOp bool                      `json:"isNoOp"`
 }
 
+// EnvironmentAdminUrlDto DTO.
+type EnvironmentAdminUrlDto struct {
+	Env               string `json:"env,omitempty"`
+	AdminUrl          string `json:"adminUrl,omitempty"`
+	EffectiveAdminUrl string `json:"effectiveAdminUrl,omitempty"`
+	Source            string `json:"source,omitempty"`
+	Note              string `json:"note,omitempty"`
+}
+
 // ProjectEnvironmentsDto DTO.
 type ProjectEnvironmentsDto struct {
-	Environments   []string `json:"environments,omitempty"`
-	PromotionOrder []string `json:"promotionOrder,omitempty"`
+	Environments   []string                  `json:"environments,omitempty"`
+	PromotionOrder []string                  `json:"promotionOrder,omitempty"`
+	AdminUrls      []*EnvironmentAdminUrlDto `json:"adminUrls,omitempty"`
 }
 
 // ProjectRegionDto DTO.
@@ -4666,6 +4676,12 @@ type NotificationSettingsDto struct {
 	Channels  []*NotificationSettingsChannelDto `json:"channels,omitempty"`
 	AllGroups []*GroupDefinitionDto             `json:"allGroups,omitempty"`
 	AllTags   []*TagDefinitionDto               `json:"allTags,omitempty"`
+}
+
+// ProjectEnvironmentAdminUrlDto DTO.
+type ProjectEnvironmentAdminUrlDto struct {
+	Env string `json:"env,omitempty"`
+	Url string `json:"url,omitempty"`
 }
 
 // AuthenticationFlowPasswordPolicyDto DTO.
@@ -4874,63 +4890,64 @@ type SmsDto struct {
 
 // ProjectDto DTO.
 type ProjectDto struct {
-	AccountViewId                 string                          `json:"accountViewId,omitempty"`
-	ProjectStatus                 ProjectStatus                   `json:"projectStatus,omitempty"`
-	IsActive                      bool                            `json:"isActive"`
-	ViewId                        string                          `json:"viewId,omitempty"`
-	Name                          string                          `json:"name,omitempty"`
-	UniqueName                    string                          `json:"uniqueName,omitempty"`
-	HostLabel                     string                          `json:"hostLabel,omitempty"`
-	ApiHost                       string                          `json:"apiHost,omitempty"`
-	Description                   string                          `json:"description,omitempty"`
-	MarketingUrl                  string                          `json:"marketingUrl,omitempty"`
-	CanonicalAdminUrl             string                          `json:"canonicalAdminUrl,omitempty"`
-	AdminUrl                      string                          `json:"adminUrl,omitempty"`
-	EffectiveAdminUrl             string                          `json:"effectiveAdminUrl,omitempty"`
-	DefaultLanguage               string                          `json:"defaultLanguage,omitempty"`
-	Languages                     []string                        `json:"languages,omitempty"`
-	PrimaryRegion                 *ProjectRegionDto               `json:"primaryRegion,omitempty"`
-	AdditionalRegions             []*ProjectRegionDto             `json:"additionalRegions,omitempty"`
-	IsMultiRegionEligible         bool                            `json:"isMultiRegionEligible"`
-	Brand                         *ProjectBrandDto                `json:"brand,omitempty"`
-	NotificationSettings          *NotificationSettingsDto        `json:"notificationSettings,omitempty"`
-	AllowedOrigins                []string                        `json:"allowedOrigins,omitempty"`
-	ExposeBrandToAdminPortal      bool                            `json:"exposeBrandToAdminPortal"`
-	ExposeAuthToAdminPortal       bool                            `json:"exposeAuthToAdminPortal"`
-	AdminPortalEnabled            bool                            `json:"adminPortalEnabled"`
-	AdminPortalServiceUserId      string                          `json:"adminPortalServiceUserId,omitempty"`
-	MembershipAuthenticationFlows []*AuthenticationFlowSummaryDto `json:"membershipAuthenticationFlows,omitempty"`
-	ExposeLegalToAdminPortal      bool                            `json:"exposeLegalToAdminPortal"`
-	AiChat                        *ProjectAiSettingsDto           `json:"aiChat,omitempty"`
-	LegalTermsMarkdown            string                          `json:"legalTermsMarkdown,omitempty"`
-	LegalPrivacyMarkdown          string                          `json:"legalPrivacyMarkdown,omitempty"`
-	Environments                  []string                        `json:"environments,omitempty"`
-	EnvironmentRanks              map[string]float64              `json:"environmentRanks,omitempty"`
-	Database                      *DatabaseDto                    `json:"database,omitempty"`
-	Email                         *EmailDto                       `json:"email,omitempty"`
-	Ai                            *AiDto                          `json:"ai,omitempty"`
-	Membership                    *MembershipDto                  `json:"membership,omitempty"`
-	Logging                       *LoggingDto                     `json:"logging,omitempty"`
-	ServerEvents                  *ServerEventsDto                `json:"serverEvents,omitempty"`
-	Push                          *PushDto                        `json:"push,omitempty"`
-	Scheduler                     *SchedulerDto                   `json:"scheduler,omitempty"`
-	Code                          *CodeDto                        `json:"code,omitempty"`
-	Files                         *FilesDto                       `json:"files,omitempty"`
-	Payments                      *PaymentsDto                    `json:"payments,omitempty"`
-	Sms                           *SmsDto                         `json:"sms,omitempty"`
-	DatabaseEnabled               bool                            `json:"databaseEnabled"`
-	EmailEnabled                  bool                            `json:"emailEnabled"`
-	MembershipEnabled             bool                            `json:"membershipEnabled"`
-	LoggingEnabled                bool                            `json:"loggingEnabled"`
-	ServerEventsEnabled           bool                            `json:"serverEventsEnabled"`
-	PushEnabled                   bool                            `json:"pushEnabled"`
-	SchedulerEnabled              bool                            `json:"schedulerEnabled"`
-	CodeEnabled                   bool                            `json:"codeEnabled"`
-	FilesEnabled                  bool                            `json:"filesEnabled"`
-	PaymentsEnabled               bool                            `json:"paymentsEnabled"`
-	SmsEnabled                    bool                            `json:"smsEnabled"`
-	DefaultLlmIntegrationViewId   string                          `json:"defaultLlmIntegrationViewId,omitempty"`
-	Connections                   float64                         `json:"connections,omitempty"`
+	AccountViewId                 string                           `json:"accountViewId,omitempty"`
+	ProjectStatus                 ProjectStatus                    `json:"projectStatus,omitempty"`
+	IsActive                      bool                             `json:"isActive"`
+	ViewId                        string                           `json:"viewId,omitempty"`
+	Name                          string                           `json:"name,omitempty"`
+	UniqueName                    string                           `json:"uniqueName,omitempty"`
+	HostLabel                     string                           `json:"hostLabel,omitempty"`
+	ApiHost                       string                           `json:"apiHost,omitempty"`
+	Description                   string                           `json:"description,omitempty"`
+	MarketingUrl                  string                           `json:"marketingUrl,omitempty"`
+	CanonicalAdminUrl             string                           `json:"canonicalAdminUrl,omitempty"`
+	AdminUrl                      string                           `json:"adminUrl,omitempty"`
+	EffectiveAdminUrl             string                           `json:"effectiveAdminUrl,omitempty"`
+	DefaultLanguage               string                           `json:"defaultLanguage,omitempty"`
+	Languages                     []string                         `json:"languages,omitempty"`
+	PrimaryRegion                 *ProjectRegionDto                `json:"primaryRegion,omitempty"`
+	AdditionalRegions             []*ProjectRegionDto              `json:"additionalRegions,omitempty"`
+	IsMultiRegionEligible         bool                             `json:"isMultiRegionEligible"`
+	Brand                         *ProjectBrandDto                 `json:"brand,omitempty"`
+	NotificationSettings          *NotificationSettingsDto         `json:"notificationSettings,omitempty"`
+	AllowedOrigins                []string                         `json:"allowedOrigins,omitempty"`
+	EnvironmentAdminUrls          []*ProjectEnvironmentAdminUrlDto `json:"environmentAdminUrls,omitempty"`
+	ExposeBrandToAdminPortal      bool                             `json:"exposeBrandToAdminPortal"`
+	ExposeAuthToAdminPortal       bool                             `json:"exposeAuthToAdminPortal"`
+	AdminPortalEnabled            bool                             `json:"adminPortalEnabled"`
+	AdminPortalServiceUserId      string                           `json:"adminPortalServiceUserId,omitempty"`
+	MembershipAuthenticationFlows []*AuthenticationFlowSummaryDto  `json:"membershipAuthenticationFlows,omitempty"`
+	ExposeLegalToAdminPortal      bool                             `json:"exposeLegalToAdminPortal"`
+	AiChat                        *ProjectAiSettingsDto            `json:"aiChat,omitempty"`
+	LegalTermsMarkdown            string                           `json:"legalTermsMarkdown,omitempty"`
+	LegalPrivacyMarkdown          string                           `json:"legalPrivacyMarkdown,omitempty"`
+	Environments                  []string                         `json:"environments,omitempty"`
+	EnvironmentRanks              map[string]float64               `json:"environmentRanks,omitempty"`
+	Database                      *DatabaseDto                     `json:"database,omitempty"`
+	Email                         *EmailDto                        `json:"email,omitempty"`
+	Ai                            *AiDto                           `json:"ai,omitempty"`
+	Membership                    *MembershipDto                   `json:"membership,omitempty"`
+	Logging                       *LoggingDto                      `json:"logging,omitempty"`
+	ServerEvents                  *ServerEventsDto                 `json:"serverEvents,omitempty"`
+	Push                          *PushDto                         `json:"push,omitempty"`
+	Scheduler                     *SchedulerDto                    `json:"scheduler,omitempty"`
+	Code                          *CodeDto                         `json:"code,omitempty"`
+	Files                         *FilesDto                        `json:"files,omitempty"`
+	Payments                      *PaymentsDto                     `json:"payments,omitempty"`
+	Sms                           *SmsDto                          `json:"sms,omitempty"`
+	DatabaseEnabled               bool                             `json:"databaseEnabled"`
+	EmailEnabled                  bool                             `json:"emailEnabled"`
+	MembershipEnabled             bool                             `json:"membershipEnabled"`
+	LoggingEnabled                bool                             `json:"loggingEnabled"`
+	ServerEventsEnabled           bool                             `json:"serverEventsEnabled"`
+	PushEnabled                   bool                             `json:"pushEnabled"`
+	SchedulerEnabled              bool                             `json:"schedulerEnabled"`
+	CodeEnabled                   bool                             `json:"codeEnabled"`
+	FilesEnabled                  bool                             `json:"filesEnabled"`
+	PaymentsEnabled               bool                             `json:"paymentsEnabled"`
+	SmsEnabled                    bool                             `json:"smsEnabled"`
+	DefaultLlmIntegrationViewId   string                           `json:"defaultLlmIntegrationViewId,omitempty"`
+	Connections                   float64                          `json:"connections,omitempty"`
 }
 
 // ProjectListItemDto DTO.
@@ -7293,6 +7310,12 @@ type GetProjectEnvironmentsResponse struct {
 	Item *ProjectEnvironmentsDto `json:"item,omitempty"`
 }
 
+// GetEnvironmentAdminUrlResponse DTO.
+type GetEnvironmentAdminUrlResponse struct {
+	ResponseBase
+	Item *EnvironmentAdminUrlDto `json:"item,omitempty"`
+}
+
 // GetProjectResponse DTO.
 type GetProjectResponse struct {
 	ResponseBase
@@ -8562,10 +8585,14 @@ type GetLogsResponse struct {
 // GetLogSettingsResponse DTO.
 type GetLogSettingsResponse struct {
 	ResponseBase
-	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs"`
-	SkipHttpBodyMeta       bool `json:"skipHttpBodyMeta"`
-	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled"`
-	HasNorbixLogging       bool `json:"hasNorbixLogging"`
+	SkipCloudDashboardLogs bool   `json:"skipCloudDashboardLogs"`
+	SkipHttpBodyMeta       bool   `json:"skipHttpBodyMeta"`
+	AiChatLoggingEnabled   bool   `json:"aiChatLoggingEnabled"`
+	HasNorbixLogging       bool   `json:"hasNorbixLogging"`
+	Env                    string `json:"env,omitempty"`
+	LastEntryAtUtc         string `json:"lastEntryAtUtc,omitempty"`
+	LastStoredAtUtc        string `json:"lastStoredAtUtc,omitempty"`
+	StorageWarning         string `json:"storageWarning,omitempty"`
 }
 
 // SaveLogSettingsResponse DTO.
@@ -9732,6 +9759,19 @@ type RepairEnvironmentBuiltInsRequest struct {
 // GetProjectEnvironments DTO.
 type GetProjectEnvironments struct {
 	CodeMashRequestBase
+}
+
+// UpdateEnvironmentAdminUrl DTO.
+type UpdateEnvironmentAdminUrl struct {
+	CodeMashRequestBase
+	EnvironmentName string `json:"environmentName,omitempty"`
+	Url             string `json:"url,omitempty"`
+}
+
+// GetEnvironmentAdminUrl DTO.
+type GetEnvironmentAdminUrl struct {
+	CodeMashRequestBase
+	EnvironmentName string `json:"environmentName,omitempty"`
 }
 
 // GetProject DTO.
@@ -12079,6 +12119,13 @@ type RegisterDevice struct {
 	DatabaseIntegrationId string         `json:"databaseIntegrationId,omitempty"`
 }
 
+// DeletePushDevice DTO.
+type DeletePushDevice struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
 // GetPushDevice DTO.
 type GetPushDevice struct {
 	CodeMashRequestBase
@@ -12986,11 +13033,12 @@ type SetUserAiPlan struct {
 // CreateContactRequest DTO.
 type CreateContactRequest struct {
 	CodeMashRequestBase
-	PrimaryEmail string `json:"primaryEmail,omitempty"`
-	PrimaryPhone string `json:"primaryPhone,omitempty"`
-	DisplayName  string `json:"displayName,omitempty"`
-	FirstName    string `json:"firstName,omitempty"`
-	LastName     string `json:"lastName,omitempty"`
+	PrimaryEmail string   `json:"primaryEmail,omitempty"`
+	PrimaryPhone string   `json:"primaryPhone,omitempty"`
+	DisplayName  string   `json:"displayName,omitempty"`
+	FirstName    string   `json:"firstName,omitempty"`
+	LastName     string   `json:"lastName,omitempty"`
+	Tags         []string `json:"tags,omitempty"`
 }
 
 // DeleteContact DTO.
