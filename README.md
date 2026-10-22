@@ -770,8 +770,8 @@ var catalog dtos.GetMarketplaceIntegrationToolsResponse
 err := client.Hub.Code.GetMarketplaceIntegrationTools(ctx, "int_…", map[string]any{}, &catalog)
 ```
 
-Note: Go's generated `ReadOnlyHint` / `DestructiveHint` are plain `bool`, so
-"not set by the server" and `false` read the same.
+`ReadOnlyHint` / `DestructiveHint` are `*bool`: nil means the server did not
+set the hint, a pointer to `false` means it said "no".
 
 ## Marketplace connections — access
 
@@ -867,6 +867,24 @@ The endpoint modules (`norbix/api/*.go`, `norbix/hub/*.go`) are **not**
 generated today — the script that made them is gone. They are maintained by
 hand, with a test per method, and they keep their old header until a module
 generator exists.
+
+### Optional fields: `*bool` and `*float64`
+
+A field the gateway reads as "not sent = unchanged" (a nullable value in the
+contract) is a pointer: `*bool` for a true/false setting, `*float64` for a
+number. nil leaves it out of the request; `norbix.Bool(...)` /
+`norbix.Float64(...)` send the value, `false` and `0` included:
+
+```go
+req := dtos.SaveLogSettings{ // norbix/hub/dtos
+	SkipHttpBodyMeta: norbix.Bool(false), // sent: switches the setting off
+	// SkipCloudDashboardLogs is nil: not sent, the stored value stays
+}
+```
+
+A required true/false field (`IsEnabled` on an integration request) is a plain
+`bool` and is always sent, `false` included. When you read a response, check a
+pointer for nil before you use it.
 
 ### Regenerate the types
 

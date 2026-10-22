@@ -173,8 +173,8 @@ func TestLogsGetLogSettings(t *testing.T) {
 	}
 }
 
-// A false must reach the gateway: the settings go as a map, so nothing is
-// dropped (the generated struct tags each field omitempty).
+// A false must reach the gateway. The typed request (*bool fields) is proven
+// in norbix/optional_test.go; this one sends a plain map.
 func TestLogsSaveLogSettings(t *testing.T) {
 	m, seen := newLogsTestServer(t, `{}`)
 	req := map[string]any{

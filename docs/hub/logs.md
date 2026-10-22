@@ -142,8 +142,16 @@ err := client.Hub.Logs.SaveLogSettings(ctx, map[string]any{
 }, nil)
 ```
 
-Send all three values as a map. The generated `dtos.SaveLogSettings` tags
-every field `omitempty`, so a `false` in that struct is left out of the body.
+A setting you leave out stays unchanged. In the typed request
+`dtos.SaveLogSettings` each field is a `*bool`: nil is not sent,
+`norbix.Bool(false)` is sent and switches the setting off.
+
+```go
+settings := dtos.SaveLogSettings{SkipHttpBodyMeta: norbix.Bool(false)}
+```
+
+`IsEnabled` on a log integration request is a plain `bool` and is always sent,
+so `IsEnabled: false` saves the integration switched off.
 
 ## Integrations — save, then test
 

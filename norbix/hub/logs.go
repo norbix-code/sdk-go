@@ -212,8 +212,9 @@ func (m *LogsModule) GetLogSettings(ctx context.Context, req map[string]any, out
 
 // SaveLogSettings performs POST /{version}/logs/settings (scope: project).
 // Body: skipCloudDashboardLogs, skipHttpBodyMeta, aiChatLoggingEnabled (request
-// type dtos.SaveLogSettings). Send all three as a map: the generated struct
-// tags every field omitempty, so a false in the struct is left out of the body.
+// type dtos.SaveLogSettings). A field that is not sent stays unchanged; in
+// dtos.SaveLogSettings each field is a *bool — nil is not sent,
+// norbix.Bool(false) is.
 // Answers dtos.SaveLogSettingsResponse.
 func (m *LogsModule) SaveLogSettings(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
