@@ -355,6 +355,7 @@ type SaveUser struct {
 type SaveUserWithRolesBase struct {
 	SaveUser
 	Roles []string `json:"roles,omitempty"`
+	Tags  []string `json:"tags,omitempty"`
 }
 
 // IPublicRegistrationRequest DTO.
@@ -1111,15 +1112,23 @@ type PasskeyOkResponse struct {
 // SendTestPasswordResetResponse DTO.
 type SendTestPasswordResetResponse struct {
 	ResponseBase
-	Queued             bool   `json:"queued"`
-	Reason             string `json:"reason,omitempty"`
-	Env                string `json:"env,omitempty"`
-	CorrelationId      string `json:"correlationId,omitempty"`
-	ExpiresAtUtc       string `json:"expiresAtUtc,omitempty"`
-	IntegrationId      string `json:"integrationId,omitempty"`
-	IntegrationName    string `json:"integrationName,omitempty"`
-	Provider           string `json:"provider,omitempty"`
-	IntegrationProblem string `json:"integrationProblem,omitempty"`
+	Queued             bool     `json:"queued"`
+	Reason             string   `json:"reason,omitempty"`
+	Env                string   `json:"env,omitempty"`
+	CorrelationId      string   `json:"correlationId,omitempty"`
+	ExpiresAtUtc       string   `json:"expiresAtUtc,omitempty"`
+	IntegrationId      string   `json:"integrationId,omitempty"`
+	IntegrationName    string   `json:"integrationName,omitempty"`
+	Provider           string   `json:"provider,omitempty"`
+	IntegrationProblem string   `json:"integrationProblem,omitempty"`
+	TemplateId         string   `json:"templateId,omitempty"`
+	TemplateName       string   `json:"templateName,omitempty"`
+	TemplateSource     string   `json:"templateSource,omitempty"`
+	Language           string   `json:"language,omitempty"`
+	LanguageRule       string   `json:"languageRule,omitempty"`
+	TemplateLanguages  []string `json:"templateLanguages,omitempty"`
+	Fallback           string   `json:"fallback,omitempty"`
+	MjmlRenderer       string   `json:"mjmlRenderer,omitempty"`
 }
 
 // PasskeyCeremonyOptionsResponse DTO.
