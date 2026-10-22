@@ -2733,6 +2733,7 @@ type PaymentEventDto struct {
 	Provider        string            `json:"provider,omitempty"`
 	ProviderEventId string            `json:"providerEventId,omitempty"`
 	OrderId         string            `json:"orderId,omitempty"`
+	BuyerUserId     string            `json:"buyerUserId,omitempty"`
 	EventName       string            `json:"eventName,omitempty"`
 	Status          string            `json:"status,omitempty"`
 	AmountMinor     *float64          `json:"amountMinor,omitempty"`

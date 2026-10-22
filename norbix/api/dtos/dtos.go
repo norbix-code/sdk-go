@@ -1078,6 +1078,13 @@ type InvokeEndUserAiToolResponse struct {
 	Result string `json:"result,omitempty"`
 }
 
+// SaveGuestUserResponse DTO.
+type SaveGuestUserResponse struct {
+	IdResponse
+	UserName string `json:"userName,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
 // GetUserResponse DTO.
 type GetUserResponse struct {
 	ResponseBase
@@ -1099,6 +1106,20 @@ type GetUserPreferencesResponse struct {
 // PasskeyOkResponse DTO.
 type PasskeyOkResponse struct {
 	ResponseBase
+}
+
+// SendTestPasswordResetResponse DTO.
+type SendTestPasswordResetResponse struct {
+	ResponseBase
+	Queued             bool   `json:"queued"`
+	Reason             string `json:"reason,omitempty"`
+	Env                string `json:"env,omitempty"`
+	CorrelationId      string `json:"correlationId,omitempty"`
+	ExpiresAtUtc       string `json:"expiresAtUtc,omitempty"`
+	IntegrationId      string `json:"integrationId,omitempty"`
+	IntegrationName    string `json:"integrationName,omitempty"`
+	Provider           string `json:"provider,omitempty"`
+	IntegrationProblem string `json:"integrationProblem,omitempty"`
 }
 
 // PasskeyCeremonyOptionsResponse DTO.
@@ -1743,6 +1764,12 @@ type ConfirmPasswordResetRequest struct {
 	Token                 string `json:"token,omitempty"`
 	NewPassword           string `json:"newPassword,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// SendTestPasswordResetRequest DTO.
+type SendTestPasswordResetRequest struct {
+	CodeMashRequestBase
+	Email string `json:"email,omitempty"`
 }
 
 // PasskeyAuthenticationOptionsRequest DTO.
