@@ -1689,7 +1689,7 @@ type MontonioPaymentIntegrationRequest struct {
 	Provider  PaymentGatewayPlatform `json:"provider,omitempty"`
 	AccessKey string                 `json:"accessKey,omitempty"`
 	SecretKey string                 `json:"secretKey,omitempty"`
-	IsSandbox bool                   `json:"isSandbox"`
+	IsSandbox *bool                  `json:"isSandbox,omitempty"`
 	Locale    string                 `json:"locale,omitempty"`
 }
 
@@ -2191,7 +2191,7 @@ type WebhookDeliverySettingsDto struct {
 	DestinationIds    []string           `json:"destinationIds,omitempty"`
 	EventName         string             `json:"eventName,omitempty"`
 	ContentType       string             `json:"contentType,omitempty"`
-	IncludeRawPayload bool               `json:"includeRawPayload"`
+	IncludeRawPayload *bool              `json:"includeRawPayload,omitempty"`
 	MappedTokens      []*TokenMappingDto `json:"mappedTokens,omitempty"`
 }
 
@@ -4266,7 +4266,7 @@ type EmailValidationIntegrationRequest struct {
 	IntegrationId   string                  `json:"integrationId,omitempty"`
 	Provider        EmailValidationProvider `json:"provider,omitempty"`
 	IntegrationName string                  `json:"integrationName,omitempty"`
-	IsEnabled       bool                    `json:"isEnabled"`
+	IsEnabled       *bool                   `json:"isEnabled,omitempty"`
 }
 
 // SaveEmailTemplate DTO.
@@ -4344,7 +4344,7 @@ type EmbeddingIntegrationRequest struct {
 	IntegrationId   string            `json:"integrationId,omitempty"`
 	Provider        EmbeddingProvider `json:"provider,omitempty"`
 	IntegrationName string            `json:"integrationName,omitempty"`
-	IsEnabled       bool              `json:"isEnabled"`
+	IsEnabled       *bool             `json:"isEnabled,omitempty"`
 	Endpoint        string            `json:"endpoint,omitempty"`
 	Model           string            `json:"model,omitempty"`
 	Dimension       float64           `json:"dimension,omitempty"`
@@ -10297,7 +10297,7 @@ type EnableMembership struct {
 // ImportUsersRequest DTO.
 type ImportUsersRequest struct {
 	CodeMashRequestBase
-	DryRun             bool                `json:"dryRun"`
+	DryRun             *bool               `json:"dryRun,omitempty"`
 	IgnoreDefaultRoles bool                `json:"ignoreDefaultRoles"`
 	Users              []*ImportUserRowDto `json:"users,omitempty"`
 }
@@ -10305,7 +10305,7 @@ type ImportUsersRequest struct {
 // RepairLoginProjectIdsRequest DTO.
 type RepairLoginProjectIdsRequest struct {
 	CodeMashRequestBase
-	DryRun bool `json:"dryRun"`
+	DryRun *bool `json:"dryRun,omitempty"`
 }
 
 // IssueServiceUserApiKeyRequest DTO.
@@ -10442,7 +10442,7 @@ type SavePasskeySettings struct {
 	CodeTtlMinutes                float64 `json:"codeTtlMinutes,omitempty"`
 	MaxCredentialsPerUser         float64 `json:"maxCredentialsPerUser,omitempty"`
 	RecoveryCodeCount             float64 `json:"recoveryCodeCount,omitempty"`
-	GenerateRecoveryCodesAtSignup bool    `json:"generateRecoveryCodesAtSignup"`
+	GenerateRecoveryCodesAtSignup *bool   `json:"generateRecoveryCodesAtSignup,omitempty"`
 	AuthenticatorAttachment       string  `json:"authenticatorAttachment,omitempty"`
 	AllowMagicLinkRecovery        bool    `json:"allowMagicLinkRecovery"`
 	RefreshTokenTtlDays           float64 `json:"refreshTokenTtlDays,omitempty"`
@@ -10706,7 +10706,7 @@ type ApplyDatabaseSchemaBundleRequest struct {
 	BundleJson   string `json:"bundleJson,omitempty"`
 	Tier         string `json:"tier,omitempty"`
 	Translatable bool   `json:"translatable"`
-	Publish      bool   `json:"publish"`
+	Publish      *bool  `json:"publish,omitempty"`
 }
 
 // DeleteDatabaseSchemaRequest DTO.
@@ -10724,7 +10724,7 @@ type DiscardDatabaseSchemaDraftRequest struct {
 // EndUserOwnRecordsReportRequest DTO.
 type EndUserOwnRecordsReportRequest struct {
 	CodeMashRequestBase
-	DryRun bool     `json:"dryRun"`
+	DryRun *bool    `json:"dryRun,omitempty"`
 	Enable []string `json:"enable,omitempty"`
 }
 
@@ -12902,7 +12902,7 @@ type SaveWebhookDestinationRequest struct {
 	EndpointUrl     string            `json:"endpointUrl,omitempty"`
 	SelectedEvents  []string          `json:"selectedEvents,omitempty"`
 	ExtraHeaders    map[string]string `json:"extraHeaders,omitempty"`
-	IsEnabled       bool              `json:"isEnabled"`
+	IsEnabled       *bool             `json:"isEnabled,omitempty"`
 }
 
 // DisableScheduler DTO.
@@ -13026,7 +13026,7 @@ type MergeContactsRequest struct {
 // RepairContactRolesRequest DTO.
 type RepairContactRolesRequest struct {
 	CodeMashRequestBase
-	DryRun bool `json:"dryRun"`
+	DryRun *bool `json:"dryRun,omitempty"`
 }
 
 // UpdateContactRequest DTO.

@@ -107,3 +107,66 @@ func TestOptionalNumberSendsZeroAndLeavesNilOut(t *testing.T) {
 		t.Errorf("query with Limit nil: got %q", got.query)
 	}
 }
+
+// Owner 2026-10-22: a true/false field that defaults to true on the gateway
+// (IsSandbox, DryRun, Publish, …) is a *bool. nil is not sent, and the gateway
+// reads "not sent" as true — an unset IsSandbox stays in sandbox mode, never
+// live money. Bool(false) is the only way to switch it off.
+func TestSaveMontonioIntegrationLeavesUnsetIsSandboxOut(t *testing.T) {
+	c, got := newFilesClient(t, `{"id":"int_montonio"}`)
+	montonio := hubdtos.MontonioPaymentIntegrationRequest{
+		PaymentIntegrationRequest: hubdtos.PaymentIntegrationRequest{IntegrationName: "Shop"},
+		Provider:                  hubdtos.PaymentGatewayPlatformMontonio,
+		AccessKey:                 "access_1",
+	}
+
+	req := map[string]any{"integration": asMap(t, montonio)}
+	if err := c.Hub.Payments.SavePaymentsIntegration(context.Background(), req, nil); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expectCall(t, got, http.MethodPost, "/v2/payments/integrations")
+	integration, _ := got.body["integration"].(map[string]any)
+	if _, ok := integration["isSandbox"]; ok {
+		t.Errorf("body: isSandbox was nil and must not be sent, got %v", got.body)
+	}
+
+	montonio.IsSandbox = Bool(false)
+	req = map[string]any{"integration": asMap(t, montonio)}
+	if err := c.Hub.Payments.SavePaymentsIntegration(context.Background(), req, nil); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	integration, _ = got.body["integration"].(map[string]any)
+	if v, ok := integration["isSandbox"]; !ok || v != false {
+		t.Errorf(`body: want "isSandbox":false (live mode on purpose), got %v`, got.body)
+	}
+}
+
+// Every true-by-default field of the round: nil is left out of the JSON.
+func TestTrueByDefaultFieldsAreNotSentWhenNil(t *testing.T) {
+	cases := []struct {
+		name  string
+		value any
+		field string
+	}{
+		{"ImportUsersRequest", hubdtos.ImportUsersRequest{}, "dryRun"},
+		{"RepairLoginProjectIdsRequest", hubdtos.RepairLoginProjectIdsRequest{}, "dryRun"},
+		{"RepairContactRolesRequest", hubdtos.RepairContactRolesRequest{}, "dryRun"},
+		{"EndUserOwnRecordsReportRequest", hubdtos.EndUserOwnRecordsReportRequest{}, "dryRun"},
+		{"MontonioPaymentIntegrationRequest", hubdtos.MontonioPaymentIntegrationRequest{}, "isSandbox"},
+		{"ApplyDatabaseSchemaBundleRequest", hubdtos.ApplyDatabaseSchemaBundleRequest{}, "publish"},
+		{"SavePasskeySettings", hubdtos.SavePasskeySettings{}, "generateRecoveryCodesAtSignup"},
+		{"WebhookDeliverySettingsDto", hubdtos.WebhookDeliverySettingsDto{}, "includeRawPayload"},
+		{"SaveWebhookDestinationRequest", hubdtos.SaveWebhookDestinationRequest{}, "isEnabled"},
+		{"EmbeddingIntegrationRequest", hubdtos.EmbeddingIntegrationRequest{}, "isEnabled"},
+		{"EmailValidationIntegrationRequest", hubdtos.EmailValidationIntegrationRequest{}, "isEnabled"},
+	}
+	for _, tc := range cases {
+		if _, ok := asMap(t, tc.value)[tc.field]; ok {
+			t.Errorf("%s: %s was nil and must not be sent", tc.name, tc.field)
+		}
+	}
+
+	if v, ok := asMap(t, hubdtos.ImportUsersRequest{DryRun: Bool(false)})["dryRun"]; !ok || v != false {
+		t.Errorf(`ImportUsersRequest: want "dryRun":false when set, got %v`, v)
+	}
+}

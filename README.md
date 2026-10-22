@@ -882,9 +882,22 @@ req := dtos.SaveLogSettings{ // norbix/hub/dtos
 }
 ```
 
-A required true/false field (`IsEnabled` on an integration request) is a plain
-`bool` and is always sent, `false` included. When you read a response, check a
-pointer for nil before you use it.
+A required true/false field (`IsEnabled` on a logging or payment integration
+request) is a plain `bool` and is always sent, `false` included. When you read a
+response, check a pointer for nil before you use it.
+
+Some true/false fields default to **true** on the gateway: empty = true. They
+are `*bool`, so leaving one nil keeps the safe default, and `norbix.Bool(false)`
+is the only way to switch it off:
+
+| Field | Request | Empty (nil) means |
+|---|---|---|
+| `IsSandbox` | `MontonioPaymentIntegrationRequest` | sandbox, no live money |
+| `DryRun` | `ImportUsersRequest`, `RepairLoginProjectIdsRequest`, `RepairContactRolesRequest`, `EndUserOwnRecordsReportRequest` | only check / count, write nothing |
+| `Publish` | `ApplyDatabaseSchemaBundleRequest` | publish v1 |
+| `IsEnabled` | `EmbeddingIntegrationRequest`, `EmailValidationIntegrationRequest`, `SaveWebhookDestinationRequest` | enabled |
+| `GenerateRecoveryCodesAtSignup` | `SavePasskeySettings` | generated |
+| `IncludeRawPayload` | `WebhookDeliverySettingsDto` | included |
 
 ### Regenerate the types
 
