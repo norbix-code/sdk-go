@@ -563,12 +563,13 @@ const (
 type MarketplaceFormKind string
 
 const (
-	MarketplaceFormKindGeneric       MarketplaceFormKind = "Generic"
-	MarketplaceFormKindDatabaseQuery MarketplaceFormKind = "DatabaseQuery"
-	MarketplaceFormKindDatabaseWrite MarketplaceFormKind = "DatabaseWrite"
-	MarketplaceFormKindMessage       MarketplaceFormKind = "Message"
-	MarketplaceFormKindPrompt        MarketplaceFormKind = "Prompt"
-	MarketplaceFormKindWeb           MarketplaceFormKind = "Web"
+	MarketplaceFormKindGeneric        MarketplaceFormKind = "Generic"
+	MarketplaceFormKindDatabaseQuery  MarketplaceFormKind = "DatabaseQuery"
+	MarketplaceFormKindDatabaseWrite  MarketplaceFormKind = "DatabaseWrite"
+	MarketplaceFormKindMessage        MarketplaceFormKind = "Message"
+	MarketplaceFormKindPrompt         MarketplaceFormKind = "Prompt"
+	MarketplaceFormKindWeb            MarketplaceFormKind = "Web"
+	MarketplaceFormKindMembershipUser MarketplaceFormKind = "MembershipUser"
 )
 
 // CodeFunctionSource enum.
