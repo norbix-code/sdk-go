@@ -272,6 +272,7 @@ const (
 	PaymentGatewayPlatformMollie       PaymentGatewayPlatform = "Mollie"
 	PaymentGatewayPlatformWorldpay     PaymentGatewayPlatform = "Worldpay"
 	PaymentGatewayPlatformMontonio     PaymentGatewayPlatform = "Montonio"
+	PaymentGatewayPlatformNeopay       PaymentGatewayPlatform = "Neopay"
 )
 
 // PushProvider enum.
@@ -1694,6 +1695,17 @@ type MontonioPaymentIntegrationRequest struct {
 	Locale    string                 `json:"locale,omitempty"`
 }
 
+// NeopayPaymentIntegrationRequest DTO.
+type NeopayPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider   PaymentGatewayPlatform `json:"provider,omitempty"`
+	ProjectId  string                 `json:"projectId,omitempty"`
+	ProjectKey string                 `json:"projectKey,omitempty"`
+	IsSandbox  *bool                  `json:"isSandbox,omitempty"`
+	Country    string                 `json:"country,omitempty"`
+	Locale     string                 `json:"locale,omitempty"`
+}
+
 // ShopifyPaymentIntegrationRequest DTO.
 type ShopifyPaymentIntegrationRequest struct {
 	PaymentIntegrationRequest
@@ -2681,6 +2693,15 @@ type MontonioPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
 	AccessKey string `json:"accessKey,omitempty"`
 	IsSandbox bool   `json:"isSandbox"`
+	Locale    string `json:"locale,omitempty"`
+}
+
+// NeopayPaymentIntegrationDto DTO.
+type NeopayPaymentIntegrationDto struct {
+	PaymentsIntegrationDto
+	ProjectId string `json:"projectId,omitempty"`
+	IsSandbox bool   `json:"isSandbox"`
+	Country   string `json:"country,omitempty"`
 	Locale    string `json:"locale,omitempty"`
 }
 
@@ -9306,6 +9327,7 @@ type InternalsTypeGen struct {
 	Typegen_54_AppleInAppPaymentIntegrationRequest               *AppleInAppPaymentIntegrationRequest               `json:"typegen_54_AppleInAppPaymentIntegrationRequest,omitempty"`
 	Typegen_55_GoogleInAppPaymentIntegrationRequest              *GoogleInAppPaymentIntegrationRequest              `json:"typegen_55_GoogleInAppPaymentIntegrationRequest,omitempty"`
 	Typegen_285_MontonioPaymentIntegrationRequest                *MontonioPaymentIntegrationRequest                 `json:"typegen_285_MontonioPaymentIntegrationRequest,omitempty"`
+	Typegen_295_NeopayPaymentIntegrationRequest                  *NeopayPaymentIntegrationRequest                   `json:"typegen_295_NeopayPaymentIntegrationRequest,omitempty"`
 	Typegen_287_ShopifyPaymentIntegrationRequest                 *ShopifyPaymentIntegrationRequest                  `json:"typegen_287_ShopifyPaymentIntegrationRequest,omitempty"`
 	Typegen_288_WooCommercePaymentIntegrationRequest             *WooCommercePaymentIntegrationRequest              `json:"typegen_288_WooCommercePaymentIntegrationRequest,omitempty"`
 	Typegen_289_MagentoPaymentIntegrationRequest                 *MagentoPaymentIntegrationRequest                  `json:"typegen_289_MagentoPaymentIntegrationRequest,omitempty"`
@@ -9397,6 +9419,7 @@ type InternalsTypeGen struct {
 	Typegen_189_CheckOutComPaymentIntegrationDto                 *CheckOutComPaymentIntegrationDto                  `json:"typegen_189_CheckOutComPaymentIntegrationDto,omitempty"`
 	Typegen_190_WorldpayPaymentIntegrationDto                    *WorldpayPaymentIntegrationDto                     `json:"typegen_190_WorldpayPaymentIntegrationDto,omitempty"`
 	Typegen_286_MontonioPaymentIntegrationDto                    *MontonioPaymentIntegrationDto                     `json:"typegen_286_MontonioPaymentIntegrationDto,omitempty"`
+	Typegen_296_NeopayPaymentIntegrationDto                      *NeopayPaymentIntegrationDto                       `json:"typegen_296_NeopayPaymentIntegrationDto,omitempty"`
 	Typegen_294_PaymentOrderEventDto                             *PaymentOrderEventDto                              `json:"typegen_294_PaymentOrderEventDto,omitempty"`
 	Typegen_128_AppleSignInMembershipIntegrationDto              *AppleSignInMembershipIntegrationDto               `json:"typegen_128_AppleSignInMembershipIntegrationDto,omitempty"`
 	Typegen_129_GitHubMembershipIntegrationDto                   *GitHubMembershipIntegrationDto                    `json:"typegen_129_GitHubMembershipIntegrationDto,omitempty"`

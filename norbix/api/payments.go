@@ -17,7 +17,7 @@ import (
 //
 // A payment order is what a buyer pays for: lines priced in minor units, a
 // merchant reference and a price version. Create it, start a provider checkout
-// (Montonio, …) and send the buyer to checkout.paymentUrl. A verified provider
+// (Montonio, Neopay, …) and send the buyer to checkout.paymentUrl. A verified provider
 // callback moves the order on; a webhook destination or a Code function hears
 // it as payments.order.paid / …refunded / …expired.
 type PaymentsModule struct{ t *transport.Transport }
