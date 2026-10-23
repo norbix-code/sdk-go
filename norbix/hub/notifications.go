@@ -423,6 +423,10 @@ func (m *NotificationsModule) ArchiveEmailTemplate(ctx context.Context, id strin
 }
 
 // CloneEmailTemplate performs POST /{version}/notifications/email/templates/{Id}/clone (scope: project).
+//
+// The source email template stays as it is; the copy gets a new id. The answer
+// is a dtos.IdResponse whose Id is the copy's template id — pass a
+// *dtos.IdResponse as out to read it.
 func (m *NotificationsModule) CloneEmailTemplate(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,
@@ -718,6 +722,10 @@ func (m *NotificationsModule) ArchivePushTemplate(ctx context.Context, id string
 }
 
 // ClonePushTemplate performs POST /{version}/notifications/push/templates/{Id}/clone (scope: project).
+//
+// The source push template stays as it is; the copy gets a new id. The answer
+// is a dtos.IdResponse whose Id is the copy's template id — pass a
+// *dtos.IdResponse as out to read it.
 func (m *NotificationsModule) ClonePushTemplate(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,
@@ -1772,6 +1780,10 @@ func (m *NotificationsModule) ArchiveSmsTemplate(ctx context.Context, id string,
 }
 
 // CloneSmsTemplate performs POST /{version}/notifications/sms/templates/{Id}/clone (scope: project).
+//
+// The source SMS template stays as it is; the copy gets a new id. The answer
+// is a dtos.IdResponse whose Id is the copy's template id — pass a
+// *dtos.IdResponse as out to read it.
 func (m *NotificationsModule) CloneSmsTemplate(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,

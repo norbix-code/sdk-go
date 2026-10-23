@@ -66,6 +66,9 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 | `GetPushTemplate(ctx, id, req, out)` | `GET` | `/notifications/push/templates/{id}` |
 | `GetPushMessageContentTokens(ctx, id, req, out)` | `GET` | `/notifications/push/templates/{id}/tokens` |
 
+`ClonePushTemplate` answers a `dtos.IdResponse` whose `Id` is the copy's template id
+(the source template stays as it is) — pass a `*dtos.IdResponse` as `out`.
+
 ## Campaigns
 
 | method | verb | path |
