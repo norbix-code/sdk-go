@@ -15,11 +15,12 @@ package dtos
 type EmailProvider string
 
 const (
-	EmailProviderSmtp     EmailProvider = "Smtp"
-	EmailProviderSendGrid EmailProvider = "SendGrid"
-	EmailProviderMailGun  EmailProvider = "MailGun"
-	EmailProviderAwsSes   EmailProvider = "AwsSes"
-	EmailProviderFake     EmailProvider = "Fake"
+	EmailProviderSmtp               EmailProvider = "Smtp"
+	EmailProviderSendGrid           EmailProvider = "SendGrid"
+	EmailProviderMailGun            EmailProvider = "MailGun"
+	EmailProviderAwsSes             EmailProvider = "AwsSes"
+	EmailProviderFake               EmailProvider = "Fake"
+	EmailProviderAzureCommunication EmailProvider = "AzureCommunication"
 )
 
 // SmtpPorts enum.
@@ -874,6 +875,57 @@ const (
 	CampaignNotificationStatusBlockedByValidation               CampaignNotificationStatus = "BlockedByValidation"
 )
 
+// NotificationDeliveryState enum.
+type NotificationDeliveryState string
+
+const (
+	NotificationDeliveryStatePending   NotificationDeliveryState = "Pending"
+	NotificationDeliveryStateSending   NotificationDeliveryState = "Sending"
+	NotificationDeliveryStateRetrying  NotificationDeliveryState = "Retrying"
+	NotificationDeliveryStateAccepted  NotificationDeliveryState = "Accepted"
+	NotificationDeliveryStateFailed    NotificationDeliveryState = "Failed"
+	NotificationDeliveryStateBlocked   NotificationDeliveryState = "Blocked"
+	NotificationDeliveryStateCancelled NotificationDeliveryState = "Cancelled"
+)
+
+// NotificationAttemptOutcome enum.
+type NotificationAttemptOutcome string
+
+const (
+	NotificationAttemptOutcomeAccepted NotificationAttemptOutcome = "Accepted"
+	NotificationAttemptOutcomeFailed   NotificationAttemptOutcome = "Failed"
+)
+
+// SendErrorCategory enum.
+type SendErrorCategory string
+
+const (
+	SendErrorCategoryUnknown   SendErrorCategory = "Unknown"
+	SendErrorCategoryTransient SendErrorCategory = "Transient"
+	SendErrorCategoryPermanent SendErrorCategory = "Permanent"
+	SendErrorCategoryAmbiguous SendErrorCategory = "Ambiguous"
+)
+
+// NotificationAttemptTrigger enum.
+type NotificationAttemptTrigger string
+
+const (
+	NotificationAttemptTriggerInitial     NotificationAttemptTrigger = "Initial"
+	NotificationAttemptTriggerAutoRetry   NotificationAttemptTrigger = "AutoRetry"
+	NotificationAttemptTriggerManualRetry NotificationAttemptTrigger = "ManualRetry"
+)
+
+// DeliveryEventOutcome enum.
+type DeliveryEventOutcome string
+
+const (
+	DeliveryEventOutcomeDelivered  DeliveryEventOutcome = "Delivered"
+	DeliveryEventOutcomeBounced    DeliveryEventOutcome = "Bounced"
+	DeliveryEventOutcomeComplained DeliveryEventOutcome = "Complained"
+	DeliveryEventOutcomeRejected   DeliveryEventOutcome = "Rejected"
+	DeliveryEventOutcomeDeferred   DeliveryEventOutcome = "Deferred"
+)
+
 // CodeFunctionQualifierKindDto enum.
 type CodeFunctionQualifierKindDto string
 
@@ -1079,22 +1131,26 @@ type SmtpEmailIntegrationRequest struct {
 // AwsSesEmailIntegrationRequest DTO.
 type AwsSesEmailIntegrationRequest struct {
 	EmailIntegrationRequest
-	Provider         EmailProvider      `json:"provider,omitempty"`
-	IntegrationType  AwsIntegrationType `json:"integrationType,omitempty"`
-	AwsRegion        string             `json:"awsRegion,omitempty"`
-	EmailIdentityArn string             `json:"emailIdentityArn,omitempty"`
-	ConfigurationSet string             `json:"configurationSet,omitempty"`
-	RoleArn          string             `json:"roleArn,omitempty"`
-	ExternalId       string             `json:"externalId,omitempty"`
-	AccessKey        string             `json:"accessKey,omitempty"`
-	SecretKey        string             `json:"secretKey,omitempty"`
+	Provider              EmailProvider      `json:"provider,omitempty"`
+	IntegrationType       AwsIntegrationType `json:"integrationType,omitempty"`
+	AwsRegion             string             `json:"awsRegion,omitempty"`
+	EmailIdentityArn      string             `json:"emailIdentityArn,omitempty"`
+	ConfigurationSet      string             `json:"configurationSet,omitempty"`
+	RoleArn               string             `json:"roleArn,omitempty"`
+	ExternalId            string             `json:"externalId,omitempty"`
+	AccessKey             string             `json:"accessKey,omitempty"`
+	SecretKey             string             `json:"secretKey,omitempty"`
+	DeliveryEventsEnabled *bool              `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn           string             `json:"snsTopicArn,omitempty"`
 }
 
 // SendGridEmailIntegrationRequest DTO.
 type SendGridEmailIntegrationRequest struct {
 	EmailIntegrationRequest
-	Provider EmailProvider `json:"provider,omitempty"`
-	ApiKey   string        `json:"apiKey,omitempty"`
+	Provider              EmailProvider `json:"provider,omitempty"`
+	ApiKey                string        `json:"apiKey,omitempty"`
+	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
+	EventWebhookPublicKey string        `json:"eventWebhookPublicKey,omitempty"`
 }
 
 // MailGunEmailIntegrationRequest DTO.
@@ -1105,6 +1161,16 @@ type MailGunEmailIntegrationRequest struct {
 	ApiKey            string        `json:"apiKey,omitempty"`
 	WebhookSigningKey string        `json:"webhookSigningKey,omitempty"`
 	Region            MailGunRegion `json:"region,omitempty"`
+}
+
+// AzureCommunicationEmailIntegrationRequest DTO.
+type AzureCommunicationEmailIntegrationRequest struct {
+	EmailIntegrationRequest
+	Provider              EmailProvider `json:"provider,omitempty"`
+	Endpoint              string        `json:"endpoint,omitempty"`
+	AccessKey             string        `json:"accessKey,omitempty"`
+	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
+	EventGridKey          string        `json:"eventGridKey,omitempty"`
 }
 
 // TokenMappingDto DTO.
@@ -3083,8 +3149,10 @@ type TelnyxSmsIntegrationDto struct {
 // TwilioSmsIntegrationDto DTO.
 type TwilioSmsIntegrationDto struct {
 	SmsIntegrationDto
-	AccountSid      string `json:"accountSid,omitempty"`
-	FromPhoneNumber string `json:"fromPhoneNumber,omitempty"`
+	AccountSid            string `json:"accountSid,omitempty"`
+	FromPhoneNumber       string `json:"fromPhoneNumber,omitempty"`
+	DeliveryEventsEnabled *bool  `json:"deliveryEventsEnabled,omitempty"`
+	StatusCallbackUrl     string `json:"statusCallbackUrl,omitempty"`
 }
 
 // VonageSmsIntegrationDto DTO.
@@ -3172,9 +3240,11 @@ type EmailIntegrationDto struct {
 // AwsSesEmailIntegrationDto DTO.
 type AwsSesEmailIntegrationDto struct {
 	EmailIntegrationDto
-	Region               string `json:"region,omitempty"`
-	IdentityArn          string `json:"identityArn,omitempty"`
-	ConfigurationSetName string `json:"configurationSetName,omitempty"`
+	Region                string `json:"region,omitempty"`
+	IdentityArn           string `json:"identityArn,omitempty"`
+	ConfigurationSetName  string `json:"configurationSetName,omitempty"`
+	DeliveryEventsEnabled *bool  `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn           string `json:"snsTopicArn,omitempty"`
 }
 
 // AwsCrossAccountRoleEmailIntegrationDto DTO.
@@ -3199,6 +3269,8 @@ type MailGunEmailIntegrationDto struct {
 // SendGridEmailIntegrationDto DTO.
 type SendGridEmailIntegrationDto struct {
 	EmailIntegrationDto
+	DeliveryEventsEnabled *bool  `json:"deliveryEventsEnabled,omitempty"`
+	EventWebhookPublicKey string `json:"eventWebhookPublicKey,omitempty"`
 }
 
 // SmtpEmailIntegrationDto DTO.
@@ -5095,19 +5167,20 @@ type LoginDto struct {
 
 // AuthDto DTO.
 type AuthDto struct {
-	Id           string              `json:"id,omitempty"`
-	Type         AuthType            `json:"type,omitempty"`
-	Email        string              `json:"email,omitempty"`
-	UserName     string              `json:"userName,omitempty"`
-	Registration *RegistrationDto    `json:"registration,omitempty"`
-	Login        *LoginDto           `json:"login,omitempty"`
-	GeneralInfo  *UserGeneralInfoDto `json:"generalInfo,omitempty"`
-	Roles        []string            `json:"roles,omitempty"`
-	PushDevices  []string            `json:"pushDevices,omitempty"`
-	Tags         []string            `json:"tags,omitempty"`
-	Status       AuthStatus          `json:"status,omitempty"`
-	CreatedOn    string              `json:"createdOn,omitempty"`
-	ModifiedOn   string              `json:"modifiedOn,omitempty"`
+	Id                string              `json:"id,omitempty"`
+	Type              AuthType            `json:"type,omitempty"`
+	Email             string              `json:"email,omitempty"`
+	UserName          string              `json:"userName,omitempty"`
+	Registration      *RegistrationDto    `json:"registration,omitempty"`
+	Login             *LoginDto           `json:"login,omitempty"`
+	GeneralInfo       *UserGeneralInfoDto `json:"generalInfo,omitempty"`
+	Roles             []string            `json:"roles,omitempty"`
+	PushDevices       []string            `json:"pushDevices,omitempty"`
+	Tags              []string            `json:"tags,omitempty"`
+	Status            AuthStatus          `json:"status,omitempty"`
+	CreatedOn         string              `json:"createdOn,omitempty"`
+	ModifiedOn        string              `json:"modifiedOn,omitempty"`
+	CredentialVersion string              `json:"credentialVersion,omitempty"`
 }
 
 // AccountPasswordPolicyDto DTO.
@@ -6035,16 +6108,52 @@ type NotificationStatusChangeEntryDto struct {
 	Tags     []string                   `json:"tags,omitempty"`
 }
 
+// NotificationAttemptDto DTO.
+type NotificationAttemptDto struct {
+	AttemptId         string                     `json:"attemptId,omitempty"`
+	Number            float64                    `json:"number,omitempty"`
+	StartedAt         string                     `json:"startedAt,omitempty"`
+	FinishedAt        string                     `json:"finishedAt,omitempty"`
+	Outcome           NotificationAttemptOutcome `json:"outcome,omitempty"`
+	Category          SendErrorCategory          `json:"category,omitempty"`
+	StatusCode        *float64                   `json:"statusCode,omitempty"`
+	ErrorCode         string                     `json:"errorCode,omitempty"`
+	Message           string                     `json:"message,omitempty"`
+	ProviderRef       string                     `json:"providerRef,omitempty"`
+	RetryAfterSeconds *float64                   `json:"retryAfterSeconds,omitempty"`
+	Exhausted         *bool                      `json:"exhausted,omitempty"`
+	NextRetryAt       string                     `json:"nextRetryAt,omitempty"`
+	CorrelationId     string                     `json:"correlationId,omitempty"`
+	Trigger           NotificationAttemptTrigger `json:"trigger,omitempty"`
+	RetryRequestId    string                     `json:"retryRequestId,omitempty"`
+}
+
+// NotificationDeliveryEventDto DTO.
+type NotificationDeliveryEventDto struct {
+	EventId     string               `json:"eventId,omitempty"`
+	Outcome     DeliveryEventOutcome `json:"outcome,omitempty"`
+	At          string               `json:"at,omitempty"`
+	Provider    string               `json:"provider,omitempty"`
+	ProviderRef string               `json:"providerRef,omitempty"`
+	Reason      string               `json:"reason,omitempty"`
+}
+
 // CampaignBatchNotificationDto DTO.
 type CampaignBatchNotificationDto struct {
-	CampaignId        string                              `json:"campaignId,omitempty"`
-	BatchId           string                              `json:"batchId,omitempty"`
-	NotificationId    string                              `json:"notificationId,omitempty"`
-	RefNotificationId string                              `json:"refNotificationId,omitempty"`
-	Body              string                              `json:"body,omitempty"`
-	Model             map[string]string                   `json:"model,omitempty"`
-	StatusHistory     []*NotificationStatusChangeEntryDto `json:"statusHistory,omitempty"`
-	Id                string                              `json:"id,omitempty"`
+	CampaignId          string                              `json:"campaignId,omitempty"`
+	BatchId             string                              `json:"batchId,omitempty"`
+	NotificationId      string                              `json:"notificationId,omitempty"`
+	RefNotificationId   string                              `json:"refNotificationId,omitempty"`
+	Body                string                              `json:"body,omitempty"`
+	Model               map[string]string                   `json:"model,omitempty"`
+	StatusHistory       []*NotificationStatusChangeEntryDto `json:"statusHistory,omitempty"`
+	State               NotificationDeliveryState           `json:"state,omitempty"`
+	StateChangedAt      string                              `json:"stateChangedAt,omitempty"`
+	Attempts            []*NotificationAttemptDto           `json:"attempts,omitempty"`
+	DeliveryEvents      []*NotificationDeliveryEventDto     `json:"deliveryEvents,omitempty"`
+	DeliveryOutcome     DeliveryEventOutcome                `json:"deliveryOutcome,omitempty"`
+	DeliveryOutcomeRank *float64                            `json:"deliveryOutcomeRank,omitempty"`
+	Id                  string                              `json:"id,omitempty"`
 }
 
 // EmailCampaignBatchNotificationDto DTO.
@@ -6058,10 +6167,12 @@ type EmailCampaignBatchNotificationDto struct {
 
 // CampaignStatsDto DTO.
 type CampaignStatsDto struct {
-	Batches     float64 `json:"batches,omitempty"`
-	Sent        float64 `json:"sent,omitempty"`
-	Failed      float64 `json:"failed,omitempty"`
-	SuccessRate float64 `json:"successRate,omitempty"`
+	Batches         float64 `json:"batches,omitempty"`
+	Sent            float64 `json:"sent,omitempty"`
+	Failed          float64 `json:"failed,omitempty"`
+	FailedRetryable float64 `json:"failedRetryable,omitempty"`
+	Cancelled       float64 `json:"cancelled,omitempty"`
+	SuccessRate     float64 `json:"successRate,omitempty"`
 }
 
 // SmsTemplateListProjection DTO.
@@ -8102,6 +8213,16 @@ type PreviewEmailNotificationResponse struct {
 	Body    string `json:"body,omitempty"`
 }
 
+// RetryFailedEmailNotificationsResponse DTO.
+type RetryFailedEmailNotificationsResponse struct {
+	ResponseBase
+	RetryRequestId string             `json:"retryRequestId,omitempty"`
+	Selected       float64            `json:"selected,omitempty"`
+	Skipped        map[string]float64 `json:"skipped,omitempty"`
+	Replayed       bool               `json:"replayed"`
+	Warning        string             `json:"warning,omitempty"`
+}
+
 // GetEmailCampaignMessagesResponse DTO.
 type GetEmailCampaignMessagesResponse struct {
 	ResponseBase
@@ -8199,6 +8320,16 @@ type GetSmsCampaignStatisticsResponse struct {
 type PreviewSmsNotificationResponse struct {
 	ResponseBase
 	Body string `json:"body,omitempty"`
+}
+
+// RetryFailedSmsNotificationsResponse DTO.
+type RetryFailedSmsNotificationsResponse struct {
+	ResponseBase
+	RetryRequestId string             `json:"retryRequestId,omitempty"`
+	Selected       float64            `json:"selected,omitempty"`
+	Skipped        map[string]float64 `json:"skipped,omitempty"`
+	Replayed       bool               `json:"replayed"`
+	Warning        string             `json:"warning,omitempty"`
 }
 
 // GetSmsCampaignMessagesResponse DTO.
@@ -8496,6 +8627,16 @@ type PreviewPushNotificationResponse struct {
 	Title    string `json:"title,omitempty"`
 	Body     string `json:"body,omitempty"`
 	Subtitle string `json:"subtitle,omitempty"`
+}
+
+// RetryFailedPushNotificationsResponse DTO.
+type RetryFailedPushNotificationsResponse struct {
+	ResponseBase
+	RetryRequestId string             `json:"retryRequestId,omitempty"`
+	Selected       float64            `json:"selected,omitempty"`
+	Skipped        map[string]float64 `json:"skipped,omitempty"`
+	Replayed       bool               `json:"replayed"`
+	Warning        string             `json:"warning,omitempty"`
 }
 
 // GetPushCampaignMessagesResponse DTO.
@@ -9278,6 +9419,7 @@ type InternalsTypeGen struct {
 	Typegen_1_AwsSesEmailIntegrationRequest                      *AwsSesEmailIntegrationRequest                     `json:"typegen_1_AwsSesEmailIntegrationRequest,omitempty"`
 	Typegen_2_SendGridEmailIntegrationRequest                    *SendGridEmailIntegrationRequest                   `json:"typegen_2_SendGridEmailIntegrationRequest,omitempty"`
 	Typegen_3_MailGunEmailIntegrationRequest                     *MailGunEmailIntegrationRequest                    `json:"typegen_3_MailGunEmailIntegrationRequest,omitempty"`
+	Typegen_3a_AzureCommunicationEmailIntegrationRequest         *AzureCommunicationEmailIntegrationRequest         `json:"typegen_3a_AzureCommunicationEmailIntegrationRequest,omitempty"`
 	Typegen_4_EmailToAllUsersDeliverySettingsRequest             *EmailToAllUsersDeliverySettingsRequest            `json:"typegen_4_EmailToAllUsersDeliverySettingsRequest,omitempty"`
 	Typegen_5_EmailToAccountUsersDeliverySettingsRequest         *EmailToAccountUsersDeliverySettingsRequest        `json:"typegen_5_EmailToAccountUsersDeliverySettingsRequest,omitempty"`
 	Typegen_6_EmailToCollectionRecordsDeliverySettingsRequest    *EmailToCollectionRecordsDeliverySettingsRequest   `json:"typegen_6_EmailToCollectionRecordsDeliverySettingsRequest,omitempty"`
@@ -11642,6 +11784,17 @@ type PreviewEmailNotification struct {
 	NotificationId string `json:"notificationId,omitempty"`
 }
 
+// RetryFailedEmailNotificationsRequest DTO.
+type RetryFailedEmailNotificationsRequest struct {
+	CodeMashRequestBase
+	Id                    string   `json:"id,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	IdempotencyKey        string   `json:"idempotencyKey,omitempty"`
+	NotificationIds       []string `json:"notificationIds,omitempty"`
+	IncludeAmbiguous      *bool    `json:"includeAmbiguous,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
+}
+
 // StopEmailCampaignRequest DTO.
 type StopEmailCampaignRequest struct {
 	CodeMashRequestBase
@@ -11855,6 +12008,17 @@ type PreviewSmsNotification struct {
 	Hash           string `json:"hash,omitempty"`
 	ProjectId      string `json:"projectId,omitempty"`
 	NotificationId string `json:"notificationId,omitempty"`
+}
+
+// RetryFailedSmsNotificationsRequest DTO.
+type RetryFailedSmsNotificationsRequest struct {
+	CodeMashRequestBase
+	Id                    string   `json:"id,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	IdempotencyKey        string   `json:"idempotencyKey,omitempty"`
+	NotificationIds       []string `json:"notificationIds,omitempty"`
+	IncludeAmbiguous      *bool    `json:"includeAmbiguous,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
 }
 
 // StopSmsCampaignRequest DTO.
@@ -12241,6 +12405,17 @@ type PreviewPushNotification struct {
 	Hash           string `json:"hash,omitempty"`
 	ProjectId      string `json:"projectId,omitempty"`
 	NotificationId string `json:"notificationId,omitempty"`
+}
+
+// RetryFailedPushNotificationsRequest DTO.
+type RetryFailedPushNotificationsRequest struct {
+	CodeMashRequestBase
+	Id                    string   `json:"id,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	IdempotencyKey        string   `json:"idempotencyKey,omitempty"`
+	NotificationIds       []string `json:"notificationIds,omitempty"`
+	IncludeAmbiguous      *bool    `json:"includeAmbiguous,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
 }
 
 // StopPushCampaignRequest DTO.

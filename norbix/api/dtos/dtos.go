@@ -620,19 +620,20 @@ type LoginDto struct {
 
 // AuthDto DTO.
 type AuthDto struct {
-	Id           string              `json:"id,omitempty"`
-	Type         AuthType            `json:"type,omitempty"`
-	Email        string              `json:"email,omitempty"`
-	UserName     string              `json:"userName,omitempty"`
-	Registration *RegistrationDto    `json:"registration,omitempty"`
-	Login        *LoginDto           `json:"login,omitempty"`
-	GeneralInfo  *UserGeneralInfoDto `json:"generalInfo,omitempty"`
-	Roles        []string            `json:"roles,omitempty"`
-	PushDevices  []string            `json:"pushDevices,omitempty"`
-	Tags         []string            `json:"tags,omitempty"`
-	Status       AuthStatus          `json:"status,omitempty"`
-	CreatedOn    string              `json:"createdOn,omitempty"`
-	ModifiedOn   string              `json:"modifiedOn,omitempty"`
+	Id                string              `json:"id,omitempty"`
+	Type              AuthType            `json:"type,omitempty"`
+	Email             string              `json:"email,omitempty"`
+	UserName          string              `json:"userName,omitempty"`
+	Registration      *RegistrationDto    `json:"registration,omitempty"`
+	Login             *LoginDto           `json:"login,omitempty"`
+	GeneralInfo       *UserGeneralInfoDto `json:"generalInfo,omitempty"`
+	Roles             []string            `json:"roles,omitempty"`
+	PushDevices       []string            `json:"pushDevices,omitempty"`
+	Tags              []string            `json:"tags,omitempty"`
+	Status            AuthStatus          `json:"status,omitempty"`
+	CreatedOn         string              `json:"createdOn,omitempty"`
+	ModifiedOn        string              `json:"modifiedOn,omitempty"`
+	CredentialVersion string              `json:"credentialVersion,omitempty"`
 }
 
 // PaginatedResponse DTO.
@@ -1102,6 +1103,13 @@ type GetUsersResponse struct {
 type GetUserPreferencesResponse struct {
 	ResponseBase
 	Preferences *UserMarketingPreferencesDto `json:"preferences,omitempty"`
+}
+
+// CredentialChangedResponse DTO.
+type CredentialChangedResponse struct {
+	ResponseBase
+	AuthId            string `json:"authId,omitempty"`
+	CredentialVersion string `json:"credentialVersion,omitempty"`
 }
 
 // PasskeyOkResponse DTO.

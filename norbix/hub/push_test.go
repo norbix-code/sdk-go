@@ -160,6 +160,10 @@ func pushCases() []pushCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.StopPushCampaign(ctx, testCampaignID, nil, nil)
 			}},
+		{"RetryFailedPushNotifications", http.MethodPost, "/v2/notifications/push/campaigns/" + testCampaignID + "/retry-failed",
+			func(ctx context.Context, m *NotificationsModule) error {
+				return m.RetryFailedPushNotifications(ctx, testCampaignID, body, nil)
+			}},
 		{"GetPushCampaignBatches", http.MethodGet, "/v2/notifications/push/campaigns/" + testCampaignID + "/batches",
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.GetPushCampaignBatches(ctx, testCampaignID, nil, nil)
@@ -243,13 +247,14 @@ func TestPushEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Push surface is 37 routes (36 plus the two device reads added with
+// The whole Push surface is 38 routes (36 plus the two device reads added with
 // the devices read side; the managed-app register route and the duplicate
-// campaigns/{campaignId}/messages/{notificationId} read were removed). If the gateway grows one and the module is
+// campaigns/{campaignId}/messages/{notificationId} read were removed; gateway
+// 2.3.9 added POST campaigns/{Id}/retry-failed). If the gateway grows one and the module is
 // regenerated, this count changes and the test says so, so a new endpoint
 // cannot arrive untested.
 func TestPushSurfaceSize(t *testing.T) {
-	const want = 37
+	const want = 38
 	if got := len(pushCases()); got != want {
 		t.Errorf("push endpoint count: got %d want %d", got, want)
 	}
@@ -500,4 +505,24 @@ func TestRegisterDeviceSendsTheDeviceShape(t *testing.T) {
 	})
 
 	assertFields(t, got, map[string]any{"pushDeviceDto": device, "userId": "user_1"})
+}
+
+// retryFailedBody is the full selection a caller can give a retry-failed
+// call. The three channels share it: the gateway reads the same request
+// shape for Email, SMS and Push.
+var retryFailedBody = map[string]any{
+	"notificationIds":  []any{"ntf_1", "ntf_2"},
+	"includeAmbiguous": true,
+	"categories":       []any{"Transient", "Ambiguous"},
+	"idempotencyKey":   "retry-2026-10-26-1",
+}
+
+// RetryFailedPushNotifications sends the selection as the gateway reads it:
+// the notification ids, the ambiguous flag, the categories and the
+// idempotency key all reach the wire by their JSON names.
+func TestRetryFailedPushNotificationsSendsTheSelection(t *testing.T) {
+	got := sendAndCapture(t, func(m *NotificationsModule) error {
+		return m.RetryFailedPushNotifications(context.Background(), testCampaignID, retryFailedBody, nil)
+	})
+	assertFields(t, got, retryFailedBody)
 }
