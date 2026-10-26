@@ -82,6 +82,7 @@ const (
 	TokenMappingResolverTypeRequestInput      TokenMappingResolverType = "RequestInput"
 	TokenMappingResolverTypeIntegrationConfig TokenMappingResolverType = "IntegrationConfig"
 	TokenMappingResolverTypeIntegrationSecret TokenMappingResolverType = "IntegrationSecret"
+	TokenMappingResolverTypeStepOutput        TokenMappingResolverType = "StepOutput"
 )
 
 // SecretValueFormat enum.
@@ -124,6 +125,7 @@ const (
 	TriggerActionTypeWebhookCall TriggerActionType = "WebhookCall"
 	TriggerActionTypeSseCall     TriggerActionType = "SseCall"
 	TriggerActionTypeMarketplace TriggerActionType = "Marketplace"
+	TriggerActionTypeWorkflow    TriggerActionType = "Workflow"
 )
 
 // MembershipTriggerType enum.
@@ -495,6 +497,7 @@ const (
 	SchedulerTaskTypeCodeFunctionalCall      SchedulerTaskType = "CodeFunctionalCall"
 	SchedulerTaskTypeWebhookCall             SchedulerTaskType = "WebhookCall"
 	SchedulerTaskTypeMarketplaceFunctionCall SchedulerTaskType = "MarketplaceFunctionCall"
+	SchedulerTaskTypeWorkflowCall            SchedulerTaskType = "WorkflowCall"
 )
 
 // MarketplaceTransport enum.
@@ -585,6 +588,7 @@ const (
 	CodeFunctionSourceAi         CodeFunctionSource = "Ai"
 	CodeFunctionSourceScheduler  CodeFunctionSource = "Scheduler"
 	CodeFunctionSourceManual     CodeFunctionSource = "Manual"
+	CodeFunctionSourceWorkflow   CodeFunctionSource = "Workflow"
 )
 
 // CodeFunctionCallerKind enum.
@@ -3875,6 +3879,9 @@ type CodeFunctionContextDto struct {
 	CorrelationId string                 `json:"correlationId,omitempty"`
 	Caller        *CodeFunctionCallerDto `json:"caller,omitempty"`
 	RunAs         *CodeFunctionRunAsDto  `json:"runAs,omitempty"`
+	WorkflowId    string                 `json:"workflowId,omitempty"`
+	RunId         string                 `json:"runId,omitempty"`
+	StepId        string                 `json:"stepId,omitempty"`
 }
 
 // ResourceRefDto DTO.
@@ -3965,6 +3972,15 @@ type MarketplaceFunctionCallDto struct {
 	Payload       map[string]any `json:"payload,omitempty"`
 }
 
+// WorkflowStepInfoDto DTO.
+type WorkflowStepInfoDto struct {
+	WorkflowId string         `json:"workflowId,omitempty"`
+	RunId      string         `json:"runId,omitempty"`
+	StepId     string         `json:"stepId,omitempty"`
+	Version    *float64       `json:"version,omitempty"`
+	Request    map[string]any `json:"request,omitempty"`
+}
+
 // CodeFunctionDataDto DTO.
 type CodeFunctionDataDto struct {
 	Database    *DatabaseRecordChangeDto    `json:"database,omitempty"`
@@ -3976,6 +3992,7 @@ type CodeFunctionDataDto struct {
 	Task        *ScheduledTaskInfoDto       `json:"task,omitempty"`
 	Payload     map[string]any              `json:"payload,omitempty"`
 	Marketplace *MarketplaceFunctionCallDto `json:"marketplace,omitempty"`
+	Workflow    *WorkflowStepInfoDto        `json:"workflow,omitempty"`
 }
 
 // CodeFunctionEventDto DTO.
@@ -4488,6 +4505,60 @@ type SaveSmsTemplate struct {
 	CommunicationChannel CommunicationChannel        `json:"communicationChannel,omitempty"`
 	Tags                 []string                    `json:"tags,omitempty"`
 	Translations         []*SmsMessageTranslationDto `json:"translations,omitempty"`
+}
+
+// WorkflowStepRetryDto DTO.
+type WorkflowStepRetryDto struct {
+	Count          float64 `json:"count,omitempty"`
+	BackoffSeconds float64 `json:"backoffSeconds,omitempty"`
+}
+
+// WorkflowOnErrorDto DTO.
+type WorkflowOnErrorDto struct {
+	Action string `json:"action,omitempty"`
+	Goto   string `json:"goto,omitempty"`
+}
+
+// WorkflowStepDto DTO.
+type WorkflowStepDto struct {
+	Id             string                `json:"id,omitempty"`
+	Kind           string                `json:"kind,omitempty"`
+	Name           string                `json:"name,omitempty"`
+	Next           string                `json:"next,omitempty"`
+	Then           string                `json:"then,omitempty"`
+	Else           string                `json:"else,omitempty"`
+	Rejected       string                `json:"rejected,omitempty"`
+	OnTimeout      string                `json:"onTimeout,omitempty"`
+	Retry          *WorkflowStepRetryDto `json:"retry,omitempty"`
+	TimeoutSeconds *float64              `json:"timeoutSeconds,omitempty"`
+	OnError        *WorkflowOnErrorDto   `json:"onError,omitempty"`
+	Action         map[string]any        `json:"action,omitempty"`
+	Config         map[string]any        `json:"config,omitempty"`
+}
+
+// WorkflowLimitsDto DTO.
+type WorkflowLimitsDto struct {
+	MaxStepRuns         *float64 `json:"maxStepRuns,omitempty"`
+	MaxDurationSeconds  *float64 `json:"maxDurationSeconds,omitempty"`
+	MaxWaitSeconds      *float64 `json:"maxWaitSeconds,omitempty"`
+	MaxParallelBranches *float64 `json:"maxParallelBranches,omitempty"`
+	MaxDepth            *float64 `json:"maxDepth,omitempty"`
+}
+
+// WorkflowDefinitionDto DTO.
+type WorkflowDefinitionDto struct {
+	SchemaVersion       string              `json:"schemaVersion,omitempty"`
+	WorkflowId          string              `json:"workflowId,omitempty"`
+	Name                string              `json:"name,omitempty"`
+	Description         string              `json:"description,omitempty"`
+	Version             *float64            `json:"version,omitempty"`
+	IsEnabled           bool                `json:"isEnabled"`
+	ExecutionIdentityId string              `json:"executionIdentityId,omitempty"`
+	Inputs              map[string]any      `json:"inputs,omitempty"`
+	Start               string              `json:"start,omitempty"`
+	Steps               []*WorkflowStepDto  `json:"steps,omitempty"`
+	OnError             *WorkflowOnErrorDto `json:"onError,omitempty"`
+	Limits              *WorkflowLimitsDto  `json:"limits,omitempty"`
 }
 
 // SavePushTemplate DTO.
@@ -5035,7 +5106,8 @@ type SchedulerDto struct {
 
 // CodeDto DTO.
 type CodeDto struct {
-	IsEnabled bool `json:"isEnabled"`
+	IsEnabled        bool `json:"isEnabled"`
+	WorkflowsEnabled bool `json:"workflowsEnabled"`
 }
 
 // FilesTriggerDto DTO.
@@ -6319,6 +6391,211 @@ type SmsCampaignBatchNotificationDto struct {
 	Content    *SmsMessageContentDto `json:"content,omitempty"`
 }
 
+// WorkflowVersionSummaryDto DTO.
+type WorkflowVersionSummaryDto struct {
+	Version           float64 `json:"version,omitempty"`
+	Name              string  `json:"name,omitempty"`
+	StepCount         float64 `json:"stepCount,omitempty"`
+	PublishedAt       string  `json:"publishedAt,omitempty"`
+	PublishedByAuthId string  `json:"publishedByAuthId,omitempty"`
+}
+
+// WorkflowValidationIssueDto DTO.
+type WorkflowValidationIssueDto struct {
+	Code    string   `json:"code,omitempty"`
+	Message string   `json:"message,omitempty"`
+	Path    string   `json:"path,omitempty"`
+	StepId  string   `json:"stepId,omitempty"`
+	Line    *float64 `json:"line,omitempty"`
+	Column  *float64 `json:"column,omitempty"`
+}
+
+// WorkflowDto DTO.
+type WorkflowDto struct {
+	WorkflowId     string                        `json:"workflowId,omitempty"`
+	Env            string                        `json:"env,omitempty"`
+	Definition     *WorkflowDefinitionDto        `json:"definition,omitempty"`
+	Version        float64                       `json:"version,omitempty"`
+	IsPublished    bool                          `json:"isPublished"`
+	HasDraft       bool                          `json:"hasDraft"`
+	IsEnabled      bool                          `json:"isEnabled"`
+	DisabledReason string                        `json:"disabledReason,omitempty"`
+	DraftUpdatedAt string                        `json:"draftUpdatedAt,omitempty"`
+	PublishedAt    string                        `json:"publishedAt,omitempty"`
+	CreatedAt      string                        `json:"createdAt,omitempty"`
+	UpdatedAt      string                        `json:"updatedAt,omitempty"`
+	SavedByAuthId  string                        `json:"savedByAuthId,omitempty"`
+	Versions       []*WorkflowVersionSummaryDto  `json:"versions,omitempty"`
+	Warnings       []*WorkflowValidationIssueDto `json:"warnings,omitempty"`
+}
+
+// WorkflowStepDiffDto DTO.
+type WorkflowStepDiffDto struct {
+	StepId string   `json:"stepId,omitempty"`
+	Paths  []string `json:"paths,omitempty"`
+}
+
+// WorkflowVersionDiffDto DTO.
+type WorkflowVersionDiffDto struct {
+	FromVersion   float64                `json:"fromVersion,omitempty"`
+	ToVersion     float64                `json:"toVersion,omitempty"`
+	AddedSteps    []string               `json:"addedSteps,omitempty"`
+	RemovedSteps  []string               `json:"removedSteps,omitempty"`
+	ChangedSteps  []*WorkflowStepDiffDto `json:"changedSteps,omitempty"`
+	ChangedFields []string               `json:"changedFields,omitempty"`
+}
+
+// WorkflowLastRunDto DTO.
+type WorkflowLastRunDto struct {
+	RunId      string `json:"runId,omitempty"`
+	Status     string `json:"status,omitempty"`
+	FinishedAt string `json:"finishedAt,omitempty"`
+}
+
+// WorkflowListProjection DTO.
+type WorkflowListProjection struct {
+	ViewId              string              `json:"viewId,omitempty"`
+	WorkflowId          string              `json:"workflowId,omitempty"`
+	Name                string              `json:"name,omitempty"`
+	Env                 string              `json:"env,omitempty"`
+	Version             float64             `json:"version,omitempty"`
+	IsPublished         bool                `json:"isPublished"`
+	HasDraft            bool                `json:"hasDraft"`
+	IsEnabled           bool                `json:"isEnabled"`
+	DisabledReason      string              `json:"disabledReason,omitempty"`
+	ExecutionIdentityId string              `json:"executionIdentityId,omitempty"`
+	UpdatedAt           string              `json:"updatedAt,omitempty"`
+	LastRun             *WorkflowLastRunDto `json:"lastRun,omitempty"`
+	WaitingRuns         float64             `json:"waitingRuns,omitempty"`
+}
+
+// WorkflowStepKindSchemaDto DTO.
+type WorkflowStepKindSchemaDto struct {
+	Kind         string         `json:"kind,omitempty"`
+	Description  string         `json:"description,omitempty"`
+	ConfigSchema map[string]any `json:"configSchema,omitempty"`
+	OutputSchema map[string]any `json:"outputSchema,omitempty"`
+	Requires     []string       `json:"requires,omitempty"`
+}
+
+// WorkflowBindingFamilyDto DTO.
+type WorkflowBindingFamilyDto struct {
+	Family      string `json:"family,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// WorkflowSchemaDto DTO.
+type WorkflowSchemaDto struct {
+	SchemaVersion string                       `json:"schemaVersion,omitempty"`
+	Definition    map[string]any               `json:"definition,omitempty"`
+	StepKinds     []*WorkflowStepKindSchemaDto `json:"stepKinds,omitempty"`
+	Bindings      []*WorkflowBindingFamilyDto  `json:"bindings,omitempty"`
+}
+
+// WorkflowRunErrorDto DTO.
+type WorkflowRunErrorDto struct {
+	Code    string `json:"code,omitempty"`
+	StepId  string `json:"stepId,omitempty"`
+	Reason  string `json:"reason,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// WorkflowRunActorDto DTO.
+type WorkflowRunActorDto struct {
+	UserId string `json:"userId,omitempty"`
+	Kind   string `json:"kind,omitempty"`
+}
+
+// WorkflowWaitingOnDto DTO.
+type WorkflowWaitingOnDto struct {
+	StepId    string   `json:"stepId,omitempty"`
+	Kind      string   `json:"kind,omitempty"`
+	Until     string   `json:"until,omitempty"`
+	Key       string   `json:"key,omitempty"`
+	Assignees []string `json:"assignees,omitempty"`
+}
+
+// WorkflowRunStepDto DTO.
+type WorkflowRunStepDto struct {
+	StepId          string               `json:"stepId,omitempty"`
+	Kind            string               `json:"kind,omitempty"`
+	Name            string               `json:"name,omitempty"`
+	Status          string               `json:"status,omitempty"`
+	Attempt         float64              `json:"attempt,omitempty"`
+	Pass            float64              `json:"pass,omitempty"`
+	StartedAt       string               `json:"startedAt,omitempty"`
+	FinishedAt      string               `json:"finishedAt,omitempty"`
+	DurationMs      *float64             `json:"durationMs,omitempty"`
+	Input           map[string]any       `json:"input,omitempty"`
+	InputTruncated  bool                 `json:"inputTruncated"`
+	Output          map[string]any       `json:"output,omitempty"`
+	OutputTruncated bool                 `json:"outputTruncated"`
+	Error           *WorkflowRunErrorDto `json:"error,omitempty"`
+	ResumedBy       *WorkflowRunActorDto `json:"resumedBy,omitempty"`
+	Decision        string               `json:"decision,omitempty"`
+}
+
+// WorkflowRunDto DTO.
+type WorkflowRunDto struct {
+	RunId               string                  `json:"runId,omitempty"`
+	WorkflowId          string                  `json:"workflowId,omitempty"`
+	Version             *float64                `json:"version,omitempty"`
+	IsDraft             bool                    `json:"isDraft"`
+	Status              string                  `json:"status,omitempty"`
+	Source              string                  `json:"source,omitempty"`
+	StartedBy           *WorkflowRunActorDto    `json:"startedBy,omitempty"`
+	TriggerId           string                  `json:"triggerId,omitempty"`
+	TaskId              string                  `json:"taskId,omitempty"`
+	ParentRunId         string                  `json:"parentRunId,omitempty"`
+	Depth               float64                 `json:"depth,omitempty"`
+	Env                 string                  `json:"env,omitempty"`
+	CorrelationId       string                  `json:"correlationId,omitempty"`
+	ExecutionIdentityId string                  `json:"executionIdentityId,omitempty"`
+	StartedAt           string                  `json:"startedAt,omitempty"`
+	FinishedAt          string                  `json:"finishedAt,omitempty"`
+	DurationMs          *float64                `json:"durationMs,omitempty"`
+	WaitingOn           []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
+	Error               *WorkflowRunErrorDto    `json:"error,omitempty"`
+	Output              map[string]any          `json:"output,omitempty"`
+	StepRuns            float64                 `json:"stepRuns,omitempty"`
+	Steps               []*WorkflowRunStepDto   `json:"steps,omitempty"`
+	Request             map[string]any          `json:"request,omitempty"`
+	Trigger             map[string]any          `json:"trigger,omitempty"`
+}
+
+// WorkflowRunListProjection DTO.
+type WorkflowRunListProjection struct {
+	RunId          string                  `json:"runId,omitempty"`
+	WorkflowId     string                  `json:"workflowId,omitempty"`
+	Version        *float64                `json:"version,omitempty"`
+	IsDraft        bool                    `json:"isDraft"`
+	Status         string                  `json:"status,omitempty"`
+	Source         string                  `json:"source,omitempty"`
+	StartedAt      string                  `json:"startedAt,omitempty"`
+	FinishedAt     string                  `json:"finishedAt,omitempty"`
+	DurationMs     *float64                `json:"durationMs,omitempty"`
+	CurrentStepIds []string                `json:"currentStepIds,omitempty"`
+	WaitingOn      []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
+	Error          *WorkflowRunErrorDto    `json:"error,omitempty"`
+}
+
+// TenantLogEntryDto DTO.
+type TenantLogEntryDto struct {
+	Id            string            `json:"id,omitempty"`
+	Timestamp     string            `json:"timestamp,omitempty"`
+	Module        string            `json:"module,omitempty"`
+	Level         string            `json:"level,omitempty"`
+	EventCode     string            `json:"eventCode,omitempty"`
+	Title         string            `json:"title,omitempty"`
+	Message       string            `json:"message,omitempty"`
+	CorrelationId string            `json:"correlationId,omitempty"`
+	TraceId       string            `json:"traceId,omitempty"`
+	SpanId        string            `json:"spanId,omitempty"`
+	Env           string            `json:"env,omitempty"`
+	Origin        string            `json:"origin,omitempty"`
+	Meta          map[string]string `json:"meta,omitempty"`
+}
+
 // MarketplaceListingProjection DTO.
 type MarketplaceListingProjection struct {
 	ViewId        string                  `json:"viewId,omitempty"`
@@ -6605,6 +6882,7 @@ type InAppNotificationDto struct {
 
 // PaymentsWebhookLogEntry DTO.
 type PaymentsWebhookLogEntry struct {
+	RunId           string  `json:"runId,omitempty"`
 	IntegrationId   string  `json:"integrationId,omitempty"`
 	Source          string  `json:"source,omitempty"`
 	Env             string  `json:"env,omitempty"`
@@ -6613,6 +6891,71 @@ type PaymentsWebhookLogEntry struct {
 	StatusCode      float64 `json:"statusCode,omitempty"`
 	Description     string  `json:"description,omitempty"`
 	ReceivedOn      string  `json:"receivedOn,omitempty"`
+}
+
+// PaymentsWebhookRunOrderDto DTO.
+type PaymentsWebhookRunOrderDto struct {
+	OrderId string `json:"orderId,omitempty"`
+	Kind    string `json:"kind,omitempty"`
+	From    string `json:"from,omitempty"`
+	To      string `json:"to,omitempty"`
+	Reason  string `json:"reason,omitempty"`
+}
+
+// PaymentsWebhookRunActionDto DTO.
+type PaymentsWebhookRunActionDto struct {
+	TriggerId   string   `json:"triggerId,omitempty"`
+	TriggerName string   `json:"triggerName,omitempty"`
+	Action      string   `json:"action,omitempty"`
+	Status      string   `json:"status,omitempty"`
+	Reason      string   `json:"reason,omitempty"`
+	Queue       string   `json:"queue,omitempty"`
+	MessageId   string   `json:"messageId,omitempty"`
+	Deliveries  *float64 `json:"deliveries,omitempty"`
+	NorbixEvent string   `json:"norbixEvent,omitempty"`
+	At          string   `json:"at,omitempty"`
+}
+
+// PaymentsWebhookRunDto DTO.
+type PaymentsWebhookRunDto struct {
+	Id              string                         `json:"id,omitempty"`
+	CallId          string                         `json:"callId,omitempty"`
+	Env             string                         `json:"env,omitempty"`
+	IntegrationId   string                         `json:"integrationId,omitempty"`
+	Source          string                         `json:"source,omitempty"`
+	ReceivedOn      string                         `json:"receivedOn,omitempty"`
+	StatusCode      float64                        `json:"statusCode,omitempty"`
+	Outcome         string                         `json:"outcome,omitempty"`
+	Reason          string                         `json:"reason,omitempty"`
+	Description     string                         `json:"description,omitempty"`
+	EventName       string                         `json:"eventName,omitempty"`
+	ProviderEventId string                         `json:"providerEventId,omitempty"`
+	CorrelationId   string                         `json:"correlationId,omitempty"`
+	Fact            *PaymentEventDto               `json:"fact,omitempty"`
+	Order           *PaymentsWebhookRunOrderDto    `json:"order,omitempty"`
+	Actions         []*PaymentsWebhookRunActionDto `json:"actions,omitempty"`
+	Part            float64                        `json:"part,omitempty"`
+	Parts           float64                        `json:"parts,omitempty"`
+}
+
+// PaymentsWebhookRawCallDto DTO.
+type PaymentsWebhookRawCallDto struct {
+	CallId       string            `json:"callId,omitempty"`
+	ReceivedOn   string            `json:"receivedOn,omitempty"`
+	ContentType  string            `json:"contentType,omitempty"`
+	Body         string            `json:"body,omitempty"`
+	Truncated    bool              `json:"truncated"`
+	MaskedFields float64           `json:"maskedFields,omitempty"`
+	Headers      map[string]string `json:"headers,omitempty"`
+	AnswerStatus float64           `json:"answerStatus,omitempty"`
+	AnswerBody   string            `json:"answerBody,omitempty"`
+	Parts        float64           `json:"parts,omitempty"`
+}
+
+// PaymentsWebhookRunDetailsDto DTO.
+type PaymentsWebhookRunDetailsDto struct {
+	Run *PaymentsWebhookRunDto     `json:"run,omitempty"`
+	Raw *PaymentsWebhookRawCallDto `json:"raw,omitempty"`
 }
 
 // PaymentTriggerProjectionList DTO.
@@ -6633,23 +6976,6 @@ type PaymentsIntegrationListProjection struct {
 type LoggingIntegrationListProjection struct {
 	IntegrationListProjection
 	Provider LoggingProvider `json:"provider,omitempty"`
-}
-
-// TenantLogEntryDto DTO.
-type TenantLogEntryDto struct {
-	Id            string            `json:"id,omitempty"`
-	Timestamp     string            `json:"timestamp,omitempty"`
-	Module        string            `json:"module,omitempty"`
-	Level         string            `json:"level,omitempty"`
-	EventCode     string            `json:"eventCode,omitempty"`
-	Title         string            `json:"title,omitempty"`
-	Message       string            `json:"message,omitempty"`
-	CorrelationId string            `json:"correlationId,omitempty"`
-	TraceId       string            `json:"traceId,omitempty"`
-	SpanId        string            `json:"spanId,omitempty"`
-	Env           string            `json:"env,omitempty"`
-	Origin        string            `json:"origin,omitempty"`
-	Meta          map[string]string `json:"meta,omitempty"`
 }
 
 // AgentOnboardingSnippet DTO.
@@ -8429,6 +8755,73 @@ type GetSmsCampaignMessagesResponse struct {
 	List PaginatedResponse[*SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
+// WorkflowResponse DTO.
+type WorkflowResponse struct {
+	ResponseBase
+	Workflow *WorkflowDto `json:"workflow,omitempty"`
+}
+
+// WorkflowVersionsResponse DTO.
+type WorkflowVersionsResponse struct {
+	ResponseBase
+	Items []*WorkflowVersionSummaryDto `json:"items,omitempty"`
+}
+
+// WorkflowVersionDiffResponse DTO.
+type WorkflowVersionDiffResponse struct {
+	ResponseBase
+	Diff *WorkflowVersionDiffDto `json:"diff,omitempty"`
+}
+
+// ValidateCodeWorkflowResponse DTO.
+type ValidateCodeWorkflowResponse struct {
+	ResponseBase
+	IsValid  bool                          `json:"isValid"`
+	Errors   []*WorkflowValidationIssueDto `json:"errors,omitempty"`
+	Warnings []*WorkflowValidationIssueDto `json:"warnings,omitempty"`
+}
+
+// WorkflowsResponse DTO.
+type WorkflowsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*WorkflowListProjection] `json:"list,omitempty"`
+}
+
+// WorkflowSchemaResponse DTO.
+type WorkflowSchemaResponse struct {
+	ResponseBase
+	Schema *WorkflowSchemaDto `json:"schema,omitempty"`
+}
+
+// InvokeCodeWorkflowResponse DTO.
+type InvokeCodeWorkflowResponse struct {
+	ResponseBase
+	RunId      string               `json:"runId,omitempty"`
+	Status     string               `json:"status,omitempty"`
+	Output     map[string]any       `json:"output,omitempty"`
+	DurationMs *float64             `json:"durationMs,omitempty"`
+	Error      *WorkflowRunErrorDto `json:"error,omitempty"`
+	Run        *WorkflowRunDto      `json:"run,omitempty"`
+}
+
+// WorkflowRunsResponse DTO.
+type WorkflowRunsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*WorkflowRunListProjection] `json:"list,omitempty"`
+}
+
+// WorkflowRunResponse DTO.
+type WorkflowRunResponse struct {
+	ResponseBase
+	Run *WorkflowRunDto `json:"run,omitempty"`
+}
+
+// WorkflowRunLogsResponse DTO.
+type WorkflowRunLogsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*TenantLogEntryDto] `json:"list,omitempty"`
+}
+
 // GetMarketplaceListingResponse DTO.
 type GetMarketplaceListingResponse struct {
 	ResponseBase
@@ -8762,6 +9155,18 @@ type MarkAllNotificationsReadResponse struct {
 type GetPaymentsWebhookLogResponse struct {
 	ResponseBase
 	List []*PaymentsWebhookLogEntry `json:"list,omitempty"`
+}
+
+// GetPaymentsWebhookRunsResponse DTO.
+type GetPaymentsWebhookRunsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*PaymentsWebhookRunDto] `json:"list,omitempty"`
+}
+
+// GetPaymentsWebhookRunResponse DTO.
+type GetPaymentsWebhookRunResponse struct {
+	ResponseBase
+	Item *PaymentsWebhookRunDetailsDto `json:"item,omitempty"`
 }
 
 // GetPaymentsTriggerResponse DTO.
@@ -12138,6 +12543,171 @@ type GetSmsCampaignMessagesRequest struct {
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
+// SaveCodeWorkflow DTO.
+type SaveCodeWorkflow struct {
+	CodeMashRequestBase
+	Definition *WorkflowDefinitionDto `json:"definition,omitempty"`
+}
+
+// PublishCodeWorkflow DTO.
+type PublishCodeWorkflow struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetCodeWorkflowDraft DTO.
+type GetCodeWorkflowDraft struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// DiscardCodeWorkflowDraft DTO.
+type DiscardCodeWorkflowDraft struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetCodeWorkflowVersions DTO.
+type GetCodeWorkflowVersions struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetCodeWorkflowVersionDiff DTO.
+type GetCodeWorkflowVersionDiff struct {
+	CodeMashRequestBase
+	Id          string  `json:"id,omitempty"`
+	FromVersion float64 `json:"fromVersion,omitempty"`
+	ToVersion   float64 `json:"toVersion,omitempty"`
+}
+
+// ValidateCodeWorkflow DTO.
+type ValidateCodeWorkflow struct {
+	CodeMashRequestBase
+	Definition *WorkflowDefinitionDto `json:"definition,omitempty"`
+}
+
+// GetCodeWorkflows DTO.
+type GetCodeWorkflows struct {
+	CodeMashListPaginationRequestBase
+	IsEnabled *bool `json:"isEnabled,omitempty"`
+}
+
+// GetCodeWorkflow DTO.
+type GetCodeWorkflow struct {
+	CodeMashRequestBase
+	Id            string   `json:"id,omitempty"`
+	PinnedVersion *float64 `json:"pinnedVersion,omitempty"`
+}
+
+// DeleteCodeWorkflow DTO.
+type DeleteCodeWorkflow struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// EnableCodeWorkflow DTO.
+type EnableCodeWorkflow struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// DisableCodeWorkflow DTO.
+type DisableCodeWorkflow struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// GetCodeWorkflowSchema DTO.
+type GetCodeWorkflowSchema struct {
+	CodeMashRequestBase
+}
+
+// EnableCodeWorkflows DTO.
+type EnableCodeWorkflows struct {
+	CodeMashRequestBase
+}
+
+// DisableCodeWorkflows DTO.
+type DisableCodeWorkflows struct {
+	CodeMashRequestBase
+}
+
+// InvokeCodeWorkflow DTO.
+type InvokeCodeWorkflow struct {
+	CodeMashRequestBase
+	Id          string         `json:"id,omitempty"`
+	Payload     map[string]any `json:"payload,omitempty"`
+	WaitSeconds *float64       `json:"waitSeconds,omitempty"`
+	RunVersion  string         `json:"runVersion,omitempty"`
+}
+
+// GetCodeWorkflowRuns DTO.
+type GetCodeWorkflowRuns struct {
+	CodeMashListPaginationRequestBase
+	Id     string `json:"id,omitempty"`
+	Status string `json:"status,omitempty"`
+	From   string `json:"from,omitempty"`
+	To     string `json:"to,omitempty"`
+}
+
+// GetCodeWorkflowWaitingRuns DTO.
+type GetCodeWorkflowWaitingRuns struct {
+	CodeMashListPaginationRequestBase
+	Status      string `json:"status,omitempty"`
+	WaitingKind string `json:"waitingKind,omitempty"`
+	Assignee    string `json:"assignee,omitempty"`
+	WorkflowId  string `json:"workflowId,omitempty"`
+	Key         string `json:"key,omitempty"`
+}
+
+// GetCodeWorkflowRun DTO.
+type GetCodeWorkflowRun struct {
+	CodeMashRequestBase
+	RunId string `json:"runId,omitempty"`
+}
+
+// GetCodeWorkflowRunLogs DTO.
+type GetCodeWorkflowRunLogs struct {
+	CodeMashListPaginationRequestBase
+	RunId  string `json:"runId,omitempty"`
+	StepId string `json:"stepId,omitempty"`
+	Level  string `json:"level,omitempty"`
+}
+
+// ResumeCodeWorkflowRun DTO.
+type ResumeCodeWorkflowRun struct {
+	CodeMashRequestBase
+	RunId    string         `json:"runId,omitempty"`
+	StepId   string         `json:"stepId,omitempty"`
+	Decision string         `json:"decision,omitempty"`
+	Payload  map[string]any `json:"payload,omitempty"`
+}
+
+// ResumeCodeWorkflowRunByKey DTO.
+type ResumeCodeWorkflowRunByKey struct {
+	CodeMashRequestBase
+	Id       string         `json:"id,omitempty"`
+	Key      string         `json:"key,omitempty"`
+	StepId   string         `json:"stepId,omitempty"`
+	Decision string         `json:"decision,omitempty"`
+	Payload  map[string]any `json:"payload,omitempty"`
+}
+
+// RetryCodeWorkflowRunStep DTO.
+type RetryCodeWorkflowRunStep struct {
+	CodeMashRequestBase
+	RunId  string `json:"runId,omitempty"`
+	StepId string `json:"stepId,omitempty"`
+}
+
+// CancelCodeWorkflowRun DTO.
+type CancelCodeWorkflowRun struct {
+	CodeMashRequestBase
+	RunId  string `json:"runId,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
 // GetMarketplaceIntegrationAccess DTO.
 type GetMarketplaceIntegrationAccess struct {
 	CodeMashRequestBase
@@ -12573,6 +13143,23 @@ type GetPaymentsWebhookLog struct {
 	CodeMashRequestBase
 	IntegrationId string   `json:"integrationId,omitempty"`
 	Limit         *float64 `json:"limit,omitempty"`
+}
+
+// GetPaymentsWebhookRuns DTO.
+type GetPaymentsWebhookRuns struct {
+	CodeMashListPaginationRequestBase
+	IntegrationId string `json:"integrationId,omitempty"`
+	EventName     string `json:"eventName,omitempty"`
+	TriggerId     string `json:"triggerId,omitempty"`
+	Outcome       string `json:"outcome,omitempty"`
+	FromUtc       string `json:"fromUtc,omitempty"`
+	ToUtc         string `json:"toUtc,omitempty"`
+}
+
+// GetPaymentsWebhookRun DTO.
+type GetPaymentsWebhookRun struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
 }
 
 // DeletePaymentsTrigger DTO.
