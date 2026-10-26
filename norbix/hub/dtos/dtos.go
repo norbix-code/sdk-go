@@ -298,6 +298,20 @@ const (
 	PushProviderFake                 PushProvider = "Fake"
 )
 
+// SmsProvider enum.
+type SmsProvider string
+
+const (
+	SmsProviderTwilio   SmsProvider = "Twilio"
+	SmsProviderVonage   SmsProvider = "Vonage"
+	SmsProviderPlivo    SmsProvider = "Plivo"
+	SmsProviderTelnyx   SmsProvider = "Telnyx"
+	SmsProviderBird     SmsProvider = "Bird"
+	SmsProviderTelesign SmsProvider = "Telesign"
+	SmsProviderSinch    SmsProvider = "Sinch"
+	SmsProviderFake     SmsProvider = "Fake"
+)
+
 // CodeProvider enum.
 type CodeProvider string
 
@@ -469,20 +483,6 @@ const (
 	IntegrationStatusActive         IntegrationStatus = "Active"
 	IntegrationStatusFailed         IntegrationStatus = "Failed"
 	IntegrationStatusDeprovisioning IntegrationStatus = "Deprovisioning"
-)
-
-// SmsProvider enum.
-type SmsProvider string
-
-const (
-	SmsProviderTwilio   SmsProvider = "Twilio"
-	SmsProviderVonage   SmsProvider = "Vonage"
-	SmsProviderPlivo    SmsProvider = "Plivo"
-	SmsProviderTelnyx   SmsProvider = "Telnyx"
-	SmsProviderBird     SmsProvider = "Bird"
-	SmsProviderTelesign SmsProvider = "Telesign"
-	SmsProviderSinch    SmsProvider = "Sinch"
-	SmsProviderFake     SmsProvider = "Fake"
 )
 
 // SchedulerTaskType enum.
@@ -1171,6 +1171,12 @@ type AzureCommunicationEmailIntegrationRequest struct {
 	AccessKey             string        `json:"accessKey,omitempty"`
 	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
 	EventGridKey          string        `json:"eventGridKey,omitempty"`
+}
+
+// FakeEmailIntegrationRequest DTO.
+type FakeEmailIntegrationRequest struct {
+	EmailIntegrationRequest
+	Provider EmailProvider `json:"provider,omitempty"`
 }
 
 // TokenMappingDto DTO.
@@ -1908,6 +1914,92 @@ type AppleApnsPushIntegrationRequest struct {
 	KeyId        string       `json:"keyId,omitempty"`
 	PrivateKey   string       `json:"privateKey,omitempty"`
 	IsProduction bool         `json:"isProduction"`
+}
+
+// FakePushIntegrationRequest DTO.
+type FakePushIntegrationRequest struct {
+	PushIntegrationRequest
+	Provider PushProvider `json:"provider,omitempty"`
+}
+
+// SmsIntegrationRequest DTO.
+type SmsIntegrationRequest struct {
+	IntegrationId   string      `json:"integrationId,omitempty"`
+	Provider        SmsProvider `json:"provider,omitempty"`
+	IntegrationName string      `json:"integrationName,omitempty"`
+	IsEnabled       bool        `json:"isEnabled"`
+}
+
+// BirdSmsIntegrationRequest DTO.
+type BirdSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider   SmsProvider `json:"provider,omitempty"`
+	Originator string      `json:"originator,omitempty"`
+	Region     string      `json:"region,omitempty"`
+	ApiKey     string      `json:"apiKey,omitempty"`
+}
+
+// PlivoSmsIntegrationRequest DTO.
+type PlivoSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider        SmsProvider `json:"provider,omitempty"`
+	AuthId          string      `json:"authId,omitempty"`
+	FromPhoneNumber string      `json:"fromPhoneNumber,omitempty"`
+	AuthToken       string      `json:"authToken,omitempty"`
+}
+
+// SinchSmsIntegrationRequest DTO.
+type SinchSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider        SmsProvider `json:"provider,omitempty"`
+	ServicePlanId   string      `json:"servicePlanId,omitempty"`
+	FromPhoneNumber string      `json:"fromPhoneNumber,omitempty"`
+	ApiKey          string      `json:"apiKey,omitempty"`
+	ApiSecret       string      `json:"apiSecret,omitempty"`
+}
+
+// TelesignSmsIntegrationRequest DTO.
+type TelesignSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider   SmsProvider `json:"provider,omitempty"`
+	CustomerId string      `json:"customerId,omitempty"`
+	FromSender string      `json:"fromSender,omitempty"`
+	ApiKey     string      `json:"apiKey,omitempty"`
+}
+
+// TelnyxSmsIntegrationRequest DTO.
+type TelnyxSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider           SmsProvider `json:"provider,omitempty"`
+	MessagingProfileId string      `json:"messagingProfileId,omitempty"`
+	FromPhoneNumber    string      `json:"fromPhoneNumber,omitempty"`
+	ApiKey             string      `json:"apiKey,omitempty"`
+}
+
+// TwilioSmsIntegrationRequest DTO.
+type TwilioSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider              SmsProvider `json:"provider,omitempty"`
+	AccountSid            string      `json:"accountSid,omitempty"`
+	FromPhoneNumber       string      `json:"fromPhoneNumber,omitempty"`
+	AuthToken             string      `json:"authToken,omitempty"`
+	DeliveryEventsEnabled *bool       `json:"deliveryEventsEnabled,omitempty"`
+	StatusCallbackUrl     string      `json:"statusCallbackUrl,omitempty"`
+}
+
+// VonageSmsIntegrationRequest DTO.
+type VonageSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider   SmsProvider `json:"provider,omitempty"`
+	ApiKey     string      `json:"apiKey,omitempty"`
+	FromSender string      `json:"fromSender,omitempty"`
+	ApiSecret  string      `json:"apiSecret,omitempty"`
+}
+
+// FakeSmsIntegrationRequest DTO.
+type FakeSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider SmsProvider `json:"provider,omitempty"`
 }
 
 // CodeIntegrationRequest DTO.
@@ -3280,6 +3372,13 @@ type SmtpEmailIntegrationDto struct {
 	Port     float64 `json:"port,omitempty"`
 }
 
+// AzureCommunicationEmailIntegrationDto DTO.
+type AzureCommunicationEmailIntegrationDto struct {
+	EmailIntegrationDto
+	Endpoint              string `json:"endpoint,omitempty"`
+	DeliveryEventsEnabled *bool  `json:"deliveryEventsEnabled,omitempty"`
+}
+
 // FakeEmailIntegrationDto DTO.
 type FakeEmailIntegrationDto struct {
 	EmailIntegrationDto
@@ -4389,14 +4488,6 @@ type SaveSmsTemplate struct {
 	CommunicationChannel CommunicationChannel        `json:"communicationChannel,omitempty"`
 	Tags                 []string                    `json:"tags,omitempty"`
 	Translations         []*SmsMessageTranslationDto `json:"translations,omitempty"`
-}
-
-// SmsIntegrationRequest DTO.
-type SmsIntegrationRequest struct {
-	IntegrationId   string      `json:"integrationId,omitempty"`
-	Provider        SmsProvider `json:"provider,omitempty"`
-	IntegrationName string      `json:"integrationName,omitempty"`
-	IsEnabled       bool        `json:"isEnabled"`
 }
 
 // SavePushTemplate DTO.
@@ -9420,6 +9511,7 @@ type InternalsTypeGen struct {
 	Typegen_2_SendGridEmailIntegrationRequest                    *SendGridEmailIntegrationRequest                   `json:"typegen_2_SendGridEmailIntegrationRequest,omitempty"`
 	Typegen_3_MailGunEmailIntegrationRequest                     *MailGunEmailIntegrationRequest                    `json:"typegen_3_MailGunEmailIntegrationRequest,omitempty"`
 	Typegen_3a_AzureCommunicationEmailIntegrationRequest         *AzureCommunicationEmailIntegrationRequest         `json:"typegen_3a_AzureCommunicationEmailIntegrationRequest,omitempty"`
+	Typegen_297_FakeEmailIntegrationRequest                      *FakeEmailIntegrationRequest                       `json:"typegen_297_FakeEmailIntegrationRequest,omitempty"`
 	Typegen_4_EmailToAllUsersDeliverySettingsRequest             *EmailToAllUsersDeliverySettingsRequest            `json:"typegen_4_EmailToAllUsersDeliverySettingsRequest,omitempty"`
 	Typegen_5_EmailToAccountUsersDeliverySettingsRequest         *EmailToAccountUsersDeliverySettingsRequest        `json:"typegen_5_EmailToAccountUsersDeliverySettingsRequest,omitempty"`
 	Typegen_6_EmailToCollectionRecordsDeliverySettingsRequest    *EmailToCollectionRecordsDeliverySettingsRequest   `json:"typegen_6_EmailToCollectionRecordsDeliverySettingsRequest,omitempty"`
@@ -9484,6 +9576,15 @@ type InternalsTypeGen struct {
 	Typegen_60_FirefoxWebPushIntegrationRequest                  *FirefoxWebPushIntegrationRequest                  `json:"typegen_60_FirefoxWebPushIntegrationRequest,omitempty"`
 	Typegen_61_AndroidFirebasePushIntegrationRequest             *AndroidFirebasePushIntegrationRequest             `json:"typegen_61_AndroidFirebasePushIntegrationRequest,omitempty"`
 	Typegen_62_AppleApnsPushIntegrationRequest                   *AppleApnsPushIntegrationRequest                   `json:"typegen_62_AppleApnsPushIntegrationRequest,omitempty"`
+	Typegen_298_FakePushIntegrationRequest                       *FakePushIntegrationRequest                        `json:"typegen_298_FakePushIntegrationRequest,omitempty"`
+	Typegen_299_BirdSmsIntegrationRequest                        *BirdSmsIntegrationRequest                         `json:"typegen_299_BirdSmsIntegrationRequest,omitempty"`
+	Typegen_300_PlivoSmsIntegrationRequest                       *PlivoSmsIntegrationRequest                        `json:"typegen_300_PlivoSmsIntegrationRequest,omitempty"`
+	Typegen_301_SinchSmsIntegrationRequest                       *SinchSmsIntegrationRequest                        `json:"typegen_301_SinchSmsIntegrationRequest,omitempty"`
+	Typegen_302_TelesignSmsIntegrationRequest                    *TelesignSmsIntegrationRequest                     `json:"typegen_302_TelesignSmsIntegrationRequest,omitempty"`
+	Typegen_303_TelnyxSmsIntegrationRequest                      *TelnyxSmsIntegrationRequest                       `json:"typegen_303_TelnyxSmsIntegrationRequest,omitempty"`
+	Typegen_304_TwilioSmsIntegrationRequest                      *TwilioSmsIntegrationRequest                       `json:"typegen_304_TwilioSmsIntegrationRequest,omitempty"`
+	Typegen_305_VonageSmsIntegrationRequest                      *VonageSmsIntegrationRequest                       `json:"typegen_305_VonageSmsIntegrationRequest,omitempty"`
+	Typegen_306_FakeSmsIntegrationRequest                        *FakeSmsIntegrationRequest                         `json:"typegen_306_FakeSmsIntegrationRequest,omitempty"`
 	Typegen_65_AwsLambdaCodeIntegrationRequest                   *AwsLambdaCodeIntegrationRequest                   `json:"typegen_65_AwsLambdaCodeIntegrationRequest,omitempty"`
 	Typegen_66_AzureFunctionsCodeIntegrationRequest              *AzureFunctionsCodeIntegrationRequest              `json:"typegen_66_AzureFunctionsCodeIntegrationRequest,omitempty"`
 	Typegen_67_GoogleCloudFunctionsCodeIntegrationRequest        *GoogleCloudFunctionsCodeIntegrationRequest        `json:"typegen_67_GoogleCloudFunctionsCodeIntegrationRequest,omitempty"`
@@ -9617,6 +9718,7 @@ type InternalsTypeGen struct {
 	Typegen_181_MailGunEmailIntegrationDto                       *MailGunEmailIntegrationDto                        `json:"typegen_181_MailGunEmailIntegrationDto,omitempty"`
 	Typegen_182_SendGridEmailIntegrationDto                      *SendGridEmailIntegrationDto                       `json:"typegen_182_SendGridEmailIntegrationDto,omitempty"`
 	Typegen_183_SmtpEmailIntegrationDto                          *SmtpEmailIntegrationDto                           `json:"typegen_183_SmtpEmailIntegrationDto,omitempty"`
+	Typegen_307_AzureCommunicationEmailIntegrationDto            *AzureCommunicationEmailIntegrationDto             `json:"typegen_307_AzureCommunicationEmailIntegrationDto,omitempty"`
 	Typegen_248_FakeEmailIntegrationDto                          *FakeEmailIntegrationDto                           `json:"typegen_248_FakeEmailIntegrationDto,omitempty"`
 	Typegen_192_WebhookIntegrationDto                            *WebhookIntegrationDto                             `json:"typegen_192_WebhookIntegrationDto,omitempty"`
 	Typegen_193_WebhookDestinationDto                            *WebhookDestinationDto                             `json:"typegen_193_WebhookDestinationDto,omitempty"`
