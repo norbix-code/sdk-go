@@ -58,6 +58,10 @@ func emailCases() []emailCase {
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.StopEmailCampaign(ctx, testEmailID, body, nil)
 			}},
+		{"RetryFailedEmailNotifications", http.MethodPost, "/v2/notifications/email/campaigns/" + testEmailID + "/retry-failed",
+			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
+				return n.RetryFailedEmailNotifications(ctx, testEmailID, body, nil)
+			}},
 		{"GetEmailCampaign", http.MethodGet, "/v2/notifications/email/campaigns/" + testEmailID,
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.GetEmailCampaign(ctx, testEmailID, nil, nil)
@@ -276,12 +280,13 @@ func TestEmailEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Email surface is 50 routes (gateway endpoint manifest, Email
+// The whole Email surface is 51 routes (gateway endpoint manifest, Email
 // campaign 2026-10: the duplicate campaigns/{campaignId}/messages/{notificationId}
-// read was removed, GET /{version}/email/preferences was added). If the
+// read was removed, GET /{version}/email/preferences was added; gateway 2.3.9
+// added POST campaigns/{Id}/retry-failed). If the
 // gateway grows or drops one, this count changes and the test says so.
 func TestEmailSurfaceSize(t *testing.T) {
-	const want = 50
+	const want = 51
 	if got := len(emailCases()); got != want {
 		t.Errorf("email endpoint count: got %d want %d", got, want)
 	}
@@ -377,4 +382,14 @@ func TestOneClickUnsubscribeNeedsNoSignIn(t *testing.T) {
 	if sawAuth {
 		t.Error("authorization header sent without credentials")
 	}
+}
+
+// RetryFailedEmailNotifications sends the selection as the gateway reads it:
+// the notification ids, the ambiguous flag, the categories and the
+// idempotency key all reach the wire by their JSON names.
+func TestRetryFailedEmailNotificationsSendsTheSelection(t *testing.T) {
+	got := sendAndCapture(t, func(m *NotificationsModule) error {
+		return m.RetryFailedEmailNotifications(context.Background(), testCampaignID, retryFailedBody, nil)
+	})
+	assertFields(t, got, retryFailedBody)
 }

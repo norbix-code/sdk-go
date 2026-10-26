@@ -15,7 +15,7 @@ import (
 // Every Sms endpoint the gateway exposes, and the module method that calls
 // it. Each case asserts the verb and the fully-resolved path — version
 // substituted, route tokens filled — so a wrong path or a swapped verb fails
-// here instead of at runtime. The 34 routes are the Sms rows of the gateway's
+// here instead of at runtime. The 35 routes are the Sms rows of the gateway's
 // endpoint manifest (typegen coverage/endpoints.hub.json).
 //
 // Nothing leaves the process: every call goes to a local test server, so no
@@ -155,6 +155,10 @@ func smsCases() []smsCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.StopSmsCampaign(ctx, testCampaignID, nil, nil)
 			}},
+		{"RetryFailedSmsNotifications", http.MethodPost, "/v2/notifications/sms/campaigns/" + testCampaignID + "/retry-failed",
+			func(ctx context.Context, m *NotificationsModule) error {
+				return m.RetryFailedSmsNotifications(ctx, testCampaignID, body, nil)
+			}},
 		{"GetSmsCampaignBatches", http.MethodGet, "/v2/notifications/sms/campaigns/" + testCampaignID + "/batches",
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.GetSmsCampaignBatches(ctx, testCampaignID, nil, nil)
@@ -216,13 +220,13 @@ func TestSmsEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Sms surface is 34 routes — the Sms rows of the gateway's endpoint
+// The whole Sms surface is 35 routes — the Sms rows of the gateway's endpoint
 // manifest. If the gateway grows one and the module gains a method, this
 // count changes and the test says so, so a new endpoint cannot arrive untested.
 // (The old SmsRazorSyntaxCheck is not among them: the gateway never served
 // POST /{version}/notifications/sms/templates/razor-syntax-check.)
 func TestSmsSurfaceSize(t *testing.T) {
-	const want = 34
+	const want = 35
 	if got := len(smsCases()); got != want {
 		t.Errorf("sms endpoint count: got %d want %d", got, want)
 	}
@@ -358,4 +362,13 @@ func TestGetSmsCampaignsSendsTheCampaignIdFilter(t *testing.T) {
 	if got := query.Get("pageSize"); got != "10" {
 		t.Errorf("pageSize: got %q want %q", got, "10")
 	}
+}
+
+// RetryFailedSmsNotifications sends the selection as the gateway reads it
+// (same body shape as the Email and Push retries).
+func TestRetryFailedSmsNotificationsSendsTheSelection(t *testing.T) {
+	got := sendAndCapture(t, func(m *NotificationsModule) error {
+		return m.RetryFailedSmsNotifications(context.Background(), testCampaignID, retryFailedBody, nil)
+	})
+	assertFields(t, got, retryFailedBody)
 }

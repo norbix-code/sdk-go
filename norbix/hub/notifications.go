@@ -553,6 +553,26 @@ func (m *NotificationsModule) StopEmailCampaign(ctx context.Context, id string, 
 	}, out)
 }
 
+// RetryFailedEmailNotifications performs POST /{version}/notifications/email/campaigns/{Id}/retry-failed (scope: project).
+// Re-sends the campaign's notifications that ended in a retryable Failed
+// state (and the Ambiguous ones when `includeAmbiguous` is true). `req` may
+// narrow the selection with `notificationIds` or `categories` and carry an
+// `idempotencyKey`; the answer is a RetryFailedEmailNotificationsResponse with
+// the retry request id, how many were selected and how many were skipped.
+func (m *NotificationsModule) RetryFailedEmailNotifications(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/campaigns/{Id}/retry-failed",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetEmailCampaign performs GET /{version}/notifications/email/campaigns/{id} (scope: project).
 func (m *NotificationsModule) GetEmailCampaign(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1248,6 +1268,26 @@ func (m *NotificationsModule) StopPushCampaign(ctx context.Context, id string, r
 	}, out)
 }
 
+// RetryFailedPushNotifications performs POST /{version}/notifications/push/campaigns/{Id}/retry-failed (scope: project).
+// Re-sends the campaign's notifications that ended in a retryable Failed
+// state (and the Ambiguous ones when `includeAmbiguous` is true). `req` may
+// narrow the selection with `notificationIds` or `categories` and carry an
+// `idempotencyKey`; the answer is a RetryFailedPushNotificationsResponse with
+// the retry request id, how many were selected and how many were skipped.
+func (m *NotificationsModule) RetryFailedPushNotifications(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/campaigns/{Id}/retry-failed",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetPushCampaignMessages performs GET /{version}/notifications/push/campaigns/{campaignId}/messages (scope: project).
 func (m *NotificationsModule) GetPushCampaignMessages(ctx context.Context, campaignId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1399,6 +1439,26 @@ func (m *NotificationsModule) StopSmsCampaign(ctx context.Context, id string, re
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/sms/campaigns/{Id}/stop",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RetryFailedSmsNotifications performs POST /{version}/notifications/sms/campaigns/{Id}/retry-failed (scope: project).
+// Re-sends the campaign's notifications that ended in a retryable Failed
+// state (and the Ambiguous ones when `includeAmbiguous` is true). `req` may
+// narrow the selection with `notificationIds` or `categories` and carry an
+// `idempotencyKey`; the answer is a RetryFailedSmsNotificationsResponse with
+// the retry request id, how many were selected and how many were skipped.
+func (m *NotificationsModule) RetryFailedSmsNotifications(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/sms/campaigns/{Id}/retry-failed",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,

@@ -142,6 +142,35 @@ instead. Endpoints that answer with raw bytes rather than a document (file
 download, the public file link — the ones you pass a `*[]byte` to) are not JSON
 and are unchanged.
 
+### Notifications: delivery state, attempts, retry the failed ones (gateway 2.3.9)
+
+Every campaign notification row (`dtos.CampaignBatchNotificationDto` and its
+Email / SMS / Push subtypes) now carries its delivery `State`
+(`NotificationDeliveryState`: Pending, Sending, Retrying, Accepted, Failed,
+Blocked, Cancelled), `StateChangedAt`, the send `Attempts`
+(`[]*NotificationAttemptDto` — outcome, error category, provider ref, trigger),
+the provider's `DeliveryEvents` (`[]*NotificationDeliveryEventDto` — Delivered,
+Bounced, Complained, Rejected, Deferred) and the final `DeliveryOutcome`.
+`CampaignStatsDto` adds `FailedRetryable` and `Cancelled`.
+
+`c.Hub.Notifications.RetryFailedEmailNotifications(ctx, campaignID, req, &out)`,
+`RetryFailedSmsNotifications` and `RetryFailedPushNotifications` re-send the
+campaign's retryable failures (`POST …/campaigns/{Id}/retry-failed`). `req`
+may carry `notificationIds`, `categories`, `includeAmbiguous` and an
+`idempotencyKey`; the answer (`dtos.RetryFailed{Email,Sms,Push}NotificationsResponse`)
+says how many were selected and skipped and whether the call was a replay.
+
+Delivery events are opt-in per integration: `DeliveryEventsEnabled` plus
+`SnsTopicArn` (AWS SES), `EventWebhookPublicKey` (SendGrid) or
+`StatusCallbackUrl` (Twilio). `EmailProviderAzureCommunication` and
+`dtos.AzureCommunicationEmailIntegrationRequest` (`Endpoint`, `AccessKey`,
+`EventGridKey`) add Azure Communication Services as an email provider.
+
+On the API, `dtos.AuthDto.CredentialVersion` says which password / passkey
+generation a login holds; `ChangePassword` and `ConfirmPasswordReset` answer
+with `dtos.CredentialChangedResponse` (`AuthId`, `CredentialVersion`) — pass
+it as `out`.
+
 ### Email: stop a campaign, check a domain, read preferences from a link
 
 `c.Hub.Notifications.StopEmailCampaign`, `GetEmailDisableDependencies` and `CheckEmailIntegrationDomainHealth` cover the Email campaign, module and integration checks; `c.Hub.Email.GetEmailPreferencesByLink(ctx, map[string]any{"token": t}, &out)` reads the preferences behind a signed unsubscribe link and needs no API key. To read one campaign message use `GetEmailCampaignBatchNotification(ctx, campaignID, batchID, notificationID, …)` (the `…/messages/{id}` methods were removed with their gateway route).
