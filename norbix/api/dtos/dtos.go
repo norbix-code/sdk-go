@@ -100,6 +100,7 @@ const (
 	TriggerActionTypeWebhookCall TriggerActionType = "WebhookCall"
 	TriggerActionTypeSseCall     TriggerActionType = "SseCall"
 	TriggerActionTypeMarketplace TriggerActionType = "Marketplace"
+	TriggerActionTypeWorkflow    TriggerActionType = "Workflow"
 )
 
 // FileProvider enum.
