@@ -573,6 +573,8 @@ destination or a Code function hears `payments.order.paid` (also
 webhook payload with `webhooks.DecodePayload[norbix.PaymentOrderEvent]`, or read
 `event.AsPaymentOrder()` in a Code function; de-duplicate on `OrderEventID`.
 
+Debugging a payment trigger: `c.Hub.Payments.GetPaymentsWebhookRuns(ctx, req, &out)` lists the received gateway webhooks (30 days; filters `integrationId`, `eventName`, `triggerId`, `outcome` = applied / ignored / refused / failed, `fromUtc`, `toUtc`, cursor paging) and `GetPaymentsWebhookRun(ctx, "pwr_…", nil, &out)` reads one: the fact, Norbix's answer, the order change, every trigger's action outcome and the masked raw call (7 days).
+
 ## Webhooks
 
 The `norbix/webhooks` package verifies, parses, normalises, and dispatches
