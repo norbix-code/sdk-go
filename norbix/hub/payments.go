@@ -49,6 +49,41 @@ func (m *PaymentsModule) GetPaymentsWebhookLog(ctx context.Context, req map[stri
 	}, out)
 }
 
+// GetPaymentsWebhookRuns performs GET /{version}/payments/webhooks/runs (scope: project).
+// Received payment-gateway webhooks as records, newest first, kept 30 days: the
+// event, Norbix's answer, the order change and every trigger's action outcome.
+// Optional filters integrationId, eventName, triggerId, outcome (applied |
+// ignored | refused | failed | all), fromUtc, toUtc and cursor paging
+// (pageSize, startingAfter, endingBefore) (request type dtos.GetPaymentsWebhookRuns).
+func (m *PaymentsModule) GetPaymentsWebhookRuns(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/webhooks/runs",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetPaymentsWebhookRun performs GET /{version}/payments/webhooks/runs/{Id} (scope: project).
+// One received payment webhook (id pwr_…): the payment fact, the order change,
+// every trigger's action outcome, and the raw call with the payer's values
+// masked (kept 7 days, null after) (request type dtos.GetPaymentsWebhookRun).
+func (m *PaymentsModule) GetPaymentsWebhookRun(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/webhooks/runs/{Id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // DeletePaymentsTrigger performs DELETE /{version}/payments/triggers/{triggerId} (scope: project).
 func (m *PaymentsModule) DeletePaymentsTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
