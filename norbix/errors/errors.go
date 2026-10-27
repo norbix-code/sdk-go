@@ -34,6 +34,12 @@ const (
 	CodeFunctionEventInvalid     = "NORBIX_FUNCTION_EVENT_INVALID"
 	CodeFunctionEventUnsupported = "NORBIX_FUNCTION_EVENT_UNSUPPORTED"
 	CodeFunctionEventNoSlot      = "NORBIX_FUNCTION_EVENT_NO_SLOT"
+
+	// A workflow run did not finish or start waiting before the wait helper's
+	// timeout (see hub.CodeModule.WaitForWorkflowRun), or the run detail came
+	// back without a run.
+	CodeWorkflowRunTimeout = "NORBIX_WORKFLOW_RUN_TIMEOUT"
+	CodeWorkflowRunMissing = "NORBIX_WORKFLOW_RUN_MISSING"
 )
 
 // Item is one error inside the gateway's responseStatus.errors list.
