@@ -8,6 +8,7 @@ import "github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 // Namespace bundles every API module.
 type Namespace struct {
 	Ai         *AiModule
+	Code       *CodeModule
 	Database   *DatabaseModule
 	Echo       *EchoModule
 	Files      *FilesModule
@@ -21,6 +22,7 @@ type Namespace struct {
 func NewNamespace(t *transport.Transport) *Namespace {
 	return &Namespace{
 		Ai:         &AiModule{t: t},
+		Code:       &CodeModule{t: t},
 		Database:   &DatabaseModule{t: t},
 		Echo:       &EchoModule{t: t},
 		Files:      &FilesModule{t: t},

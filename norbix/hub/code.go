@@ -637,3 +637,407 @@ func (m *CodeModule) GetMarketplaceFunctionRuns(ctx context.Context, req map[str
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// Workflows (beta) — gateway campaign audit/workflows, docs/architecture/Code.Workflows.md §7.
+// Workflows are in beta; bugs may occur. Every workflow method below says so with "Beta:".
+// Path ids are positional arguments; leave them out of req.
+
+// Beta: GetCodeWorkflows performs GET /{version}/code/workflows (scope: project).
+// Query: isEnabled?, pageSize?, startingAfter?, endingBefore? (dtos.GetCodeWorkflows). Answers dtos.WorkflowsResponse.
+func (m *CodeModule) GetCodeWorkflows(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: SaveCodeWorkflow performs PUT /{version}/code/workflows (scope: project).
+// Body: definition (dtos.WorkflowDefinitionDto) — creates the draft when definition.workflowId is
+// absent, updates the draft otherwise. Answers dtos.WorkflowResponse.
+func (m *CodeModule) SaveCodeWorkflow(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: ValidateCodeWorkflow performs POST /{version}/code/workflows/validate (scope: project).
+// Body: definition. Runs every save check and writes nothing. Answers dtos.ValidateCodeWorkflowResponse.
+func (m *CodeModule) ValidateCodeWorkflow(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/validate",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowSchema performs GET /{version}/code/workflows/schema (scope: project).
+// Answers dtos.WorkflowSchemaResponse: the definition JSON Schema, the step kinds and the binding families.
+func (m *CodeModule) GetCodeWorkflowSchema(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/schema",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: EnableCodeWorkflows performs PUT /{version}/code/workflows/enable (scope: project).
+// Turns the workflows beta switch on for the environment. Answers dtos.EmptyResponse.
+func (m *CodeModule) EnableCodeWorkflows(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/enable",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: DisableCodeWorkflows performs PUT /{version}/code/workflows/disable (scope: project).
+// Turns the workflows beta switch off for the environment. Answers dtos.EmptyResponse.
+func (m *CodeModule) DisableCodeWorkflows(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/disable",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflow performs GET /{version}/code/workflows/{Id} (scope: project).
+// Query: pinnedVersion? (the latest published version when absent). Answers dtos.WorkflowResponse.
+func (m *CodeModule) GetCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: DeleteCodeWorkflow performs DELETE /{version}/code/workflows/{Id} (scope: project).
+// Waiting runs are cancelled; runs in flight finish. Answers dtos.EmptyResponse.
+func (m *CodeModule) DeleteCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: PublishCodeWorkflow performs POST /{version}/code/workflows/{Id}/publish (scope: project).
+// The draft becomes the next published version. Answers dtos.WorkflowResponse.
+func (m *CodeModule) PublishCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/publish",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowDraft performs GET /{version}/code/workflows/{Id}/draft (scope: project).
+// Answers dtos.WorkflowResponse with the draft as definition.
+func (m *CodeModule) GetCodeWorkflowDraft(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/draft",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: DiscardCodeWorkflowDraft performs DELETE /{version}/code/workflows/{Id}/draft (scope: project).
+// Answers dtos.EmptyResponse.
+func (m *CodeModule) DiscardCodeWorkflowDraft(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/draft",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowVersions performs GET /{version}/code/workflows/{Id}/versions (scope: project).
+// Answers dtos.WorkflowVersionsResponse.
+func (m *CodeModule) GetCodeWorkflowVersions(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/versions",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowVersionDiff performs GET /{version}/code/workflows/{Id}/versions/diff (scope: project).
+// Query: fromVersion, toVersion. Answers dtos.WorkflowVersionDiffResponse.
+func (m *CodeModule) GetCodeWorkflowVersionDiff(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/versions/diff",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: EnableCodeWorkflow performs PUT /{version}/code/workflows/{Id}/enable (scope: project).
+// Answers dtos.WorkflowResponse.
+func (m *CodeModule) EnableCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/enable",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: DisableCodeWorkflow performs PUT /{version}/code/workflows/{Id}/disable (scope: project).
+// No new run starts from any source; runs in flight continue. Answers dtos.WorkflowResponse.
+func (m *CodeModule) DisableCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/disable",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: InvokeCodeWorkflow performs POST /{version}/code/workflows/{Id}/invoke (scope: project).
+// Body: payload?, waitSeconds? (0–30), runVersion? ("draft" or a version number as a string).
+// Answers dtos.InvokeCodeWorkflowResponse; follow a run that is not finished with WaitForWorkflowRun.
+func (m *CodeModule) InvokeCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/invoke",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowRuns performs GET /{version}/code/workflows/{Id}/runs (scope: project).
+// Query: status?, from?, to?, pageSize?, startingAfter?, endingBefore?. Answers dtos.WorkflowRunsResponse,
+// newest first.
+func (m *CodeModule) GetCodeWorkflowRuns(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/runs",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: ResumeCodeWorkflowRunByKey performs POST /{version}/code/workflows/{Id}/resume (scope: project).
+// Body: key, stepId?, decision? ("approved" | "rejected"), payload?. Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) ResumeCodeWorkflowRunByKey(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/resume",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowWaitingRuns performs GET /{version}/code/workflows/runs (scope: project).
+// Query: status? (default waiting), waitingKind?, assignee? ("me" or a usr_ id), workflowId?, key?,
+// pageSize?, startingAfter?, endingBefore?. The inbox of runs waiting on a person (dtos.WorkflowRunsResponse).
+func (m *CodeModule) GetCodeWorkflowWaitingRuns(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/runs",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowRun performs GET /{version}/code/workflows/runs/{RunId} (scope: project).
+// Answers dtos.WorkflowRunResponse: the run header and every step execution (attempt, pass, input, output, error).
+func (m *CodeModule) GetCodeWorkflowRun(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/runs/{RunId}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowRunLogs performs GET /{version}/code/workflows/runs/{RunId}/logs (scope: project).
+// Query: stepId?, level?, pageSize?, startingAfter?, endingBefore?. Answers dtos.WorkflowRunLogsResponse.
+func (m *CodeModule) GetCodeWorkflowRunLogs(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/runs/{RunId}/logs",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: ResumeCodeWorkflowRun performs POST /{version}/code/workflows/runs/{RunId}/resume (scope: project).
+// Body: stepId?, decision? ("approved" | "rejected"), payload?. Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) ResumeCodeWorkflowRun(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/runs/{RunId}/resume",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: RetryCodeWorkflowRunStep performs POST /{version}/code/workflows/runs/{RunId}/retry (scope: project).
+// Body: stepId? (the failed step by default). Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) RetryCodeWorkflowRunStep(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/runs/{RunId}/retry",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: CancelCodeWorkflowRun performs POST /{version}/code/workflows/runs/{RunId}/cancel (scope: project).
+// Body: reason?. Stops a running or waiting run. Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) CancelCodeWorkflowRun(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/runs/{RunId}/cancel",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: OpenCodeWorkflowResumeLink performs GET /{version}/code/workflows/resume/{Token} (scope: optional — public; the signed token in the link is the key, so no API key or session is needed).
+// Checks a signed resume link and shows what it would do; nothing changes.
+// Answers dtos.CodeWorkflowResumeLinkResponse.
+func (m *CodeModule) OpenCodeWorkflowResumeLink(ctx context.Context, token string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Token": token,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/resume/{Token}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
+	}, out)
+}
+
+// Beta: UseCodeWorkflowResumeLink performs POST /{version}/code/workflows/resume/{Token} (scope: optional — public; the signed token in the link is the key, so no API key or session is needed).
+// Answers a signed resume link: resumes the run as the link's assignee. Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) UseCodeWorkflowResumeLink(ctx context.Context, token string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Token": token,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/resume/{Token}",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
+	}, out)
+}
