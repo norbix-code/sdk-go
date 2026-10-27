@@ -832,6 +832,50 @@ err := client.Hub.Code.SetMarketplaceIntegrationRoleAccess(ctx, "int_…", map[s
 }, nil)
 ```
 
+## Workflows (beta)
+
+Workflows are in beta; bugs may occur. A workflow is a definition of steps
+(actions, data steps, waits, branches) saved as a draft, published as a
+version and run from a trigger, a scheduled task or a call. The Hub Code
+module has the 26 routes under `/{version}/code/workflows` (`SaveCodeWorkflow`,
+`ValidateCodeWorkflow`, `PublishCodeWorkflow`, `GetCodeWorkflowDraft`,
+`GetCodeWorkflowVersions`, `GetCodeWorkflowVersionDiff`, `InvokeCodeWorkflow`,
+`GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
+`ResumeCodeWorkflowRun`, `RetryCodeWorkflowRunStep`, `CancelCodeWorkflowRun`,
+`GetCodeWorkflowSchema`, `EnableCodeWorkflows`, …); the request and answer types
+are the generated `dtos.*`. The API client has the four an app user needs
+(`client.API.Code`): the inbox of runs waiting on them
+(`GetCodeWorkflowWaitingRuns`, `assignee: "me"`), `ResumeCodeWorkflowRun` and
+the signed resume link from a notification (`OpenCodeWorkflowResumeLink`,
+`UseCodeWorkflowResumeLink` — no sign-in needed, the token is the key).
+
+Two helpers: `client.Hub.Code.WaitForWorkflowRun` reads the run until its
+status is `succeeded`, `failed`, `cancelled` or `waiting` (defaults: 60 s
+timeout, a read every second; a timeout is a `*hub.WorkflowRunTimeoutError`
+with `LastStatus` and `LastRun`), and `hub.StepOutput[T]` decodes the output of
+a step's latest successful execution (highest pass, then highest attempt).
+
+```go
+var started dtos.InvokeCodeWorkflowResponse
+err := client.Hub.Code.InvokeCodeWorkflow(ctx, "wf_…", map[string]any{
+	"payload": map[string]any{"orderId": "ord_1042"},
+}, &started)
+
+run, err := client.Hub.Code.WaitForWorkflowRun(ctx, started.RunId, hub.WaitForWorkflowRunOptions{
+	Timeout: 2 * time.Minute, PollInterval: 2 * time.Second,
+})
+var timeout *hub.WorkflowRunTimeoutError
+if errors.As(err, &timeout) {
+	// still timeout.LastStatus ("running") — read it again later
+}
+
+type Charge struct {
+	PaymentID string `json:"paymentId"`
+}
+charge, ok, err := hub.StepOutput[Charge](run, "charge")
+// ok is false when the step never succeeded in this run
+```
+
 ## End-user AI chat and project AI settings
 
 `client.API.Ai` is the end-user AI chat for a signed-in project user:
