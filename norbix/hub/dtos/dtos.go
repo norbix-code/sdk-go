@@ -1793,9 +1793,11 @@ type ShopifyPaymentIntegrationRequest struct {
 // WooCommercePaymentIntegrationRequest DTO.
 type WooCommercePaymentIntegrationRequest struct {
 	PaymentIntegrationRequest
-	Provider      PaymentGatewayPlatform `json:"provider,omitempty"`
-	StoreUrl      string                 `json:"storeUrl,omitempty"`
-	WebhookSecret string                 `json:"webhookSecret,omitempty"`
+	Provider       PaymentGatewayPlatform `json:"provider,omitempty"`
+	StoreUrl       string                 `json:"storeUrl,omitempty"`
+	WebhookSecret  string                 `json:"webhookSecret,omitempty"`
+	ConsumerKey    string                 `json:"consumerKey,omitempty"`
+	ConsumerSecret string                 `json:"consumerSecret,omitempty"`
 }
 
 // MagentoPaymentIntegrationRequest DTO.
@@ -2418,6 +2420,13 @@ type TriggerActionMarketplaceDto struct {
 	RunAsUserId string            `json:"runAsUserId,omitempty"`
 }
 
+// TriggerActionWorkflowDto DTO.
+type TriggerActionWorkflowDto struct {
+	TriggerActionDto
+	WorkflowRef string            `json:"workflowRef,omitempty"`
+	Payload     map[string]string `json:"payload,omitempty"`
+}
+
 // RequestBase DTO.
 type RequestBase struct {
 	TimeZoneId    string `json:"timeZoneId,omitempty"`
@@ -2734,10 +2743,23 @@ type GoogleCloudFunctionsCodeIntegrationDto struct {
 	Region    string `json:"region,omitempty"`
 }
 
+// PaymentsIntegrationConnectionDto DTO.
+type PaymentsIntegrationConnectionDto struct {
+	Provider          string `json:"provider,omitempty"`
+	AccountId         string `json:"accountId,omitempty"`
+	AccountName       string `json:"accountName,omitempty"`
+	ConnectedBy       string `json:"connectedBy,omitempty"`
+	ConnectedAtUtc    string `json:"connectedAtUtc,omitempty"`
+	IsConnected       bool   `json:"isConnected"`
+	DisconnectedAtUtc string `json:"disconnectedAtUtc,omitempty"`
+	DisconnectReason  string `json:"disconnectReason,omitempty"`
+}
+
 // PaymentsIntegrationDto DTO.
 type PaymentsIntegrationDto struct {
 	IntegrationDto
-	GatewayPlatform PaymentGatewayPlatform `json:"gatewayPlatform,omitempty"`
+	GatewayPlatform PaymentGatewayPlatform            `json:"gatewayPlatform,omitempty"`
+	Connection      *PaymentsIntegrationConnectionDto `json:"connection,omitempty"`
 }
 
 // AdyenPaymentIntegrationDto DTO.
@@ -4037,6 +4059,14 @@ type MarketplaceFunctionSchedulerTaskRequest struct {
 	Payload    map[string]string `json:"payload,omitempty"`
 }
 
+// WorkflowSchedulerTaskRequest DTO.
+type WorkflowSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type        SchedulerTaskType `json:"type,omitempty"`
+	WorkflowRef string            `json:"workflowRef,omitempty"`
+	Payload     map[string]string `json:"payload,omitempty"`
+}
+
 // AwsCloudWatchLoggingIntegrationRequest DTO.
 type AwsCloudWatchLoggingIntegrationRequest struct {
 	LoggingIntegrationRequest
@@ -4054,6 +4084,25 @@ type AwsCloudWatchLoggingIntegrationDto struct {
 	Region    string `json:"region,omitempty"`
 	LogGroup  string `json:"logGroup,omitempty"`
 	LogStream string `json:"logStream,omitempty"`
+}
+
+// QuickConnectProviderDto DTO.
+type QuickConnectProviderDto struct {
+	Module              string   `json:"module,omitempty"`
+	Provider            string   `json:"provider,omitempty"`
+	Available           bool     `json:"available"`
+	CallbackKind        string   `json:"callbackKind,omitempty"`
+	RequiredInputs      []string `json:"requiredInputs,omitempty"`
+	Modes               []string `json:"modes,omitempty"`
+	RedirectUrl         string   `json:"redirectUrl,omitempty"`
+	PlatformWebhookUrls []string `json:"platformWebhookUrls,omitempty"`
+}
+
+// QuickConnectTargetDto DTO.
+type QuickConnectTargetDto struct {
+	Id     string `json:"id,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
 }
 
 // JsonSchemaFieldDto DTO.
@@ -4653,6 +4702,11 @@ type EchoAgentDto struct {
 type EchoHostingPlatformDto struct {
 	Provider string `json:"provider,omitempty"`
 	IsAws    bool   `json:"isAws"`
+}
+
+// EchoConnectDto DTO.
+type EchoConnectDto struct {
+	Providers []*QuickConnectProviderDto `json:"providers,omitempty"`
 }
 
 // PublicBrandDto DTO.
@@ -7761,6 +7815,7 @@ type EchoResponse struct {
 	Regions                     []*EchoRegionDto        `json:"regions,omitempty"`
 	Agent                       *EchoAgentDto           `json:"agent,omitempty"`
 	HostingPlatform             *EchoHostingPlatformDto `json:"hostingPlatform,omitempty"`
+	Connect                     *EchoConnectDto         `json:"connect,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
@@ -9002,6 +9057,21 @@ type InvokeCodeFunctionResponse struct {
 	Logs       string         `json:"logs,omitempty"`
 }
 
+// CodeWorkflowResumeLinkResponse DTO.
+type CodeWorkflowResumeLinkResponse struct {
+	ResponseBase
+	RunId          string `json:"runId,omitempty"`
+	WorkflowId     string `json:"workflowId,omitempty"`
+	WorkflowName   string `json:"workflowName,omitempty"`
+	StepId         string `json:"stepId,omitempty"`
+	StepName       string `json:"stepName,omitempty"`
+	Mode           string `json:"mode,omitempty"`
+	Decision       string `json:"decision,omitempty"`
+	Key            string `json:"key,omitempty"`
+	AssigneeUserId string `json:"assigneeUserId,omitempty"`
+	ExpiresAt      string `json:"expiresAt,omitempty"`
+}
+
 // GetPushTemplateResponse DTO.
 type GetPushTemplateResponse struct {
 	ResponseBase
@@ -9197,6 +9267,39 @@ type GetPaymentsIntegrationsResponse struct {
 type TestPaymentsIntegrationResponse struct {
 	ResponseBase
 	Items []*IntegrationTestResultItemDto `json:"items,omitempty"`
+}
+
+// GetQuickConnectProvidersResponse DTO.
+type GetQuickConnectProvidersResponse struct {
+	ResponseBase
+	Providers []*QuickConnectProviderDto `json:"providers,omitempty"`
+}
+
+// StartIntegrationConnectResponse DTO.
+type StartIntegrationConnectResponse struct {
+	ResponseBase
+	AuthorizeUrl string `json:"authorizeUrl,omitempty"`
+	ConnectId    string `json:"connectId,omitempty"`
+	RedirectUrl  string `json:"redirectUrl,omitempty"`
+	ExpiresAt    string `json:"expiresAt,omitempty"`
+}
+
+// GetIntegrationConnectTargetsResponse DTO.
+type GetIntegrationConnectTargetsResponse struct {
+	ResponseBase
+	ConnectId       string                   `json:"connectId,omitempty"`
+	Module          string                   `json:"module,omitempty"`
+	Provider        string                   `json:"provider,omitempty"`
+	IntegrationName string                   `json:"integrationName,omitempty"`
+	AccountName     string                   `json:"accountName,omitempty"`
+	Targets         []*QuickConnectTargetDto `json:"targets,omitempty"`
+}
+
+// DisconnectPaymentsIntegrationConnectResponse DTO.
+type DisconnectPaymentsIntegrationConnectResponse struct {
+	ResponseBase
+	WasConnected     bool `json:"wasConnected"`
+	ProviderAnswered bool `json:"providerAnswered"`
 }
 
 // GetLoggingIntegrationResponse DTO.
@@ -9909,6 +10012,42 @@ type TestMarketplaceIntegration struct {
 	IntegrationViewId string `json:"integrationViewId,omitempty"`
 }
 
+// GetQuickConnectProviders DTO.
+type GetQuickConnectProviders struct {
+	RequestBase
+	Module string `json:"module,omitempty"`
+}
+
+// StartPaymentsIntegrationConnect DTO.
+type StartPaymentsIntegrationConnect struct {
+	CodeMashRequestBase
+	Provider        string            `json:"provider,omitempty"`
+	IntegrationName string            `json:"integrationName,omitempty"`
+	Mode            string            `json:"mode,omitempty"`
+	Input           map[string]string `json:"input,omitempty"`
+	IntegrationId   string            `json:"integrationId,omitempty"`
+}
+
+// GetIntegrationConnectTargets DTO.
+type GetIntegrationConnectTargets struct {
+	CodeMashRequestBase
+	ConnectId string `json:"connectId,omitempty"`
+}
+
+// CompletePaymentsIntegrationConnect DTO.
+type CompletePaymentsIntegrationConnect struct {
+	CodeMashRequestBase
+	ConnectId string `json:"connectId,omitempty"`
+	TargetId  string `json:"targetId,omitempty"`
+	IsEnabled bool   `json:"isEnabled"`
+}
+
+// DisconnectPaymentsIntegrationConnect DTO.
+type DisconnectPaymentsIntegrationConnect struct {
+	CodeMashRequestBase
+	Id string `json:"id,omitempty"`
+}
+
 // InternalsTypeGen DTO.
 type InternalsTypeGen struct {
 	Typegen_0_SmtpEmailIntegrationRequest                        *SmtpEmailIntegrationRequest                       `json:"typegen_0_SmtpEmailIntegrationRequest,omitempty"`
@@ -10018,6 +10157,7 @@ type InternalsTypeGen struct {
 	Typegen_236_TriggerActionSmsDto                              *TriggerActionSmsDto                               `json:"typegen_236_TriggerActionSmsDto,omitempty"`
 	Typegen_237_TriggerActionSseDto                              *TriggerActionSseDto                               `json:"typegen_237_TriggerActionSseDto,omitempty"`
 	Typegen_238_TriggerActionMarketplaceDto                      *TriggerActionMarketplaceDto                       `json:"typegen_238_TriggerActionMarketplaceDto,omitempty"`
+	Typegen_308_TriggerActionWorkflowDto                         *TriggerActionWorkflowDto                          `json:"typegen_308_TriggerActionWorkflowDto,omitempty"`
 	Typegen_239_SseDeliverySettingsDto                           *SseDeliverySettingsDto                            `json:"typegen_239_SseDeliverySettingsDto,omitempty"`
 	Typegen_240_GetTriggers                                      *GetTriggers                                       `json:"typegen_240_GetTriggers,omitempty"`
 	Typegen_241_GetTriggersResponse                              *GetTriggersResponse                               `json:"typegen_241_GetTriggersResponse,omitempty"`
@@ -10195,8 +10335,17 @@ type InternalsTypeGen struct {
 	Typegen_282_FakeCodeIntegrationRequest                       *FakeCodeIntegrationRequest                        `json:"typegen_282_FakeCodeIntegrationRequest,omitempty"`
 	Typegen_283_CodeFunctionSchedulerTaskRequest                 *CodeFunctionSchedulerTaskRequest                  `json:"typegen_283_CodeFunctionSchedulerTaskRequest,omitempty"`
 	Typegen_284_MarketplaceFunctionSchedulerTaskRequest          *MarketplaceFunctionSchedulerTaskRequest           `json:"typegen_284_MarketplaceFunctionSchedulerTaskRequest,omitempty"`
+	Typegen_309_WorkflowSchedulerTaskRequest                     *WorkflowSchedulerTaskRequest                      `json:"typegen_309_WorkflowSchedulerTaskRequest,omitempty"`
 	Typegen_285_AwsCloudWatchLoggingIntegrationRequest           *AwsCloudWatchLoggingIntegrationRequest            `json:"typegen_285_AwsCloudWatchLoggingIntegrationRequest,omitempty"`
 	Typegen_286_AwsCloudWatchLoggingIntegrationDto               *AwsCloudWatchLoggingIntegrationDto                `json:"typegen_286_AwsCloudWatchLoggingIntegrationDto,omitempty"`
+	Typegen_310_GetQuickConnectProviders                         *GetQuickConnectProviders                          `json:"typegen_310_GetQuickConnectProviders,omitempty"`
+	Typegen_311_StartPaymentsIntegrationConnect                  *StartPaymentsIntegrationConnect                   `json:"typegen_311_StartPaymentsIntegrationConnect,omitempty"`
+	Typegen_312_GetIntegrationConnectTargets                     *GetIntegrationConnectTargets                      `json:"typegen_312_GetIntegrationConnectTargets,omitempty"`
+	Typegen_313_CompletePaymentsIntegrationConnect               *CompletePaymentsIntegrationConnect                `json:"typegen_313_CompletePaymentsIntegrationConnect,omitempty"`
+	Typegen_314_QuickConnectProviderDto                          *QuickConnectProviderDto                           `json:"typegen_314_QuickConnectProviderDto,omitempty"`
+	Typegen_315_QuickConnectTargetDto                            *QuickConnectTargetDto                             `json:"typegen_315_QuickConnectTargetDto,omitempty"`
+	Typegen_316_DisconnectPaymentsIntegrationConnect             *DisconnectPaymentsIntegrationConnect              `json:"typegen_316_DisconnectPaymentsIntegrationConnect,omitempty"`
+	Typegen_317_PaymentsIntegrationConnectionDto                 *PaymentsIntegrationConnectionDto                  `json:"typegen_317_PaymentsIntegrationConnectionDto,omitempty"`
 }
 
 // SharedTypeGen DTO.
@@ -12651,16 +12800,6 @@ type GetCodeWorkflowRuns struct {
 	To     string `json:"to,omitempty"`
 }
 
-// GetCodeWorkflowWaitingRuns DTO.
-type GetCodeWorkflowWaitingRuns struct {
-	CodeMashListPaginationRequestBase
-	Status      string `json:"status,omitempty"`
-	WaitingKind string `json:"waitingKind,omitempty"`
-	Assignee    string `json:"assignee,omitempty"`
-	WorkflowId  string `json:"workflowId,omitempty"`
-	Key         string `json:"key,omitempty"`
-}
-
 // GetCodeWorkflowRun DTO.
 type GetCodeWorkflowRun struct {
 	CodeMashRequestBase
@@ -12673,15 +12812,6 @@ type GetCodeWorkflowRunLogs struct {
 	RunId  string `json:"runId,omitempty"`
 	StepId string `json:"stepId,omitempty"`
 	Level  string `json:"level,omitempty"`
-}
-
-// ResumeCodeWorkflowRun DTO.
-type ResumeCodeWorkflowRun struct {
-	CodeMashRequestBase
-	RunId    string         `json:"runId,omitempty"`
-	StepId   string         `json:"stepId,omitempty"`
-	Decision string         `json:"decision,omitempty"`
-	Payload  map[string]any `json:"payload,omitempty"`
 }
 
 // ResumeCodeWorkflowRunByKey DTO.
@@ -12828,6 +12958,37 @@ type InvokeCodeFunction struct {
 	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
 	RunAsUserId    string             `json:"runAsUserId,omitempty"`
 	Config         string             `json:"config,omitempty"`
+}
+
+// GetCodeWorkflowWaitingRuns DTO.
+type GetCodeWorkflowWaitingRuns struct {
+	CodeMashListPaginationRequestBase
+	Status      string `json:"status,omitempty"`
+	WaitingKind string `json:"waitingKind,omitempty"`
+	Assignee    string `json:"assignee,omitempty"`
+	WorkflowId  string `json:"workflowId,omitempty"`
+	Key         string `json:"key,omitempty"`
+}
+
+// ResumeCodeWorkflowRun DTO.
+type ResumeCodeWorkflowRun struct {
+	CodeMashRequestBase
+	RunId    string         `json:"runId,omitempty"`
+	StepId   string         `json:"stepId,omitempty"`
+	Decision string         `json:"decision,omitempty"`
+	Payload  map[string]any `json:"payload,omitempty"`
+}
+
+// OpenCodeWorkflowResumeLink DTO.
+type OpenCodeWorkflowResumeLink struct {
+	RequestBase
+	Token string `json:"token,omitempty"`
+}
+
+// UseCodeWorkflowResumeLink DTO.
+type UseCodeWorkflowResumeLink struct {
+	RequestBase
+	Token string `json:"token,omitempty"`
 }
 
 // DisablePush DTO.
