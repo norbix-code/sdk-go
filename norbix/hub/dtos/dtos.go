@@ -1381,9 +1381,15 @@ type AwsS3FilesIntegrationRequest struct {
 // GoogleCloudFilesIntegrationRequest DTO.
 type GoogleCloudFilesIntegrationRequest struct {
 	FilesIntegrationRequest
-	Provider              FileProvider `json:"provider,omitempty"`
-	BucketName            string       `json:"bucketName,omitempty"`
-	ServiceAccountJsonKey string       `json:"serviceAccountJsonKey,omitempty"`
+	Provider              FileProvider  `json:"provider,omitempty"`
+	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
+	BucketName            string        `json:"bucketName,omitempty"`
+	ProjectNumber         string        `json:"projectNumber,omitempty"`
+	PoolId                string        `json:"poolId,omitempty"`
+	ProviderId            string        `json:"providerId,omitempty"`
+	ServiceAccountEmail   string        `json:"serviceAccountEmail,omitempty"`
+	ServiceAccountJsonKey string        `json:"serviceAccountJsonKey,omitempty"`
+	AcceptKeyRisk         *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // AzureBlobFilesIntegrationRequest DTO.
@@ -2038,10 +2044,16 @@ type AzureFunctionsCodeIntegrationRequest struct {
 // GoogleCloudFunctionsCodeIntegrationRequest DTO.
 type GoogleCloudFunctionsCodeIntegrationRequest struct {
 	CodeIntegrationRequest
-	Provider              CodeProvider `json:"provider,omitempty"`
-	ProjectId             string       `json:"projectId,omitempty"`
-	Region                string       `json:"region,omitempty"`
-	ServiceAccountJsonKey string       `json:"serviceAccountJsonKey,omitempty"`
+	Provider              CodeProvider  `json:"provider,omitempty"`
+	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
+	ProjectId             string        `json:"projectId,omitempty"`
+	Region                string        `json:"region,omitempty"`
+	ProjectNumber         string        `json:"projectNumber,omitempty"`
+	PoolId                string        `json:"poolId,omitempty"`
+	ProviderId            string        `json:"providerId,omitempty"`
+	ServiceAccountEmail   string        `json:"serviceAccountEmail,omitempty"`
+	ServiceAccountJsonKey string        `json:"serviceAccountJsonKey,omitempty"`
+	AcceptKeyRisk         *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // LlmModelOptionRequest DTO.
@@ -2742,8 +2754,13 @@ type AzureFunctionsCodeIntegrationDto struct {
 // GoogleCloudFunctionsCodeIntegrationDto DTO.
 type GoogleCloudFunctionsCodeIntegrationDto struct {
 	CodeIntegrationDto
-	ProjectId string `json:"projectId,omitempty"`
-	Region    string `json:"region,omitempty"`
+	ProjectId           string        `json:"projectId,omitempty"`
+	Region              string        `json:"region,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       string        `json:"projectNumber,omitempty"`
+	PoolId              string        `json:"poolId,omitempty"`
+	ProviderId          string        `json:"providerId,omitempty"`
+	ServiceAccountEmail string        `json:"serviceAccountEmail,omitempty"`
 }
 
 // PaymentsIntegrationConnectionDto DTO.
@@ -3190,7 +3207,12 @@ type FtpFilesIntegrationDto struct {
 // GoogleCloudFilesIntegrationDto DTO.
 type GoogleCloudFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BucketName string `json:"bucketName,omitempty"`
+	BucketName          string        `json:"bucketName,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       string        `json:"projectNumber,omitempty"`
+	PoolId              string        `json:"poolId,omitempty"`
+	ProviderId          string        `json:"providerId,omitempty"`
+	ServiceAccountEmail string        `json:"serviceAccountEmail,omitempty"`
 }
 
 // GoogleDriveFilesIntegrationDto DTO.
