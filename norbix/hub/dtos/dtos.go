@@ -33,12 +33,12 @@ const (
 	SmtpPortsFallback SmtpPorts = "Fallback"
 )
 
-// AwsIntegrationType enum.
-type AwsIntegrationType string
+// CloudAuthMode enum.
+type CloudAuthMode string
 
 const (
-	AwsIntegrationTypeIam              AwsIntegrationType = "Iam"
-	AwsIntegrationTypeCrossAccountRole AwsIntegrationType = "CrossAccountRole"
+	CloudAuthModeAccessKey CloudAuthMode = "AccessKey"
+	CloudAuthModeKeyless   CloudAuthMode = "Keyless"
 )
 
 // MailGunRegion enum.
@@ -194,14 +194,6 @@ const (
 	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
 )
 
-// AwsS3IntegrationType enum.
-type AwsS3IntegrationType string
-
-const (
-	AwsS3IntegrationTypeIam              AwsS3IntegrationType = "Iam"
-	AwsS3IntegrationTypeCrossAccountRole AwsS3IntegrationType = "CrossAccountRole"
-)
-
 // LoggingProvider enum.
 type LoggingProvider string
 
@@ -329,14 +321,6 @@ const (
 	CodeProviderSupabaseEdge         CodeProvider = "SupabaseEdge"
 	CodeProviderModal                CodeProvider = "Modal"
 	CodeProviderFake                 CodeProvider = "Fake"
-)
-
-// AwsLambdaIntegrationType enum.
-type AwsLambdaIntegrationType string
-
-const (
-	AwsLambdaIntegrationTypeIam              AwsLambdaIntegrationType = "Iam"
-	AwsLambdaIntegrationTypeCrossAccountRole AwsLambdaIntegrationType = "CrossAccountRole"
 )
 
 // LlmProvider enum.
@@ -1135,17 +1119,17 @@ type SmtpEmailIntegrationRequest struct {
 // AwsSesEmailIntegrationRequest DTO.
 type AwsSesEmailIntegrationRequest struct {
 	EmailIntegrationRequest
-	Provider              EmailProvider      `json:"provider,omitempty"`
-	IntegrationType       AwsIntegrationType `json:"integrationType,omitempty"`
-	AwsRegion             string             `json:"awsRegion,omitempty"`
-	EmailIdentityArn      string             `json:"emailIdentityArn,omitempty"`
-	ConfigurationSet      string             `json:"configurationSet,omitempty"`
-	RoleArn               string             `json:"roleArn,omitempty"`
-	ExternalId            string             `json:"externalId,omitempty"`
-	AccessKey             string             `json:"accessKey,omitempty"`
-	SecretKey             string             `json:"secretKey,omitempty"`
-	DeliveryEventsEnabled *bool              `json:"deliveryEventsEnabled,omitempty"`
-	SnsTopicArn           string             `json:"snsTopicArn,omitempty"`
+	Provider              EmailProvider `json:"provider,omitempty"`
+	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
+	AwsRegion             string        `json:"awsRegion,omitempty"`
+	EmailIdentityArn      string        `json:"emailIdentityArn,omitempty"`
+	ConfigurationSet      string        `json:"configurationSet,omitempty"`
+	RoleArn               string        `json:"roleArn,omitempty"`
+	AccessKey             string        `json:"accessKey,omitempty"`
+	SecretKey             string        `json:"secretKey,omitempty"`
+	AcceptKeyRisk         bool          `json:"acceptKeyRisk"`
+	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn           string        `json:"snsTopicArn,omitempty"`
 }
 
 // SendGridEmailIntegrationRequest DTO.
@@ -1171,7 +1155,11 @@ type MailGunEmailIntegrationRequest struct {
 type AzureCommunicationEmailIntegrationRequest struct {
 	EmailIntegrationRequest
 	Provider              EmailProvider `json:"provider,omitempty"`
+	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
 	Endpoint              string        `json:"endpoint,omitempty"`
+	TenantId              string        `json:"tenantId,omitempty"`
+	ClientId              string        `json:"clientId,omitempty"`
+	AcceptKeyRisk         bool          `json:"acceptKeyRisk"`
 	AccessKey             string        `json:"accessKey,omitempty"`
 	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
 	EventGridKey          string        `json:"eventGridKey,omitempty"`
@@ -1380,14 +1368,14 @@ type AppleICloudFilesIntegrationRequest struct {
 // AwsS3FilesIntegrationRequest DTO.
 type AwsS3FilesIntegrationRequest struct {
 	FilesIntegrationRequest
-	Provider        FileProvider         `json:"provider,omitempty"`
-	IntegrationType AwsS3IntegrationType `json:"integrationType,omitempty"`
-	BucketName      string               `json:"bucketName,omitempty"`
-	Region          string               `json:"region,omitempty"`
-	RoleArn         string               `json:"roleArn,omitempty"`
-	ExternalId      string               `json:"externalId,omitempty"`
-	AccessKey       string               `json:"accessKey,omitempty"`
-	SecretKey       string               `json:"secretKey,omitempty"`
+	Provider      FileProvider  `json:"provider,omitempty"`
+	AuthMode      CloudAuthMode `json:"authMode,omitempty"`
+	BucketName    string        `json:"bucketName,omitempty"`
+	Region        string        `json:"region,omitempty"`
+	RoleArn       string        `json:"roleArn,omitempty"`
+	AccessKey     string        `json:"accessKey,omitempty"`
+	SecretKey     string        `json:"secretKey,omitempty"`
+	AcceptKeyRisk bool          `json:"acceptKeyRisk"`
 }
 
 // GoogleCloudFilesIntegrationRequest DTO.
@@ -1401,9 +1389,14 @@ type GoogleCloudFilesIntegrationRequest struct {
 // AzureBlobFilesIntegrationRequest DTO.
 type AzureBlobFilesIntegrationRequest struct {
 	FilesIntegrationRequest
-	Provider         FileProvider `json:"provider,omitempty"`
-	BlobName         string       `json:"blobName,omitempty"`
-	ConnectionString string       `json:"connectionString,omitempty"`
+	Provider         FileProvider  `json:"provider,omitempty"`
+	AuthMode         CloudAuthMode `json:"authMode,omitempty"`
+	BlobName         string        `json:"blobName,omitempty"`
+	StorageAccount   string        `json:"storageAccount,omitempty"`
+	TenantId         string        `json:"tenantId,omitempty"`
+	ClientId         string        `json:"clientId,omitempty"`
+	ConnectionString string        `json:"connectionString,omitempty"`
+	AcceptKeyRisk    bool          `json:"acceptKeyRisk"`
 }
 
 // LocalFilesIntegrationRequest DTO.
@@ -2019,22 +2012,27 @@ type CodeIntegrationRequest struct {
 // AwsLambdaCodeIntegrationRequest DTO.
 type AwsLambdaCodeIntegrationRequest struct {
 	CodeIntegrationRequest
-	Provider        CodeProvider             `json:"provider,omitempty"`
-	IntegrationType AwsLambdaIntegrationType `json:"integrationType,omitempty"`
-	Region          string                   `json:"region,omitempty"`
-	RoleArn         string                   `json:"roleArn,omitempty"`
-	ExternalId      string                   `json:"externalId,omitempty"`
-	AccessKey       string                   `json:"accessKey,omitempty"`
-	SecretKey       string                   `json:"secretKey,omitempty"`
+	Provider      CodeProvider  `json:"provider,omitempty"`
+	AuthMode      CloudAuthMode `json:"authMode,omitempty"`
+	Region        string        `json:"region,omitempty"`
+	RoleArn       string        `json:"roleArn,omitempty"`
+	AccessKey     string        `json:"accessKey,omitempty"`
+	SecretKey     string        `json:"secretKey,omitempty"`
+	AcceptKeyRisk bool          `json:"acceptKeyRisk"`
 }
 
 // AzureFunctionsCodeIntegrationRequest DTO.
 type AzureFunctionsCodeIntegrationRequest struct {
 	CodeIntegrationRequest
-	Provider              CodeProvider `json:"provider,omitempty"`
-	FunctionAppName       string       `json:"functionAppName,omitempty"`
-	ResourceGroup         string       `json:"resourceGroup,omitempty"`
-	ConnectionStringOrKey string       `json:"connectionStringOrKey,omitempty"`
+	Provider              CodeProvider  `json:"provider,omitempty"`
+	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
+	FunctionAppName       string        `json:"functionAppName,omitempty"`
+	ResourceGroup         string        `json:"resourceGroup,omitempty"`
+	SubscriptionId        string        `json:"subscriptionId,omitempty"`
+	TenantId              string        `json:"tenantId,omitempty"`
+	ClientId              string        `json:"clientId,omitempty"`
+	ConnectionStringOrKey string        `json:"connectionStringOrKey,omitempty"`
+	AcceptKeyRisk         bool          `json:"acceptKeyRisk"`
 }
 
 // GoogleCloudFunctionsCodeIntegrationRequest DTO.
@@ -2715,25 +2713,30 @@ type CodeIntegrationDto struct {
 	Provider CodeProvider `json:"provider,omitempty"`
 }
 
-// AwsLambdaCrossAccountRoleCodeIntegrationDto DTO.
-type AwsLambdaCrossAccountRoleCodeIntegrationDto struct {
+// AwsLambdaKeylessCodeIntegrationDto DTO.
+type AwsLambdaKeylessCodeIntegrationDto struct {
 	CodeIntegrationDto
-	Region     string `json:"region,omitempty"`
-	RoleArn    string `json:"roleArn,omitempty"`
-	ExternalId string `json:"externalId,omitempty"`
+	Region   string        `json:"region,omitempty"`
+	RoleArn  string        `json:"roleArn,omitempty"`
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // AwsLambdaIamCodeIntegrationDto DTO.
 type AwsLambdaIamCodeIntegrationDto struct {
 	CodeIntegrationDto
-	Region string `json:"region,omitempty"`
+	Region   string        `json:"region,omitempty"`
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // AzureFunctionsCodeIntegrationDto DTO.
 type AzureFunctionsCodeIntegrationDto struct {
 	CodeIntegrationDto
-	FunctionAppName string `json:"functionAppName,omitempty"`
-	ResourceGroup   string `json:"resourceGroup,omitempty"`
+	FunctionAppName string        `json:"functionAppName,omitempty"`
+	ResourceGroup   string        `json:"resourceGroup,omitempty"`
+	AuthMode        CloudAuthMode `json:"authMode,omitempty"`
+	SubscriptionId  string        `json:"subscriptionId,omitempty"`
+	TenantId        string        `json:"tenantId,omitempty"`
+	ClientId        string        `json:"clientId,omitempty"`
 }
 
 // GoogleCloudFunctionsCodeIntegrationDto DTO.
@@ -3142,26 +3145,31 @@ type AppleICloudFilesIntegrationDto struct {
 	RelativePath        string `json:"relativePath,omitempty"`
 }
 
-// AwsS3CrossAccountRoleFilesIntegrationDto DTO.
-type AwsS3CrossAccountRoleFilesIntegrationDto struct {
+// AwsS3KeylessFilesIntegrationDto DTO.
+type AwsS3KeylessFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BucketName string `json:"bucketName,omitempty"`
-	Region     string `json:"region,omitempty"`
-	RoleArn    string `json:"roleArn,omitempty"`
-	ExternalId string `json:"externalId,omitempty"`
+	BucketName string        `json:"bucketName,omitempty"`
+	Region     string        `json:"region,omitempty"`
+	RoleArn    string        `json:"roleArn,omitempty"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // AwsS3IamFilesIntegrationDto DTO.
 type AwsS3IamFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BucketName string `json:"bucketName,omitempty"`
-	Region     string `json:"region,omitempty"`
+	BucketName string        `json:"bucketName,omitempty"`
+	Region     string        `json:"region,omitempty"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // AzureBlobFilesIntegrationDto DTO.
 type AzureBlobFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BlobName string `json:"blobName,omitempty"`
+	BlobName       string        `json:"blobName,omitempty"`
+	AuthMode       CloudAuthMode `json:"authMode,omitempty"`
+	StorageAccount string        `json:"storageAccount,omitempty"`
+	TenantId       string        `json:"tenantId,omitempty"`
+	ClientId       string        `json:"clientId,omitempty"`
 }
 
 // DropBoxFilesIntegrationDto DTO.
@@ -3365,16 +3373,17 @@ type AwsSesEmailIntegrationDto struct {
 	SnsTopicArn           string `json:"snsTopicArn,omitempty"`
 }
 
-// AwsCrossAccountRoleEmailIntegrationDto DTO.
-type AwsCrossAccountRoleEmailIntegrationDto struct {
+// AwsKeylessEmailIntegrationDto DTO.
+type AwsKeylessEmailIntegrationDto struct {
 	AwsSesEmailIntegrationDto
-	RoleArn    string `json:"roleArn,omitempty"`
-	ExternalId string `json:"externalId,omitempty"`
+	RoleArn  string        `json:"roleArn,omitempty"`
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // AwsIamEmailIntegrationDto DTO.
 type AwsIamEmailIntegrationDto struct {
 	AwsSesEmailIntegrationDto
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // MailGunEmailIntegrationDto DTO.
@@ -3401,8 +3410,11 @@ type SmtpEmailIntegrationDto struct {
 // AzureCommunicationEmailIntegrationDto DTO.
 type AzureCommunicationEmailIntegrationDto struct {
 	EmailIntegrationDto
-	Endpoint              string `json:"endpoint,omitempty"`
-	DeliveryEventsEnabled *bool  `json:"deliveryEventsEnabled,omitempty"`
+	Endpoint              string        `json:"endpoint,omitempty"`
+	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
+	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
+	TenantId              string        `json:"tenantId,omitempty"`
+	ClientId              string        `json:"clientId,omitempty"`
 }
 
 // FakeEmailIntegrationDto DTO.
@@ -4707,6 +4719,13 @@ type EchoHostingPlatformDto struct {
 // EchoConnectDto DTO.
 type EchoConnectDto struct {
 	Providers []*QuickConnectProviderDto `json:"providers,omitempty"`
+}
+
+// EchoKeylessDto DTO.
+type EchoKeylessDto struct {
+	Issuer            string `json:"issuer,omitempty"`
+	Available         bool   `json:"available"`
+	UnavailableReason string `json:"unavailableReason,omitempty"`
 }
 
 // PublicBrandDto DTO.
@@ -7816,6 +7835,7 @@ type EchoResponse struct {
 	Agent                       *EchoAgentDto           `json:"agent,omitempty"`
 	HostingPlatform             *EchoHostingPlatformDto `json:"hostingPlatform,omitempty"`
 	Connect                     *EchoConnectDto         `json:"connect,omitempty"`
+	Keyless                     *EchoKeylessDto         `json:"keyless,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
@@ -8497,6 +8517,21 @@ type GetFilesIntegrationsResponse struct {
 	DefaultIntegrationId string                                             `json:"defaultIntegrationId,omitempty"`
 	List                 PaginatedResponse[*FilesIntegrationListProjection] `json:"list,omitempty"`
 	AvailableProviders   []FileProvider                                     `json:"availableProviders,omitempty"`
+}
+
+// GetKeylessIntegrationSetupResponse DTO.
+type GetKeylessIntegrationSetupResponse struct {
+	ResponseBase
+	IntegrationId     string `json:"integrationId,omitempty"`
+	Env               string `json:"env,omitempty"`
+	Module            string `json:"module,omitempty"`
+	Cloud             string `json:"cloud,omitempty"`
+	Issuer            string `json:"issuer,omitempty"`
+	Available         bool   `json:"available"`
+	UnavailableReason string `json:"unavailableReason,omitempty"`
+	Subject           string `json:"subject,omitempty"`
+	Audience          string `json:"audience,omitempty"`
+	Script            string `json:"script,omitempty"`
 }
 
 // TestFilesIntegrationResponse DTO.
@@ -10187,7 +10222,7 @@ type InternalsTypeGen struct {
 	Typegen_111_DockerMcpIntegrationDto                          *DockerMcpIntegrationDto                           `json:"typegen_111_DockerMcpIntegrationDto,omitempty"`
 	Typegen_112_GoogleCalendarMcpIntegrationDto                  *GoogleCalendarMcpIntegrationDto                   `json:"typegen_112_GoogleCalendarMcpIntegrationDto,omitempty"`
 	Typegen_113_ObsidianMcpIntegrationDto                        *ObsidianMcpIntegrationDto                         `json:"typegen_113_ObsidianMcpIntegrationDto,omitempty"`
-	Typegen_114_AwsLambdaCrossAccountRoleCodeIntegrationDto      *AwsLambdaCrossAccountRoleCodeIntegrationDto       `json:"typegen_114_AwsLambdaCrossAccountRoleCodeIntegrationDto,omitempty"`
+	Typegen_114_AwsLambdaKeylessCodeIntegrationDto               *AwsLambdaKeylessCodeIntegrationDto                `json:"typegen_114_AwsLambdaKeylessCodeIntegrationDto,omitempty"`
 	Typegen_115_AwsLambdaIamCodeIntegrationDto                   *AwsLambdaIamCodeIntegrationDto                    `json:"typegen_115_AwsLambdaIamCodeIntegrationDto,omitempty"`
 	Typegen_116_AzureFunctionsCodeIntegrationDto                 *AzureFunctionsCodeIntegrationDto                  `json:"typegen_116_AzureFunctionsCodeIntegrationDto,omitempty"`
 	Typegen_118_GoogleCloudFunctionsCodeIntegrationDto           *GoogleCloudFunctionsCodeIntegrationDto            `json:"typegen_118_GoogleCloudFunctionsCodeIntegrationDto,omitempty"`
@@ -10232,7 +10267,7 @@ type InternalsTypeGen struct {
 	Typegen_149_PrometheusLoggingIntegrationDto                  *PrometheusLoggingIntegrationDto                   `json:"typegen_149_PrometheusLoggingIntegrationDto,omitempty"`
 	Typegen_150_SplunkLoggingIntegrationDto                      *SplunkLoggingIntegrationDto                       `json:"typegen_150_SplunkLoggingIntegrationDto,omitempty"`
 	Typegen_153_AppleICloudFilesIntegrationDto                   *AppleICloudFilesIntegrationDto                    `json:"typegen_153_AppleICloudFilesIntegrationDto,omitempty"`
-	Typegen_154_AwsS3CrossAccountRoleFilesIntegrationDto         *AwsS3CrossAccountRoleFilesIntegrationDto          `json:"typegen_154_AwsS3CrossAccountRoleFilesIntegrationDto,omitempty"`
+	Typegen_154_AwsS3KeylessFilesIntegrationDto                  *AwsS3KeylessFilesIntegrationDto                   `json:"typegen_154_AwsS3KeylessFilesIntegrationDto,omitempty"`
 	Typegen_155_AwsS3IamFilesIntegrationDto                      *AwsS3IamFilesIntegrationDto                       `json:"typegen_155_AwsS3IamFilesIntegrationDto,omitempty"`
 	Typegen_156_AzureBlobFilesIntegrationDto                     *AzureBlobFilesIntegrationDto                      `json:"typegen_156_AzureBlobFilesIntegrationDto,omitempty"`
 	Typegen_157_DropBoxFilesIntegrationDto                       *DropBoxFilesIntegrationDto                        `json:"typegen_157_DropBoxFilesIntegrationDto,omitempty"`
@@ -10258,7 +10293,7 @@ type InternalsTypeGen struct {
 	Typegen_177_FirefoxWebPushIntegrationDto                     *FirefoxWebPushIntegrationDto                      `json:"typegen_177_FirefoxWebPushIntegrationDto,omitempty"`
 	Typegen_178_SafariPushIntegrationDto                         *SafariPushIntegrationDto                          `json:"typegen_178_SafariPushIntegrationDto,omitempty"`
 	Typegen_247_FakePushIntegrationDto                           *FakePushIntegrationDto                            `json:"typegen_247_FakePushIntegrationDto,omitempty"`
-	Typegen_179_AwsCrossAccountRoleEmailIntegrationDto           *AwsCrossAccountRoleEmailIntegrationDto            `json:"typegen_179_AwsCrossAccountRoleEmailIntegrationDto,omitempty"`
+	Typegen_179_AwsKeylessEmailIntegrationDto                    *AwsKeylessEmailIntegrationDto                     `json:"typegen_179_AwsKeylessEmailIntegrationDto,omitempty"`
 	Typegen_180_AwsIamEmailIntegrationDto                        *AwsIamEmailIntegrationDto                         `json:"typegen_180_AwsIamEmailIntegrationDto,omitempty"`
 	Typegen_181_MailGunEmailIntegrationDto                       *MailGunEmailIntegrationDto                        `json:"typegen_181_MailGunEmailIntegrationDto,omitempty"`
 	Typegen_182_SendGridEmailIntegrationDto                      *SendGridEmailIntegrationDto                       `json:"typegen_182_SendGridEmailIntegrationDto,omitempty"`
@@ -12078,6 +12113,14 @@ type GetFilesIntegration struct {
 // GetFilesIntegrations DTO.
 type GetFilesIntegrations struct {
 	CodeMashListPaginationRequestBase
+}
+
+// GetKeylessIntegrationSetup DTO.
+type GetKeylessIntegrationSetup struct {
+	CodeMashRequestBase
+	Module        string `json:"module,omitempty"`
+	Cloud         string `json:"cloud,omitempty"`
+	IntegrationId string `json:"integrationId,omitempty"`
 }
 
 // SaveFilesIntegration DTO.
