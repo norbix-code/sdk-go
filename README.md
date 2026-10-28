@@ -575,6 +575,18 @@ webhook payload with `webhooks.DecodePayload[norbix.PaymentOrderEvent]`, or read
 
 Debugging a payment trigger: `c.Hub.Payments.GetPaymentsWebhookRuns(ctx, req, &out)` lists the received gateway webhooks (30 days; filters `integrationId`, `eventName`, `triggerId`, `outcome` = applied / ignored / refused / failed, `fromUtc`, `toUtc`, cursor paging) and `GetPaymentsWebhookRun(ctx, "pwr_…", nil, &out)` reads one: the fact, Norbix's answer, the order change, every trigger's action outcome and the masked raw call (7 days).
 
+## Keyless cloud connections
+
+The AWS (S3, SES, Lambda) and Azure (Blob, Communication Services, Functions)
+save requests take `authMode` (`dtos.CloudAuthModeKeyless`, the gateway default
+when left empty, or `dtos.CloudAuthModeAccessKey`). Keyless stores no secret:
+call `c.Hub.Integrations.GetKeylessIntegrationSetup(ctx, map[string]any{"module": "files", "cloud": "aws"}, &out)`
+(`dtos.GetKeylessIntegrationSetupResponse`: integration id, issuer, subject,
+audience, `available` / `unavailableReason`, the setup script), run the script
+in the cloud account, then save with the same integration id and the role ARN
+(AWS) or tenant + client id (Azure). A key mode needs `acceptKeyRisk: true`, or
+the save is refused (`CM-ERRORS-INTEGRATIONS-034`).
+
 ## Webhooks
 
 The `norbix/webhooks` package verifies, parses, normalises, and dispatches
