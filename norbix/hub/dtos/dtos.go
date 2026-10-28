@@ -5840,7 +5840,7 @@ type TermTreeDto struct {
 	Description  string                `json:"description,omitempty"`
 	Descriptions map[string]string     `json:"descriptions,omitempty"`
 	MultiParents []*TermMultiParentDto `json:"multiParents,omitempty"`
-	Meta         map[string]any        `json:"meta,omitempty"`
+	Meta         any                   `json:"meta,omitempty"`
 	Children     []*TermTreeDto        `json:"children,omitempty"`
 }
 
@@ -5867,7 +5867,7 @@ type TermDto struct {
 	Description  string                `json:"description,omitempty"`
 	Descriptions map[string]string     `json:"descriptions,omitempty"`
 	MultiParents []*TermMultiParentDto `json:"multiParents,omitempty"`
-	Meta         map[string]any        `json:"meta,omitempty"`
+	Meta         any                   `json:"meta,omitempty"`
 	Origin       string                `json:"origin,omitempty"`
 }
 
@@ -6580,9 +6580,9 @@ type WorkflowRunStepDto struct {
 	StartedAt       string               `json:"startedAt,omitempty"`
 	FinishedAt      string               `json:"finishedAt,omitempty"`
 	DurationMs      *float64             `json:"durationMs,omitempty"`
-	Input           map[string]any       `json:"input,omitempty"`
+	Input           any                  `json:"input,omitempty"`
 	InputTruncated  bool                 `json:"inputTruncated"`
-	Output          map[string]any       `json:"output,omitempty"`
+	Output          any                  `json:"output,omitempty"`
 	OutputTruncated bool                 `json:"outputTruncated"`
 	Error           *WorkflowRunErrorDto `json:"error,omitempty"`
 	ResumedBy       *WorkflowRunActorDto `json:"resumedBy,omitempty"`
@@ -6610,7 +6610,7 @@ type WorkflowRunDto struct {
 	DurationMs          *float64                `json:"durationMs,omitempty"`
 	WaitingOn           []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
 	Error               *WorkflowRunErrorDto    `json:"error,omitempty"`
-	Output              map[string]any          `json:"output,omitempty"`
+	Output              any                     `json:"output,omitempty"`
 	StepRuns            float64                 `json:"stepRuns,omitempty"`
 	Steps               []*WorkflowRunStepDto   `json:"steps,omitempty"`
 	Request             map[string]any          `json:"request,omitempty"`
@@ -7473,7 +7473,7 @@ type SchedulerTaskRunDto struct {
 type ResolvedResourceEntry struct {
 	Ref        *ResourceRefDto   `json:"ref,omitempty"`
 	Status     ResolvedRefStatus `json:"status,omitempty"`
-	Resolved   map[string]any    `json:"resolved,omitempty"`
+	Resolved   any               `json:"resolved,omitempty"`
 	Diagnostic string            `json:"diagnostic,omitempty"`
 }
 
@@ -7669,11 +7669,11 @@ type DiagnosticPackDescriptorDto struct {
 
 // DiagnosticPackStepResultDto DTO.
 type DiagnosticPackStepResultDto struct {
-	StepId       string         `json:"stepId,omitempty"`
-	Kind         string         `json:"kind,omitempty"`
-	IsSuccess    bool           `json:"isSuccess"`
-	Result       map[string]any `json:"result,omitempty"`
-	ErrorMessage string         `json:"errorMessage,omitempty"`
+	StepId       string `json:"stepId,omitempty"`
+	Kind         string `json:"kind,omitempty"`
+	IsSuccess    bool   `json:"isSuccess"`
+	Result       any    `json:"result,omitempty"`
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 // DiagnosticPackRunResultDto DTO.
@@ -8355,7 +8355,7 @@ type GetDatabaseSchemaVersionsResponse struct {
 // AggregateRecordsResponse DTO.
 type AggregateRecordsResponse struct {
 	ResponseBase
-	Result []map[string]any `json:"result,omitempty"`
+	Result []any `json:"result,omitempty"`
 }
 
 // CountRecordsResponse DTO.
@@ -8367,25 +8367,25 @@ type CountRecordsResponse struct {
 // DistinctRecordValuesResponse DTO.
 type DistinctRecordValuesResponse struct {
 	ResponseBase
-	Values []map[string]any `json:"values,omitempty"`
+	Values []any `json:"values,omitempty"`
 }
 
 // ExecuteRecordsAggregateResponse DTO.
 type ExecuteRecordsAggregateResponse struct {
 	ResponseBase
-	Result []map[string]any `json:"result,omitempty"`
+	Result []any `json:"result,omitempty"`
 }
 
 // FindRecordsResponse DTO.
 type FindRecordsResponse struct {
 	ResponseBase
-	List PaginatedResponse[map[string]any] `json:"list,omitempty"`
+	List PaginatedResponse[any] `json:"list,omitempty"`
 }
 
 // FindOneRecordResponse DTO.
 type FindOneRecordResponse struct {
 	ResponseBase
-	Result map[string]any `json:"result,omitempty"`
+	Result any `json:"result,omitempty"`
 }
 
 // GetCollectionIndexesResponse DTO.
@@ -8470,7 +8470,7 @@ type GetDatabaseAggregatesResponse struct {
 // TestDatabaseAggregateResponse DTO.
 type TestDatabaseAggregateResponse struct {
 	ResponseBase
-	Result []map[string]any `json:"result,omitempty"`
+	Result []any `json:"result,omitempty"`
 }
 
 // GetFilesTriggerResponse DTO.
@@ -8853,7 +8853,7 @@ type InvokeCodeWorkflowResponse struct {
 	ResponseBase
 	RunId      string               `json:"runId,omitempty"`
 	Status     string               `json:"status,omitempty"`
-	Output     map[string]any       `json:"output,omitempty"`
+	Output     any                  `json:"output,omitempty"`
 	DurationMs *float64             `json:"durationMs,omitempty"`
 	Error      *WorkflowRunErrorDto `json:"error,omitempty"`
 	Run        *WorkflowRunDto      `json:"run,omitempty"`
@@ -9000,9 +9000,9 @@ type GetMarketplaceFunctionRunsResponse struct {
 // InvokeMarketplaceFunctionResponse DTO.
 type InvokeMarketplaceFunctionResponse struct {
 	ResponseBase
-	IsSuccess       bool           `json:"isSuccess"`
-	Output          map[string]any `json:"output,omitempty"`
-	VendorRequestId string         `json:"vendorRequestId,omitempty"`
+	IsSuccess       bool   `json:"isSuccess"`
+	Output          any    `json:"output,omitempty"`
+	VendorRequestId string `json:"vendorRequestId,omitempty"`
 }
 
 // GetCodeIntegrationResponse DTO.
@@ -9050,11 +9050,11 @@ type GetCodeFunctionRunsResponse struct {
 // InvokeCodeFunctionResponse DTO.
 type InvokeCodeFunctionResponse struct {
 	ResponseBase
-	StatusCode float64        `json:"statusCode,omitempty"`
-	Output     map[string]any `json:"output,omitempty"`
-	DurationMs float64        `json:"durationMs,omitempty"`
-	RequestId  string         `json:"requestId,omitempty"`
-	Logs       string         `json:"logs,omitempty"`
+	StatusCode float64 `json:"statusCode,omitempty"`
+	Output     any     `json:"output,omitempty"`
+	DurationMs float64 `json:"durationMs,omitempty"`
+	RequestId  string  `json:"requestId,omitempty"`
+	Logs       string  `json:"logs,omitempty"`
 }
 
 // CodeWorkflowResumeLinkResponse DTO.
@@ -9667,7 +9667,7 @@ type HttpResult struct {
 	Status                float64             `json:"status,omitempty"`
 	StatusCode            any                 `json:"statusCode,omitempty"`
 	StatusDescription     string              `json:"statusDescription,omitempty"`
-	Response              map[string]any      `json:"response,omitempty"`
+	Response              any                 `json:"response,omitempty"`
 	ResponseFilter        *IContentTypeWriter `json:"responseFilter,omitempty"`
 	RequestContext        *IRequest           `json:"requestContext,omitempty"`
 	View                  string              `json:"view,omitempty"`

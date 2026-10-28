@@ -212,3 +212,40 @@ func TestStepOutputDecodeError(t *testing.T) {
 		t.Errorf("got %+v ok=%v err=%v want a decode error", got, ok, err)
 	}
 }
+
+// A transform or condition step stores its expression string as input, and a
+// transform may return a number or a list. v2.41.0 typed both as a JSON
+// object and failed the whole read with "cannot unmarshal string into Go
+// struct field WorkflowRunStepDto.run.steps.input".
+func TestWaitForWorkflowRunReadsNonObjectStepValues(t *testing.T) {
+	succeeded := `{"run":{"runId":"` + testWorkflowRunID + `","status":"succeeded","output":42,"steps":[` +
+		`{"stepId":"total","kind":"transform","status":"succeeded","attempt":1,"pass":1,"input":"$.amount * 2","output":42},` +
+		`{"stepId":"big","kind":"condition","status":"succeeded","attempt":1,"pass":1,"input":"$.total > 10","output":true},` +
+		`{"stepId":"ids","kind":"transform","status":"succeeded","attempt":1,"pass":1,"input":"$.items[*].id","output":["a","b"]}]}}`
+	srv, _ := runServer(t, succeeded)
+
+	run, err := newCodeTestModule(srv.URL).WaitForWorkflowRun(context.Background(), testWorkflowRunID,
+		WaitForWorkflowRunOptions{Timeout: time.Second, PollInterval: time.Millisecond})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got, ok := run.Steps[0].Input.(string); !ok || got != "$.amount * 2" {
+		t.Errorf("step input: got %#v", run.Steps[0].Input)
+	}
+	if got, ok := run.Output.(float64); !ok || got != 42 {
+		t.Errorf("run output: got %#v", run.Output)
+	}
+
+	total, ok, err := StepOutput[float64](run, "total")
+	if err != nil || !ok || total != 42 {
+		t.Errorf("StepOutput total: got %v ok=%v err=%v", total, ok, err)
+	}
+	big, ok, err := StepOutput[bool](run, "big")
+	if err != nil || !ok || !big {
+		t.Errorf("StepOutput big: got %v ok=%v err=%v", big, ok, err)
+	}
+	ids, ok, err := StepOutput[[]string](run, "ids")
+	if err != nil || !ok || len(ids) != 2 || ids[0] != "a" || ids[1] != "b" {
+		t.Errorf("StepOutput ids: got %v ok=%v err=%v", ids, ok, err)
+	}
+}

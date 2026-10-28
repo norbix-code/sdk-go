@@ -700,7 +700,7 @@ type TermTreeDto struct {
 	Description  string                `json:"description,omitempty"`
 	Descriptions map[string]string     `json:"descriptions,omitempty"`
 	MultiParents []*TermMultiParentDto `json:"multiParents,omitempty"`
-	Meta         map[string]any        `json:"meta,omitempty"`
+	Meta         any                   `json:"meta,omitempty"`
 	Children     []*TermTreeDto        `json:"children,omitempty"`
 }
 
@@ -727,7 +727,7 @@ type TermDto struct {
 	Description  string                `json:"description,omitempty"`
 	Descriptions map[string]string     `json:"descriptions,omitempty"`
 	MultiParents []*TermMultiParentDto `json:"multiParents,omitempty"`
-	Meta         map[string]any        `json:"meta,omitempty"`
+	Meta         any                   `json:"meta,omitempty"`
 	Origin       string                `json:"origin,omitempty"`
 }
 
@@ -989,9 +989,9 @@ type WorkflowRunStepDto struct {
 	StartedAt       string               `json:"startedAt,omitempty"`
 	FinishedAt      string               `json:"finishedAt,omitempty"`
 	DurationMs      *float64             `json:"durationMs,omitempty"`
-	Input           map[string]any       `json:"input,omitempty"`
+	Input           any                  `json:"input,omitempty"`
 	InputTruncated  bool                 `json:"inputTruncated"`
-	Output          map[string]any       `json:"output,omitempty"`
+	Output          any                  `json:"output,omitempty"`
 	OutputTruncated bool                 `json:"outputTruncated"`
 	Error           *WorkflowRunErrorDto `json:"error,omitempty"`
 	ResumedBy       *WorkflowRunActorDto `json:"resumedBy,omitempty"`
@@ -1019,7 +1019,7 @@ type WorkflowRunDto struct {
 	DurationMs          *float64                `json:"durationMs,omitempty"`
 	WaitingOn           []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
 	Error               *WorkflowRunErrorDto    `json:"error,omitempty"`
-	Output              map[string]any          `json:"output,omitempty"`
+	Output              any                     `json:"output,omitempty"`
 	StepRuns            float64                 `json:"stepRuns,omitempty"`
 	Steps               []*WorkflowRunStepDto   `json:"steps,omitempty"`
 	Request             map[string]any          `json:"request,omitempty"`
@@ -1327,7 +1327,7 @@ type GetDatabaseSchemasResponse struct {
 // AggregateResponse DTO.
 type AggregateResponse struct {
 	ResponseBase
-	Result []map[string]any `json:"result,omitempty"`
+	Result []any `json:"result,omitempty"`
 }
 
 // CountResponse DTO.
@@ -1339,25 +1339,25 @@ type CountResponse struct {
 // DistinctResponse DTO.
 type DistinctResponse struct {
 	ResponseBase
-	Values []map[string]any `json:"values,omitempty"`
+	Values []any `json:"values,omitempty"`
 }
 
 // ExecuteAggregateResponse DTO.
 type ExecuteAggregateResponse struct {
 	ResponseBase
-	Result []map[string]any `json:"result,omitempty"`
+	Result []any `json:"result,omitempty"`
 }
 
 // FindResponse DTO.
 type FindResponse struct {
 	ResponseBase
-	List PaginatedResponse[map[string]any] `json:"list,omitempty"`
+	List PaginatedResponse[any] `json:"list,omitempty"`
 }
 
 // FindOneResponse DTO.
 type FindOneResponse struct {
 	ResponseBase
-	Result map[string]any `json:"result,omitempty"`
+	Result any `json:"result,omitempty"`
 }
 
 // GetFileByIdResponse DTO.
