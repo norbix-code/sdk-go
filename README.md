@@ -586,6 +586,7 @@ audience, `available` / `unavailableReason`, the setup script), run the script
 in the cloud account, then save with the same integration id and the role ARN
 (AWS) or tenant + client id (Azure). A key mode needs `acceptKeyRisk: true`, or
 the save is refused (`CM-ERRORS-INTEGRATIONS-034`).
+`out.Templates` — templates: ready CloudFormation / Bicep / Terraform files for this integration (`Kind`, `FileName`, `Content`).
 
 ## Webhooks
 

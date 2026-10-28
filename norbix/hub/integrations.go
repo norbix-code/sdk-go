@@ -15,8 +15,10 @@ type IntegrationsModule struct{ t *transport.Transport }
 // It returns what a developer needs before saving a keyless cloud integration:
 // the integration id to save with, the token issuer, subject and audience, whether
 // keyless works on this gateway (with the reason when it does not) and the cloud
-// setup script. The request takes "module" (files, email or code), "cloud" (azure,
-// aws or google) and an optional "integrationId" (an existing integration); see
+// setup script, and templates: ready CloudFormation / Bicep / Terraform files for
+// this integration (Templates: Kind, FileName, Content). The request takes
+// "module" (files, email or code), "cloud" (azure, aws or google) and an optional
+// "integrationId" (an existing integration); see
 // dtos.GetKeylessIntegrationSetup and dtos.GetKeylessIntegrationSetupResponse.
 func (m *IntegrationsModule) GetKeylessIntegrationSetup(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
