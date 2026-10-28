@@ -473,6 +473,13 @@ type EchoConnectDto struct {
 	Providers []*QuickConnectProviderDto `json:"providers,omitempty"`
 }
 
+// EchoKeylessDto DTO.
+type EchoKeylessDto struct {
+	Issuer            string `json:"issuer,omitempty"`
+	Available         bool   `json:"available"`
+	UnavailableReason string `json:"unavailableReason,omitempty"`
+}
+
 // PublicBrandDto DTO.
 type PublicBrandDto struct {
 	DisplayName string `json:"displayName,omitempty"`
@@ -1090,6 +1097,7 @@ type EchoResponse struct {
 	Agent                       *EchoAgentDto           `json:"agent,omitempty"`
 	HostingPlatform             *EchoHostingPlatformDto `json:"hostingPlatform,omitempty"`
 	Connect                     *EchoConnectDto         `json:"connect,omitempty"`
+	Keyless                     *EchoKeylessDto         `json:"keyless,omitempty"`
 }
 
 // PublicProjectConfigDto DTO.
