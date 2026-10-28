@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
@@ -28,7 +29,7 @@ func newIntegrationsTestModule(baseURL string) *IntegrationsModule {
 
 // GET /{version}/integrations/keyless/setup (gateway feat/keyless-cloud): module,
 // cloud and the integration id go on the query, no body, and the answer decodes
-// into the generated response.
+// into the generated response — the setup templates included.
 func TestGetKeylessIntegrationSetup(t *testing.T) {
 	var gotMethod, gotPath string
 	var gotQuery map[string][]string
@@ -39,7 +40,8 @@ func TestGetKeylessIntegrationSetup(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"integrationId":"int_1","env":"PROD","module":"files","cloud":"aws",`+
 			`"issuer":"https://issuer.example","available":true,"subject":"p/proj_1/e/PROD/files/i/int_1",`+
-			`"audience":"sts.amazonaws.com","script":"aws iam create-role ..."}`)
+			`"audience":"sts.amazonaws.com","script":"aws iam create-role ...",`+
+			`"templates":[{"kind":"terraform","fileName":"norbix-files-aws.tf","content":"resource \"aws_iam_role\" ..."}]}`)
 	}))
 	defer srv.Close()
 
@@ -68,8 +70,11 @@ func TestGetKeylessIntegrationSetup(t *testing.T) {
 		IntegrationId: "int_1", Env: "PROD", Module: "files", Cloud: "aws",
 		Issuer: "https://issuer.example", Available: true, Subject: "p/proj_1/e/PROD/files/i/int_1",
 		Audience: "sts.amazonaws.com", Script: "aws iam create-role ...",
+		Templates: []*dtos.KeylessIntegrationSetupTemplate{
+			{Kind: "terraform", FileName: "norbix-files-aws.tf", Content: `resource "aws_iam_role" ...`},
+		},
 	}
-	if out != want {
+	if !reflect.DeepEqual(out, want) {
 		t.Errorf("response: got %+v want %+v", out, want)
 	}
 }
