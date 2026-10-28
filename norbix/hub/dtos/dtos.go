@@ -1127,7 +1127,7 @@ type AwsSesEmailIntegrationRequest struct {
 	RoleArn               string        `json:"roleArn,omitempty"`
 	AccessKey             string        `json:"accessKey,omitempty"`
 	SecretKey             string        `json:"secretKey,omitempty"`
-	AcceptKeyRisk         bool          `json:"acceptKeyRisk"`
+	AcceptKeyRisk         *bool         `json:"acceptKeyRisk,omitempty"`
 	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
 	SnsTopicArn           string        `json:"snsTopicArn,omitempty"`
 }
@@ -1159,7 +1159,7 @@ type AzureCommunicationEmailIntegrationRequest struct {
 	Endpoint              string        `json:"endpoint,omitempty"`
 	TenantId              string        `json:"tenantId,omitempty"`
 	ClientId              string        `json:"clientId,omitempty"`
-	AcceptKeyRisk         bool          `json:"acceptKeyRisk"`
+	AcceptKeyRisk         *bool         `json:"acceptKeyRisk,omitempty"`
 	AccessKey             string        `json:"accessKey,omitempty"`
 	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
 	EventGridKey          string        `json:"eventGridKey,omitempty"`
@@ -1375,7 +1375,7 @@ type AwsS3FilesIntegrationRequest struct {
 	RoleArn       string        `json:"roleArn,omitempty"`
 	AccessKey     string        `json:"accessKey,omitempty"`
 	SecretKey     string        `json:"secretKey,omitempty"`
-	AcceptKeyRisk bool          `json:"acceptKeyRisk"`
+	AcceptKeyRisk *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // GoogleCloudFilesIntegrationRequest DTO.
@@ -1396,7 +1396,7 @@ type AzureBlobFilesIntegrationRequest struct {
 	TenantId         string        `json:"tenantId,omitempty"`
 	ClientId         string        `json:"clientId,omitempty"`
 	ConnectionString string        `json:"connectionString,omitempty"`
-	AcceptKeyRisk    bool          `json:"acceptKeyRisk"`
+	AcceptKeyRisk    *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // LocalFilesIntegrationRequest DTO.
@@ -2018,7 +2018,7 @@ type AwsLambdaCodeIntegrationRequest struct {
 	RoleArn       string        `json:"roleArn,omitempty"`
 	AccessKey     string        `json:"accessKey,omitempty"`
 	SecretKey     string        `json:"secretKey,omitempty"`
-	AcceptKeyRisk bool          `json:"acceptKeyRisk"`
+	AcceptKeyRisk *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // AzureFunctionsCodeIntegrationRequest DTO.
@@ -2032,7 +2032,7 @@ type AzureFunctionsCodeIntegrationRequest struct {
 	TenantId              string        `json:"tenantId,omitempty"`
 	ClientId              string        `json:"clientId,omitempty"`
 	ConnectionStringOrKey string        `json:"connectionStringOrKey,omitempty"`
-	AcceptKeyRisk         bool          `json:"acceptKeyRisk"`
+	AcceptKeyRisk         *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // GoogleCloudFunctionsCodeIntegrationRequest DTO.
