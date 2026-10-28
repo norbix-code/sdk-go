@@ -15,6 +15,7 @@ type Namespace struct {
 	Email         *EmailModule
 	Environments  *EnvironmentsModule
 	Files         *FilesModule
+	Integrations  *IntegrationsModule
 	Logs          *LogsModule
 	Membership    *MembershipModule
 	Notifications *NotificationsModule
@@ -37,6 +38,7 @@ func NewNamespace(t *transport.Transport) *Namespace {
 		Email:         &EmailModule{t: t},
 		Environments:  &EnvironmentsModule{t: t},
 		Files:         &FilesModule{t: t},
+		Integrations:  &IntegrationsModule{t: t},
 		Logs:          &LogsModule{t: t},
 		Membership:    &MembershipModule{t: t},
 		Notifications: &NotificationsModule{t: t},
