@@ -6148,6 +6148,13 @@ type FilesIntegrationListProjection struct {
 	Provider FileProvider `json:"provider,omitempty"`
 }
 
+// KeylessIntegrationSetupTemplate DTO.
+type KeylessIntegrationSetupTemplate struct {
+	Kind     string `json:"kind,omitempty"`
+	FileName string `json:"fileName,omitempty"`
+	Content  string `json:"content,omitempty"`
+}
+
 // PublicFolderDto DTO.
 type PublicFolderDto struct {
 	Path      string `json:"path,omitempty"`
@@ -8544,16 +8551,17 @@ type GetFilesIntegrationsResponse struct {
 // GetKeylessIntegrationSetupResponse DTO.
 type GetKeylessIntegrationSetupResponse struct {
 	ResponseBase
-	IntegrationId     string `json:"integrationId,omitempty"`
-	Env               string `json:"env,omitempty"`
-	Module            string `json:"module,omitempty"`
-	Cloud             string `json:"cloud,omitempty"`
-	Issuer            string `json:"issuer,omitempty"`
-	Available         bool   `json:"available"`
-	UnavailableReason string `json:"unavailableReason,omitempty"`
-	Subject           string `json:"subject,omitempty"`
-	Audience          string `json:"audience,omitempty"`
-	Script            string `json:"script,omitempty"`
+	IntegrationId     string                             `json:"integrationId,omitempty"`
+	Env               string                             `json:"env,omitempty"`
+	Module            string                             `json:"module,omitempty"`
+	Cloud             string                             `json:"cloud,omitempty"`
+	Issuer            string                             `json:"issuer,omitempty"`
+	Available         bool                               `json:"available"`
+	UnavailableReason string                             `json:"unavailableReason,omitempty"`
+	Subject           string                             `json:"subject,omitempty"`
+	Audience          string                             `json:"audience,omitempty"`
+	Script            string                             `json:"script,omitempty"`
+	Templates         []*KeylessIntegrationSetupTemplate `json:"templates,omitempty"`
 }
 
 // TestFilesIntegrationResponse DTO.
