@@ -58,6 +58,7 @@ const (
 	EmailCampaignRecipientsSourceTypesAccountUsers   EmailCampaignRecipientsSourceTypes = "AccountUsers"
 	EmailCampaignRecipientsSourceTypesEmail          EmailCampaignRecipientsSourceTypes = "Email"
 	EmailCampaignRecipientsSourceTypesCollection     EmailCampaignRecipientsSourceTypes = "Collection"
+	EmailCampaignRecipientsSourceTypesTriggerSubject EmailCampaignRecipientsSourceTypes = "TriggerSubject"
 )
 
 // TokenMappingResolverType enum.
@@ -418,6 +419,7 @@ const (
 	PushCampaignRecipientsSourceTypesCollection     PushCampaignRecipientsSourceTypes = "Collection"
 	PushCampaignRecipientsSourceTypesDevices        PushCampaignRecipientsSourceTypes = "Devices"
 	PushCampaignRecipientsSourceTypesAccountUsers   PushCampaignRecipientsSourceTypes = "AccountUsers"
+	PushCampaignRecipientsSourceTypesTriggerSubject PushCampaignRecipientsSourceTypes = "TriggerSubject"
 )
 
 // CodeInvocationType enum.
@@ -437,6 +439,7 @@ const (
 	SmsCampaignRecipientsSourceTypesAccountUsers   SmsCampaignRecipientsSourceTypes = "AccountUsers"
 	SmsCampaignRecipientsSourceTypesPhoneNumbers   SmsCampaignRecipientsSourceTypes = "PhoneNumbers"
 	SmsCampaignRecipientsSourceTypesCollection     SmsCampaignRecipientsSourceTypes = "Collection"
+	SmsCampaignRecipientsSourceTypesTriggerSubject SmsCampaignRecipientsSourceTypes = "TriggerSubject"
 )
 
 // PushDeviceDeliveryFamily enum.
@@ -2607,6 +2610,29 @@ type SmsToCollectionRecordsDeliverySettingsDto struct {
 type SmsToPhoneNumbersDeliverySettingsDto struct {
 	SmsCampaignDeliverySettingsDto
 	PhoneNumbers []string `json:"phoneNumbers,omitempty"`
+}
+
+// EmailToTriggerSubjectDeliverySettingsDto DTO.
+type EmailToTriggerSubjectDeliverySettingsDto struct {
+	EmailCampaignDeliverySettingsDto
+	SubjectAuthId   string `json:"subjectAuthId,omitempty"`
+	SubjectEmail    string `json:"subjectEmail,omitempty"`
+	SubjectLanguage string `json:"subjectLanguage,omitempty"`
+}
+
+// PushToTriggerSubjectDeliverySettingsDto DTO.
+type PushToTriggerSubjectDeliverySettingsDto struct {
+	PushCampaignDeliverySettingsDto
+	SubjectAuthId   string `json:"subjectAuthId,omitempty"`
+	SubjectLanguage string `json:"subjectLanguage,omitempty"`
+}
+
+// SmsToTriggerSubjectDeliverySettingsDto DTO.
+type SmsToTriggerSubjectDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	SubjectAuthId   string `json:"subjectAuthId,omitempty"`
+	SubjectPhone    string `json:"subjectPhone,omitempty"`
+	SubjectLanguage string `json:"subjectLanguage,omitempty"`
 }
 
 // IntegrationDto DTO.
@@ -10241,6 +10267,9 @@ type InternalsTypeGen struct {
 	Typegen_249_SmsToAccountUsersDeliverySettingsDto             *SmsToAccountUsersDeliverySettingsDto              `json:"typegen_249_SmsToAccountUsersDeliverySettingsDto,omitempty"`
 	Typegen_101_SmsToCollectionRecordsDeliverySettingsDto        *SmsToCollectionRecordsDeliverySettingsDto         `json:"typegen_101_SmsToCollectionRecordsDeliverySettingsDto,omitempty"`
 	Typegen_102_SmsToPhoneNumbersDeliverySettingsDto             *SmsToPhoneNumbersDeliverySettingsDto              `json:"typegen_102_SmsToPhoneNumbersDeliverySettingsDto,omitempty"`
+	Typegen_318_EmailToTriggerSubjectDeliverySettingsDto         *EmailToTriggerSubjectDeliverySettingsDto          `json:"typegen_318_EmailToTriggerSubjectDeliverySettingsDto,omitempty"`
+	Typegen_319_PushToTriggerSubjectDeliverySettingsDto          *PushToTriggerSubjectDeliverySettingsDto           `json:"typegen_319_PushToTriggerSubjectDeliverySettingsDto,omitempty"`
+	Typegen_320_SmsToTriggerSubjectDeliverySettingsDto           *SmsToTriggerSubjectDeliverySettingsDto            `json:"typegen_320_SmsToTriggerSubjectDeliverySettingsDto,omitempty"`
 	Typegen_103_OpenAiLlmIntegrationDto                          *OpenAiLlmIntegrationDto                           `json:"typegen_103_OpenAiLlmIntegrationDto,omitempty"`
 	Typegen_104_AnthropicLlmIntegrationDto                       *AnthropicLlmIntegrationDto                        `json:"typegen_104_AnthropicLlmIntegrationDto,omitempty"`
 	Typegen_105_OllamaLlmIntegrationDto                          *OllamaLlmIntegrationDto                           `json:"typegen_105_OllamaLlmIntegrationDto,omitempty"`
