@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/norbix-code/sdk-go/v2/norbix/api/dtos"
 	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
+	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 )
 
 // What the caller sees when a call fails (10b-files slice ERRORS, #66 and #67).

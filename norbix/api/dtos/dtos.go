@@ -32,6 +32,108 @@ const (
 	MarketingBlockReasonAdminBlock   MarketingBlockReason = "AdminBlock"
 )
 
+// FileProvider enum.
+type FileProvider string
+
+const (
+	FileProviderLocal              FileProvider = "Local"
+	FileProviderAwsS3              FileProvider = "AwsS3"
+	FileProviderAzureBlobStorage   FileProvider = "AzureBlobStorage"
+	FileProviderGoogleCloudStorage FileProvider = "GoogleCloudStorage"
+	FileProviderFtp                FileProvider = "Ftp"
+	FileProviderAppleICloud        FileProvider = "AppleICloud"
+	FileProviderDropBox            FileProvider = "DropBox"
+	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
+)
+
+// EmailCampaignRecipientsSourceTypes enum.
+type EmailCampaignRecipientsSourceTypes string
+
+const (
+	EmailCampaignRecipientsSourceTypesAllUsers       EmailCampaignRecipientsSourceTypes = "AllUsers"
+	EmailCampaignRecipientsSourceTypesSpecifiedUsers EmailCampaignRecipientsSourceTypes = "SpecifiedUsers"
+	EmailCampaignRecipientsSourceTypesAccountUsers   EmailCampaignRecipientsSourceTypes = "AccountUsers"
+	EmailCampaignRecipientsSourceTypesEmail          EmailCampaignRecipientsSourceTypes = "Email"
+	EmailCampaignRecipientsSourceTypesCollection     EmailCampaignRecipientsSourceTypes = "Collection"
+	EmailCampaignRecipientsSourceTypesTriggerSubject EmailCampaignRecipientsSourceTypes = "TriggerSubject"
+)
+
+// TokenMappingResolverType enum.
+type TokenMappingResolverType string
+
+const (
+	TokenMappingResolverTypeNotSet            TokenMappingResolverType = "NotSet"
+	TokenMappingResolverTypeCustom            TokenMappingResolverType = "Custom"
+	TokenMappingResolverTypeProject           TokenMappingResolverType = "Project"
+	TokenMappingResolverTypeProjectSocials    TokenMappingResolverType = "ProjectSocials"
+	TokenMappingResolverTypeInitiator         TokenMappingResolverType = "Initiator"
+	TokenMappingResolverTypeRecipient         TokenMappingResolverType = "Recipient"
+	TokenMappingResolverTypeSchemaRecord      TokenMappingResolverType = "SchemaRecord"
+	TokenMappingResolverTypeTargetUser        TokenMappingResolverType = "TargetUser"
+	TokenMappingResolverTypeTagDefinitions    TokenMappingResolverType = "TagDefinitions"
+	TokenMappingResolverTypeEmailSignatures   TokenMappingResolverType = "EmailSignatures"
+	TokenMappingResolverTypeCampaign          TokenMappingResolverType = "Campaign"
+	TokenMappingResolverTypeTemplate          TokenMappingResolverType = "Template"
+	TokenMappingResolverTypeEmailFooters      TokenMappingResolverType = "EmailFooters"
+	TokenMappingResolverTypeOld               TokenMappingResolverType = "Old"
+	TokenMappingResolverTypeNew               TokenMappingResolverType = "New"
+	TokenMappingResolverTypeRequestInput      TokenMappingResolverType = "RequestInput"
+	TokenMappingResolverTypeIntegrationConfig TokenMappingResolverType = "IntegrationConfig"
+	TokenMappingResolverTypeIntegrationSecret TokenMappingResolverType = "IntegrationSecret"
+	TokenMappingResolverTypeStepOutput        TokenMappingResolverType = "StepOutput"
+)
+
+// SecretValueFormat enum.
+type SecretValueFormat string
+
+const (
+	SecretValueFormatRaw      SecretValueFormat = "Raw"
+	SecretValueFormatBearer   SecretValueFormat = "Bearer"
+	SecretValueFormatBasic    SecretValueFormat = "Basic"
+	SecretValueFormatPrefixed SecretValueFormat = "Prefixed"
+)
+
+// SmsCampaignRecipientsSourceTypes enum.
+type SmsCampaignRecipientsSourceTypes string
+
+const (
+	SmsCampaignRecipientsSourceTypesAllUsers       SmsCampaignRecipientsSourceTypes = "AllUsers"
+	SmsCampaignRecipientsSourceTypesSpecifiedUsers SmsCampaignRecipientsSourceTypes = "SpecifiedUsers"
+	SmsCampaignRecipientsSourceTypesAccountUsers   SmsCampaignRecipientsSourceTypes = "AccountUsers"
+	SmsCampaignRecipientsSourceTypesPhoneNumbers   SmsCampaignRecipientsSourceTypes = "PhoneNumbers"
+	SmsCampaignRecipientsSourceTypesCollection     SmsCampaignRecipientsSourceTypes = "Collection"
+	SmsCampaignRecipientsSourceTypesTriggerSubject SmsCampaignRecipientsSourceTypes = "TriggerSubject"
+)
+
+// RespectTimeZoneSettings enum.
+type RespectTimeZoneSettings string
+
+const (
+	RespectTimeZoneSettingsRespectToLastLoginZone           RespectTimeZoneSettings = "RespectToLastLoginZone"
+	RespectTimeZoneSettingsRespectToRegistrationZone        RespectTimeZoneSettings = "RespectToRegistrationZone"
+	RespectTimeZoneSettingsRespectToRegistrationProjectZone RespectTimeZoneSettings = "RespectToRegistrationProjectZone"
+)
+
+// CollectionEmailCampaignRecipientField enum.
+type CollectionEmailCampaignRecipientField string
+
+const (
+	CollectionEmailCampaignRecipientFieldUser  CollectionEmailCampaignRecipientField = "User"
+	CollectionEmailCampaignRecipientFieldEmail CollectionEmailCampaignRecipientField = "Email"
+)
+
+// PushCampaignRecipientsSourceTypes enum.
+type PushCampaignRecipientsSourceTypes string
+
+const (
+	PushCampaignRecipientsSourceTypesAllUsers       PushCampaignRecipientsSourceTypes = "AllUsers"
+	PushCampaignRecipientsSourceTypesSpecifiedUsers PushCampaignRecipientsSourceTypes = "SpecifiedUsers"
+	PushCampaignRecipientsSourceTypesCollection     PushCampaignRecipientsSourceTypes = "Collection"
+	PushCampaignRecipientsSourceTypesDevices        PushCampaignRecipientsSourceTypes = "Devices"
+	PushCampaignRecipientsSourceTypesAccountUsers   PushCampaignRecipientsSourceTypes = "AccountUsers"
+	PushCampaignRecipientsSourceTypesTriggerSubject PushCampaignRecipientsSourceTypes = "TriggerSubject"
+)
+
 // CodeMashRelease enum.
 type CodeMashRelease string
 
@@ -103,18 +205,151 @@ const (
 	TriggerActionTypeWorkflow    TriggerActionType = "Workflow"
 )
 
-// FileProvider enum.
-type FileProvider string
+// CampaignStatus enum.
+type CampaignStatus string
 
 const (
-	FileProviderLocal              FileProvider = "Local"
-	FileProviderAwsS3              FileProvider = "AwsS3"
-	FileProviderAzureBlobStorage   FileProvider = "AzureBlobStorage"
-	FileProviderGoogleCloudStorage FileProvider = "GoogleCloudStorage"
-	FileProviderFtp                FileProvider = "Ftp"
-	FileProviderAppleICloud        FileProvider = "AppleICloud"
-	FileProviderDropBox            FileProvider = "DropBox"
-	FileProviderGoogleDrive        FileProvider = "GoogleDrive"
+	CampaignStatusPending    CampaignStatus = "Pending"
+	CampaignStatusRegistered CampaignStatus = "Registered"
+	CampaignStatusScheduled  CampaignStatus = "Scheduled"
+	CampaignStatusStarted    CampaignStatus = "Started"
+	CampaignStatusStopped    CampaignStatus = "Stopped"
+	CampaignStatusProcessing CampaignStatus = "Processing"
+	CampaignStatusCompleted  CampaignStatus = "Completed"
+	CampaignStatusFailed     CampaignStatus = "Failed"
+)
+
+// CommunicationChannel enum.
+type CommunicationChannel string
+
+const (
+	CommunicationChannelTransactional CommunicationChannel = "Transactional"
+	CommunicationChannelMarketing     CommunicationChannel = "Marketing"
+	CommunicationChannelSystem        CommunicationChannel = "System"
+)
+
+// NotificationMedium enum.
+type NotificationMedium string
+
+const (
+	NotificationMediumEmail NotificationMedium = "Email"
+	NotificationMediumSms   NotificationMedium = "Sms"
+	NotificationMediumPush  NotificationMedium = "Push"
+)
+
+// EmailTemplateEngine enum.
+type EmailTemplateEngine string
+
+const (
+	EmailTemplateEngineNotSet     EmailTemplateEngine = "NotSet"
+	EmailTemplateEngineHandlebars EmailTemplateEngine = "Handlebars"
+	EmailTemplateEngineMjml       EmailTemplateEngine = "Mjml"
+	EmailTemplateEngineLiquid     EmailTemplateEngine = "Liquid"
+	EmailTemplateEngineRazor      EmailTemplateEngine = "Razor"
+	EmailTemplateEngineMustache   EmailTemplateEngine = "Mustache"
+)
+
+// CampaignBatchStatus enum.
+type CampaignBatchStatus string
+
+const (
+	CampaignBatchStatusRegistered CampaignBatchStatus = "Registered"
+	CampaignBatchStatusProcessing CampaignBatchStatus = "Processing"
+	CampaignBatchStatusCompleted  CampaignBatchStatus = "Completed"
+	CampaignBatchStatusFailed     CampaignBatchStatus = "Failed"
+)
+
+// CampaignNotificationStatus enum.
+type CampaignNotificationStatus string
+
+const (
+	CampaignNotificationStatusCompleted                         CampaignNotificationStatus = "Completed"
+	CampaignNotificationStatusBlockedByUserPreferenceBlockAll   CampaignNotificationStatus = "BlockedByUserPreferenceBlockAll"
+	CampaignNotificationStatusBlockedByUserPreferenceBlockByTag CampaignNotificationStatus = "BlockedByUserPreferenceBlockByTag"
+	CampaignNotificationStatusFailed                            CampaignNotificationStatus = "Failed"
+	CampaignNotificationStatusViewed                            CampaignNotificationStatus = "Viewed"
+	CampaignNotificationStatusClicked                           CampaignNotificationStatus = "Clicked"
+	CampaignNotificationStatusBlockedByValidation               CampaignNotificationStatus = "BlockedByValidation"
+)
+
+// NotificationDeliveryState enum.
+type NotificationDeliveryState string
+
+const (
+	NotificationDeliveryStatePending   NotificationDeliveryState = "Pending"
+	NotificationDeliveryStateSending   NotificationDeliveryState = "Sending"
+	NotificationDeliveryStateRetrying  NotificationDeliveryState = "Retrying"
+	NotificationDeliveryStateAccepted  NotificationDeliveryState = "Accepted"
+	NotificationDeliveryStateFailed    NotificationDeliveryState = "Failed"
+	NotificationDeliveryStateBlocked   NotificationDeliveryState = "Blocked"
+	NotificationDeliveryStateCancelled NotificationDeliveryState = "Cancelled"
+)
+
+// NotificationAttemptOutcome enum.
+type NotificationAttemptOutcome string
+
+const (
+	NotificationAttemptOutcomeAccepted NotificationAttemptOutcome = "Accepted"
+	NotificationAttemptOutcomeFailed   NotificationAttemptOutcome = "Failed"
+)
+
+// SendErrorCategory enum.
+type SendErrorCategory string
+
+const (
+	SendErrorCategoryUnknown   SendErrorCategory = "Unknown"
+	SendErrorCategoryTransient SendErrorCategory = "Transient"
+	SendErrorCategoryPermanent SendErrorCategory = "Permanent"
+	SendErrorCategoryAmbiguous SendErrorCategory = "Ambiguous"
+)
+
+// NotificationAttemptTrigger enum.
+type NotificationAttemptTrigger string
+
+const (
+	NotificationAttemptTriggerInitial     NotificationAttemptTrigger = "Initial"
+	NotificationAttemptTriggerAutoRetry   NotificationAttemptTrigger = "AutoRetry"
+	NotificationAttemptTriggerManualRetry NotificationAttemptTrigger = "ManualRetry"
+)
+
+// DeliveryEventOutcome enum.
+type DeliveryEventOutcome string
+
+const (
+	DeliveryEventOutcomeDelivered  DeliveryEventOutcome = "Delivered"
+	DeliveryEventOutcomeBounced    DeliveryEventOutcome = "Bounced"
+	DeliveryEventOutcomeComplained DeliveryEventOutcome = "Complained"
+	DeliveryEventOutcomeRejected   DeliveryEventOutcome = "Rejected"
+	DeliveryEventOutcomeDeferred   DeliveryEventOutcome = "Deferred"
+)
+
+// EmailRecipientField enum.
+type EmailRecipientField string
+
+const (
+	EmailRecipientFieldTo  EmailRecipientField = "To"
+	EmailRecipientFieldCc  EmailRecipientField = "Cc"
+	EmailRecipientFieldBcc EmailRecipientField = "Bcc"
+)
+
+// RecipientRemovalReason enum.
+type RecipientRemovalReason string
+
+const (
+	RecipientRemovalReasonOptedOut      RecipientRemovalReason = "OptedOut"
+	RecipientRemovalReasonCompliance    RecipientRemovalReason = "Compliance"
+	RecipientRemovalReasonUndeliverable RecipientRemovalReason = "Undeliverable"
+)
+
+// PushDeviceDeliveryFamily enum.
+type PushDeviceDeliveryFamily string
+
+const (
+	PushDeviceDeliveryFamilyIos     PushDeviceDeliveryFamily = "Ios"
+	PushDeviceDeliveryFamilyAndroid PushDeviceDeliveryFamily = "Android"
+	PushDeviceDeliveryFamilyChrome  PushDeviceDeliveryFamily = "Chrome"
+	PushDeviceDeliveryFamilySafari  PushDeviceDeliveryFamily = "Safari"
+	PushDeviceDeliveryFamilyExpo    PushDeviceDeliveryFamily = "Expo"
 )
 
 // IReturn DTO.
@@ -417,6 +652,118 @@ type PaymentOrderLineInput struct {
 	Title           string  `json:"title,omitempty"`
 	Quantity        float64 `json:"quantity,omitempty"`
 	UnitAmountMinor float64 `json:"unitAmountMinor,omitempty"`
+}
+
+// FileChecksumDto DTO.
+type FileChecksumDto struct {
+	Algorithm string `json:"algorithm,omitempty"`
+	Hash      string `json:"hash,omitempty"`
+}
+
+// FileResourceDto DTO.
+type FileResourceDto struct {
+	Id               string           `json:"id,omitempty"`
+	OriginalFileName string           `json:"originalFileName,omitempty"`
+	Extension        string           `json:"extension,omitempty"`
+	StoredFileName   string           `json:"storedFileName,omitempty"`
+	SizeBytes        *float64         `json:"sizeBytes,omitempty"`
+	Checksum         *FileChecksumDto `json:"checksum,omitempty"`
+}
+
+// FileResourceRefDto DTO.
+type FileResourceRefDto struct {
+	Resource      *FileResourceDto `json:"resource,omitempty"`
+	IntegrationId string           `json:"integrationId,omitempty"`
+	Provider      FileProvider     `json:"provider,omitempty"`
+	Path          string           `json:"path,omitempty"`
+	PublicUrl     string           `json:"publicUrl,omitempty"`
+	IsPublic      bool             `json:"isPublic"`
+}
+
+// ImportColumnMappingDto DTO.
+type ImportColumnMappingDto struct {
+	CsvColumnIndex    float64 `json:"csvColumnIndex,omitempty"`
+	CsvHeader         string  `json:"csvHeader,omitempty"`
+	PropertyName      string  `json:"propertyName,omitempty"`
+	DontImportOnError bool    `json:"dontImportOnError"`
+}
+
+// TokenMappingDto DTO.
+type TokenMappingDto struct {
+	Key          string                   `json:"key,omitempty"`
+	Value        string                   `json:"value,omitempty"`
+	Resolver     TokenMappingResolverType `json:"resolver,omitempty"`
+	SecretKeys   []string                 `json:"secretKeys,omitempty"`
+	SecretFormat SecretValueFormat        `json:"secretFormat,omitempty"`
+}
+
+// EmailCampaignRequest DTO.
+type EmailCampaignRequest struct {
+	Source                  EmailCampaignRecipientsSourceTypes `json:"source,omitempty"`
+	TemplateId              string                             `json:"templateId,omitempty"`
+	IntegrationId           string                             `json:"integrationId,omitempty"`
+	ValidationIntegrationId string                             `json:"validationIntegrationId,omitempty"`
+	Language                string                             `json:"language,omitempty"`
+	InitiatorId             string                             `json:"initiatorId,omitempty"`
+	Notes                   string                             `json:"notes,omitempty"`
+	MappedTokens            []*TokenMappingDto                 `json:"mappedTokens,omitempty"`
+	CampaignTime            *float64                           `json:"campaignTime,omitempty"`
+}
+
+// SmsCampaignDeliverySettingsDto DTO.
+type SmsCampaignDeliverySettingsDto struct {
+	RecipientsSourceType    SmsCampaignRecipientsSourceTypes `json:"recipientsSourceType,omitempty"`
+	MappedTokens            []*TokenMappingDto               `json:"mappedTokens,omitempty"`
+	CampaignTime            *float64                         `json:"campaignTime,omitempty"`
+	RespectTimeZoneSettings RespectTimeZoneSettings          `json:"respectTimeZoneSettings,omitempty"`
+}
+
+// SmsToAllUsersDeliverySettingsDto DTO.
+type SmsToAllUsersDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	RolesNames []string `json:"rolesNames,omitempty"`
+	UserTags   []string `json:"userTags,omitempty"`
+}
+
+// SmsToUsersDeliverySettingsDto DTO.
+type SmsToUsersDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	Recipients []string `json:"recipients,omitempty"`
+}
+
+// SmsToAccountUsersDeliverySettingsDto DTO.
+type SmsToAccountUsersDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	Recipients []string `json:"recipients,omitempty"`
+}
+
+// SmsToCollectionRecordsDeliverySettingsDto DTO.
+type SmsToCollectionRecordsDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	Fields     []string                              `json:"fields,omitempty"`
+	FieldType  CollectionEmailCampaignRecipientField `json:"fieldType,omitempty"`
+	SchemaName string                                `json:"schemaName,omitempty"`
+	RoleNames  []string                              `json:"roleNames,omitempty"`
+	Languages  []string                              `json:"languages,omitempty"`
+	RecordIds  []string                              `json:"recordIds,omitempty"`
+}
+
+// SmsToPhoneNumbersDeliverySettingsDto DTO.
+type SmsToPhoneNumbersDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	PhoneNumbers []string `json:"phoneNumbers,omitempty"`
+}
+
+// PushCampaignRequest DTO.
+type PushCampaignRequest struct {
+	Source        PushCampaignRecipientsSourceTypes `json:"source,omitempty"`
+	TemplateId    string                            `json:"templateId,omitempty"`
+	IntegrationId string                            `json:"integrationId,omitempty"`
+	Language      string                            `json:"language,omitempty"`
+	InitiatorId   string                            `json:"initiatorId,omitempty"`
+	Notes         string                            `json:"notes,omitempty"`
+	MappedTokens  []*TokenMappingDto                `json:"mappedTokens,omitempty"`
+	CampaignTime  *float64                          `json:"campaignTime,omitempty"`
 }
 
 // EchoRegionDto DTO.
@@ -777,18 +1124,28 @@ type TriggerActionDto struct {
 	IntegrationId string            `json:"integrationId,omitempty"`
 }
 
+// ExecutionIdentitySummaryDto DTO.
+type ExecutionIdentitySummaryDto struct {
+	Id        string `json:"id,omitempty"`
+	Name      string `json:"name,omitempty"`
+	IsDefault bool   `json:"isDefault"`
+	Status    string `json:"status,omitempty"`
+}
+
 // TriggerDto DTO.
 type TriggerDto struct {
-	Type           TriggerType       `json:"type,omitempty"`
-	ViewId         string            `json:"viewId,omitempty"`
-	Name           string            `json:"name,omitempty"`
-	ThenAction     *TriggerActionDto `json:"thenAction,omitempty"`
-	Description    string            `json:"description,omitempty"`
-	IsEnabled      bool              `json:"isEnabled"`
-	ActivationCode string            `json:"activationCode,omitempty"`
-	Order          *float64          `json:"order,omitempty"`
-	BreakOnError   bool              `json:"breakOnError"`
-	SavedByAuthId  string            `json:"savedByAuthId,omitempty"`
+	Type                TriggerType                  `json:"type,omitempty"`
+	ViewId              string                       `json:"viewId,omitempty"`
+	Name                string                       `json:"name,omitempty"`
+	ThenAction          *TriggerActionDto            `json:"thenAction,omitempty"`
+	Description         string                       `json:"description,omitempty"`
+	IsEnabled           bool                         `json:"isEnabled"`
+	ActivationCode      string                       `json:"activationCode,omitempty"`
+	Order               *float64                     `json:"order,omitempty"`
+	BreakOnError        bool                         `json:"breakOnError"`
+	SavedByAuthId       string                       `json:"savedByAuthId,omitempty"`
+	ExecutionIdentityId string                       `json:"executionIdentityId,omitempty"`
+	ExecutionIdentity   *ExecutionIdentitySummaryDto `json:"executionIdentity,omitempty"`
 }
 
 // SchemaDto DTO.
@@ -818,32 +1175,6 @@ type SchemaListProjection struct {
 	Env               string   `json:"env,omitempty"`
 }
 
-// FileChecksumDto DTO.
-type FileChecksumDto struct {
-	Algorithm string `json:"algorithm,omitempty"`
-	Hash      string `json:"hash,omitempty"`
-}
-
-// FileResourceDto DTO.
-type FileResourceDto struct {
-	Id               string           `json:"id,omitempty"`
-	OriginalFileName string           `json:"originalFileName,omitempty"`
-	Extension        string           `json:"extension,omitempty"`
-	StoredFileName   string           `json:"storedFileName,omitempty"`
-	SizeBytes        *float64         `json:"sizeBytes,omitempty"`
-	Checksum         *FileChecksumDto `json:"checksum,omitempty"`
-}
-
-// FileResourceRefDto DTO.
-type FileResourceRefDto struct {
-	Resource      *FileResourceDto `json:"resource,omitempty"`
-	IntegrationId string           `json:"integrationId,omitempty"`
-	Provider      FileProvider     `json:"provider,omitempty"`
-	Path          string           `json:"path,omitempty"`
-	PublicUrl     string           `json:"publicUrl,omitempty"`
-	IsPublic      bool             `json:"isPublic"`
-}
-
 // PublicFolderDto DTO.
 type PublicFolderDto struct {
 	Path      string `json:"path,omitempty"`
@@ -864,13 +1195,6 @@ type RegisterFileResult struct {
 	ErrorCode   string   `json:"errorCode,omitempty"`
 	ErrorStatus *float64 `json:"errorStatus,omitempty"`
 	Error       string   `json:"error,omitempty"`
-}
-
-// IntegrationTestResultItemDto DTO.
-type IntegrationTestResultItemDto struct {
-	Operation string   `json:"operation,omitempty"`
-	Result    string   `json:"result,omitempty"`
-	Errors    []string `json:"errors,omitempty"`
 }
 
 // OwnPushDeviceDto DTO.
@@ -946,6 +1270,12 @@ type PaymentOrderDto struct {
 	Mismatches        []string                   `json:"mismatches,omitempty"`
 }
 
+// WorkflowRunActorDto DTO.
+type WorkflowRunActorDto struct {
+	UserId string `json:"userId,omitempty"`
+	Kind   string `json:"kind,omitempty"`
+}
+
 // WorkflowWaitingOnDto DTO.
 type WorkflowWaitingOnDto struct {
 	StepId    string   `json:"stepId,omitempty"`
@@ -965,24 +1295,22 @@ type WorkflowRunErrorDto struct {
 
 // WorkflowRunListProjection DTO.
 type WorkflowRunListProjection struct {
-	RunId          string                  `json:"runId,omitempty"`
-	WorkflowId     string                  `json:"workflowId,omitempty"`
-	Version        *float64                `json:"version,omitempty"`
-	IsDraft        bool                    `json:"isDraft"`
-	Status         string                  `json:"status,omitempty"`
-	Source         string                  `json:"source,omitempty"`
-	StartedAt      string                  `json:"startedAt,omitempty"`
-	FinishedAt     string                  `json:"finishedAt,omitempty"`
-	DurationMs     *float64                `json:"durationMs,omitempty"`
-	CurrentStepIds []string                `json:"currentStepIds,omitempty"`
-	WaitingOn      []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
-	Error          *WorkflowRunErrorDto    `json:"error,omitempty"`
-}
-
-// WorkflowRunActorDto DTO.
-type WorkflowRunActorDto struct {
-	UserId string `json:"userId,omitempty"`
-	Kind   string `json:"kind,omitempty"`
+	RunId                      string                  `json:"runId,omitempty"`
+	WorkflowId                 string                  `json:"workflowId,omitempty"`
+	Version                    *float64                `json:"version,omitempty"`
+	IsDraft                    bool                    `json:"isDraft"`
+	Status                     string                  `json:"status,omitempty"`
+	Source                     string                  `json:"source,omitempty"`
+	StartedAt                  string                  `json:"startedAt,omitempty"`
+	FinishedAt                 string                  `json:"finishedAt,omitempty"`
+	DurationMs                 *float64                `json:"durationMs,omitempty"`
+	StartedBy                  *WorkflowRunActorDto    `json:"startedBy,omitempty"`
+	ExecutionIdentityId        string                  `json:"executionIdentityId,omitempty"`
+	ExecutionIdentityName      string                  `json:"executionIdentityName,omitempty"`
+	ExecutionIdentityIsDefault bool                    `json:"executionIdentityIsDefault"`
+	CurrentStepIds             []string                `json:"currentStepIds,omitempty"`
+	WaitingOn                  []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
+	Error                      *WorkflowRunErrorDto    `json:"error,omitempty"`
 }
 
 // WorkflowRunStepDto DTO.
@@ -1007,30 +1335,49 @@ type WorkflowRunStepDto struct {
 
 // WorkflowRunDto DTO.
 type WorkflowRunDto struct {
-	RunId               string                  `json:"runId,omitempty"`
-	WorkflowId          string                  `json:"workflowId,omitempty"`
-	Version             *float64                `json:"version,omitempty"`
-	IsDraft             bool                    `json:"isDraft"`
-	Status              string                  `json:"status,omitempty"`
-	Source              string                  `json:"source,omitempty"`
-	StartedBy           *WorkflowRunActorDto    `json:"startedBy,omitempty"`
-	TriggerId           string                  `json:"triggerId,omitempty"`
-	TaskId              string                  `json:"taskId,omitempty"`
-	ParentRunId         string                  `json:"parentRunId,omitempty"`
-	Depth               float64                 `json:"depth,omitempty"`
-	Env                 string                  `json:"env,omitempty"`
-	CorrelationId       string                  `json:"correlationId,omitempty"`
-	ExecutionIdentityId string                  `json:"executionIdentityId,omitempty"`
-	StartedAt           string                  `json:"startedAt,omitempty"`
-	FinishedAt          string                  `json:"finishedAt,omitempty"`
-	DurationMs          *float64                `json:"durationMs,omitempty"`
-	WaitingOn           []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
-	Error               *WorkflowRunErrorDto    `json:"error,omitempty"`
-	Output              any                     `json:"output,omitempty"`
-	StepRuns            float64                 `json:"stepRuns,omitempty"`
-	Steps               []*WorkflowRunStepDto   `json:"steps,omitempty"`
-	Request             map[string]any          `json:"request,omitempty"`
-	Trigger             map[string]any          `json:"trigger,omitempty"`
+	RunId                      string                  `json:"runId,omitempty"`
+	WorkflowId                 string                  `json:"workflowId,omitempty"`
+	Version                    *float64                `json:"version,omitempty"`
+	IsDraft                    bool                    `json:"isDraft"`
+	Status                     string                  `json:"status,omitempty"`
+	Source                     string                  `json:"source,omitempty"`
+	StartedBy                  *WorkflowRunActorDto    `json:"startedBy,omitempty"`
+	TriggerId                  string                  `json:"triggerId,omitempty"`
+	TaskId                     string                  `json:"taskId,omitempty"`
+	ParentRunId                string                  `json:"parentRunId,omitempty"`
+	Depth                      float64                 `json:"depth,omitempty"`
+	Env                        string                  `json:"env,omitempty"`
+	CorrelationId              string                  `json:"correlationId,omitempty"`
+	ExecutionIdentityId        string                  `json:"executionIdentityId,omitempty"`
+	ExecutionIdentityName      string                  `json:"executionIdentityName,omitempty"`
+	ExecutionIdentityIsDefault bool                    `json:"executionIdentityIsDefault"`
+	StartedAt                  string                  `json:"startedAt,omitempty"`
+	FinishedAt                 string                  `json:"finishedAt,omitempty"`
+	DurationMs                 *float64                `json:"durationMs,omitempty"`
+	WaitingOn                  []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
+	Error                      *WorkflowRunErrorDto    `json:"error,omitempty"`
+	Output                     any                     `json:"output,omitempty"`
+	StepRuns                   float64                 `json:"stepRuns,omitempty"`
+	Steps                      []*WorkflowRunStepDto   `json:"steps,omitempty"`
+	Request                    map[string]any          `json:"request,omitempty"`
+	Trigger                    map[string]any          `json:"trigger,omitempty"`
+}
+
+// TenantLogEntryDto DTO.
+type TenantLogEntryDto struct {
+	Id            string            `json:"id,omitempty"`
+	Timestamp     string            `json:"timestamp,omitempty"`
+	Module        string            `json:"module,omitempty"`
+	Level         string            `json:"level,omitempty"`
+	EventCode     string            `json:"eventCode,omitempty"`
+	Title         string            `json:"title,omitempty"`
+	Message       string            `json:"message,omitempty"`
+	CorrelationId string            `json:"correlationId,omitempty"`
+	TraceId       string            `json:"traceId,omitempty"`
+	SpanId        string            `json:"spanId,omitempty"`
+	Env           string            `json:"env,omitempty"`
+	Origin        string            `json:"origin,omitempty"`
+	Meta          map[string]string `json:"meta,omitempty"`
 }
 
 // InAppNotificationDto DTO.
@@ -1045,6 +1392,476 @@ type InAppNotificationDto struct {
 	SeenAtUtc    string `json:"seenAtUtc,omitempty"`
 	ReadAtUtc    string `json:"readAtUtc,omitempty"`
 	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
+}
+
+// ChannelSubscriptionStateDto DTO.
+type ChannelSubscriptionStateDto struct {
+	Unsubscribed bool                `json:"unsubscribed"`
+	BlockedTags  map[string][]string `json:"blockedTags,omitempty"`
+}
+
+// UserDto DTO.
+type UserDto struct {
+	Id                   string                                  `json:"id,omitempty"`
+	ProjectId            string                                  `json:"projectId,omitempty"`
+	PrimaryEmail         string                                  `json:"primaryEmail,omitempty"`
+	PrimaryPhone         string                                  `json:"primaryPhone,omitempty"`
+	DisplayName          string                                  `json:"displayName,omitempty"`
+	FirstName            string                                  `json:"firstName,omitempty"`
+	LastName             string                                  `json:"lastName,omitempty"`
+	FullName             string                                  `json:"fullName,omitempty"`
+	Company              string                                  `json:"company,omitempty"`
+	Locale               string                                  `json:"locale,omitempty"`
+	TimeZone             string                                  `json:"timeZone,omitempty"`
+	Gender               string                                  `json:"gender,omitempty"`
+	BirthDate            *float64                                `json:"birthDate,omitempty"`
+	AddressLine1         string                                  `json:"addressLine1,omitempty"`
+	AddressLine2         string                                  `json:"addressLine2,omitempty"`
+	Country              string                                  `json:"country,omitempty"`
+	City                 string                                  `json:"city,omitempty"`
+	State                string                                  `json:"state,omitempty"`
+	PostalCode           string                                  `json:"postalCode,omitempty"`
+	Tags                 []string                                `json:"tags,omitempty"`
+	Roles                []string                                `json:"roles,omitempty"`
+	Lifecycle            string                                  `json:"lifecycle,omitempty"`
+	SourceOfCreation     string                                  `json:"sourceOfCreation,omitempty"`
+	MergedIntoContactId  string                                  `json:"mergedIntoContactId,omitempty"`
+	CreatedOn            string                                  `json:"createdOn,omitempty"`
+	ModifiedOn           string                                  `json:"modifiedOn,omitempty"`
+	Auths                []*AuthDto                              `json:"auths,omitempty"`
+	MarketingPreferences map[string]*ChannelSubscriptionStateDto `json:"marketingPreferences,omitempty"`
+}
+
+// ContactRolesRepairDto DTO.
+type ContactRolesRepairDto struct {
+	DryRun                      bool    `json:"dryRun"`
+	ContactsWithoutRoles        float64 `json:"contactsWithoutRoles,omitempty"`
+	ContactsToRepair            float64 `json:"contactsToRepair,omitempty"`
+	ContactsRepaired            float64 `json:"contactsRepaired,omitempty"`
+	ContactsWithoutLoginRoleIds float64 `json:"contactsWithoutLoginRoleIds,omitempty"`
+	LegacyRoleNamesIgnored      float64 `json:"legacyRoleNamesIgnored,omitempty"`
+}
+
+// SchemaRefDto DTO.
+type SchemaRefDto struct {
+	SchemaId              string `json:"schemaId,omitempty"`
+	SchemaName            string `json:"schemaName,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// CollectionImportDto DTO.
+type CollectionImportDto struct {
+	Id            string                    `json:"id,omitempty"`
+	Schema        *SchemaRefDto             `json:"schema,omitempty"`
+	File          *FileResourceRefDto       `json:"file,omitempty"`
+	ErrorFile     *FileResourceRefDto       `json:"errorFile,omitempty"`
+	Delimiter     string                    `json:"delimiter,omitempty"`
+	HasHeader     bool                      `json:"hasHeader"`
+	Status        string                    `json:"status,omitempty"`
+	TotalRows     float64                   `json:"totalRows,omitempty"`
+	TotalImported float64                   `json:"totalImported,omitempty"`
+	TotalErrors   float64                   `json:"totalErrors,omitempty"`
+	FailureReason string                    `json:"failureReason,omitempty"`
+	Mapping       []*ImportColumnMappingDto `json:"mapping,omitempty"`
+	CreatedOn     string                    `json:"createdOn,omitempty"`
+	StartedOn     string                    `json:"startedOn,omitempty"`
+	CompletedOn   string                    `json:"completedOn,omitempty"`
+}
+
+// ImportUploadTargetDto DTO.
+type ImportUploadTargetDto struct {
+	Url         string              `json:"url,omitempty"`
+	ContentType string              `json:"contentType,omitempty"`
+	File        *FileResourceRefDto `json:"file,omitempty"`
+}
+
+// ImportFileColumnDto DTO.
+type ImportFileColumnDto struct {
+	Index        float64  `json:"index,omitempty"`
+	Header       string   `json:"header,omitempty"`
+	Samples      []string `json:"samples,omitempty"`
+	DetectedType string   `json:"detectedType,omitempty"`
+}
+
+// ImportFileAnalysisDto DTO.
+type ImportFileAnalysisDto struct {
+	File           *FileResourceRefDto    `json:"file,omitempty"`
+	Columns        []*ImportFileColumnDto `json:"columns,omitempty"`
+	SampleRowCount float64                `json:"sampleRowCount,omitempty"`
+}
+
+// CampaignStatusChangeEntryDto DTO.
+type CampaignStatusChangeEntryDto struct {
+	Time   string         `json:"time,omitempty"`
+	Status CampaignStatus `json:"status,omitempty"`
+	Errors []*ErrorDto    `json:"errors,omitempty"`
+}
+
+// CampaignOutcomeDto DTO.
+type CampaignOutcomeDto struct {
+	Sent              float64 `json:"sent,omitempty"`
+	Failed            float64 `json:"failed,omitempty"`
+	Blocked           float64 `json:"blocked,omitempty"`
+	Cancelled         float64 `json:"cancelled,omitempty"`
+	RemovedRecipients float64 `json:"removedRecipients,omitempty"`
+	BlockedReason     string  `json:"blockedReason,omitempty"`
+}
+
+// CampaignDto DTO.
+type CampaignDto struct {
+	ViewId                          string                          `json:"viewId,omitempty"`
+	CreatedOn                       string                          `json:"createdOn,omitempty"`
+	Language                        string                          `json:"language,omitempty"`
+	ForceCampaignLanguage           bool                            `json:"forceCampaignLanguage"`
+	CampaignProcessingIntegrationId string                          `json:"campaignProcessingIntegrationId,omitempty"`
+	StatusHistory                   []*CampaignStatusChangeEntryDto `json:"statusHistory,omitempty"`
+	Status                          *CampaignStatusChangeEntryDto   `json:"status,omitempty"`
+	TokenMappingValues              []*TokenMappingDto              `json:"tokenMappingValues,omitempty"`
+	Notes                           string                          `json:"notes,omitempty"`
+	CreatedById                     string                          `json:"createdById,omitempty"`
+	TimeZoneId                      string                          `json:"timeZoneId,omitempty"`
+	UserId                          string                          `json:"userId,omitempty"`
+	TriggerId                       string                          `json:"triggerId,omitempty"`
+	TriggerType                     TriggerType                     `json:"triggerType,omitempty"`
+	Outcome                         *CampaignOutcomeDto             `json:"outcome,omitempty"`
+	Id                              string                          `json:"id,omitempty"`
+}
+
+// EmailCampaignDeliverySettingsDto DTO.
+type EmailCampaignDeliverySettingsDto struct {
+	RecipientsSourceType    EmailCampaignRecipientsSourceTypes `json:"recipientsSourceType,omitempty"`
+	MappedTokens            []*TokenMappingDto                 `json:"mappedTokens,omitempty"`
+	CampaignTime            *float64                           `json:"campaignTime,omitempty"`
+	RespectTimeZoneSettings RespectTimeZoneSettings            `json:"respectTimeZoneSettings,omitempty"`
+}
+
+// TemplateDto DTO.
+type TemplateDto struct {
+	Id                   string               `json:"id,omitempty"`
+	ViewId               string               `json:"viewId,omitempty"`
+	TemplateName         string               `json:"templateName,omitempty"`
+	Description          string               `json:"description,omitempty"`
+	CommunicationChannel CommunicationChannel `json:"communicationChannel,omitempty"`
+	Medium               NotificationMedium   `json:"medium,omitempty"`
+	IsActive             bool                 `json:"isActive"`
+	Tags                 []string             `json:"tags,omitempty"`
+	Env                  string               `json:"env,omitempty"`
+}
+
+// EmailBodyDto DTO.
+type EmailBodyDto struct {
+	Structure      string              `json:"structure,omitempty"`
+	Code           string              `json:"code,omitempty"`
+	TemplateEngine EmailTemplateEngine `json:"templateEngine,omitempty"`
+}
+
+// EmailMessageContentDto DTO.
+type EmailMessageContentDto struct {
+	Subject           string                `json:"subject,omitempty"`
+	Body              *EmailBodyDto         `json:"body,omitempty"`
+	StaticAttachments []*FileResourceRefDto `json:"staticAttachments,omitempty"`
+}
+
+// EmailMessageTranslationDto DTO.
+type EmailMessageTranslationDto struct {
+	Language          string                  `json:"language,omitempty"`
+	Content           *EmailMessageContentDto `json:"content,omitempty"`
+	StaticAttachments []*FileResourceRefDto   `json:"staticAttachments,omitempty"`
+}
+
+// EmailTemplateDto DTO.
+type EmailTemplateDto struct {
+	TemplateDto
+	Translations      []*EmailMessageTranslationDto `json:"translations,omitempty"`
+	StaticAttachments []*FileResourceRefDto         `json:"staticAttachments,omitempty"`
+}
+
+// EmailCampaignDto DTO.
+type EmailCampaignDto struct {
+	CampaignDto
+	DeliverySettings        *EmailCampaignDeliverySettingsDto `json:"deliverySettings,omitempty"`
+	Template                *EmailTemplateDto                 `json:"template,omitempty"`
+	ValidationIntegrationId string                            `json:"validationIntegrationId,omitempty"`
+	TemplateIsSystem        bool                              `json:"templateIsSystem"`
+}
+
+// EmailCampaignListProjection DTO.
+type EmailCampaignListProjection struct {
+	ViewId        string              `json:"viewId,omitempty"`
+	TemplateName  string              `json:"templateName,omitempty"`
+	TemplateId    string              `json:"templateId,omitempty"`
+	IntegrationId string              `json:"integrationId,omitempty"`
+	Language      string              `json:"language,omitempty"`
+	Strategy      string              `json:"strategy,omitempty"`
+	LatestStatus  CampaignStatus      `json:"latestStatus,omitempty"`
+	CreatedOn     string              `json:"createdOn,omitempty"`
+	Outcome       *CampaignOutcomeDto `json:"outcome,omitempty"`
+}
+
+// BatchStatusChangeEntryDto DTO.
+type BatchStatusChangeEntryDto struct {
+	Time   string              `json:"time,omitempty"`
+	Status CampaignBatchStatus `json:"status,omitempty"`
+	Errors []*ErrorDto         `json:"errors,omitempty"`
+}
+
+// CampaignBatchDto DTO.
+type CampaignBatchDto struct {
+	CampaignId    string                       `json:"campaignId,omitempty"`
+	BatchId       string                       `json:"batchId,omitempty"`
+	StartAfter    string                       `json:"startAfter,omitempty"`
+	StatusHistory []*BatchStatusChangeEntryDto `json:"statusHistory,omitempty"`
+	Id            string                       `json:"id,omitempty"`
+}
+
+// EmailRecipientDto DTO.
+type EmailRecipientDto struct {
+	EmailAddress      string             `json:"emailAddress,omitempty"`
+	Language          string             `json:"language,omitempty"`
+	TimeZoneId        string             `json:"timeZoneId,omitempty"`
+	UserTokenMappings []*TokenMappingDto `json:"userTokenMappings,omitempty"`
+}
+
+// EmailRecipientsDto DTO.
+type EmailRecipientsDto struct {
+	To            []*EmailRecipientDto `json:"to,omitempty"`
+	Cc            []*EmailRecipientDto `json:"cc,omitempty"`
+	Bcc           []*EmailRecipientDto `json:"bcc,omitempty"`
+	StartingAfter string               `json:"startingAfter,omitempty"`
+	HasMore       bool                 `json:"hasMore"`
+}
+
+// EmailCampaignBatchDto DTO.
+type EmailCampaignBatchDto struct {
+	CampaignBatchDto
+	Recipients *EmailRecipientsDto `json:"recipients,omitempty"`
+}
+
+// NotificationStatusChangeEntryDto DTO.
+type NotificationStatusChangeEntryDto struct {
+	Time     string                     `json:"time,omitempty"`
+	Status   CampaignNotificationStatus `json:"status,omitempty"`
+	SourceId string                     `json:"sourceId,omitempty"`
+	Errors   []*ErrorDto                `json:"errors,omitempty"`
+	Tags     []string                   `json:"tags,omitempty"`
+}
+
+// NotificationAttemptDto DTO.
+type NotificationAttemptDto struct {
+	AttemptId         string                     `json:"attemptId,omitempty"`
+	Number            float64                    `json:"number,omitempty"`
+	StartedAt         string                     `json:"startedAt,omitempty"`
+	FinishedAt        string                     `json:"finishedAt,omitempty"`
+	Outcome           NotificationAttemptOutcome `json:"outcome,omitempty"`
+	Category          SendErrorCategory          `json:"category,omitempty"`
+	StatusCode        *float64                   `json:"statusCode,omitempty"`
+	ErrorCode         string                     `json:"errorCode,omitempty"`
+	Message           string                     `json:"message,omitempty"`
+	ProviderRef       string                     `json:"providerRef,omitempty"`
+	RetryAfterSeconds *float64                   `json:"retryAfterSeconds,omitempty"`
+	Exhausted         *bool                      `json:"exhausted,omitempty"`
+	NextRetryAt       string                     `json:"nextRetryAt,omitempty"`
+	CorrelationId     string                     `json:"correlationId,omitempty"`
+	Trigger           NotificationAttemptTrigger `json:"trigger,omitempty"`
+	RetryRequestId    string                     `json:"retryRequestId,omitempty"`
+}
+
+// NotificationDeliveryEventDto DTO.
+type NotificationDeliveryEventDto struct {
+	EventId     string               `json:"eventId,omitempty"`
+	Outcome     DeliveryEventOutcome `json:"outcome,omitempty"`
+	At          string               `json:"at,omitempty"`
+	Provider    string               `json:"provider,omitempty"`
+	ProviderRef string               `json:"providerRef,omitempty"`
+	Reason      string               `json:"reason,omitempty"`
+}
+
+// CampaignBatchNotificationDto DTO.
+type CampaignBatchNotificationDto struct {
+	CampaignId          string                              `json:"campaignId,omitempty"`
+	BatchId             string                              `json:"batchId,omitempty"`
+	NotificationId      string                              `json:"notificationId,omitempty"`
+	RefNotificationId   string                              `json:"refNotificationId,omitempty"`
+	Body                string                              `json:"body,omitempty"`
+	Model               map[string]string                   `json:"model,omitempty"`
+	StatusHistory       []*NotificationStatusChangeEntryDto `json:"statusHistory,omitempty"`
+	State               NotificationDeliveryState           `json:"state,omitempty"`
+	StateChangedAt      string                              `json:"stateChangedAt,omitempty"`
+	Attempts            []*NotificationAttemptDto           `json:"attempts,omitempty"`
+	DeliveryEvents      []*NotificationDeliveryEventDto     `json:"deliveryEvents,omitempty"`
+	DeliveryOutcome     DeliveryEventOutcome                `json:"deliveryOutcome,omitempty"`
+	DeliveryOutcomeRank *float64                            `json:"deliveryOutcomeRank,omitempty"`
+	Id                  string                              `json:"id,omitempty"`
+}
+
+// RemovedRecipientDto DTO.
+type RemovedRecipientDto struct {
+	Address string                 `json:"address,omitempty"`
+	Field   EmailRecipientField    `json:"field,omitempty"`
+	Reason  RecipientRemovalReason `json:"reason,omitempty"`
+	Tag     string                 `json:"tag,omitempty"`
+}
+
+// EmailCampaignBatchNotificationDto DTO.
+type EmailCampaignBatchNotificationDto struct {
+	CampaignBatchNotificationDto
+	Subject           string                  `json:"subject,omitempty"`
+	Recipients        *EmailRecipientsDto     `json:"recipients,omitempty"`
+	RemovedRecipients []*RemovedRecipientDto  `json:"removedRecipients,omitempty"`
+	Content           *EmailMessageContentDto `json:"content,omitempty"`
+	TransactionalKind string                  `json:"transactionalKind,omitempty"`
+}
+
+// CampaignStatsDto DTO.
+type CampaignStatsDto struct {
+	Batches           float64 `json:"batches,omitempty"`
+	Sent              float64 `json:"sent,omitempty"`
+	Failed            float64 `json:"failed,omitempty"`
+	FailedRetryable   float64 `json:"failedRetryable,omitempty"`
+	Cancelled         float64 `json:"cancelled,omitempty"`
+	Blocked           float64 `json:"blocked,omitempty"`
+	InProgress        float64 `json:"inProgress,omitempty"`
+	RemovedRecipients float64 `json:"removedRecipients,omitempty"`
+	SuccessRate       float64 `json:"successRate,omitempty"`
+}
+
+// SmsMessageContentDto DTO.
+type SmsMessageContentDto struct {
+	Body string `json:"body,omitempty"`
+}
+
+// SmsMessageTranslationDto DTO.
+type SmsMessageTranslationDto struct {
+	Language string                `json:"language,omitempty"`
+	Content  *SmsMessageContentDto `json:"content,omitempty"`
+}
+
+// SmsTemplateDto DTO.
+type SmsTemplateDto struct {
+	TemplateDto
+	Translations []*SmsMessageTranslationDto `json:"translations,omitempty"`
+}
+
+// SmsCampaignDto DTO.
+type SmsCampaignDto struct {
+	CampaignDto
+	Recipients *SmsCampaignDeliverySettingsDto `json:"recipients,omitempty"`
+	Template   *SmsTemplateDto                 `json:"template,omitempty"`
+}
+
+// SmsRecipientDto DTO.
+type SmsRecipientDto struct {
+	PhoneNumber       string             `json:"phoneNumber,omitempty"`
+	UserId            string             `json:"userId,omitempty"`
+	Language          string             `json:"language,omitempty"`
+	UserTokenMappings []*TokenMappingDto `json:"userTokenMappings,omitempty"`
+	TimeZoneId        string             `json:"timeZoneId,omitempty"`
+	Record            string             `json:"record,omitempty"`
+}
+
+// SmsRecipientsDto DTO.
+type SmsRecipientsDto struct {
+	To            []*SmsRecipientDto `json:"to,omitempty"`
+	StartingAfter string             `json:"startingAfter,omitempty"`
+	HasMore       bool               `json:"hasMore"`
+}
+
+// SmsCampaignBatchDto DTO.
+type SmsCampaignBatchDto struct {
+	CampaignBatchDto
+	Recipients *SmsRecipientsDto `json:"recipients,omitempty"`
+}
+
+// SmsCampaignBatchNotificationDto DTO.
+type SmsCampaignBatchNotificationDto struct {
+	CampaignBatchNotificationDto
+	Recipients *SmsRecipientsDto     `json:"recipients,omitempty"`
+	Content    *SmsMessageContentDto `json:"content,omitempty"`
+}
+
+// PushAudienceCountDto DTO.
+type PushAudienceCountDto struct {
+	Devices        float64 `json:"devices,omitempty"`
+	Recipients     float64 `json:"recipients,omitempty"`
+	SkippedUserIds float64 `json:"skippedUserIds,omitempty"`
+	IsCapped       bool    `json:"isCapped"`
+}
+
+// PushCampaignDeliverySettingsDto DTO.
+type PushCampaignDeliverySettingsDto struct {
+	RecipientsSourceType    PushCampaignRecipientsSourceTypes `json:"recipientsSourceType,omitempty"`
+	MappedTokens            []*TokenMappingDto                `json:"mappedTokens,omitempty"`
+	CampaignTime            *float64                          `json:"campaignTime,omitempty"`
+	RespectTimeZoneSettings RespectTimeZoneSettings           `json:"respectTimeZoneSettings,omitempty"`
+}
+
+// PushMessageContentDto DTO.
+type PushMessageContentDto struct {
+	Title string `json:"title,omitempty"`
+	Body  string `json:"body,omitempty"`
+}
+
+// PushMessageTranslationDto DTO.
+type PushMessageTranslationDto struct {
+	Language string                 `json:"language,omitempty"`
+	Content  *PushMessageContentDto `json:"content,omitempty"`
+}
+
+// PushTemplateDto DTO.
+type PushTemplateDto struct {
+	TemplateDto
+	Translations []*PushMessageTranslationDto `json:"translations,omitempty"`
+}
+
+// PushCampaignDto DTO.
+type PushCampaignDto struct {
+	CampaignDto
+	Recipients *PushCampaignDeliverySettingsDto `json:"recipients,omitempty"`
+	Template   *PushTemplateDto                 `json:"template,omitempty"`
+}
+
+// PushDeviceDeliveryTokenDto DTO.
+type PushDeviceDeliveryTokenDto struct {
+	PushDeviceToken string                   `json:"pushDeviceToken,omitempty"`
+	DeliveryFamily  PushDeviceDeliveryFamily `json:"deliveryFamily,omitempty"`
+}
+
+// PushRecipientDto DTO.
+type PushRecipientDto struct {
+	DeviceTokens      []*PushDeviceDeliveryTokenDto `json:"deviceTokens,omitempty"`
+	UserId            string                        `json:"userId,omitempty"`
+	Language          string                        `json:"language,omitempty"`
+	UserTokenMappings []*TokenMappingDto            `json:"userTokenMappings,omitempty"`
+	TimeZoneId        string                        `json:"timeZoneId,omitempty"`
+	Record            string                        `json:"record,omitempty"`
+}
+
+// PushRecipientsDto DTO.
+type PushRecipientsDto struct {
+	To            []*PushRecipientDto `json:"to,omitempty"`
+	StartingAfter string              `json:"startingAfter,omitempty"`
+	HasMore       bool                `json:"hasMore"`
+}
+
+// PushCampaignBatchDto DTO.
+type PushCampaignBatchDto struct {
+	CampaignBatchDto
+	Recipients *PushRecipientsDto `json:"recipients,omitempty"`
+}
+
+// NotificationReadMarkDto DTO.
+type NotificationReadMarkDto struct {
+	UserId    string `json:"userId,omitempty"`
+	ReadAtUtc string `json:"readAtUtc,omitempty"`
+}
+
+// PushCampaignBatchNotificationDto DTO.
+type PushCampaignBatchNotificationDto struct {
+	CampaignBatchNotificationDto
+	Subject    string                     `json:"subject,omitempty"`
+	Recipients *PushRecipientsDto         `json:"recipients,omitempty"`
+	Content    *PushMessageContentDto     `json:"content,omitempty"`
+	ReadBy     []*NotificationReadMarkDto `json:"readBy,omitempty"`
 }
 
 // ResponseError DTO.
@@ -1072,12 +1889,24 @@ type IBindableContract struct {
 type IHasViewId struct {
 }
 
+// IHasResponsibleUserId DTO.
+type IHasResponsibleUserId struct {
+}
+
+// IHasDatabaseId DTO.
+type IHasDatabaseId struct {
+}
+
 // ICursorArgs DTO.
 type ICursorArgs struct {
 }
 
 // IQueuedTrigger DTO.
 type IQueuedTrigger struct {
+}
+
+// IHasRazorTemplateCode DTO.
+type IHasRazorTemplateCode struct {
 }
 
 // EchoResponse DTO.
@@ -1414,12 +2243,6 @@ type RequestUploadUrlResponse struct {
 	Url string `json:"url,omitempty"`
 }
 
-// TestFilesIntegrationResponse DTO.
-type TestFilesIntegrationResponse struct {
-	ResponseBase
-	Items []*IntegrationTestResultItemDto `json:"items,omitempty"`
-}
-
 // GetOwnPushDevicesResponse DTO.
 type GetOwnPushDevicesResponse struct {
 	ResponseBase
@@ -1485,6 +2308,12 @@ type CodeWorkflowResumeLinkResponse struct {
 	ExpiresAt      string `json:"expiresAt,omitempty"`
 }
 
+// WorkflowRunLogsResponse DTO.
+type WorkflowRunLogsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*TenantLogEntryDto] `json:"list,omitempty"`
+}
+
 // GetNotificationInboxResponse DTO.
 type GetNotificationInboxResponse struct {
 	ResponseBase
@@ -1505,6 +2334,251 @@ type MarkNotificationReadResponse struct {
 // MarkAllNotificationsReadResponse DTO.
 type MarkAllNotificationsReadResponse struct {
 	ResponseBase
+}
+
+// GetContactResponse DTO.
+type GetContactResponse struct {
+	ResponseBase
+	Item *UserDto `json:"item,omitempty"`
+}
+
+// GetAllContactsResponse DTO.
+type GetAllContactsResponse struct {
+	ResponseBase
+	Items      []*UserDto `json:"items,omitempty"`
+	NextCursor string     `json:"nextCursor,omitempty"`
+}
+
+// RepairContactRolesResponse DTO.
+type RepairContactRolesResponse struct {
+	ResponseBase
+	Result *ContactRolesRepairDto `json:"result,omitempty"`
+}
+
+// GetFileResponse DTO.
+type GetFileResponse struct {
+	ResponseBase
+	File      *FileResourceRefDto `json:"file,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
+	PublicUrl string              `json:"publicUrl,omitempty"`
+}
+
+// GetFolderFilesResponse DTO.
+type GetFolderFilesResponse struct {
+	ResponseBase
+	List          PaginatedResponse[*FileResourceRefDto] `json:"list,omitempty"`
+	Folders       []string                               `json:"folders,omitempty"`
+	PublicFolders []*PublicFolderDto                     `json:"publicFolders,omitempty"`
+}
+
+// GetCollectionImportResponse DTO.
+type GetCollectionImportResponse struct {
+	ResponseBase
+	Result *CollectionImportDto `json:"result,omitempty"`
+}
+
+// GetCollectionImportsResponse DTO.
+type GetCollectionImportsResponse struct {
+	ResponseBase
+	Result PaginatedResponse[*CollectionImportDto] `json:"result,omitempty"`
+}
+
+// RequestImportUploadUrlResponse DTO.
+type RequestImportUploadUrlResponse struct {
+	ResponseBase
+	Result *ImportUploadTargetDto `json:"result,omitempty"`
+}
+
+// AnalyzeImportFileResponse DTO.
+type AnalyzeImportFileResponse struct {
+	ResponseBase
+	Result *ImportFileAnalysisDto `json:"result,omitempty"`
+}
+
+// GetEmailCampaignResponse DTO.
+type GetEmailCampaignResponse struct {
+	ResponseBase
+	Item *EmailCampaignDto `json:"item,omitempty"`
+}
+
+// GetEmailCampaignsResponse DTO.
+type GetEmailCampaignsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*EmailCampaignListProjection] `json:"list,omitempty"`
+}
+
+// GetEmailCampaignBatchesResponse DTO.
+type GetEmailCampaignBatchesResponse struct {
+	ResponseBase
+	List PaginatedResponse[*EmailCampaignBatchDto] `json:"list,omitempty"`
+}
+
+// GetEmailCampaignBatchNotificationResponse DTO.
+type GetEmailCampaignBatchNotificationResponse struct {
+	ResponseBase
+	CampaignNotification *EmailCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+}
+
+// GetEmailCampaignBatchNotificationsResponse DTO.
+type GetEmailCampaignBatchNotificationsResponse struct {
+	ResponseBase
+	BatchStatusHistory []*BatchStatusChangeEntryDto                          `json:"batchStatusHistory,omitempty"`
+	List               PaginatedResponse[*EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+// GetEmailCampaignStatisticsResponse DTO.
+type GetEmailCampaignStatisticsResponse struct {
+	ResponseBase
+	Stats *CampaignStatsDto `json:"stats,omitempty"`
+}
+
+// PreviewEmailNotificationResponse DTO.
+type PreviewEmailNotificationResponse struct {
+	ResponseBase
+	Subject string `json:"subject,omitempty"`
+	Body    string `json:"body,omitempty"`
+}
+
+// RetryFailedEmailNotificationsResponse DTO.
+type RetryFailedEmailNotificationsResponse struct {
+	ResponseBase
+	RetryRequestId string             `json:"retryRequestId,omitempty"`
+	Selected       float64            `json:"selected,omitempty"`
+	Skipped        map[string]float64 `json:"skipped,omitempty"`
+	Replayed       bool               `json:"replayed"`
+	Warning        string             `json:"warning,omitempty"`
+}
+
+// GetEmailCampaignMessagesResponse DTO.
+type GetEmailCampaignMessagesResponse struct {
+	ResponseBase
+	List PaginatedResponse[*EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+// GetSmsCampaignResponse DTO.
+type GetSmsCampaignResponse struct {
+	ResponseBase
+	SmsCampaign *SmsCampaignDto `json:"smsCampaign,omitempty"`
+}
+
+// GetSmsCampaignsResponse DTO.
+type GetSmsCampaignsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*SmsCampaignDto] `json:"list,omitempty"`
+}
+
+// GetSmsCampaignBatchesResponse DTO.
+type GetSmsCampaignBatchesResponse struct {
+	ResponseBase
+	List PaginatedResponse[*SmsCampaignBatchDto] `json:"list,omitempty"`
+}
+
+// GetSmsCampaignBatchNotificationResponse DTO.
+type GetSmsCampaignBatchNotificationResponse struct {
+	ResponseBase
+	CampaignNotification *SmsCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+}
+
+// GetSmsCampaignBatchNotificationsResponse DTO.
+type GetSmsCampaignBatchNotificationsResponse struct {
+	ResponseBase
+	BatchStatusHistory []*BatchStatusChangeEntryDto                        `json:"batchStatusHistory,omitempty"`
+	List               PaginatedResponse[*SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+// GetSmsCampaignStatisticsResponse DTO.
+type GetSmsCampaignStatisticsResponse struct {
+	ResponseBase
+	Stats *CampaignStatsDto `json:"stats,omitempty"`
+}
+
+// PreviewSmsNotificationResponse DTO.
+type PreviewSmsNotificationResponse struct {
+	ResponseBase
+	Body string `json:"body,omitempty"`
+}
+
+// RetryFailedSmsNotificationsResponse DTO.
+type RetryFailedSmsNotificationsResponse struct {
+	ResponseBase
+	RetryRequestId string             `json:"retryRequestId,omitempty"`
+	Selected       float64            `json:"selected,omitempty"`
+	Skipped        map[string]float64 `json:"skipped,omitempty"`
+	Replayed       bool               `json:"replayed"`
+	Warning        string             `json:"warning,omitempty"`
+}
+
+// GetSmsCampaignMessagesResponse DTO.
+type GetSmsCampaignMessagesResponse struct {
+	ResponseBase
+	List PaginatedResponse[*SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+// GetPushCampaignAudienceCountResponse DTO.
+type GetPushCampaignAudienceCountResponse struct {
+	ResponseBase
+	Result *PushAudienceCountDto `json:"result,omitempty"`
+}
+
+// GetPushCampaignResponse DTO.
+type GetPushCampaignResponse struct {
+	ResponseBase
+	Item *PushCampaignDto `json:"item,omitempty"`
+}
+
+// GetPushCampaignsResponse DTO.
+type GetPushCampaignsResponse struct {
+	ResponseBase
+	List PaginatedResponse[*PushCampaignDto] `json:"list,omitempty"`
+}
+
+// GetPushCampaignBatchesResponse DTO.
+type GetPushCampaignBatchesResponse struct {
+	ResponseBase
+	List PaginatedResponse[*PushCampaignBatchDto] `json:"list,omitempty"`
+}
+
+// GetPushCampaignBatchNotificationResponse DTO.
+type GetPushCampaignBatchNotificationResponse struct {
+	ResponseBase
+	CampaignNotification *PushCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+}
+
+// GetPushCampaignBatchNotificationsResponse DTO.
+type GetPushCampaignBatchNotificationsResponse struct {
+	ResponseBase
+	BatchStatusHistory []*BatchStatusChangeEntryDto                         `json:"batchStatusHistory,omitempty"`
+	List               PaginatedResponse[*PushCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+// GetPushCampaignStatisticsResponse DTO.
+type GetPushCampaignStatisticsResponse struct {
+	ResponseBase
+	Stats *CampaignStatsDto `json:"stats,omitempty"`
+}
+
+// PreviewPushNotificationResponse DTO.
+type PreviewPushNotificationResponse struct {
+	ResponseBase
+	Title    string `json:"title,omitempty"`
+	Body     string `json:"body,omitempty"`
+	Subtitle string `json:"subtitle,omitempty"`
+}
+
+// RetryFailedPushNotificationsResponse DTO.
+type RetryFailedPushNotificationsResponse struct {
+	ResponseBase
+	RetryRequestId string             `json:"retryRequestId,omitempty"`
+	Selected       float64            `json:"selected,omitempty"`
+	Skipped        map[string]float64 `json:"skipped,omitempty"`
+	Replayed       bool               `json:"replayed"`
+	Warning        string             `json:"warning,omitempty"`
+}
+
+// GetPushCampaignMessagesResponse DTO.
+type GetPushCampaignMessagesResponse struct {
+	ResponseBase
+	List PaginatedResponse[*PushCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 // AuthenticateResponse DTO.
@@ -2335,12 +3409,6 @@ type RequestUploadUrlRequest struct {
 	ReassignOwner      *bool    `json:"reassignOwner,omitempty"`
 }
 
-// TestFilesIntegrationRequest DTO.
-type TestFilesIntegrationRequest struct {
-	CodeMashRequestBase
-	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
-}
-
 // UseFileRequest DTO.
 type UseFileRequest struct {
 	CodeMashRequestBase
@@ -2476,6 +3544,53 @@ type UseCodeWorkflowResumeLink struct {
 	Token string `json:"token,omitempty"`
 }
 
+// GetCodeWorkflowRuns DTO.
+type GetCodeWorkflowRuns struct {
+	CodeMashListPaginationRequestBase
+	Id     string `json:"id,omitempty"`
+	Status string `json:"status,omitempty"`
+	From   string `json:"from,omitempty"`
+	To     string `json:"to,omitempty"`
+}
+
+// GetCodeWorkflowRun DTO.
+type GetCodeWorkflowRun struct {
+	CodeMashRequestBase
+	RunId string `json:"runId,omitempty"`
+}
+
+// GetCodeWorkflowRunLogs DTO.
+type GetCodeWorkflowRunLogs struct {
+	CodeMashListPaginationRequestBase
+	RunId  string `json:"runId,omitempty"`
+	StepId string `json:"stepId,omitempty"`
+	Level  string `json:"level,omitempty"`
+}
+
+// ResumeCodeWorkflowRunByKey DTO.
+type ResumeCodeWorkflowRunByKey struct {
+	CodeMashRequestBase
+	Id       string         `json:"id,omitempty"`
+	Key      string         `json:"key,omitempty"`
+	StepId   string         `json:"stepId,omitempty"`
+	Decision string         `json:"decision,omitempty"`
+	Payload  map[string]any `json:"payload,omitempty"`
+}
+
+// RetryCodeWorkflowRunStep DTO.
+type RetryCodeWorkflowRunStep struct {
+	CodeMashRequestBase
+	RunId  string `json:"runId,omitempty"`
+	StepId string `json:"stepId,omitempty"`
+}
+
+// CancelCodeWorkflowRun DTO.
+type CancelCodeWorkflowRun struct {
+	CodeMashRequestBase
+	RunId  string `json:"runId,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
 // GetNotificationInboxRequest DTO.
 type GetNotificationInboxRequest struct {
 	CodeMashListPaginationRequestBase
@@ -2497,6 +3612,505 @@ type MarkNotificationReadRequest struct {
 // MarkAllNotificationsReadRequest DTO.
 type MarkAllNotificationsReadRequest struct {
 	CodeMashRequestBase
+}
+
+// SetUserAiPlan DTO.
+type SetUserAiPlan struct {
+	CodeMashRequestBase
+	UserId                string `json:"userId,omitempty"`
+	PlanId                string `json:"planId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// CreateContactRequest DTO.
+type CreateContactRequest struct {
+	CodeMashRequestBase
+	PrimaryEmail string   `json:"primaryEmail,omitempty"`
+	PrimaryPhone string   `json:"primaryPhone,omitempty"`
+	DisplayName  string   `json:"displayName,omitempty"`
+	FirstName    string   `json:"firstName,omitempty"`
+	LastName     string   `json:"lastName,omitempty"`
+	Tags         []string `json:"tags,omitempty"`
+}
+
+// DeleteContact DTO.
+type DeleteContact struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+}
+
+// GetContact DTO.
+type GetContact struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+}
+
+// GetAllContacts DTO.
+type GetAllContacts struct {
+	CodeMashRequestBase
+	StartingAfter string   `json:"startingAfter,omitempty"`
+	PageSize      *float64 `json:"pageSize,omitempty"`
+	Search        string   `json:"search,omitempty"`
+	Email         string   `json:"email,omitempty"`
+	UserName      string   `json:"userName,omitempty"`
+	Statuses      []string `json:"statuses,omitempty"`
+	Types         []string `json:"types,omitempty"`
+	RoleNames     []string `json:"roleNames,omitempty"`
+}
+
+// MergeContactsRequest DTO.
+type MergeContactsRequest struct {
+	CodeMashRequestBase
+	SurvivorId string   `json:"survivorId,omitempty"`
+	MergedIds  []string `json:"mergedIds,omitempty"`
+}
+
+// RepairContactRolesRequest DTO.
+type RepairContactRolesRequest struct {
+	CodeMashRequestBase
+	DryRun *bool `json:"dryRun,omitempty"`
+}
+
+// UpdateContactRequest DTO.
+type UpdateContactRequest struct {
+	CodeMashRequestBase
+	ContactId    string   `json:"contactId,omitempty"`
+	DisplayName  string   `json:"displayName,omitempty"`
+	FirstName    string   `json:"firstName,omitempty"`
+	LastName     string   `json:"lastName,omitempty"`
+	FullName     string   `json:"fullName,omitempty"`
+	Company      string   `json:"company,omitempty"`
+	Notes        string   `json:"notes,omitempty"`
+	Gender       string   `json:"gender,omitempty"`
+	BirthDate    *float64 `json:"birthDate,omitempty"`
+	TimeZone     string   `json:"timeZone,omitempty"`
+	Language     string   `json:"language,omitempty"`
+	AddressLine1 string   `json:"addressLine1,omitempty"`
+	AddressLine2 string   `json:"addressLine2,omitempty"`
+	Country      string   `json:"country,omitempty"`
+	City         string   `json:"city,omitempty"`
+	State        string   `json:"state,omitempty"`
+	PostalCode   string   `json:"postalCode,omitempty"`
+}
+
+// AddContactIdentityRequest DTO.
+type AddContactIdentityRequest struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+	AuthId    string `json:"authId,omitempty"`
+}
+
+// PromoteContactIdentityRequest DTO.
+type PromoteContactIdentityRequest struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+	AuthId    string `json:"authId,omitempty"`
+}
+
+// RemoveContactIdentityRequest DTO.
+type RemoveContactIdentityRequest struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+	AuthId    string `json:"authId,omitempty"`
+}
+
+// MakeFilePrivateRequest DTO.
+type MakeFilePrivateRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// MakeFilePublicRequest DTO.
+type MakeFilePublicRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// MakeFolderPrivateRequest DTO.
+type MakeFolderPrivateRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// MakeFolderPublicRequest DTO.
+type MakeFolderPublicRequest struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// GetFile DTO.
+type GetFile struct {
+	CodeMashRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// GetFolderFiles DTO.
+type GetFolderFiles struct {
+	CodeMashListPaginationRequestBase
+	FilesIntegrationId string `json:"filesIntegrationId,omitempty"`
+	Path               string `json:"path,omitempty"`
+}
+
+// CreateCollectionImport DTO.
+type CreateCollectionImport struct {
+	CodeMashRequestBase
+	File                  *FileResourceRefDto       `json:"file,omitempty"`
+	SchemaId              string                    `json:"schemaId,omitempty"`
+	CollectionName        string                    `json:"collectionName,omitempty"`
+	DatabaseIntegrationId string                    `json:"databaseIntegrationId,omitempty"`
+	Delimiter             string                    `json:"delimiter,omitempty"`
+	HasHeader             bool                      `json:"hasHeader"`
+	Mapping               []*ImportColumnMappingDto `json:"mapping,omitempty"`
+}
+
+// DeleteCollectionImportRequest DTO.
+type DeleteCollectionImportRequest struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetCollectionImport DTO.
+type GetCollectionImport struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetCollectionImports DTO.
+type GetCollectionImports struct {
+	CodeMashListPaginationRequestBase
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// RequestImportUploadUrlRequest DTO.
+type RequestImportUploadUrlRequest struct {
+	CodeMashRequestBase
+	FileAccountId string `json:"fileAccountId,omitempty"`
+	FileName      string `json:"fileName,omitempty"`
+}
+
+// AnalyzeImportFileRequest DTO.
+type AnalyzeImportFileRequest struct {
+	CodeMashRequestBase
+	File      *FileResourceRefDto `json:"file,omitempty"`
+	Delimiter string              `json:"delimiter,omitempty"`
+	HasHeader bool                `json:"hasHeader"`
+}
+
+// CreateEmailCampaignRequest DTO.
+type CreateEmailCampaignRequest struct {
+	CodeMashRequestBase
+	Campaign              *EmailCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId string                `json:"databaseIntegrationId,omitempty"`
+	SendNow               *bool                 `json:"sendNow,omitempty"`
+}
+
+// DeleteEmailCampaignRequest DTO.
+type DeleteEmailCampaignRequest struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetEmailCampaign DTO.
+type GetEmailCampaign struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetEmailCampaigns DTO.
+type GetEmailCampaigns struct {
+	CodeMashListPaginationRequestBase
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	CampaignId            string   `json:"campaignId,omitempty"`
+	EmailAddress          string   `json:"emailAddress,omitempty"`
+	TemplateId            string   `json:"templateId,omitempty"`
+	From                  *float64 `json:"from,omitempty"`
+	To                    *float64 `json:"to,omitempty"`
+}
+
+// GetEmailCampaignBatches DTO.
+type GetEmailCampaignBatches struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	EmailAddress          string `json:"emailAddress,omitempty"`
+}
+
+// GetEmailCampaignBatchNotification DTO.
+type GetEmailCampaignBatchNotification struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	NotificationId        string `json:"notificationId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetEmailCampaignBatchNotifications DTO.
+type GetEmailCampaignBatchNotifications struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetEmailCampaignStatistics DTO.
+type GetEmailCampaignStatistics struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// PreviewEmailNotification DTO.
+type PreviewEmailNotification struct {
+	RequestBase
+	Hash           string `json:"hash,omitempty"`
+	ProjectId      string `json:"projectId,omitempty"`
+	NotificationId string `json:"notificationId,omitempty"`
+}
+
+// RetryFailedEmailNotificationsRequest DTO.
+type RetryFailedEmailNotificationsRequest struct {
+	CodeMashRequestBase
+	Id                    string   `json:"id,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	IdempotencyKey        string   `json:"idempotencyKey,omitempty"`
+	NotificationIds       []string `json:"notificationIds,omitempty"`
+	IncludeAmbiguous      *bool    `json:"includeAmbiguous,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
+}
+
+// StopEmailCampaignRequest DTO.
+type StopEmailCampaignRequest struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetEmailCampaignMessagesRequest DTO.
+type GetEmailCampaignMessagesRequest struct {
+	CodeMashListPaginationRequestBase
+	CampaignId            string `json:"campaignId,omitempty"`
+	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// CreateSmsCampaignRequest DTO.
+type CreateSmsCampaignRequest struct {
+	CodeMashRequestBase
+	TemplateId            string                                     `json:"templateId,omitempty"`
+	DatabaseIntegrationId string                                     `json:"databaseIntegrationId,omitempty"`
+	IntegrationId         string                                     `json:"integrationId,omitempty"`
+	Language              string                                     `json:"language,omitempty"`
+	InitiatorId           string                                     `json:"initiatorId,omitempty"`
+	DeliveryType          SmsCampaignRecipientsSourceTypes           `json:"deliveryType,omitempty"`
+	AllUsers              *SmsToAllUsersDeliverySettingsDto          `json:"allUsers,omitempty"`
+	SpecifiedUsers        *SmsToUsersDeliverySettingsDto             `json:"specifiedUsers,omitempty"`
+	AccountUsers          *SmsToAccountUsersDeliverySettingsDto      `json:"accountUsers,omitempty"`
+	Collection            *SmsToCollectionRecordsDeliverySettingsDto `json:"collection,omitempty"`
+	PhoneNumbers          *SmsToPhoneNumbersDeliverySettingsDto      `json:"phoneNumbers,omitempty"`
+	SendNow               *bool                                      `json:"sendNow,omitempty"`
+}
+
+// DeleteSmsCampaign DTO.
+type DeleteSmsCampaign struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetSmsCampaign DTO.
+type GetSmsCampaign struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetSmsCampaigns DTO.
+type GetSmsCampaigns struct {
+	CodeMashListPaginationRequestBase
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	CampaignId            string   `json:"campaignId,omitempty"`
+	TemplateId            string   `json:"templateId,omitempty"`
+	From                  *float64 `json:"from,omitempty"`
+	To                    *float64 `json:"to,omitempty"`
+}
+
+// GetSmsCampaignBatches DTO.
+type GetSmsCampaignBatches struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetSmsCampaignBatchNotification DTO.
+type GetSmsCampaignBatchNotification struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	NotificationId        string `json:"notificationId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetSmsCampaignBatchNotifications DTO.
+type GetSmsCampaignBatchNotifications struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetSmsCampaignStatistics DTO.
+type GetSmsCampaignStatistics struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// PreviewSmsNotification DTO.
+type PreviewSmsNotification struct {
+	RequestBase
+	Hash           string `json:"hash,omitempty"`
+	ProjectId      string `json:"projectId,omitempty"`
+	NotificationId string `json:"notificationId,omitempty"`
+}
+
+// RetryFailedSmsNotificationsRequest DTO.
+type RetryFailedSmsNotificationsRequest struct {
+	CodeMashRequestBase
+	Id                    string   `json:"id,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	IdempotencyKey        string   `json:"idempotencyKey,omitempty"`
+	NotificationIds       []string `json:"notificationIds,omitempty"`
+	IncludeAmbiguous      *bool    `json:"includeAmbiguous,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
+}
+
+// StopSmsCampaignRequest DTO.
+type StopSmsCampaignRequest struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetSmsCampaignMessagesRequest DTO.
+type GetSmsCampaignMessagesRequest struct {
+	CodeMashListPaginationRequestBase
+	CampaignId            string `json:"campaignId,omitempty"`
+	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetPushCampaignAudienceCountRequest DTO.
+type GetPushCampaignAudienceCountRequest struct {
+	CodeMashRequestBase
+	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId string               `json:"databaseIntegrationId,omitempty"`
+}
+
+// CreatePushCampaignRequest DTO.
+type CreatePushCampaignRequest struct {
+	CodeMashRequestBase
+	Campaign              *PushCampaignRequest `json:"campaign,omitempty"`
+	DatabaseIntegrationId string               `json:"databaseIntegrationId,omitempty"`
+	SendNow               *bool                `json:"sendNow,omitempty"`
+}
+
+// DeletePushCampaignRequest DTO.
+type DeletePushCampaignRequest struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetPushCampaign DTO.
+type GetPushCampaign struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetPushCampaigns DTO.
+type GetPushCampaigns struct {
+	CodeMashListPaginationRequestBase
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	TemplateId            string   `json:"templateId,omitempty"`
+	From                  *float64 `json:"from,omitempty"`
+	To                    *float64 `json:"to,omitempty"`
+}
+
+// GetPushCampaignBatches DTO.
+type GetPushCampaignBatches struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+}
+
+// GetPushCampaignBatchNotification DTO.
+type GetPushCampaignBatchNotification struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	NotificationId        string `json:"notificationId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetPushCampaignBatchNotifications DTO.
+type GetPushCampaignBatchNotifications struct {
+	CodeMashListPaginationRequestBase
+	Id                    string `json:"id,omitempty"`
+	BatchId               string `json:"batchId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetPushCampaignStatistics DTO.
+type GetPushCampaignStatistics struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// PreviewPushNotification DTO.
+type PreviewPushNotification struct {
+	RequestBase
+	Hash           string `json:"hash,omitempty"`
+	ProjectId      string `json:"projectId,omitempty"`
+	NotificationId string `json:"notificationId,omitempty"`
+}
+
+// RetryFailedPushNotificationsRequest DTO.
+type RetryFailedPushNotificationsRequest struct {
+	CodeMashRequestBase
+	Id                    string   `json:"id,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
+	IdempotencyKey        string   `json:"idempotencyKey,omitempty"`
+	NotificationIds       []string `json:"notificationIds,omitempty"`
+	IncludeAmbiguous      *bool    `json:"includeAmbiguous,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
+}
+
+// StopPushCampaignRequest DTO.
+type StopPushCampaignRequest struct {
+	CodeMashRequestBase
+	Id                    string `json:"id,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// GetPushCampaignMessagesRequest DTO.
+type GetPushCampaignMessagesRequest struct {
+	CodeMashListPaginationRequestBase
+	CampaignId            string `json:"campaignId,omitempty"`
+	CampaignBatchId       string `json:"campaignBatchId,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
 // Authenticate DTO.

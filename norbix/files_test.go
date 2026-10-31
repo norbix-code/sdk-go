@@ -440,7 +440,7 @@ func TestAPITestFilesIntegration(t *testing.T) {
 		"responseStatus": {"isSuccess": true}
 	}`)
 
-	var out dtos.TestFilesIntegrationResponse
+	var out hubdtos.TestFilesIntegrationResponse
 	err := c.API.Files.TestFilesIntegration(context.Background(), filesIntegrationID, nil, &out)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -484,7 +484,7 @@ func TestAPITestFilesIntegrationWithoutPermissionIsAnError(t *testing.T) {
 	c, _, _ := newProbeServer(t, http.StatusForbidden,
 		`{"responseStatus":{"isSuccess":false,"errors":[{"message":"files:create is required"}]}}`)
 
-	var out dtos.TestFilesIntegrationResponse
+	var out hubdtos.TestFilesIntegrationResponse
 	err := c.API.Files.TestFilesIntegration(context.Background(), filesIntegrationID, nil, &out)
 	if err == nil {
 		t.Fatal("expected an error for a 403")
@@ -510,7 +510,7 @@ func TestAPITestFilesIntegrationRejectedRequestIsAnError(t *testing.T) {
 	c, _, _ := newProbeServer(t, http.StatusOK,
 		`{"responseStatus":{"isSuccess":false,"errors":[{"message":"FilesIntegrationId is not valid","errorCode":"Validation"}]}}`)
 
-	var out dtos.TestFilesIntegrationResponse
+	var out hubdtos.TestFilesIntegrationResponse
 	err := c.API.Files.TestFilesIntegration(context.Background(), "not-an-id", nil, &out)
 	if err == nil {
 		t.Fatal("expected an error for a 200 that says isSuccess false")
