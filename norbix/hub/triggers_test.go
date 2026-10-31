@@ -133,3 +133,100 @@ func toMap(t *testing.T, v any) map[string]any {
 	}
 	return m
 }
+
+// The trigger runs and execution identity routes: verb, path, where the values
+// go, and the decoded answer. Every call goes to a local test server.
+func TestTriggerRunsAndIdentityRoutes(t *testing.T) {
+	type seen struct {
+		method, path, query string
+		body                map[string]any
+	}
+	var got seen
+	var answer string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = seen{method: r.Method, path: r.URL.Path, query: r.URL.RawQuery}
+		b, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(b, &got.body)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, answer)
+	}))
+	defer srv.Close()
+	tr := newTriggersTestTransport(srv.URL)
+	triggers := &TriggersModule{t: tr}
+	membership := &MembershipModule{t: tr}
+	ctx := context.Background()
+
+	answer = `{"list":{"items":[{"runId":"trr_1","triggerId":"trg_1","status":"failed"}],"hasMore":false}}`
+	var runs dtos.GetTriggerRunsResponse
+	if err := triggers.GetTriggerRuns(ctx, map[string]any{"triggerType": "Schema", "triggerId": "trg_1", "status": "failed"}, &runs); err != nil {
+		t.Fatalf("GetTriggerRuns: %v", err)
+	}
+	if got.method != http.MethodGet || got.path != "/v2/triggers/runs" || got.query != "status=failed&triggerId=trg_1&triggerType=Schema" {
+		t.Errorf("GetTriggerRuns call: %+v", got)
+	}
+	if len(runs.List.Items) != 1 || runs.List.Items[0].RunId != "trr_1" {
+		t.Errorf("GetTriggerRuns answer: %+v", runs)
+	}
+
+	answer = `{"item":{"runId":"trr_1","status":"succeeded","executionIdentityIsDefault":true}}`
+	var run dtos.GetTriggerRunResponse
+	if err := triggers.GetTriggerRun(ctx, "trr_1", map[string]any{"triggerType": "Schema"}, &run); err != nil {
+		t.Fatalf("GetTriggerRun: %v", err)
+	}
+	if got.path != "/v2/triggers/runs/trr_1" || got.query != "triggerType=Schema" {
+		t.Errorf("GetTriggerRun call: %+v", got)
+	}
+	if run.Item == nil || !run.Item.ExecutionIdentityIsDefault {
+		t.Errorf("GetTriggerRun answer: %+v", run)
+	}
+
+	answer = `{"executionIdentityId":"usr_1","canAssign":true,"missingPermissions":["email:create"]}`
+	var check dtos.CheckTriggerExecutionIdentityResponse
+	if err := triggers.CheckTriggerExecutionIdentity(ctx, map[string]any{"triggerType": "Schema", "action": map[string]any{"type": "Email"}}, &check); err != nil {
+		t.Fatalf("CheckTriggerExecutionIdentity: %v", err)
+	}
+	if got.method != http.MethodPost || got.path != "/v2/triggers/execution-identity/check" || got.body["triggerType"] != "Schema" {
+		t.Errorf("CheckTriggerExecutionIdentity call: %+v", got)
+	}
+	if len(check.MissingPermissions) != 1 {
+		t.Errorf("CheckTriggerExecutionIdentity answer: %+v", check)
+	}
+
+	answer = `{"identities":[{"id":"usr_1","name":"Project triggers","isDefault":true,"canAssign":true}]}`
+	var identities dtos.GetExecutionIdentitiesResponse
+	if err := membership.GetExecutionIdentities(ctx, nil, &identities); err != nil {
+		t.Fatalf("GetExecutionIdentities: %v", err)
+	}
+	if got.method != http.MethodGet || got.path != "/v2/membership/execution-identities" {
+		t.Errorf("GetExecutionIdentities call: %+v", got)
+	}
+	if len(identities.Identities) != 1 || !identities.Identities[0].IsDefault {
+		t.Errorf("GetExecutionIdentities answer: %+v", identities)
+	}
+
+	answer = `{"id":"usr_2"}`
+	var created dtos.IdResponse
+	if err := membership.CreateExecutionIdentity(ctx, map[string]any{"name": "Orders bot", "roleIds": []string{"Editor"}}, &created); err != nil {
+		t.Fatalf("CreateExecutionIdentity: %v", err)
+	}
+	if got.method != http.MethodPost || got.path != "/v2/membership/execution-identities" || got.body["name"] != "Orders bot" {
+		t.Errorf("CreateExecutionIdentity call: %+v", got)
+	}
+	if created.Id != "usr_2" {
+		t.Errorf("CreateExecutionIdentity answer: %+v", created)
+	}
+}
+
+// A Code or Marketplace action has no run-as field any more: the trigger's
+// executionIdentityId replaces it. A typed action must not send one.
+func TestTriggerActionsSendNoRunAsUser(t *testing.T) {
+	for name, action := range map[string]any{
+		"Code":        dtos.TriggerActionCodeDto{FunctionId: "fn_1"},
+		"Marketplace": dtos.TriggerActionMarketplaceDto{FunctionId: "fn_1"},
+	} {
+		sent := toMap(t, action)
+		if _, ok := sent["runAsUserId"]; ok {
+			t.Errorf("%s action carries runAsUserId: %v", name, sent)
+		}
+	}
+}

@@ -516,3 +516,34 @@ func (m *MembershipModule) UpdatePasswordComplexity(ctx context.Context, req map
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// GetExecutionIdentities performs GET /{version}/membership/execution-identities (scope: project).
+//
+// It lists the service users of the environment that a trigger, a scheduled
+// task or a workflow can run as, the default identity first. "canAssign" says
+// whether the caller may name one (dtos.GetExecutionIdentitiesResponse).
+func (m *MembershipModule) GetExecutionIdentities(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/execution-identities",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CreateExecutionIdentity performs POST /{version}/membership/execution-identities (scope: project).
+//
+// One call creates a service user ("name") and gives it roles ("roleIds":
+// role ids or role names). The answer carries the new id (dtos.IdResponse).
+func (m *MembershipModule) CreateExecutionIdentity(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/execution-identities",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

@@ -28,3 +28,55 @@ func (m *TriggersModule) GetTriggersNeedingAttention(ctx context.Context, req ma
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// CheckTriggerExecutionIdentity performs POST /{version}/triggers/execution-identity/check (scope: project).
+//
+// It answers whether the caller may name "executionIdentityId" (empty = the
+// environment's default) for this "triggerType" and "action", and what the
+// identity lacks for that action. Nothing is saved
+// (dtos.CheckTriggerExecutionIdentityResponse).
+func (m *TriggersModule) CheckTriggerExecutionIdentity(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/triggers/execution-identity/check",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetTriggerRuns performs GET /{version}/triggers/runs (scope: project).
+//
+// It lists the runs of one trigger, newest first, kept 30 days. Send
+// "triggerType" and "triggerId", and optionally "status" (queued, running,
+// succeeded, failed or skipped) and the paging fields
+// (dtos.GetTriggerRunsResponse).
+func (m *TriggersModule) GetTriggerRuns(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/triggers/runs",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetTriggerRun performs GET /{version}/triggers/runs/{Id} (scope: project).
+//
+// One run (id trr_…). "triggerType" is required: a run of another type answers
+// not found (dtos.GetTriggerRunResponse).
+func (m *TriggersModule) GetTriggerRun(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/triggers/runs/{Id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

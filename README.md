@@ -202,6 +202,16 @@ map[string]any{"triggerType": "Schema"}, &out)` lists the triggers whose last
 run was stopped before sending (for example a template that misses a
 language).
 
+`client.Hub.Triggers.GetTriggerRuns(ctx, map[string]any{"triggerType": "Schema",
+"triggerId": id}, &out)` lists one trigger's runs (30 days);
+`GetTriggerRun(ctx, runId, map[string]any{"triggerType": "Schema"}, &out)` reads
+one, and the type is required. A trigger or scheduler task save takes
+`executionIdentityId`: an id from `client.Hub.Membership.GetExecutionIdentities`,
+or empty for the default identity. `CreateExecutionIdentity` makes one, and
+`Triggers.CheckTriggerExecutionIdentity` says what it lacks for an action.
+`dtos.TriggerActionCodeDto` and `dtos.TriggerActionMarketplaceDto` no longer carry
+`RunAsUserId`. Every template update answers `dtos.IdResponse` with `Warnings`.
+
 ### SMS: Account users audience, campaign id filter; subject removed
 
 - An SMS campaign can go to the **account owner and team members**:
