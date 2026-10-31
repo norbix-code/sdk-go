@@ -25,7 +25,7 @@ import (
 // DeleteFile, each with an Operation, a Result ("OK", "FAILED", or
 // "NOT_TESTED" once an earlier step failed) and, when the step failed, its
 // Errors. Decode it into a
-// *dtos.TestFilesIntegrationResponse:
+// hub dtos.TestFilesIntegrationResponse:
 //
 //	var res dtos.TestFilesIntegrationResponse
 //	err := client.API.Files.TestFilesIntegration(ctx, integrationID, nil, &res)
