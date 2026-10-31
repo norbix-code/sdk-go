@@ -291,6 +291,7 @@ type NotificationAttemptOutcome string
 const (
 	NotificationAttemptOutcomeAccepted NotificationAttemptOutcome = "Accepted"
 	NotificationAttemptOutcomeFailed   NotificationAttemptOutcome = "Failed"
+	NotificationAttemptOutcomeBlocked  NotificationAttemptOutcome = "Blocked"
 )
 
 // SendErrorCategory enum.

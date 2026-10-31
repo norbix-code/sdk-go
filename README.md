@@ -159,6 +159,9 @@ campaign's retryable failures (`POST …/campaigns/{Id}/retry-failed`). `req`
 may carry `notificationIds`, `categories`, `includeAmbiguous` and an
 `idempotencyKey`; the answer (`dtos.RetryFailed{Email,Sms,Push}NotificationsResponse`)
 says how many were selected and skipped and whether the call was a replay.
+`Skipped` is a map of reason to count. Besides the reasons for rows left out it can
+carry `optedOut`, `compliance`, `undeliverable`: the people the send gates stopped during the
+retry. Those keys are added to the stored answer later and are part of `Selected`.
 
 Delivery events are opt-in per integration: `DeliveryEventsEnabled` plus
 `SnsTopicArn` (AWS SES), `EventWebhookPublicKey` (SendGrid) or
