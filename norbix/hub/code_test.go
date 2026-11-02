@@ -167,7 +167,7 @@ func TestCodeFunctionEndpointsHitTheExpectedRoute(t *testing.T) {
 // without a method here, or a method added without a case, moves one of the
 // numbers.
 func TestCodeSurfaceSize(t *testing.T) {
-	const wantMethods = 71
+	const wantMethods = 72
 	if got := reflect.TypeOf(&CodeModule{}).NumMethod(); got != wantMethods {
 		t.Errorf("CodeModule method count: got %d want %d", got, wantMethods)
 	}

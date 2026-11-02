@@ -10,11 +10,11 @@ import (
 	"testing"
 )
 
-// The 29 marketplace routes of the Code module (gateway campaign audit/marketplace,
+// The 30 marketplace routes of the Code module (gateway campaign audit/marketplace,
 // docs/architecture/Code.Marketplace.md §14; route 24 = MCP tool catalog, item mcp-step1;
 // routes 25–27 = connection access matrix, role package, custom policy, item access;
 // route 28 = OAuth sign-in start, item oauth — route 29, the callback, is not in the metadata;
-// route 30 = OAuth sign-out, item access-2b) and the module method that calls each
+// route 30 = OAuth sign-out, item access-2b; plus install-workflow, §11a) and the module method that calls each
 // one. Every case asserts the verb, the fully-resolved path (version and ids
 // substituted) and where the parameters land: the query string for GET / DELETE,
 // the JSON body for POST / PUT. Nothing leaves the process.
@@ -24,6 +24,11 @@ func marketplaceCases() []codeCase {
 		{"GetMarketplaceListings", http.MethodGet, "/v2/code/marketplace/listings", url.Values{"search": {"slack"}}, nil,
 			func(ctx context.Context, m *CodeModule) error {
 				return m.GetMarketplaceListings(ctx, map[string]any{"search": "slack"}, nil)
+			}},
+		{"InstallMarketplaceWorkflow", http.MethodPost, "/v2/code/marketplace/listings/ml_workflow_order_thanks_v1/install-workflow", nil,
+			map[string]any{"name": "Thanks", "references": map[string]any{"orders": "orders", "emailIntegration": "int_1"}},
+			func(ctx context.Context, m *CodeModule) error {
+				return m.InstallMarketplaceWorkflow(ctx, "ml_workflow_order_thanks_v1", map[string]any{"name": "Thanks", "references": map[string]any{"orders": "orders", "emailIntegration": "int_1"}}, nil)
 			}},
 		{"GetMarketplaceListingFunctionTokens", http.MethodGet, "/v2/code/marketplace/listings/ml_slack_v1/functions/slack.post-message/tokens", nil, nil,
 			func(ctx context.Context, m *CodeModule) error {
@@ -195,8 +200,25 @@ func TestMarketplaceEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
+func TestMarketplaceListingsSendsKindInTheQuery(t *testing.T) {
+	var gotQuery url.Values
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	m := newCodeTestModule(srv.URL)
+	if err := m.GetMarketplaceListings(context.Background(), map[string]any{"kind": "Workflow"}, nil); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := gotQuery.Get("kind"); got != "Workflow" {
+		t.Errorf("kind: got %q want Workflow", got)
+	}
+}
+
 func TestMarketplaceCaseCount(t *testing.T) {
-	const want = 29
+	const want = 30
 	if got := len(marketplaceCases()); got != want {
 		t.Errorf("code/marketplace case count: got %d want %d", got, want)
 	}
