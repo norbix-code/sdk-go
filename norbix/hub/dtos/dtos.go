@@ -5063,11 +5063,28 @@ type UsageBillingIngestionFailureDto struct {
 	ReportedAtUtc string `json:"reportedAtUtc,omitempty"`
 }
 
+// UsageWorkflowProjectDto DTO.
+type UsageWorkflowProjectDto struct {
+	ProjectId string  `json:"projectId,omitempty"`
+	Env       string  `json:"env,omitempty"`
+	Runs      float64 `json:"runs,omitempty"`
+	StepRuns  float64 `json:"stepRuns,omitempty"`
+}
+
+// UsageWorkflowPeriodDto DTO.
+type UsageWorkflowPeriodDto struct {
+	Period     string                     `json:"period,omitempty"`
+	Runs       float64                    `json:"runs,omitempty"`
+	StepRuns   float64                    `json:"stepRuns,omitempty"`
+	PerProject []*UsageWorkflowProjectDto `json:"perProject,omitempty"`
+}
+
 // UsageBillingDto DTO.
 type UsageBillingDto struct {
 	AccountId         string                             `json:"accountId,omitempty"`
 	Atlas             map[string]*UsageBillingPeriodDto  `json:"atlas,omitempty"`
 	IngestionFailures []*UsageBillingIngestionFailureDto `json:"ingestionFailures,omitempty"`
+	Workflows         map[string]*UsageWorkflowPeriodDto `json:"workflows,omitempty"`
 }
 
 // PromotionSummaryDto DTO.
