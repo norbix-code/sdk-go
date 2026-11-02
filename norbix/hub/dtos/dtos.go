@@ -6568,11 +6568,12 @@ type WorkflowSchemaDto struct {
 
 // WorkflowWaitingOnDto DTO.
 type WorkflowWaitingOnDto struct {
-	StepId    string   `json:"stepId,omitempty"`
-	Kind      string   `json:"kind,omitempty"`
-	Until     string   `json:"until,omitempty"`
-	Key       string   `json:"key,omitempty"`
-	Assignees []string `json:"assignees,omitempty"`
+	StepId     string   `json:"stepId,omitempty"`
+	Kind       string   `json:"kind,omitempty"`
+	Until      string   `json:"until,omitempty"`
+	Key        string   `json:"key,omitempty"`
+	Assignees  []string `json:"assignees,omitempty"`
+	ChildRunId string   `json:"childRunId,omitempty"`
 }
 
 // WorkflowRunStepDto DTO.
