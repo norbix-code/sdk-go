@@ -1271,6 +1271,14 @@ type PaymentOrderDto struct {
 	Mismatches        []string                   `json:"mismatches,omitempty"`
 }
 
+// WorkflowRunErrorDto DTO.
+type WorkflowRunErrorDto struct {
+	Code    string `json:"code,omitempty"`
+	StepId  string `json:"stepId,omitempty"`
+	Reason  string `json:"reason,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
 // WorkflowRunActorDto DTO.
 type WorkflowRunActorDto struct {
 	UserId string `json:"userId,omitempty"`
@@ -1285,34 +1293,6 @@ type WorkflowWaitingOnDto struct {
 	Key        string   `json:"key,omitempty"`
 	Assignees  []string `json:"assignees,omitempty"`
 	ChildRunId string   `json:"childRunId,omitempty"`
-}
-
-// WorkflowRunErrorDto DTO.
-type WorkflowRunErrorDto struct {
-	Code    string `json:"code,omitempty"`
-	StepId  string `json:"stepId,omitempty"`
-	Reason  string `json:"reason,omitempty"`
-	Message string `json:"message,omitempty"`
-}
-
-// WorkflowRunListProjection DTO.
-type WorkflowRunListProjection struct {
-	RunId                      string                  `json:"runId,omitempty"`
-	WorkflowId                 string                  `json:"workflowId,omitempty"`
-	Version                    *float64                `json:"version,omitempty"`
-	IsDraft                    bool                    `json:"isDraft"`
-	Status                     string                  `json:"status,omitempty"`
-	Source                     string                  `json:"source,omitempty"`
-	StartedAt                  string                  `json:"startedAt,omitempty"`
-	FinishedAt                 string                  `json:"finishedAt,omitempty"`
-	DurationMs                 *float64                `json:"durationMs,omitempty"`
-	StartedBy                  *WorkflowRunActorDto    `json:"startedBy,omitempty"`
-	ExecutionIdentityId        string                  `json:"executionIdentityId,omitempty"`
-	ExecutionIdentityName      string                  `json:"executionIdentityName,omitempty"`
-	ExecutionIdentityIsDefault bool                    `json:"executionIdentityIsDefault"`
-	CurrentStepIds             []string                `json:"currentStepIds,omitempty"`
-	WaitingOn                  []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
-	Error                      *WorkflowRunErrorDto    `json:"error,omitempty"`
 }
 
 // WorkflowRunStepDto DTO.
@@ -1365,6 +1345,26 @@ type WorkflowRunDto struct {
 	Steps                      []*WorkflowRunStepDto   `json:"steps,omitempty"`
 	Request                    map[string]any          `json:"request,omitempty"`
 	Trigger                    map[string]any          `json:"trigger,omitempty"`
+}
+
+// WorkflowRunListProjection DTO.
+type WorkflowRunListProjection struct {
+	RunId                      string                  `json:"runId,omitempty"`
+	WorkflowId                 string                  `json:"workflowId,omitempty"`
+	Version                    *float64                `json:"version,omitempty"`
+	IsDraft                    bool                    `json:"isDraft"`
+	Status                     string                  `json:"status,omitempty"`
+	Source                     string                  `json:"source,omitempty"`
+	StartedAt                  string                  `json:"startedAt,omitempty"`
+	FinishedAt                 string                  `json:"finishedAt,omitempty"`
+	DurationMs                 *float64                `json:"durationMs,omitempty"`
+	StartedBy                  *WorkflowRunActorDto    `json:"startedBy,omitempty"`
+	ExecutionIdentityId        string                  `json:"executionIdentityId,omitempty"`
+	ExecutionIdentityName      string                  `json:"executionIdentityName,omitempty"`
+	ExecutionIdentityIsDefault bool                    `json:"executionIdentityIsDefault"`
+	CurrentStepIds             []string                `json:"currentStepIds,omitempty"`
+	WaitingOn                  []*WorkflowWaitingOnDto `json:"waitingOn,omitempty"`
+	Error                      *WorkflowRunErrorDto    `json:"error,omitempty"`
 }
 
 // TenantLogEntryDto DTO.
@@ -2286,6 +2286,17 @@ type StartPaymentCheckoutResponse struct {
 	Checkout *PaymentOrderCheckoutDto `json:"checkout,omitempty"`
 	Reused   bool                     `json:"reused"`
 	Order    *PaymentOrderDto         `json:"order,omitempty"`
+}
+
+// InvokeCodeWorkflowResponse DTO.
+type InvokeCodeWorkflowResponse struct {
+	ResponseBase
+	RunId      string               `json:"runId,omitempty"`
+	Status     string               `json:"status,omitempty"`
+	Output     any                  `json:"output,omitempty"`
+	DurationMs *float64             `json:"durationMs,omitempty"`
+	Error      *WorkflowRunErrorDto `json:"error,omitempty"`
+	Run        *WorkflowRunDto      `json:"run,omitempty"`
 }
 
 // WorkflowRunsResponse DTO.
@@ -3518,6 +3529,15 @@ type StartPaymentCheckoutRequest struct {
 	ReturnUrl         string `json:"returnUrl,omitempty"`
 	PreferredCountry  string `json:"preferredCountry,omitempty"`
 	PreferredProvider string `json:"preferredProvider,omitempty"`
+}
+
+// InvokeCodeWorkflow DTO.
+type InvokeCodeWorkflow struct {
+	CodeMashRequestBase
+	Id          string         `json:"id,omitempty"`
+	Payload     map[string]any `json:"payload,omitempty"`
+	WaitSeconds *float64       `json:"waitSeconds,omitempty"`
+	RunVersion  string         `json:"runVersion,omitempty"`
 }
 
 // GetCodeWorkflowWaitingRuns DTO.

@@ -215,6 +215,25 @@ func (m *CodeModule) GetMarketplaceListings(ctx context.Context, req map[string]
 	}, out)
 }
 
+// Beta: InstallMarketplaceWorkflow performs POST /{version}/code/marketplace/listings/{ListingViewId}/install-workflow (scope: project).
+// Fills a workflow listing's references and saves a new workflow's draft: nothing runs and nothing is published.
+// Body: references (a value for every key the listing declares), name?, executionIdentityId?.
+// Answers dtos.WorkflowResponse. A connector listing is CM-ERRORS-MARKETPLACE-035; a reference missing or
+// undeclared is CM-ERRORS-MARKETPLACE-036, one error per key.
+func (m *CodeModule) InstallMarketplaceWorkflow(ctx context.Context, listingViewId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ListingViewId": listingViewId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/marketplace/listings/{ListingViewId}/install-workflow",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetMarketplaceListingFunctionTokens performs GET /{version}/code/marketplace/listings/{ListingViewId}/functions/{FunctionKey}/tokens (scope: project).
 func (m *CodeModule) GetMarketplaceListingFunctionTokens(ctx context.Context, listingViewId string, functionKey string, req map[string]any, out any) error {
 	pathParams := map[string]string{
