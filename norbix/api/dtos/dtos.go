@@ -1319,6 +1319,8 @@ type WorkflowRunStepDto struct {
 	StepId          string               `json:"stepId,omitempty"`
 	Kind            string               `json:"kind,omitempty"`
 	Name            string               `json:"name,omitempty"`
+	ForeachStepId   string               `json:"foreachStepId,omitempty"`
+	ItemIndex       *float64             `json:"itemIndex,omitempty"`
 	Status          string               `json:"status,omitempty"`
 	Attempt         float64              `json:"attempt,omitempty"`
 	Pass            float64              `json:"pass,omitempty"`
@@ -1397,8 +1399,11 @@ type InAppNotificationDto struct {
 
 // ChannelSubscriptionStateDto DTO.
 type ChannelSubscriptionStateDto struct {
-	Unsubscribed bool                `json:"unsubscribed"`
-	BlockedTags  map[string][]string `json:"blockedTags,omitempty"`
+	Unsubscribed  bool                `json:"unsubscribed"`
+	BlockedTags   map[string][]string `json:"blockedTags,omitempty"`
+	BounceState   string              `json:"bounceState,omitempty"`
+	LastBounceAt  string              `json:"lastBounceAt,omitempty"`
+	SpamComplaint bool                `json:"spamComplaint"`
 }
 
 // UserDto DTO.
@@ -3621,6 +3626,13 @@ type SetUserAiPlan struct {
 	UserId                string `json:"userId,omitempty"`
 	PlanId                string `json:"planId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// ClearContactBounceRequest DTO.
+type ClearContactBounceRequest struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+	Channel   string `json:"channel,omitempty"`
 }
 
 // CreateContactRequest DTO.

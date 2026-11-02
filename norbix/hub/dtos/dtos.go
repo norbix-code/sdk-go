@@ -232,6 +232,7 @@ type AwsS3LoggingIntegrationType string
 const (
 	AwsS3LoggingIntegrationTypeIam              AwsS3LoggingIntegrationType = "Iam"
 	AwsS3LoggingIntegrationTypeCrossAccountRole AwsS3LoggingIntegrationType = "CrossAccountRole"
+	AwsS3LoggingIntegrationTypeKeyless          AwsS3LoggingIntegrationType = "Keyless"
 )
 
 // MembershipProvider enum.
@@ -1777,13 +1778,19 @@ type AppleInAppPaymentIntegrationRequest struct {
 // GoogleInAppPaymentIntegrationRequest DTO.
 type GoogleInAppPaymentIntegrationRequest struct {
 	PaymentIntegrationRequest
-	Provider           PaymentGatewayPlatform `json:"provider,omitempty"`
-	WebhookPackageName string                 `json:"webhookPackageName,omitempty"`
-	MerchantId         string                 `json:"merchantId,omitempty"`
-	MerchantName       string                 `json:"merchantName,omitempty"`
-	Gateway            string                 `json:"gateway,omitempty"`
-	PrivateKeyOrToken  string                 `json:"privateKeyOrToken,omitempty"`
-	GatewayMerchantId  string                 `json:"gatewayMerchantId,omitempty"`
+	Provider            PaymentGatewayPlatform `json:"provider,omitempty"`
+	AuthMode            CloudAuthMode          `json:"authMode,omitempty"`
+	WebhookPackageName  string                 `json:"webhookPackageName,omitempty"`
+	MerchantId          string                 `json:"merchantId,omitempty"`
+	MerchantName        string                 `json:"merchantName,omitempty"`
+	Gateway             string                 `json:"gateway,omitempty"`
+	ProjectNumber       string                 `json:"projectNumber,omitempty"`
+	PoolId              string                 `json:"poolId,omitempty"`
+	ProviderId          string                 `json:"providerId,omitempty"`
+	ServiceAccountEmail string                 `json:"serviceAccountEmail,omitempty"`
+	PrivateKeyOrToken   string                 `json:"privateKeyOrToken,omitempty"`
+	GatewayMerchantId   string                 `json:"gatewayMerchantId,omitempty"`
+	AcceptKeyRisk       *bool                  `json:"acceptKeyRisk,omitempty"`
 }
 
 // MontonioPaymentIntegrationRequest DTO.
@@ -1930,10 +1937,16 @@ type FirefoxWebPushIntegrationRequest struct {
 // AndroidFirebasePushIntegrationRequest DTO.
 type AndroidFirebasePushIntegrationRequest struct {
 	PushIntegrationRequest
-	Provider           PushProvider `json:"provider,omitempty"`
-	ProjectId          string       `json:"projectId,omitempty"`
-	ClientEmail        string       `json:"clientEmail,omitempty"`
-	ServiceAccountJson string       `json:"serviceAccountJson,omitempty"`
+	Provider            PushProvider  `json:"provider,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectId           string        `json:"projectId,omitempty"`
+	ClientEmail         string        `json:"clientEmail,omitempty"`
+	ProjectNumber       string        `json:"projectNumber,omitempty"`
+	PoolId              string        `json:"poolId,omitempty"`
+	ProviderId          string        `json:"providerId,omitempty"`
+	ServiceAccountEmail string        `json:"serviceAccountEmail,omitempty"`
+	ServiceAccountJson  string        `json:"serviceAccountJson,omitempty"`
+	AcceptKeyRisk       *bool         `json:"acceptKeyRisk,omitempty"`
 }
 
 // AppleApnsPushIntegrationRequest DTO.
@@ -2859,11 +2872,16 @@ type AppleInAppPaymentIntegrationDto struct {
 // GoogleInAppPaymentIntegrationDto DTO.
 type GoogleInAppPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	WebhookPackageName string `json:"webhookPackageName,omitempty"`
-	MerchantId         string `json:"merchantId,omitempty"`
-	MerchantName       string `json:"merchantName,omitempty"`
-	Gateway            string `json:"gateway,omitempty"`
-	GatewayMerchantId  string `json:"gatewayMerchantId,omitempty"`
+	WebhookPackageName  string        `json:"webhookPackageName,omitempty"`
+	MerchantId          string        `json:"merchantId,omitempty"`
+	MerchantName        string        `json:"merchantName,omitempty"`
+	Gateway             string        `json:"gateway,omitempty"`
+	GatewayMerchantId   string        `json:"gatewayMerchantId,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       string        `json:"projectNumber,omitempty"`
+	PoolId              string        `json:"poolId,omitempty"`
+	ProviderId          string        `json:"providerId,omitempty"`
+	ServiceAccountEmail string        `json:"serviceAccountEmail,omitempty"`
 }
 
 // LemonSqueezyPaymentIntegrationDto DTO.
@@ -3391,8 +3409,13 @@ type PushIntegrationDto struct {
 // AndroidFirebasePushIntegrationDto DTO.
 type AndroidFirebasePushIntegrationDto struct {
 	PushIntegrationDto
-	ProjectId   string `json:"projectId,omitempty"`
-	ClientEmail string `json:"clientEmail,omitempty"`
+	ProjectId           string        `json:"projectId,omitempty"`
+	ClientEmail         string        `json:"clientEmail,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       string        `json:"projectNumber,omitempty"`
+	PoolId              string        `json:"poolId,omitempty"`
+	ProviderId          string        `json:"providerId,omitempty"`
+	ServiceAccountEmail string        `json:"serviceAccountEmail,omitempty"`
 }
 
 // AppleApnsPushIntegrationDto DTO.
@@ -4189,20 +4212,48 @@ type WorkflowSchedulerTaskRequest struct {
 // AwsCloudWatchLoggingIntegrationRequest DTO.
 type AwsCloudWatchLoggingIntegrationRequest struct {
 	LoggingIntegrationRequest
-	Provider  LoggingProvider `json:"provider,omitempty"`
-	Region    string          `json:"region,omitempty"`
-	LogGroup  string          `json:"logGroup,omitempty"`
-	LogStream string          `json:"logStream,omitempty"`
-	AccessKey string          `json:"accessKey,omitempty"`
-	SecretKey string          `json:"secretKey,omitempty"`
+	Provider      LoggingProvider `json:"provider,omitempty"`
+	Region        string          `json:"region,omitempty"`
+	LogGroup      string          `json:"logGroup,omitempty"`
+	LogStream     string          `json:"logStream,omitempty"`
+	AuthMode      CloudAuthMode   `json:"authMode,omitempty"`
+	RoleArn       string          `json:"roleArn,omitempty"`
+	AccessKey     string          `json:"accessKey,omitempty"`
+	SecretKey     string          `json:"secretKey,omitempty"`
+	AcceptKeyRisk *bool           `json:"acceptKeyRisk,omitempty"`
 }
 
 // AwsCloudWatchLoggingIntegrationDto DTO.
 type AwsCloudWatchLoggingIntegrationDto struct {
 	LoggingIntegrationDto
-	Region    string `json:"region,omitempty"`
-	LogGroup  string `json:"logGroup,omitempty"`
-	LogStream string `json:"logStream,omitempty"`
+	Region    string        `json:"region,omitempty"`
+	LogGroup  string        `json:"logGroup,omitempty"`
+	LogStream string        `json:"logStream,omitempty"`
+	AuthMode  CloudAuthMode `json:"authMode,omitempty"`
+	RoleArn   string        `json:"roleArn,omitempty"`
+}
+
+// AzureMonitorLogsLoggingIntegrationRequest DTO.
+type AzureMonitorLogsLoggingIntegrationRequest struct {
+	LoggingIntegrationRequest
+	Provider             LoggingProvider `json:"provider,omitempty"`
+	AuthMode             CloudAuthMode   `json:"authMode,omitempty"`
+	TenantId             string          `json:"tenantId,omitempty"`
+	ClientId             string          `json:"clientId,omitempty"`
+	IngestionEndpoint    string          `json:"ingestionEndpoint,omitempty"`
+	DataCollectionRuleId string          `json:"dataCollectionRuleId,omitempty"`
+	StreamName           string          `json:"streamName,omitempty"`
+}
+
+// AzureMonitorLogsLoggingIntegrationDto DTO.
+type AzureMonitorLogsLoggingIntegrationDto struct {
+	LoggingIntegrationDto
+	IngestionEndpoint    string        `json:"ingestionEndpoint,omitempty"`
+	DataCollectionRuleId string        `json:"dataCollectionRuleId,omitempty"`
+	StreamName           string        `json:"streamName,omitempty"`
+	TenantId             string        `json:"tenantId,omitempty"`
+	ClientId             string        `json:"clientId,omitempty"`
+	AuthMode             CloudAuthMode `json:"authMode,omitempty"`
 }
 
 // QuickConnectProviderDto DTO.
@@ -4698,11 +4749,13 @@ type WorkflowStepDto struct {
 
 // WorkflowLimitsDto DTO.
 type WorkflowLimitsDto struct {
-	MaxStepRuns         *float64 `json:"maxStepRuns,omitempty"`
-	MaxDurationSeconds  *float64 `json:"maxDurationSeconds,omitempty"`
-	MaxWaitSeconds      *float64 `json:"maxWaitSeconds,omitempty"`
-	MaxParallelBranches *float64 `json:"maxParallelBranches,omitempty"`
-	MaxDepth            *float64 `json:"maxDepth,omitempty"`
+	MaxStepRuns           *float64 `json:"maxStepRuns,omitempty"`
+	MaxDurationSeconds    *float64 `json:"maxDurationSeconds,omitempty"`
+	MaxWaitSeconds        *float64 `json:"maxWaitSeconds,omitempty"`
+	MaxParallelBranches   *float64 `json:"maxParallelBranches,omitempty"`
+	MaxDepth              *float64 `json:"maxDepth,omitempty"`
+	MaxForeachItems       *float64 `json:"maxForeachItems,omitempty"`
+	MaxForeachConcurrency *float64 `json:"maxForeachConcurrency,omitempty"`
 }
 
 // WorkflowDefinitionDto DTO.
@@ -6527,6 +6580,8 @@ type WorkflowRunStepDto struct {
 	StepId          string               `json:"stepId,omitempty"`
 	Kind            string               `json:"kind,omitempty"`
 	Name            string               `json:"name,omitempty"`
+	ForeachStepId   string               `json:"foreachStepId,omitempty"`
+	ItemIndex       *float64             `json:"itemIndex,omitempty"`
 	Status          string               `json:"status,omitempty"`
 	Attempt         float64              `json:"attempt,omitempty"`
 	Pass            float64              `json:"pass,omitempty"`
@@ -7393,8 +7448,11 @@ type ResolvedResourceEntry struct {
 
 // ChannelSubscriptionStateDto DTO.
 type ChannelSubscriptionStateDto struct {
-	Unsubscribed bool                `json:"unsubscribed"`
-	BlockedTags  map[string][]string `json:"blockedTags,omitempty"`
+	Unsubscribed  bool                `json:"unsubscribed"`
+	BlockedTags   map[string][]string `json:"blockedTags,omitempty"`
+	BounceState   string              `json:"bounceState,omitempty"`
+	LastBounceAt  string              `json:"lastBounceAt,omitempty"`
+	SpamComplaint bool                `json:"spamComplaint"`
 }
 
 // UserDto DTO.
@@ -10636,6 +10694,8 @@ type InternalsTypeGen struct {
 	Typegen_309_WorkflowSchedulerTaskRequest                     *WorkflowSchedulerTaskRequest                      `json:"typegen_309_WorkflowSchedulerTaskRequest,omitempty"`
 	Typegen_285_AwsCloudWatchLoggingIntegrationRequest           *AwsCloudWatchLoggingIntegrationRequest            `json:"typegen_285_AwsCloudWatchLoggingIntegrationRequest,omitempty"`
 	Typegen_286_AwsCloudWatchLoggingIntegrationDto               *AwsCloudWatchLoggingIntegrationDto                `json:"typegen_286_AwsCloudWatchLoggingIntegrationDto,omitempty"`
+	Typegen_324_AzureMonitorLogsLoggingIntegrationRequest        *AzureMonitorLogsLoggingIntegrationRequest         `json:"typegen_324_AzureMonitorLogsLoggingIntegrationRequest,omitempty"`
+	Typegen_325_AzureMonitorLogsLoggingIntegrationDto            *AzureMonitorLogsLoggingIntegrationDto             `json:"typegen_325_AzureMonitorLogsLoggingIntegrationDto,omitempty"`
 	Typegen_310_GetQuickConnectProviders                         *GetQuickConnectProviders                          `json:"typegen_310_GetQuickConnectProviders,omitempty"`
 	Typegen_311_StartPaymentsIntegrationConnect                  *StartPaymentsIntegrationConnect                   `json:"typegen_311_StartPaymentsIntegrationConnect,omitempty"`
 	Typegen_312_GetIntegrationConnectTargets                     *GetIntegrationConnectTargets                      `json:"typegen_312_GetIntegrationConnectTargets,omitempty"`
@@ -14036,6 +14096,13 @@ type SetUserAiPlan struct {
 	UserId                string `json:"userId,omitempty"`
 	PlanId                string `json:"planId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// ClearContactBounceRequest DTO.
+type ClearContactBounceRequest struct {
+	CodeMashRequestBase
+	ContactId string `json:"contactId,omitempty"`
+	Channel   string `json:"channel,omitempty"`
 }
 
 // CreateContactRequest DTO.
