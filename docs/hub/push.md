@@ -3,7 +3,7 @@
 [← Back to project README](../../README.md)
 
 Every Push endpoint the gateway exposes, and the `hub.NotificationsModule`
-method that calls it. All 37 are covered by `norbix/hub/push_test.go`, which
+method that calls it. All 40 are covered by `norbix/hub/push_test.go`, which
 asserts the verb and the fully-resolved path of each one.
 
 Each method takes a context, any route ids as plain arguments, an untyped
