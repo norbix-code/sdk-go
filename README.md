@@ -600,6 +600,24 @@ in the cloud account, then save with the same integration id and the role ARN
 (AWS) or tenant + client id (Azure). A key mode needs `acceptKeyRisk: true`, or
 the save is refused (`CM-ERRORS-INTEGRATIONS-034`).
 `out.Templates` — templates: ready CloudFormation / Bicep / Terraform files for this integration (`Kind`, `FileName`, `Content`).
+Keyless setup is served for every module the gateway serves it for: files, email and code
+(aws, azure, google), logs (aws, azure), push and payments (google), database (atlas — MongoDB Atlas M10+).
+
+## Quick connect (payments, one-click OAuth)
+
+A payments integration can be saved without pasting keys: the provider's page asks the
+person to approve, sends them back to Norbix, and the integration is saved from the account
+they pick. `c.Hub.Integrations.GetQuickConnectProviders(ctx, map[string]any{"module": "payments"}, &out)`
+lists which providers can on this install (`dtos.GetQuickConnectProvidersResponse`: available,
+the `requiredInputs` to ask for, the modes); `c.Hub.Payments.StartPaymentsIntegrationConnect(ctx, req, &started)`
+(`dtos.StartPaymentsIntegrationConnect`: `provider`, `integrationName`, optional `mode`,
+`input`, `integrationId` to reconnect) answers the `AuthorizeUrl` to open and the `ConnectId`;
+once the person approved, `c.Hub.Integrations.GetIntegrationConnectTargets(ctx, connectID, nil, &targets)`
+lists the accounts and `c.Hub.Payments.CompletePaymentsIntegrationConnect(ctx, connectID, map[string]any{"targetId": …, "isEnabled": true}, &saved)`
+saves the integration (`dtos.IdResponse`). `DisconnectPaymentsIntegrationConnect(ctx, id, nil, &out)`
+ends it: webhooks removed, key forgotten, integration off (`WasConnected`, `ProviderAnswered`).
+Tests: `norbix/hub/integrations_routes_test.go` (every integration route of code, logs, membership
+and payments, the quick-connect bodies included).
 
 ## Webhooks
 
