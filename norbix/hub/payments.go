@@ -275,3 +275,61 @@ func (m *PaymentsModule) TestPaymentsIntegration(ctx context.Context, req map[st
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// StartPaymentsIntegrationConnect performs POST /{version}/payments/integrations/connect/start (scope: project).
+// Quick connect (one-click OAuth) of a payments integration: the request names the
+// provider key (from GetQuickConnectProviders), the integration name, an optional
+// mode (test / live), the inputs the provider needs before its page opens (for
+// example storeUrl) and, to reconnect, the integration id the new connection
+// replaces (dtos.StartPaymentsIntegrationConnect). The answer is the provider's
+// page to open in a browser within 10 minutes, the connect id of the picker and
+// the redirect URL (dtos.StartIntegrationConnectResponse).
+func (m *PaymentsModule) StartPaymentsIntegrationConnect(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/integrations/connect/start",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CompletePaymentsIntegrationConnect performs POST /{version}/payments/integrations/connect/{ConnectId}/complete (scope: project).
+// Finishes a quick connect with the picked account: targetId from
+// Integrations.GetIntegrationConnectTargets and isEnabled
+// (dtos.CompletePaymentsIntegrationConnect). The integration is saved like the
+// manual form saves it; the answer carries its id (dtos.IdResponse).
+func (m *PaymentsModule) CompletePaymentsIntegrationConnect(ctx context.Context, connectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ConnectId": connectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/integrations/connect/{ConnectId}/complete",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DisconnectPaymentsIntegrationConnect performs POST /{version}/payments/integrations/{Id}/connect/disconnect (scope: project).
+// Ends the quick connection of a payments integration: the provider's webhooks
+// are removed (best effort), the stored key is forgotten and the integration is
+// switched off; its connection record stays, so a start with integrationId can
+// reconnect it. The answer says wasConnected and providerAnswered
+// (dtos.DisconnectPaymentsIntegrationConnectResponse).
+func (m *PaymentsModule) DisconnectPaymentsIntegrationConnect(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/integrations/{Id}/connect/disconnect",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

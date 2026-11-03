@@ -30,3 +30,43 @@ func (m *IntegrationsModule) GetKeylessIntegrationSetup(ctx context.Context, req
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// GetQuickConnectProviders performs GET /{version}/integrations/connect/providers (scope: project).
+//
+// It lists the providers that can quick-connect (one-click OAuth) on this
+// install: available or not, the inputs to ask for before the provider's page
+// opens (for example storeUrl), the modes (test / live) and the redirect URL
+// Norbix registered. The request takes an optional "module" (for example
+// payments; empty = every module); see dtos.GetQuickConnectProviders and
+// dtos.GetQuickConnectProvidersResponse. Read it before
+// Payments.StartPaymentsIntegrationConnect.
+func (m *IntegrationsModule) GetQuickConnectProviders(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/integrations/connect/providers",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetIntegrationConnectTargets performs GET /{version}/integrations/connect/{ConnectId}/targets (scope: project).
+//
+// Once the person approved on the provider's page, it lists the accounts
+// (profiles, shops) the provider offered for the connect id — pick one and
+// finish with Payments.CompletePaymentsIntegrationConnect; see
+// dtos.GetIntegrationConnectTargetsResponse (Targets: Id, Name, Detail).
+func (m *IntegrationsModule) GetIntegrationConnectTargets(ctx context.Context, connectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ConnectId": connectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/integrations/connect/{ConnectId}/targets",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
