@@ -957,6 +957,9 @@ Project owners configure the assistant on the Hub: `client.Hub.Account`
 - [Database](docs/hub/database.md) — schemas, records (Hub + Api), taxonomies and
   term trees, schema triggers, database integrations, saved aggregates
 - [Push](docs/hub/push.md) — push integrations, templates, campaigns, devices
+- [Notifications (API)](docs/api/notifications.md) — `c.API.Notifications`: Email, SMS and
+  Push campaigns on the data API (44 routes) and the signed-in user's own push
+  devices and messages
 - [Logs](docs/hub/logs.md) — write your app's entries (`API.Logs.WriteLogs`), read
   and clean the log list, log settings, log integrations (MongoDB, Datadog, AWS
   CloudWatch, …) — test an integration after saving it: nothing is delivered
