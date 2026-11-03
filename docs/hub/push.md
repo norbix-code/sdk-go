@@ -75,6 +75,7 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 |---|---|---|
 | `GetPushCampaigns(ctx, req, out)` | `GET` | `/notifications/push/campaigns` |
 | `CreatePushCampaign(ctx, req, out)` | `POST` | `/notifications/push/campaigns` |
+| `GetPushCampaignAudienceCount(ctx, req, out)` | `POST` | `/notifications/push/campaigns/audience-count` |
 | `DeletePushCampaign(ctx, id, req, out)` | `DELETE` | `/notifications/push/campaigns/{Id}` |
 | `StopPushCampaign(ctx, id, req, out)` | `POST` | `/notifications/push/campaigns/{Id}/stop` |
 | `RetryFailedPushNotifications(ctx, id, req, out)` | `POST` | `/notifications/push/campaigns/{Id}/retry-failed` |
@@ -93,6 +94,7 @@ err = client.Hub.Notifications.GetPushTemplates(ctx, nil, &templates)
 | `RegisterDevice(ctx, req, out)` | `POST` | `/notifications/push/devices` |
 | `GetPushDevices(ctx, req, out)` | `GET` | `/notifications/push/devices` |
 | `GetPushDevice(ctx, id, req, out)` | `GET` | `/notifications/push/devices/{id}` |
+| `DeletePushDevice(ctx, id, req, out)` | `DELETE` | `/notifications/push/devices/{Id}` |
 
 ## Choosing who a campaign goes to
 
@@ -126,6 +128,20 @@ err := client.Hub.Notifications.CreatePushCampaign(ctx, req, nil)
 ```
 
 Send `source` as the name, not a number — the server reads it as a string.
+
+`GetPushCampaignAudienceCount` takes the same `campaign` body and answers how
+many devices and recipients the audience would reach, without creating or
+sending anything (the template and send options are ignored). Pass a
+`*dtos.GetPushCampaignAudienceCountResponse` as `out`; its `Result` carries
+`Devices`, `Recipients`, `SkippedUserIds` (users with no device) and `IsCapped`
+(the count stopped at the server's limit).
+
+```go
+var count dtos.GetPushCampaignAudienceCountResponse
+err := client.Hub.Notifications.GetPushCampaignAudienceCount(ctx, map[string]any{
+    "campaign": map[string]any{"source": "allUsers", "userTags": []string{"beta"}},
+}, &count)
+```
 
 ## Choosing a push provider
 
@@ -187,6 +203,15 @@ stopping at the first short page.
 ```go
 var device map[string]any
 err := client.Hub.Notifications.GetPushDevice(ctx, "pnd_123", nil, &device)
+```
+
+`DeletePushDevice` removes one device from whichever user holds it (an admin
+route: the caller needs `push:delete` on `push:device:all`). The device then
+gets no more push notifications; a user removes their own device from the app
+instead.
+
+```go
+err := client.Hub.Notifications.DeletePushDevice(ctx, "pnd_123", nil, nil)
 ```
 
 ## Preview a notification with its signed link (no sign-in)

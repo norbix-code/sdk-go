@@ -148,6 +148,10 @@ func pushCases() []pushCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.CreatePushCampaign(ctx, body, nil)
 			}},
+		{"GetPushCampaignAudienceCount", http.MethodPost, "/v2/notifications/push/campaigns/audience-count",
+			func(ctx context.Context, m *NotificationsModule) error {
+				return m.GetPushCampaignAudienceCount(ctx, body, nil)
+			}},
 		{"GetPushCampaign", http.MethodGet, "/v2/notifications/push/campaigns/" + testCampaignID,
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.GetPushCampaign(ctx, testCampaignID, nil, nil)
@@ -204,6 +208,10 @@ func pushCases() []pushCase {
 			func(ctx context.Context, m *NotificationsModule) error {
 				return m.GetPushDevice(ctx, testDeviceID, nil, nil)
 			}},
+		{"DeletePushDevice", http.MethodDelete, "/v2/notifications/push/devices/" + testDeviceID,
+			func(ctx context.Context, m *NotificationsModule) error {
+				return m.DeletePushDevice(ctx, testDeviceID, nil, nil)
+			}},
 	}
 }
 
@@ -247,14 +255,15 @@ func TestPushEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Push surface is 38 routes (36 plus the two device reads added with
+// The whole Push surface is 40 routes (36 plus the two device reads added with
 // the devices read side; the managed-app register route and the duplicate
 // campaigns/{campaignId}/messages/{notificationId} read were removed; gateway
-// 2.3.9 added POST campaigns/{Id}/retry-failed). If the gateway grows one and the module is
-// regenerated, this count changes and the test says so, so a new endpoint
-// cannot arrive untested.
+// 2.3.9 added POST campaigns/{Id}/retry-failed; the coverage re-audit of
+// 2026-11-03 added POST campaigns/audience-count and DELETE devices/{Id}). If
+// the gateway grows one and the module is regenerated, this count changes and
+// the test says so, so a new endpoint cannot arrive untested.
 func TestPushSurfaceSize(t *testing.T) {
-	const want = 38
+	const want = 40
 	if got := len(pushCases()); got != want {
 		t.Errorf("push endpoint count: got %d want %d", got, want)
 	}

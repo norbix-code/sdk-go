@@ -1033,6 +1033,24 @@ func (m *NotificationsModule) GetPushDevice(ctx context.Context, id string, req 
 	}, out)
 }
 
+// DeletePushDevice performs DELETE /{version}/notifications/push/devices/{Id} (scope: project).
+// Removes one registered device from whichever user holds it, so it gets no
+// more push notifications (admin route; needs push:delete on push:device:all).
+// `req` may carry a `databaseIntegrationId`; the answer is an empty response.
+func (m *NotificationsModule) DeletePushDevice(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/devices/{Id}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetAllContacts performs GET /{version}/membership/users (scope: project).
 //
 // Deprecated: contacts moved to the membership routes; use Membership.GetAllContacts. This
@@ -1261,6 +1279,24 @@ func (m *NotificationsModule) CreatePushCampaign(ctx context.Context, req map[st
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/notifications/push/campaigns",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetPushCampaignAudienceCount performs POST /{version}/notifications/push/campaigns/audience-count (scope: project).
+// Counts the devices a campaign audience would reach before the campaign is
+// created; nothing is sent. `req` carries the audience under `campaign` in the
+// same shape CreatePushCampaign reads (`source` plus that audience's own
+// fields — the template and send options are ignored) and an optional
+// `databaseIntegrationId`. The answer is a dtos.GetPushCampaignAudienceCountResponse
+// whose Result holds Devices, Recipients, SkippedUserIds and IsCapped.
+func (m *NotificationsModule) GetPushCampaignAudienceCount(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/push/campaigns/audience-count",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
