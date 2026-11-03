@@ -1033,11 +1033,14 @@ func (m *NotificationsModule) GetPushDevice(ctx context.Context, id string, req 
 	}, out)
 }
 
-// GetAllContacts performs GET /{version}/notifications/contacts (scope: project).
+// GetAllContacts performs GET /{version}/membership/users (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.GetAllContacts. This
+// method now calls the same route.
 func (m *NotificationsModule) GetAllContacts(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts",
+		Path:       "/{version}/membership/users",
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
@@ -1045,11 +1048,14 @@ func (m *NotificationsModule) GetAllContacts(ctx context.Context, req map[string
 	}, out)
 }
 
-// CreateContact performs POST /{version}/notifications/contacts (scope: project).
+// CreateContact performs POST /{version}/membership/users (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.CreateContact. This
+// method now calls the same route.
 func (m *NotificationsModule) CreateContact(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts",
+		Path:       "/{version}/membership/users",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -1057,11 +1063,14 @@ func (m *NotificationsModule) CreateContact(ctx context.Context, req map[string]
 	}, out)
 }
 
-// MergeContacts performs POST /{version}/notifications/contacts/merge (scope: project).
+// MergeContacts performs POST /{version}/membership/users/merge (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.MergeContacts. This
+// method now calls the same route.
 func (m *NotificationsModule) MergeContacts(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/merge",
+		Path:       "/{version}/membership/users/merge",
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
@@ -1069,14 +1078,17 @@ func (m *NotificationsModule) MergeContacts(ctx context.Context, req map[string]
 	}, out)
 }
 
-// DeleteContact performs DELETE /{version}/notifications/contacts/{contactId} (scope: project).
+// DeleteContact performs DELETE /{version}/membership/users/{contactId} (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.DeleteContact. This
+// method now calls the same route.
 func (m *NotificationsModule) DeleteContact(ctx context.Context, contactId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"contactId": contactId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}",
+		Path:       "/{version}/membership/users/{contactId}",
 		Method:     "DELETE",
 		PathParams: pathParams,
 		Body:       req,
@@ -1084,14 +1096,17 @@ func (m *NotificationsModule) DeleteContact(ctx context.Context, contactId strin
 	}, out)
 }
 
-// GetContact performs GET /{version}/notifications/contacts/{contactId} (scope: project).
+// GetContact performs GET /{version}/membership/users/{contactId} (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.GetContact. This
+// method now calls the same route.
 func (m *NotificationsModule) GetContact(ctx context.Context, contactId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"contactId": contactId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}",
+		Path:       "/{version}/membership/users/{contactId}",
 		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
@@ -1099,14 +1114,17 @@ func (m *NotificationsModule) GetContact(ctx context.Context, contactId string, 
 	}, out)
 }
 
-// AddContactIdentity performs POST /{version}/notifications/contacts/{contactId}/identities (scope: project).
+// AddContactIdentity performs POST /{version}/membership/users/{contactId}/identities (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.AddContactIdentity. This
+// method now calls the same route.
 func (m *NotificationsModule) AddContactIdentity(ctx context.Context, contactId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"contactId": contactId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}/identities",
+		Path:       "/{version}/membership/users/{contactId}/identities",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
@@ -1114,15 +1132,18 @@ func (m *NotificationsModule) AddContactIdentity(ctx context.Context, contactId 
 	}, out)
 }
 
-// RemoveContactIdentity performs DELETE /{version}/notifications/contacts/{contactId}/identities/{identityId} (scope: project).
+// RemoveContactIdentity performs DELETE /{version}/membership/users/{contactId}/identities/{authId} (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.RemoveContactIdentity. This
+// method now calls the same route.
 func (m *NotificationsModule) RemoveContactIdentity(ctx context.Context, contactId string, identityId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"contactId":  contactId,
-		"identityId": identityId,
+		"contactId": contactId,
+		"authId":    identityId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}/identities/{identityId}",
+		Path:       "/{version}/membership/users/{contactId}/identities/{authId}",
 		Method:     "DELETE",
 		PathParams: pathParams,
 		Body:       req,
@@ -1130,15 +1151,18 @@ func (m *NotificationsModule) RemoveContactIdentity(ctx context.Context, contact
 	}, out)
 }
 
-// PromoteContactIdentity performs POST /{version}/notifications/contacts/{contactId}/identities/{identityId}/promote (scope: project).
+// PromoteContactIdentity performs POST /{version}/membership/users/{contactId}/identities/{authId}/promote (scope: project).
+//
+// Deprecated: contacts moved to the membership routes; use Membership.PromoteContactIdentity. This
+// method now calls the same route.
 func (m *NotificationsModule) PromoteContactIdentity(ctx context.Context, contactId string, identityId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"contactId":  contactId,
-		"identityId": identityId,
+		"contactId": contactId,
+		"authId":    identityId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}/identities/{identityId}/promote",
+		Path:       "/{version}/membership/users/{contactId}/identities/{authId}/promote",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
@@ -1146,15 +1170,18 @@ func (m *NotificationsModule) PromoteContactIdentity(ctx context.Context, contac
 	}, out)
 }
 
-// GrantContactConsent performs POST /{version}/notifications/contacts/{contactId}/marketing-state/{channel}/consent (scope: project).
+// GrantContactConsent performs POST /{version}/membership/users/{contactId}/marketing-state/{channel}/consent (scope: project, api host).
+//
+// Deprecated: this route is served by the API, not the Hub; use
+// api.Membership.GrantContactConsent. This method now calls the API route.
 func (m *NotificationsModule) GrantContactConsent(ctx context.Context, contactId string, channel string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"contactId": contactId,
 		"channel":   channel,
 	}
 	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}/marketing-state/{channel}/consent",
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{contactId}/marketing-state/{channel}/consent",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
@@ -1162,15 +1189,18 @@ func (m *NotificationsModule) GrantContactConsent(ctx context.Context, contactId
 	}, out)
 }
 
-// UnsubscribeContact performs POST /{version}/notifications/contacts/{contactId}/marketing-state/{channel}/unsubscribe (scope: project).
+// UnsubscribeContact performs POST /{version}/membership/users/{contactId}/marketing-state/{channel}/unsubscribe (scope: project, api host).
+//
+// Deprecated: this route is served by the API, not the Hub; use
+// api.Membership.UnsubscribeContact. This method now calls the API route.
 func (m *NotificationsModule) UnsubscribeContact(ctx context.Context, contactId string, channel string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"contactId": contactId,
 		"channel":   channel,
 	}
 	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/notifications/contacts/{contactId}/marketing-state/{channel}/unsubscribe",
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/users/{contactId}/marketing-state/{channel}/unsubscribe",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
