@@ -7,28 +7,30 @@ import "github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 
 // Namespace bundles every API module.
 type Namespace struct {
-	Ai         *AiModule
-	Code       *CodeModule
-	Database   *DatabaseModule
-	Echo       *EchoModule
-	Files      *FilesModule
-	Logs       *LogsModule
-	Membership *MembershipModule
-	Payments   *PaymentsModule
-	Public     *PublicModule
+	Ai            *AiModule
+	Code          *CodeModule
+	Database      *DatabaseModule
+	Echo          *EchoModule
+	Files         *FilesModule
+	Logs          *LogsModule
+	Membership    *MembershipModule
+	Notifications *NotificationsModule
+	Payments      *PaymentsModule
+	Public        *PublicModule
 }
 
 // NewNamespace wires every module to the shared transport.
 func NewNamespace(t *transport.Transport) *Namespace {
 	return &Namespace{
-		Ai:         &AiModule{t: t},
-		Code:       &CodeModule{t: t},
-		Database:   &DatabaseModule{t: t},
-		Echo:       &EchoModule{t: t},
-		Files:      &FilesModule{t: t},
-		Logs:       &LogsModule{t: t},
-		Membership: &MembershipModule{t: t},
-		Payments:   &PaymentsModule{t: t},
-		Public:     &PublicModule{t: t},
+		Ai:            &AiModule{t: t},
+		Code:          &CodeModule{t: t},
+		Database:      &DatabaseModule{t: t},
+		Echo:          &EchoModule{t: t},
+		Files:         &FilesModule{t: t},
+		Logs:          &LogsModule{t: t},
+		Membership:    &MembershipModule{t: t},
+		Notifications: &NotificationsModule{t: t},
+		Payments:      &PaymentsModule{t: t},
+		Public:        &PublicModule{t: t},
 	}
 }
