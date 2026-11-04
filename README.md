@@ -212,6 +212,20 @@ one, and the type is required. A trigger or scheduler task save takes
 `executionIdentityId`: an id from `client.Hub.Membership.GetExecutionIdentities`,
 or empty for the default identity. `CreateExecutionIdentity` makes one, and
 `Triggers.CheckTriggerExecutionIdentity` says what it lacks for an action.
+`Triggers.GetTriggerDefinition(ctx, id, map[string]any{"triggerType": "Files"},
+&out)` reads one trigger in the shape its save takes (a Schema trigger also
+needs `schemaId`), and `Triggers.TestTriggerPreExecuteCode(ctx, map[string]any{
+"code": "return New.status == \"published\";", "triggerType": "Schema",
+"newRecord": `+"`"+`{"status":"published"}`+"`"+`}, &out)` tries a trigger's pre-action
+code on a sample record without saving anything. AI triggers (credits and quota
+events) live on `client.Hub.Ai.SaveAiProjectTrigger` / `GetAiProjectTriggers` /
+`GetAiProjectTrigger` / `EnableAiProjectTrigger` / `DisableAiProjectTrigger` /
+`DeleteAiProjectTrigger` — `"type": "Ai"`, `"when"` one of OnCreditsWarning,
+OnCreditsExhausted, OnQuotaWarning, OnQuotaExhausted. A Code action is
+`dtos.TriggerActionCodeDto{FunctionRef: &dtos.FunctionRefDto{IntegrationId,
+FunctionId}, InvocationType}`; a Workflow action is
+`dtos.TriggerActionWorkflowDto{WorkflowRef, Payload}` — every host's save in
+`norbix/hub/triggers_routes_test.go`.
 `dtos.TriggerActionCodeDto` and `dtos.TriggerActionMarketplaceDto` no longer carry
 `RunAsUserId`. Every template update answers `dtos.IdResponse` with `Warnings`.
 

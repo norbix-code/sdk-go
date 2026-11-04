@@ -284,3 +284,96 @@ func (m *AiModule) SetLlmIntegrationAsDefault(ctx context.Context, id string, re
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// The AI trigger routes below are hand-added in the generated style
+// (triggers coverage campaign, 2026-11-04): gen_modules.py is not in this
+// repository, so the file could not be regenerated. Keep them when it is.
+
+// SaveAiProjectTrigger performs POST /{version}/ai/triggers (scope: project).
+//
+// Create or update a trigger on an AI project event: "trigger" with "type":
+// "Ai", "when" (OnCreditsWarning, OnCreditsExhausted, OnQuotaWarning or
+// OnQuotaExhausted), "name" and "action" ({type, ...}); omit "triggerId" to
+// create (dtos.SaveAiProjectTrigger → dtos.IdResponse).
+func (m *AiModule) SaveAiProjectTrigger(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/triggers",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetAiProjectTriggers performs GET /{version}/ai/triggers (scope: project).
+func (m *AiModule) GetAiProjectTriggers(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/triggers",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetAiProjectTrigger performs GET /{version}/ai/triggers/{id} (scope: project).
+func (m *AiModule) GetAiProjectTrigger(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/triggers/{id}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// EnableAiProjectTrigger performs PATCH /{version}/ai/triggers/{triggerId}/enable (scope: project).
+func (m *AiModule) EnableAiProjectTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"triggerId": triggerId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/triggers/{triggerId}/enable",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DisableAiProjectTrigger performs PATCH /{version}/ai/triggers/{triggerId}/disable (scope: project).
+func (m *AiModule) DisableAiProjectTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"triggerId": triggerId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/triggers/{triggerId}/disable",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteAiProjectTrigger performs DELETE /{version}/ai/triggers/{triggerId} (scope: project).
+func (m *AiModule) DeleteAiProjectTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"triggerId": triggerId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/ai/triggers/{triggerId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
