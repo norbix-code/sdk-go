@@ -216,7 +216,7 @@ or empty for the default identity. `CreateExecutionIdentity` makes one, and
 &out)` reads one trigger in the shape its save takes (a Schema trigger also
 needs `schemaId`), and `Triggers.TestTriggerPreExecuteCode(ctx, map[string]any{
 "code": "return New.status == \"published\";", "triggerType": "Schema",
-"newRecord": `+"`"+`{"status":"published"}`+"`"+`}, &out)` tries a trigger's pre-action
+"newRecord": "{\"status\":\"published\"}"}, &out)` tries a trigger's pre-action
 code on a sample record without saving anything. AI triggers (credits and quota
 events) live on `client.Hub.Ai.SaveAiProjectTrigger` / `GetAiProjectTriggers` /
 `GetAiProjectTrigger` / `EnableAiProjectTrigger` / `DisableAiProjectTrigger` /
