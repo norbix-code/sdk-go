@@ -59,3 +59,29 @@ err = client.Hub.Ai.GetLlmIntegrations(ctx, nil, &llms)
 // Turn an MCP integration off without deleting it.
 err := client.Hub.Ai.DisableMcpIntegration(ctx, "mcp_123", nil, nil)
 ```
+
+## AI triggers
+
+A trigger on an AI project event: `"type": "Ai"`, `"when"` one of
+`OnCreditsWarning`, `OnCreditsExhausted` (the project's AI credits),
+`OnQuotaWarning`, `OnQuotaExhausted` (a user's AI plan quota), and any trigger
+action. Every route is asserted in `norbix/hub/triggers_routes_test.go`.
+
+| Method | Verb | Route |
+|---|---|---|
+| `SaveAiProjectTrigger(ctx, req, out)` | `POST` | `/ai/triggers` |
+| `GetAiProjectTriggers(ctx, req, out)` | `GET` | `/ai/triggers` |
+| `GetAiProjectTrigger(ctx, id, req, out)` | `GET` | `/ai/triggers/{id}` |
+| `EnableAiProjectTrigger(ctx, triggerId, req, out)` | `PATCH` | `/ai/triggers/{triggerId}/enable` |
+| `DisableAiProjectTrigger(ctx, triggerId, req, out)` | `PATCH` | `/ai/triggers/{triggerId}/disable` |
+| `DeleteAiProjectTrigger(ctx, triggerId, req, out)` | `DELETE` | `/ai/triggers/{triggerId}` |
+
+```go
+var saved dtos.IdResponse
+err := client.Hub.Ai.SaveAiProjectTrigger(ctx, map[string]any{
+	"trigger": map[string]any{
+		"type": "Ai", "name": "Credits running out", "when": "OnCreditsWarning",
+		"action": map[string]any{"type": "Email", "integrationId": "int_mail", "templateId": "tpl_credits"},
+	},
+}, &saved)
+```

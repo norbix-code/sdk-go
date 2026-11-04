@@ -80,3 +80,40 @@ func (m *TriggersModule) GetTriggerRun(ctx context.Context, id string, req map[s
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// GetTriggerDefinition performs GET /{version}/triggers/{id}/definition (scope: project).
+//
+// One trigger (id trg_…) in the shape its save takes — read, change, save it
+// back through the module's Save…Trigger. "triggerType" is required; a Schema
+// trigger also needs "schemaId" (dtos.GetTriggerDefinitionResponse: the
+// trigger under "trigger").
+func (m *TriggersModule) GetTriggerDefinition(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/triggers/{id}/definition",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// TestTriggerPreExecuteCode performs POST /{version}/triggers/pre-execute-code/test (scope: project).
+//
+// It runs a trigger's "code" (the preExecuteCode, C# ending in return true /
+// false) for "triggerType" against the sample "newRecord" and "oldRecord"
+// (JSON text), without saving or firing anything, and answers whether the
+// trigger would run and the code's problems (dtos.TestTriggerPreExecuteCodeResponse).
+func (m *TriggersModule) TestTriggerPreExecuteCode(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/triggers/pre-execute-code/test",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
