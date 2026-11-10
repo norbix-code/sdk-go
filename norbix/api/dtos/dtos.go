@@ -328,15 +328,17 @@ const (
 type EmailRecipientField string
 
 const (
-	EmailRecipientFieldTo  EmailRecipientField = "To"
-	EmailRecipientFieldCc  EmailRecipientField = "Cc"
-	EmailRecipientFieldBcc EmailRecipientField = "Bcc"
+	EmailRecipientFieldNotSet EmailRecipientField = "NotSet"
+	EmailRecipientFieldTo     EmailRecipientField = "To"
+	EmailRecipientFieldCc     EmailRecipientField = "Cc"
+	EmailRecipientFieldBcc    EmailRecipientField = "Bcc"
 )
 
 // RecipientRemovalReason enum.
 type RecipientRemovalReason string
 
 const (
+	RecipientRemovalReasonNotSet        RecipientRemovalReason = "NotSet"
 	RecipientRemovalReasonOptedOut      RecipientRemovalReason = "OptedOut"
 	RecipientRemovalReasonCompliance    RecipientRemovalReason = "Compliance"
 	RecipientRemovalReasonUndeliverable RecipientRemovalReason = "Undeliverable"
@@ -791,6 +793,7 @@ type EchoAgentDto struct {
 	InstallationType       string                 `json:"installationType,omitempty"`
 	OnboardingDocsUrl      string                 `json:"onboardingDocsUrl,omitempty"`
 	ToolsUrl               string                 `json:"toolsUrl,omitempty"`
+	OpenApiUrl             string                 `json:"openApiUrl,omitempty"`
 	CliPackage             string                 `json:"cliPackage,omitempty"`
 	CliInstallCommand      string                 `json:"cliInstallCommand,omitempty"`
 	DeviceAuthorizationUrl string                 `json:"deviceAuthorizationUrl,omitempty"`
@@ -1142,8 +1145,6 @@ type TriggerDto struct {
 	Description         string                       `json:"description,omitempty"`
 	IsEnabled           bool                         `json:"isEnabled"`
 	ActivationCode      string                       `json:"activationCode,omitempty"`
-	Order               *float64                     `json:"order,omitempty"`
-	BreakOnError        bool                         `json:"breakOnError"`
 	SavedByAuthId       string                       `json:"savedByAuthId,omitempty"`
 	ExecutionIdentityId string                       `json:"executionIdentityId,omitempty"`
 	ExecutionIdentity   *ExecutionIdentitySummaryDto `json:"executionIdentity,omitempty"`
@@ -1729,6 +1730,10 @@ type CampaignStatsDto struct {
 	Blocked           float64 `json:"blocked,omitempty"`
 	InProgress        float64 `json:"inProgress,omitempty"`
 	RemovedRecipients float64 `json:"removedRecipients,omitempty"`
+	Delivered         float64 `json:"delivered,omitempty"`
+	Bounced           float64 `json:"bounced,omitempty"`
+	Complained        float64 `json:"complained,omitempty"`
+	Rejected          float64 `json:"rejected,omitempty"`
 	SuccessRate       float64 `json:"successRate,omitempty"`
 }
 
@@ -3690,6 +3695,7 @@ type GetAllContacts struct {
 	Statuses      []string `json:"statuses,omitempty"`
 	Types         []string `json:"types,omitempty"`
 	RoleNames     []string `json:"roleNames,omitempty"`
+	Tags          []string `json:"tags,omitempty"`
 }
 
 // MergeContactsRequest DTO.
