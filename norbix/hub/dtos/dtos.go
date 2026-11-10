@@ -780,6 +780,14 @@ const (
 	PermissionEffectDeny  PermissionEffect = "Deny"
 )
 
+// ProjectHealthSeverity enum.
+type ProjectHealthSeverity string
+
+const (
+	ProjectHealthSeverityWarning ProjectHealthSeverity = "Warning"
+	ProjectHealthSeverityError   ProjectHealthSeverity = "Error"
+)
+
 // ApplicationModule enum.
 type ApplicationModule string
 
@@ -1031,15 +1039,17 @@ const (
 type EmailRecipientField string
 
 const (
-	EmailRecipientFieldTo  EmailRecipientField = "To"
-	EmailRecipientFieldCc  EmailRecipientField = "Cc"
-	EmailRecipientFieldBcc EmailRecipientField = "Bcc"
+	EmailRecipientFieldNotSet EmailRecipientField = "NotSet"
+	EmailRecipientFieldTo     EmailRecipientField = "To"
+	EmailRecipientFieldCc     EmailRecipientField = "Cc"
+	EmailRecipientFieldBcc    EmailRecipientField = "Bcc"
 )
 
 // RecipientRemovalReason enum.
 type RecipientRemovalReason string
 
 const (
+	RecipientRemovalReasonNotSet        RecipientRemovalReason = "NotSet"
 	RecipientRemovalReasonOptedOut      RecipientRemovalReason = "OptedOut"
 	RecipientRemovalReasonCompliance    RecipientRemovalReason = "Compliance"
 	RecipientRemovalReasonUndeliverable RecipientRemovalReason = "Undeliverable"
@@ -1151,18 +1161,19 @@ type SmtpEmailIntegrationRequest struct {
 // AwsSesEmailIntegrationRequest DTO.
 type AwsSesEmailIntegrationRequest struct {
 	EmailIntegrationRequest
-	Provider              EmailProvider `json:"provider,omitempty"`
-	AuthMode              CloudAuthMode `json:"authMode,omitempty"`
-	AwsRegion             string        `json:"awsRegion,omitempty"`
-	EmailIdentityArn      string        `json:"emailIdentityArn,omitempty"`
-	ConfigurationSet      string        `json:"configurationSet,omitempty"`
-	RoleArn               string        `json:"roleArn,omitempty"`
-	ExternalId            string        `json:"externalId,omitempty"`
-	AccessKey             string        `json:"accessKey,omitempty"`
-	SecretKey             string        `json:"secretKey,omitempty"`
-	AcceptKeyRisk         *bool         `json:"acceptKeyRisk,omitempty"`
-	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
-	SnsTopicArn           string        `json:"snsTopicArn,omitempty"`
+	Provider               EmailProvider `json:"provider,omitempty"`
+	AuthMode               CloudAuthMode `json:"authMode,omitempty"`
+	AwsRegion              string        `json:"awsRegion,omitempty"`
+	EmailIdentityArn       string        `json:"emailIdentityArn,omitempty"`
+	ConfigurationSet       string        `json:"configurationSet,omitempty"`
+	RoleArn                string        `json:"roleArn,omitempty"`
+	ExternalId             string        `json:"externalId,omitempty"`
+	AccessKey              string        `json:"accessKey,omitempty"`
+	SecretKey              string        `json:"secretKey,omitempty"`
+	AcceptKeyRisk          *bool         `json:"acceptKeyRisk,omitempty"`
+	DeliveryEventsEnabled  *bool         `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn            string        `json:"snsTopicArn,omitempty"`
+	DeliveryEventsQueueUrl string        `json:"deliveryEventsQueueUrl,omitempty"`
 }
 
 // SendGridEmailIntegrationRequest DTO.
@@ -1289,8 +1300,6 @@ type SaveTriggerRequest struct {
 	Description         string            `json:"description,omitempty"`
 	IsEnabled           bool              `json:"isEnabled"`
 	PreExecuteCode      string            `json:"preExecuteCode,omitempty"`
-	Order               *float64          `json:"order,omitempty"`
-	BreakOnError        bool              `json:"breakOnError"`
 	Action              *TriggerActionDto `json:"action,omitempty"`
 	ExecutionIdentityId string            `json:"executionIdentityId,omitempty"`
 }
@@ -1341,6 +1350,8 @@ type MongoDbConnectionStringDatabaseIntegrationRequest struct {
 	DatabaseIntegrationRequest
 	Provider         DatabaseProvider `json:"provider,omitempty"`
 	DatabaseName     string           `json:"databaseName,omitempty"`
+	AuthMode         CloudAuthMode    `json:"authMode,omitempty"`
+	Audience         string           `json:"audience,omitempty"`
 	ConnectionString string           `json:"connectionString,omitempty"`
 }
 
@@ -1534,7 +1545,6 @@ type DataDogLoggingIntegrationRequest struct {
 	Provider    LoggingProvider `json:"provider,omitempty"`
 	Site        string          `json:"site,omitempty"`
 	ServiceName string          `json:"serviceName,omitempty"`
-	Environment string          `json:"environment,omitempty"`
 	ApiKey      string          `json:"apiKey,omitempty"`
 }
 
@@ -3166,7 +3176,6 @@ type DataDogLoggingIntegrationDto struct {
 	LoggingIntegrationDto
 	Site        string `json:"site,omitempty"`
 	ServiceName string `json:"serviceName,omitempty"`
-	Environment string `json:"environment,omitempty"`
 }
 
 // ElasticSearchLoggingIntegrationDto DTO.
@@ -3331,7 +3340,10 @@ type DatabaseIntegrationDto struct {
 // MongoDbConnectionStringIntegrationDto DTO.
 type MongoDbConnectionStringIntegrationDto struct {
 	DatabaseIntegrationDto
-	DatabaseName string `json:"databaseName,omitempty"`
+	DatabaseName  string        `json:"databaseName,omitempty"`
+	AuthMode      CloudAuthMode `json:"authMode,omitempty"`
+	Audience      string        `json:"audience,omitempty"`
+	ProjectViewId string        `json:"projectViewId,omitempty"`
 }
 
 // MongoDbAtlasFlexManagedIntegrationDto DTO.
@@ -3486,11 +3498,12 @@ type EmailIntegrationDto struct {
 // AwsSesEmailIntegrationDto DTO.
 type AwsSesEmailIntegrationDto struct {
 	EmailIntegrationDto
-	Region                string `json:"region,omitempty"`
-	IdentityArn           string `json:"identityArn,omitempty"`
-	ConfigurationSetName  string `json:"configurationSetName,omitempty"`
-	DeliveryEventsEnabled *bool  `json:"deliveryEventsEnabled,omitempty"`
-	SnsTopicArn           string `json:"snsTopicArn,omitempty"`
+	Region                 string `json:"region,omitempty"`
+	IdentityArn            string `json:"identityArn,omitempty"`
+	ConfigurationSetName   string `json:"configurationSetName,omitempty"`
+	DeliveryEventsEnabled  *bool  `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn            string `json:"snsTopicArn,omitempty"`
+	DeliveryEventsQueueUrl string `json:"deliveryEventsQueueUrl,omitempty"`
 }
 
 // AwsKeylessEmailIntegrationDto DTO.
@@ -4556,6 +4569,7 @@ type ProjectAiAssistantRequestBase struct {
 type TeamMemberRoleInput struct {
 	RoleId       string   `json:"roleId,omitempty"`
 	Environments []string `json:"environments,omitempty"`
+	Projects     []string `json:"projects,omitempty"`
 }
 
 // AiProjectRoleIdsDto DTO.
@@ -4887,6 +4901,7 @@ type EchoAgentDto struct {
 	InstallationType       string                 `json:"installationType,omitempty"`
 	OnboardingDocsUrl      string                 `json:"onboardingDocsUrl,omitempty"`
 	ToolsUrl               string                 `json:"toolsUrl,omitempty"`
+	OpenApiUrl             string                 `json:"openApiUrl,omitempty"`
 	CliPackage             string                 `json:"cliPackage,omitempty"`
 	CliInstallCommand      string                 `json:"cliInstallCommand,omitempty"`
 	DeviceAuthorizationUrl string                 `json:"deviceAuthorizationUrl,omitempty"`
@@ -5342,8 +5357,6 @@ type TriggerDto struct {
 	Description         string                       `json:"description,omitempty"`
 	IsEnabled           bool                         `json:"isEnabled"`
 	ActivationCode      string                       `json:"activationCode,omitempty"`
-	Order               *float64                     `json:"order,omitempty"`
-	BreakOnError        bool                         `json:"breakOnError"`
 	SavedByAuthId       string                       `json:"savedByAuthId,omitempty"`
 	ExecutionIdentityId string                       `json:"executionIdentityId,omitempty"`
 	ExecutionIdentity   *ExecutionIdentitySummaryDto `json:"executionIdentity,omitempty"`
@@ -5430,10 +5443,18 @@ type MembershipDto struct {
 	RequireEmailValidation bool                    `json:"requireEmailValidation"`
 }
 
+// LogSettingsDto DTO.
+type LogSettingsDto struct {
+	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs"`
+	SkipHttpBodyMeta       bool `json:"skipHttpBodyMeta"`
+	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled"`
+}
+
 // LoggingDto DTO.
 type LoggingDto struct {
-	IsEnabled     bool `json:"isEnabled"`
-	IsEstablished bool `json:"isEstablished"`
+	IsEnabled     bool            `json:"isEnabled"`
+	IsEstablished bool            `json:"isEstablished"`
+	Settings      *LogSettingsDto `json:"settings,omitempty"`
 }
 
 // ServerEventsDto DTO.
@@ -5568,6 +5589,45 @@ type ProjectListItemDto struct {
 	AdditionalRegions []*ProjectRegionDto `json:"additionalRegions,omitempty"`
 	ModulesCount      float64             `json:"modulesCount,omitempty"`
 	UsersCount        float64             `json:"usersCount,omitempty"`
+}
+
+// ProjectHealthWarningDto DTO.
+type ProjectHealthWarningDto struct {
+	Code     string                `json:"code,omitempty"`
+	Severity ProjectHealthSeverity `json:"severity,omitempty"`
+	Module   ApplicationModule     `json:"module,omitempty"`
+	Title    string                `json:"title,omitempty"`
+	Detail   string                `json:"detail,omitempty"`
+	FixPath  string                `json:"fixPath,omitempty"`
+	ItemId   string                `json:"itemId,omitempty"`
+}
+
+// ProjectHealthStatsDto DTO.
+type ProjectHealthStatsDto struct {
+	UsersTotal          *float64 `json:"usersTotal,omitempty"`
+	UsersNew30d         *float64 `json:"usersNew30d,omitempty"`
+	UsersNewPrev30d     *float64 `json:"usersNewPrev30d,omitempty"`
+	EmailsSent30d       *float64 `json:"emailsSent30d,omitempty"`
+	EmailsSentPrev30d   *float64 `json:"emailsSentPrev30d,omitempty"`
+	EmailsFailed30d     *float64 `json:"emailsFailed30d,omitempty"`
+	EmailsFailedPrev30d *float64 `json:"emailsFailedPrev30d,omitempty"`
+	ApiCallsThisMonth   *float64 `json:"apiCallsThisMonth,omitempty"`
+	ApiCallsPrevMonth   *float64 `json:"apiCallsPrevMonth,omitempty"`
+}
+
+// ProjectHealthSkippedCheckDto DTO.
+type ProjectHealthSkippedCheckDto struct {
+	Check  string `json:"check,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
+// ProjectHealthDto DTO.
+type ProjectHealthDto struct {
+	CheckedAtUtc  string                          `json:"checkedAtUtc,omitempty"`
+	Env           string                          `json:"env,omitempty"`
+	Warnings      []*ProjectHealthWarningDto      `json:"warnings,omitempty"`
+	Stats         *ProjectHealthStatsDto          `json:"stats,omitempty"`
+	SkippedChecks []*ProjectHealthSkippedCheckDto `json:"skippedChecks,omitempty"`
 }
 
 // AiCreditPackCheckoutDto DTO.
@@ -5714,11 +5774,12 @@ type AccountTeamRoleDto struct {
 
 // TeamInvitationDto DTO.
 type TeamInvitationDto struct {
-	Id        string   `json:"id,omitempty"`
-	Email     string   `json:"email,omitempty"`
-	Roles     []string `json:"roles,omitempty"`
-	SentOn    string   `json:"sentOn,omitempty"`
-	ExpiresOn string   `json:"expiresOn,omitempty"`
+	Id           string              `json:"id,omitempty"`
+	Email        string              `json:"email,omitempty"`
+	Roles        []string            `json:"roles,omitempty"`
+	RoleProjects map[string][]string `json:"roleProjects,omitempty"`
+	SentOn       string              `json:"sentOn,omitempty"`
+	ExpiresOn    string              `json:"expiresOn,omitempty"`
 }
 
 // AccountPasskeyListItemDto DTO.
@@ -5928,8 +5989,6 @@ type TriggerProjectionList struct {
 	ActionType          TriggerActionType `json:"actionType,omitempty"`
 	HasPreExecuteCode   bool              `json:"hasPreExecuteCode"`
 	IsEnabled           bool              `json:"isEnabled"`
-	Order               *float64          `json:"order,omitempty"`
-	BreakOnError        bool              `json:"breakOnError"`
 	ExecutionIdentityId string            `json:"executionIdentityId,omitempty"`
 }
 
@@ -6902,6 +6961,8 @@ type PushIntegrationListProjection struct {
 type PushDeviceListProjection struct {
 	Id               string   `json:"id,omitempty"`
 	UserId           string   `json:"userId,omitempty"`
+	UserDisplayName  string   `json:"userDisplayName,omitempty"`
+	UserEmail        string   `json:"userEmail,omitempty"`
 	DeviceOs         string   `json:"deviceOs,omitempty"`
 	Token            string   `json:"token,omitempty"`
 	Brand            string   `json:"brand,omitempty"`
@@ -7038,6 +7099,7 @@ type PaymentsIntegrationListProjection struct {
 type LoggingIntegrationListProjection struct {
 	IntegrationListProjection
 	Provider LoggingProvider `json:"provider,omitempty"`
+	Env      string          `json:"env,omitempty"`
 }
 
 // AgentOnboardingSnippet DTO.
@@ -7779,6 +7841,10 @@ type CampaignStatsDto struct {
 	Blocked           float64 `json:"blocked,omitempty"`
 	InProgress        float64 `json:"inProgress,omitempty"`
 	RemovedRecipients float64 `json:"removedRecipients,omitempty"`
+	Delivered         float64 `json:"delivered,omitempty"`
+	Bounced           float64 `json:"bounced,omitempty"`
+	Complained        float64 `json:"complained,omitempty"`
+	Rejected          float64 `json:"rejected,omitempty"`
 	SuccessRate       float64 `json:"successRate,omitempty"`
 }
 
@@ -8309,6 +8375,12 @@ type GetAccountRegionsResponse struct {
 	Items []*ProjectRegionDto `json:"items,omitempty"`
 }
 
+// GetProjectHealthResponse DTO.
+type GetProjectHealthResponse struct {
+	ResponseBase
+	Item *ProjectHealthDto `json:"item,omitempty"`
+}
+
 // WaitForProjectActiveResponse DTO.
 type WaitForProjectActiveResponse struct {
 	ResponseBase
@@ -8794,12 +8866,6 @@ type GetDatabaseIntegrationsResponse struct {
 type GetAllowedFlexTiersResponse struct {
 	ResponseBase
 	Tiers []*FlexTierDto `json:"tiers,omitempty"`
-}
-
-// RevealManagedFlexConnectionStringResponse DTO.
-type RevealManagedFlexConnectionStringResponse struct {
-	ResponseBase
-	ConnectionString string `json:"connectionString,omitempty"`
 }
 
 // TestDatabaseIntegrationResponse DTO.
@@ -11035,6 +11101,12 @@ type GetAccountRegions struct {
 	RequestBase
 }
 
+// GetProjectHealth DTO.
+type GetProjectHealth struct {
+	CodeMashRequestBase
+	Refresh bool `json:"refresh"`
+}
+
 // WaitForProjectActiveRequest DTO.
 type WaitForProjectActiveRequest struct {
 	CodeMashRequestBase
@@ -11275,11 +11347,12 @@ type ChangeTeamMemberPassword struct {
 // CreateTeamMember DTO.
 type CreateTeamMember struct {
 	RequestBase
-	Email          string   `json:"email,omitempty"`
-	DisplayName    string   `json:"displayName,omitempty"`
-	Password       string   `json:"password,omitempty"`
-	Roles          []string `json:"roles,omitempty"`
-	SendInvitation bool     `json:"sendInvitation"`
+	Email          string              `json:"email,omitempty"`
+	DisplayName    string              `json:"displayName,omitempty"`
+	Password       string              `json:"password,omitempty"`
+	Roles          []string            `json:"roles,omitempty"`
+	RoleProjects   map[string][]string `json:"roleProjects,omitempty"`
+	SendInvitation bool                `json:"sendInvitation"`
 }
 
 // CreateAccountPolicy DTO.
@@ -11347,6 +11420,14 @@ type SetTeamMemberRoleEnvironmentsRequest struct {
 	Environments []string `json:"environments,omitempty"`
 }
 
+// SetTeamMemberRoleProjectsRequest DTO.
+type SetTeamMemberRoleProjectsRequest struct {
+	RequestBase
+	MemberId string   `json:"memberId,omitempty"`
+	RoleId   string   `json:"roleId,omitempty"`
+	Projects []string `json:"projects,omitempty"`
+}
+
 // GetAccountTeamRoles DTO.
 type GetAccountTeamRoles struct {
 	RequestBase
@@ -11355,8 +11436,9 @@ type GetAccountTeamRoles struct {
 // SendInviteToTeamMember DTO.
 type SendInviteToTeamMember struct {
 	RequestBase
-	Email string   `json:"email,omitempty"`
-	Roles []string `json:"roles,omitempty"`
+	Email        string              `json:"email,omitempty"`
+	Roles        []string            `json:"roles,omitempty"`
+	RoleProjects map[string][]string `json:"roleProjects,omitempty"`
 }
 
 // GetAccountTeamInvitations DTO.
@@ -12307,12 +12389,6 @@ type GetDatabaseIntegrations struct {
 // GetAllowedFlexTiers DTO.
 type GetAllowedFlexTiers struct {
 	CodeMashRequestBase
-}
-
-// RevealManagedFlexConnectionString DTO.
-type RevealManagedFlexConnectionString struct {
-	CodeMashRequestBase
-	Id string `json:"id,omitempty"`
 }
 
 // SaveDatabaseIntegration DTO.
@@ -13572,6 +13648,7 @@ type SaveLogSettings struct {
 // GetAgentOnboardingRequest DTO.
 type GetAgentOnboardingRequest struct {
 	RequestBase
+	ProjectId string `json:"projectId,omitempty"`
 }
 
 // GetAiContextRequest DTO.
@@ -14192,6 +14269,7 @@ type GetAllContacts struct {
 	Statuses      []string `json:"statuses,omitempty"`
 	Types         []string `json:"types,omitempty"`
 	RoleNames     []string `json:"roleNames,omitempty"`
+	Tags          []string `json:"tags,omitempty"`
 }
 
 // MergeContactsRequest DTO.
