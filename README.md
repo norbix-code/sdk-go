@@ -178,6 +178,29 @@ it as `out`.
 
 `c.Hub.Notifications.StopEmailCampaign`, `GetEmailDisableDependencies` and `CheckEmailIntegrationDomainHealth` cover the Email campaign, module and integration checks; `c.Hub.Email.GetEmailPreferencesByLink(ctx, map[string]any{"token": t}, &out)` reads the preferences behind a signed unsubscribe link and needs no API key. To read one campaign message use `GetEmailCampaignBatchNotification(ctx, campaignID, batchID, notificationID, …)` (the `…/messages/{id}` methods were removed with their gateway route).
 
+### Email: know who clicked (click ids)
+
+`c.Hub.Notifications.UpdateEmailClickTracking(ctx, map[string]any{"enabled": true}, nil)` switches the
+project's email click ids on (off by default; the current value is `dtos.ProjectDto.EmailClickTracking`).
+Every web link of a marketing email then carries `?nblid=<id>`. Clicks come back only from sites you own:
+your page, server logs or analytics hand the value back with `RecordEmailClicks`, 1 to 500 clicks a call:
+
+```go
+var out dtos.RecordEmailClicksResponse
+err := client.Hub.Notifications.RecordEmailClicks(ctx, map[string]any{
+	"clicks": []map[string]any{
+		{"nblid": nblid, "url": pageURL, "clickedAt": "2026-11-11T10:00:00Z", "userAgent": ua},
+	},
+}, &out)
+// out.Recorded, out.Duplicates, out.Flagged, out.Rejected, and out.Clicks[i]:
+// Status recorded | duplicate | rejected, Reason not-valid | not-found | in-future,
+// Flag suspected-scanner (FlagReason user-agent | too-soon | burst), CampaignId, NotificationId, LinkIndex, To.
+```
+
+The same click (nblid + url + clickedAt) sent again answers `duplicate`. A click id that is not valid is a
+`rejected` row, not an error; 0 or more than 500 clicks is `CM-ERRORS-EMAILS-030`. A flagged click is kept
+and also shows on the notification's status history (`dtos.NotificationStatusChangeEntryDto.Flag`, `FlagReason`).
+
 ### Notifications: provider id, languages, triggers that need attention
 
 The gateway now **requires the provider integration id** when it creates a
