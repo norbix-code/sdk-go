@@ -4769,6 +4769,14 @@ type TranslationDto struct {
 	Content  string `json:"content,omitempty"`
 }
 
+// EmailClickDto DTO.
+type EmailClickDto struct {
+	Nblid     string `json:"nblid,omitempty"`
+	Url       string `json:"url,omitempty"`
+	ClickedAt string `json:"clickedAt,omitempty"`
+	UserAgent string `json:"userAgent,omitempty"`
+}
+
 // SaveSmsTemplate DTO.
 type SaveSmsTemplate struct {
 	CodeMashRequestBase
@@ -5611,6 +5619,7 @@ type ProjectDto struct {
 	Brand                         *ProjectBrandDto                          `json:"brand,omitempty"`
 	NotificationSettings          *NotificationSettingsDto                  `json:"notificationSettings,omitempty"`
 	AllowedOrigins                []string                                  `json:"allowedOrigins,omitempty"`
+	EmailClickTracking            bool                                      `json:"emailClickTracking"`
 	EnvironmentAdminUrls          []*ProjectEnvironmentAdminUrlDto          `json:"environmentAdminUrls,omitempty"`
 	DefaultExecutionIdentities    []*ProjectEnvironmentExecutionIdentityDto `json:"defaultExecutionIdentities,omitempty"`
 	ExposeBrandToAdminPortal      bool                                      `json:"exposeBrandToAdminPortal"`
@@ -6620,6 +6629,19 @@ type EmailLinkPreferencesDto struct {
 	EmailAddress              string   `json:"emailAddress,omitempty"`
 	UnsubscribedFromMarketing bool     `json:"unsubscribedFromMarketing"`
 	BlockReasons              []string `json:"blockReasons,omitempty"`
+}
+
+// EmailClickResultDto DTO.
+type EmailClickResultDto struct {
+	Index          float64  `json:"index,omitempty"`
+	Status         string   `json:"status,omitempty"`
+	Reason         string   `json:"reason,omitempty"`
+	Flag           string   `json:"flag,omitempty"`
+	FlagReason     string   `json:"flagReason,omitempty"`
+	CampaignId     string   `json:"campaignId,omitempty"`
+	NotificationId string   `json:"notificationId,omitempty"`
+	LinkIndex      *float64 `json:"linkIndex,omitempty"`
+	To             []string `json:"to,omitempty"`
 }
 
 // SmsTemplateListProjection DTO.
@@ -7831,11 +7853,13 @@ type EmailCampaignBatchDto struct {
 
 // NotificationStatusChangeEntryDto DTO.
 type NotificationStatusChangeEntryDto struct {
-	Time     string                     `json:"time,omitempty"`
-	Status   CampaignNotificationStatus `json:"status,omitempty"`
-	SourceId string                     `json:"sourceId,omitempty"`
-	Errors   []*ErrorDto                `json:"errors,omitempty"`
-	Tags     []string                   `json:"tags,omitempty"`
+	Time       string                     `json:"time,omitempty"`
+	Status     CampaignNotificationStatus `json:"status,omitempty"`
+	SourceId   string                     `json:"sourceId,omitempty"`
+	Errors     []*ErrorDto                `json:"errors,omitempty"`
+	Tags       []string                   `json:"tags,omitempty"`
+	Flag       string                     `json:"flag,omitempty"`
+	FlagReason string                     `json:"flagReason,omitempty"`
 }
 
 // NotificationAttemptDto DTO.
@@ -9145,6 +9169,16 @@ type GetEmailFootersResponse struct {
 type GetEmailPreferencesByLinkResponse struct {
 	ResponseBase
 	Item *EmailLinkPreferencesDto `json:"item,omitempty"`
+}
+
+// RecordEmailClicksResponse DTO.
+type RecordEmailClicksResponse struct {
+	ResponseBase
+	Recorded   float64                `json:"recorded,omitempty"`
+	Duplicates float64                `json:"duplicates,omitempty"`
+	Flagged    float64                `json:"flagged,omitempty"`
+	Rejected   float64                `json:"rejected,omitempty"`
+	Clicks     []*EmailClickResultDto `json:"clicks,omitempty"`
 }
 
 // GetSmsTemplateResponse DTO.
@@ -12793,6 +12827,12 @@ type SaveEmailSignatureRequest struct {
 	Translations []*TranslationDto `json:"translations,omitempty"`
 }
 
+// UpdateEmailClickTracking DTO.
+type UpdateEmailClickTracking struct {
+	CodeMashRequestBase
+	Enabled bool `json:"enabled"`
+}
+
 // GetEmailSettings DTO.
 type GetEmailSettings struct {
 	CodeMashRequestBase
@@ -12912,6 +12952,12 @@ type OneClickUnsubscribeRequest struct {
 type GetEmailPreferencesByLinkRequest struct {
 	RequestBase
 	Token string `json:"token,omitempty"`
+}
+
+// RecordEmailClicksRequest DTO.
+type RecordEmailClicksRequest struct {
+	CodeMashRequestBase
+	Clicks []*EmailClickDto `json:"clicks,omitempty"`
 }
 
 // DisableSms DTO.
