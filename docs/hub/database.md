@@ -380,6 +380,14 @@ delete act on the copy in that environment. `GetSchemaTrigger` returns
 | `TestDatabaseIntegration(ctx, req, out)` | `POST` | `/database/integrations/test` |
 | `RevealManagedFlexConnectionString(ctx, id, req, out)` | `GET` | `/database/integrations/{Id}/connection-string` |
 
+A Norbix-managed Atlas database
+(`dtos.MongoDbAtlasFlexManagedDatabaseIntegrationRequest`) takes two optional
+fields on save: `flexClusterId` puts the database on a cluster the account
+already has, and `clusterDisplayName` names a new cluster. List the clusters with `client.Hub.Account.GetFlexClusters`
+([Account and projects](account.md#subscription-bundles-and-flex-clusters)).
+The saved integration (`dtos.MongoDbAtlasFlexManagedIntegrationDto`) carries
+its `FlexClusterId`.
+
 **Saved aggregates**
 
 | method | verb | path |

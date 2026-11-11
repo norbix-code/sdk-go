@@ -83,6 +83,72 @@ func (m *AccountModule) GetStripeBillingPortalUrl(ctx context.Context, req map[s
 	}, out)
 }
 
+// GetManagedServiceBundles performs GET /{version}/account/stripe/bundles (scope: project).
+//
+// It lists the Managed Service bundles (Starter, Growth, Scale) with the
+// project limit and the monthly and annual price of each. Amounts are in
+// minor units (cents). Decode into dtos.GetManagedServiceBundlesResponse.
+func (m *AccountModule) GetManagedServiceBundles(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/stripe/bundles",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ChangeManagedServiceBundle performs POST /{version}/account/stripe/change-bundle (scope: project).
+//
+// It moves the account to another bundle or billing period. Send "bundle"
+// (Starter, Growth, Scale) and "billingPeriod" (Monthly, Annual). The gateway
+// refuses with CM-ERRORS-ACCOUNT-023 when the account has more enabled
+// projects than the new bundle allows.
+func (m *AccountModule) ChangeManagedServiceBundle(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/stripe/change-bundle",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetFlexClusters performs GET /{version}/account/flex-clusters (scope: project).
+//
+// It lists the account's Norbix-managed Atlas clusters with their databases
+// and usage, and says whether a new cluster can be created. Decode into
+// dtos.GetFlexClustersResponse.
+func (m *AccountModule) GetFlexClusters(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/flex-clusters",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpgradeFlexCluster performs POST /{version}/account/flex-clusters/{flexClusterId}/upgrade (scope: project).
+//
+// It queues the upgrade of a cluster to a bigger tier. Send "tierCode": "M10".
+func (m *AccountModule) UpgradeFlexCluster(ctx context.Context, flexClusterId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"flexClusterId": flexClusterId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/flex-clusters/{flexClusterId}/upgrade",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // CreateTeamMemberFromInvitation performs POST /{version}/account/team/member (scope: unauthenticated).
 func (m *AccountModule) CreateTeamMemberFromInvitation(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
