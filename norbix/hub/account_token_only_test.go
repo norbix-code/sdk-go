@@ -76,6 +76,20 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.GetStripeBillingPortalUrl(ctx, body, nil)
 			}},
+		{"GetManagedServiceBundles", http.MethodGet, "/v2/account/stripe/bundles",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.GetManagedServiceBundles(ctx, body, nil)
+			}},
+		{"ChangeManagedServiceBundle", http.MethodPost, "/v2/account/stripe/change-bundle",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.ChangeManagedServiceBundle(ctx, body, nil)
+			}},
+		{"GetFlexClusters", http.MethodGet, "/v2/account/flex-clusters",
+			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetFlexClusters(ctx, body, nil) }},
+		{"UpgradeFlexCluster", http.MethodPost, "/v2/account/flex-clusters/flexClusterId_1/upgrade",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.UpgradeFlexCluster(ctx, "flexClusterId_1", body, nil)
+			}},
 		{"DeleteNotificationsGroup", http.MethodDelete, "/v2/account/projects/projectId_1/notifications/settings/group",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.DeleteNotificationsGroup(ctx, "projectId_1", body, nil)

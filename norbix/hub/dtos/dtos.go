@@ -611,6 +611,23 @@ const (
 	ResourceKindDtoIntegration     ResourceKindDto = "integration"
 )
 
+// ManagedServiceBundle enum.
+type ManagedServiceBundle string
+
+const (
+	ManagedServiceBundleStarter ManagedServiceBundle = "Starter"
+	ManagedServiceBundleGrowth  ManagedServiceBundle = "Growth"
+	ManagedServiceBundleScale   ManagedServiceBundle = "Scale"
+)
+
+// SubscriptionBillingPeriod enum.
+type SubscriptionBillingPeriod string
+
+const (
+	SubscriptionBillingPeriodMonthly SubscriptionBillingPeriod = "Monthly"
+	SubscriptionBillingPeriodAnnual  SubscriptionBillingPeriod = "Annual"
+)
+
 // SubscriptionType enum.
 type SubscriptionType string
 
@@ -1358,8 +1375,10 @@ type MongoDbConnectionStringDatabaseIntegrationRequest struct {
 // MongoDbAtlasFlexManagedDatabaseIntegrationRequest DTO.
 type MongoDbAtlasFlexManagedDatabaseIntegrationRequest struct {
 	DatabaseIntegrationRequest
-	Provider         DatabaseProvider `json:"provider,omitempty"`
-	NorbixRegionCode string           `json:"norbixRegionCode,omitempty"`
+	Provider           DatabaseProvider `json:"provider,omitempty"`
+	NorbixRegionCode   string           `json:"norbixRegionCode,omitempty"`
+	FlexClusterId      string           `json:"flexClusterId,omitempty"`
+	ClusterDisplayName string           `json:"clusterDisplayName,omitempty"`
 }
 
 // FilesIntegrationRequest DTO.
@@ -3355,6 +3374,7 @@ type MongoDbAtlasFlexManagedIntegrationDto struct {
 	Status           IntegrationStatus `json:"status,omitempty"`
 	AtlasProjectId   string            `json:"atlasProjectId,omitempty"`
 	AtlasClusterName string            `json:"atlasClusterName,omitempty"`
+	FlexClusterId    string            `json:"flexClusterId,omitempty"`
 	FailureReason    string            `json:"failureReason,omitempty"`
 }
 
@@ -5052,6 +5072,37 @@ type TriggerActivationTestProblem struct {
 	Column  float64 `json:"column,omitempty"`
 }
 
+// FlexClusterDatabaseDto DTO.
+type FlexClusterDatabaseDto struct {
+	ProjectId       string `json:"projectId,omitempty"`
+	ProjectName     string `json:"projectName,omitempty"`
+	Env             string `json:"env,omitempty"`
+	IntegrationId   string `json:"integrationId,omitempty"`
+	IntegrationName string `json:"integrationName,omitempty"`
+	DatabaseName    string `json:"databaseName,omitempty"`
+}
+
+// FlexClusterUsageDto DTO.
+type FlexClusterUsageDto struct {
+	DatabaseCount       float64  `json:"databaseCount,omitempty"`
+	StorageBytes        *float64 `json:"storageBytes,omitempty"`
+	Connections         *float64 `json:"connections,omitempty"`
+	OperationsPerSecond *float64 `json:"operationsPerSecond,omitempty"`
+}
+
+// FlexClusterDto DTO.
+type FlexClusterDto struct {
+	Id               string                    `json:"id,omitempty"`
+	DisplayName      string                    `json:"displayName,omitempty"`
+	AtlasClusterName string                    `json:"atlasClusterName,omitempty"`
+	NorbixRegionCode string                    `json:"norbixRegionCode,omitempty"`
+	TierCode         string                    `json:"tierCode,omitempty"`
+	Status           string                    `json:"status,omitempty"`
+	Databases        []*FlexClusterDatabaseDto `json:"databases,omitempty"`
+	Usage            *FlexClusterUsageDto      `json:"usage,omitempty"`
+	NearLimits       []string                  `json:"nearLimits,omitempty"`
+}
+
 // AccountOwnerDto DTO.
 type AccountOwnerDto struct {
 	Email           string `json:"email,omitempty"`
@@ -5063,19 +5114,38 @@ type AccountOwnerDto struct {
 
 // AccountStatusDto DTO.
 type AccountStatusDto struct {
-	AccountId          string        `json:"accountId,omitempty"`
-	AccountIdAsGuid    string        `json:"accountIdAsGuid,omitempty"`
-	UserId             string        `json:"userId,omitempty"`
-	LoggedInUserId     string        `json:"loggedInUserId,omitempty"`
-	LoggedInUserEmail  string        `json:"loggedInUserEmail,omitempty"`
-	Status             AccountStatus `json:"status,omitempty"`
-	ProjectCap         float64       `json:"projectCap,omitempty"`
-	Permissions        []string      `json:"permissions,omitempty"`
-	Roles              []string      `json:"roles,omitempty"`
-	AllowedProjects    []string      `json:"allowedProjects,omitempty"`
-	TrialWasIssued     bool          `json:"trialWasIssued"`
-	EmailVerified      bool          `json:"emailVerified"`
-	JoinedByInvitation bool          `json:"joinedByInvitation"`
+	AccountId          string                    `json:"accountId,omitempty"`
+	AccountIdAsGuid    string                    `json:"accountIdAsGuid,omitempty"`
+	UserId             string                    `json:"userId,omitempty"`
+	LoggedInUserId     string                    `json:"loggedInUserId,omitempty"`
+	LoggedInUserEmail  string                    `json:"loggedInUserEmail,omitempty"`
+	Status             AccountStatus             `json:"status,omitempty"`
+	ProjectCap         float64                   `json:"projectCap,omitempty"`
+	Permissions        []string                  `json:"permissions,omitempty"`
+	Roles              []string                  `json:"roles,omitempty"`
+	AllowedProjects    []string                  `json:"allowedProjects,omitempty"`
+	TrialWasIssued     bool                      `json:"trialWasIssued"`
+	Bundle             ManagedServiceBundle      `json:"bundle,omitempty"`
+	BillingPeriod      SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+	IsTrial            bool                      `json:"isTrial"`
+	RenewsOn           string                    `json:"renewsOn,omitempty"`
+	EnabledProjects    float64                   `json:"enabledProjects,omitempty"`
+	EmailVerified      bool                      `json:"emailVerified"`
+	JoinedByInvitation bool                      `json:"joinedByInvitation"`
+}
+
+// BundlePriceDto DTO.
+type BundlePriceDto struct {
+	Amount   float64 `json:"amount,omitempty"`
+	Currency string  `json:"currency,omitempty"`
+}
+
+// ManagedServiceBundleDto DTO.
+type ManagedServiceBundleDto struct {
+	Bundle     ManagedServiceBundle `json:"bundle,omitempty"`
+	ProjectCap float64              `json:"projectCap,omitempty"`
+	Monthly    *BundlePriceDto      `json:"monthly,omitempty"`
+	Annual     *BundlePriceDto      `json:"annual,omitempty"`
 }
 
 // UsageBillingClusterChargeDto DTO.
@@ -5843,8 +5913,8 @@ type CodeMashSubscriptionDto struct {
 // LicenseDto DTO.
 type LicenseDto struct {
 	CodeMashSubscriptionDto
-	IsEnterprise bool    `json:"isEnterprise"`
-	ProjectCap   float64 `json:"projectCap,omitempty"`
+	IsEnterprise bool     `json:"isEnterprise"`
+	ProjectCap   *float64 `json:"projectCap,omitempty"`
 }
 
 // LicenseHeartbeatVerdictDto DTO.
@@ -5862,13 +5932,13 @@ type LicenseHeartbeatVerdictDto struct {
 
 // InstallationLicenseDetailsDto DTO.
 type InstallationLicenseDetailsDto struct {
-	Domain    string  `json:"domain,omitempty"`
-	AccountId string  `json:"accountId,omitempty"`
-	Email     string  `json:"email,omitempty"`
-	Release   string  `json:"release,omitempty"`
-	Expire    float64 `json:"expire,omitempty"`
-	IsTrial   bool    `json:"isTrial"`
-	Cap       float64 `json:"cap,omitempty"`
+	Domain    string   `json:"domain,omitempty"`
+	AccountId string   `json:"accountId,omitempty"`
+	Email     string   `json:"email,omitempty"`
+	Release   string   `json:"release,omitempty"`
+	Expire    float64  `json:"expire,omitempty"`
+	IsTrial   bool     `json:"isTrial"`
+	Cap       *float64 `json:"cap,omitempty"`
 }
 
 // InstallationLicenseStatusDto DTO.
@@ -8292,15 +8362,23 @@ type TestTriggerPreExecuteCodeResponse struct {
 	Problems    []*TriggerActivationTestProblem `json:"problems,omitempty"`
 }
 
-// GetAccountProfileResponse DTO.
-type GetAccountProfileResponse struct {
+// GetFlexClustersResponse DTO.
+type GetFlexClustersResponse struct {
 	ResponseBase
-	Item *AccountOwnerDto `json:"item,omitempty"`
+	Clusters           []*FlexClusterDto `json:"clusters,omitempty"`
+	CanCreateNew       bool              `json:"canCreateNew"`
+	CannotCreateReason string            `json:"cannotCreateReason,omitempty"`
 }
 
 // EmptyResponse DTO.
 type EmptyResponse struct {
 	ResponseBase
+}
+
+// GetAccountProfileResponse DTO.
+type GetAccountProfileResponse struct {
+	ResponseBase
+	Item *AccountOwnerDto `json:"item,omitempty"`
 }
 
 // GetAccountStatusResponse DTO.
@@ -8319,6 +8397,12 @@ type CreateStripeCheckoutSessionResponse struct {
 // GetStripeBillingPortalUrlResponse DTO.
 type GetStripeBillingPortalUrlResponse struct {
 	IdResponse
+}
+
+// GetManagedServiceBundlesResponse DTO.
+type GetManagedServiceBundlesResponse struct {
+	ResponseBase
+	Bundles []*ManagedServiceBundleDto `json:"bundles,omitempty"`
 }
 
 // CreateTeamMemberFromInvitationResponse DTO.
@@ -10911,6 +10995,18 @@ type TestTriggerPreExecuteCode struct {
 	EventName   string      `json:"eventName,omitempty"`
 }
 
+// GetFlexClusters DTO.
+type GetFlexClusters struct {
+	RequestBase
+}
+
+// UpgradeFlexCluster DTO.
+type UpgradeFlexCluster struct {
+	RequestBase
+	FlexClusterId string `json:"flexClusterId,omitempty"`
+	TierCode      string `json:"tierCode,omitempty"`
+}
+
 // GetAccountProfile DTO.
 type GetAccountProfile struct {
 	RequestBase
@@ -10935,14 +11031,22 @@ type GetAccountStatus struct {
 	RequestBase
 }
 
+// ChangeManagedServiceBundle DTO.
+type ChangeManagedServiceBundle struct {
+	RequestBase
+	Bundle        ManagedServiceBundle      `json:"bundle,omitempty"`
+	BillingPeriod SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+}
+
 // CreateStripeCheckoutSession DTO.
 type CreateStripeCheckoutSession struct {
 	RequestBase
-	SubscriptionType    SubscriptionType `json:"subscriptionType,omitempty"`
-	Domain              string           `json:"domain,omitempty"`
-	ProjectCap          float64          `json:"projectCap,omitempty"`
-	NewProjectSessionId string           `json:"newProjectSessionId,omitempty"`
-	ReturnUrl           string           `json:"returnUrl,omitempty"`
+	SubscriptionType    SubscriptionType          `json:"subscriptionType,omitempty"`
+	Bundle              ManagedServiceBundle      `json:"bundle,omitempty"`
+	BillingPeriod       SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+	Domain              string                    `json:"domain,omitempty"`
+	NewProjectSessionId string                    `json:"newProjectSessionId,omitempty"`
+	ReturnUrl           string                    `json:"returnUrl,omitempty"`
 }
 
 // GetStripeBillingPortalUrl DTO.
@@ -10950,6 +11054,11 @@ type GetStripeBillingPortalUrl struct {
 	RequestBase
 	SubscriptionType SubscriptionType `json:"subscriptionType,omitempty"`
 	ReturnUrl        string           `json:"returnUrl,omitempty"`
+}
+
+// GetManagedServiceBundles DTO.
+type GetManagedServiceBundles struct {
+	RequestBase
 }
 
 // CreateTeamMemberFromInvitation DTO.
@@ -13141,9 +13250,11 @@ type GetCodeFunctionQualifiers struct {
 // GetCodeFunctionRuns DTO.
 type GetCodeFunctionRuns struct {
 	CodeMashRequestBase
-	TriggerId string   `json:"triggerId,omitempty"`
-	TaskId    string   `json:"taskId,omitempty"`
-	Limit     *float64 `json:"limit,omitempty"`
+	TriggerId     string   `json:"triggerId,omitempty"`
+	TaskId        string   `json:"taskId,omitempty"`
+	IntegrationId string   `json:"integrationId,omitempty"`
+	FunctionId    string   `json:"functionId,omitempty"`
+	Limit         *float64 `json:"limit,omitempty"`
 }
 
 // InvokeCodeFunction DTO.

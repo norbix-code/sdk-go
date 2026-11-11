@@ -5,7 +5,8 @@
 The project endpoints on the Hub, and the `hub.AccountModule` method that
 calls each one: create and read projects, project settings (name, brand,
 CORS, languages, regions, legal documents), the Admin Portal, project AI
-settings, AI service users and the developer MCP endpoint. The two public
+settings, AI service users, the subscription bundles and Flex clusters, and
+the developer MCP endpoint. The two public
 project routes live on the API as `api.PublicModule`.
 
 Every route here is covered by a test that asserts the verb and the
@@ -257,6 +258,65 @@ err := client.Hub.Account.GetAccountCollaborators(ctx, map[string]any{
     "pageSize":  50,
 }, &team)
 ```
+
+## Subscription, bundles and Flex clusters
+
+The Managed Service is sold as three bundles: `Starter`, `Growth` and `Scale`
+(`dtos.ManagedServiceBundle`), paid `Monthly` or `Annual`
+(`dtos.SubscriptionBillingPeriod`). Each bundle has a limit of enabled
+projects. Tests: `norbix/hub/account_bundles_flex_test.go`.
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `GetAccountStatus(ctx, req, out)` | `GET` | `/account/status` | project |
+| `GetManagedServiceBundles(ctx, req, out)` | `GET` | `/account/stripe/bundles` | project |
+| `CreateStripeCheckoutSession(ctx, req, out)` | `POST` | `/account/stripe/create-checkout-session` | project |
+| `ChangeManagedServiceBundle(ctx, req, out)` | `POST` | `/account/stripe/change-bundle` | project |
+| `GetStripeBillingPortalUrl(ctx, req, out)` | `POST` | `/account/stripe/get-portal-url` | project |
+| `GetFlexClusters(ctx, req, out)` | `GET` | `/account/flex-clusters` | project |
+| `UpgradeFlexCluster(ctx, flexClusterId, req, out)` | `POST` | `/account/flex-clusters/{flexClusterId}/upgrade` | project |
+
+- `GetManagedServiceBundles` lists the three bundles with the project limit
+  (`ProjectCap`) and the `Monthly` and `Annual` price. `Amount` is in minor
+  units (cents), `Currency` is lower case (`"usd"`).
+- `CreateStripeCheckoutSession` for the Managed Service needs `bundle` and
+  `billingPeriod`. It no longer takes `projectCap`.
+- `ChangeManagedServiceBundle` moves the account to another bundle or billing
+  period. The gateway refuses with `CM-ERRORS-ACCOUNT-023` when the account
+  has more enabled projects than the new bundle allows.
+- `GetAccountStatus` now also returns `Bundle`, `BillingPeriod`, `IsTrial`,
+  `RenewsOn` and `EnabledProjects` (`dtos.AccountStatusDto`).
+
+```go
+var bundles dtos.GetManagedServiceBundlesResponse
+err := client.Hub.Account.GetManagedServiceBundles(ctx, nil, &bundles)
+
+err = client.Hub.Account.ChangeManagedServiceBundle(ctx, map[string]any{
+    "bundle":        dtos.ManagedServiceBundleGrowth,
+    "billingPeriod": dtos.SubscriptionBillingPeriodAnnual,
+}, nil)
+```
+
+`GetFlexClusters` lists the account's Norbix-managed Atlas clusters
+(`dtos.FlexClusterDto`): tier (`FLEX` or `M10`), status (`Empty`,
+`Provisioning`, `Active`, `Failed`), the databases on the cluster, its usage
+and the limits it is close to (`NearLimits`). `CanCreateNew` says whether the
+account can add a cluster; when it cannot, `CannotCreateReason` is
+`TrialOneCluster` or `ClusterLimitReached`. `UpgradeFlexCluster` queues the
+upgrade of one cluster to M10.
+
+```go
+var clusters dtos.GetFlexClustersResponse
+err := client.Hub.Account.GetFlexClusters(ctx, nil, &clusters)
+
+err = client.Hub.Account.UpgradeFlexCluster(ctx, clusters.Clusters[0].Id, map[string]any{
+    "tierCode": "M10",
+}, nil)
+```
+
+To put a new managed database on a cluster that already exists, send its id
+as `flexClusterId` when you save the integration; see
+[Database](database.md).
 
 ## Developer MCP endpoint
 
