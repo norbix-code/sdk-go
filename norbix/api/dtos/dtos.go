@@ -2915,10 +2915,11 @@ type GrantContactConsentRequest struct {
 // InviteUserRequest DTO.
 type InviteUserRequest struct {
 	CodeMashRequestBase
-	Email                 string `json:"email,omitempty"`
-	FullName              string `json:"fullName,omitempty"`
-	Salutation            string `json:"salutation,omitempty"`
-	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+	Email                 string   `json:"email,omitempty"`
+	FullName              string   `json:"fullName,omitempty"`
+	Salutation            string   `json:"salutation,omitempty"`
+	Roles                 []string `json:"roles,omitempty"`
+	DatabaseIntegrationId string   `json:"databaseIntegrationId,omitempty"`
 }
 
 // FinishInvitationRequest DTO.
