@@ -1647,11 +1647,13 @@ type EmailCampaignBatchDto struct {
 
 // NotificationStatusChangeEntryDto DTO.
 type NotificationStatusChangeEntryDto struct {
-	Time     string                     `json:"time,omitempty"`
-	Status   CampaignNotificationStatus `json:"status,omitempty"`
-	SourceId string                     `json:"sourceId,omitempty"`
-	Errors   []*ErrorDto                `json:"errors,omitempty"`
-	Tags     []string                   `json:"tags,omitempty"`
+	Time       string                     `json:"time,omitempty"`
+	Status     CampaignNotificationStatus `json:"status,omitempty"`
+	SourceId   string                     `json:"sourceId,omitempty"`
+	Errors     []*ErrorDto                `json:"errors,omitempty"`
+	Tags       []string                   `json:"tags,omitempty"`
+	Flag       string                     `json:"flag,omitempty"`
+	FlagReason string                     `json:"flagReason,omitempty"`
 }
 
 // NotificationAttemptDto DTO.
