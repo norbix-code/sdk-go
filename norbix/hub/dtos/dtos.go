@@ -3828,6 +3828,7 @@ type MarketplaceValidationStepDto struct {
 	Description          string                         `json:"description,omitempty"`
 	RequiredForFunctions bool                           `json:"requiredForFunctions"`
 	Probe                *MarketplaceHttpRequestSpecDto `json:"probe,omitempty"`
+	AuthKinds            []string                       `json:"authKinds,omitempty"`
 }
 
 // MarketplaceFunctionDefinitionDto DTO.
@@ -3848,29 +3849,31 @@ type MarketplaceFunctionDefinitionDto struct {
 
 // MarketplaceListingDto DTO.
 type MarketplaceListingDto struct {
-	ViewId           string                              `json:"viewId,omitempty"`
-	Slug             string                              `json:"slug,omitempty"`
-	DisplayName      string                              `json:"displayName,omitempty"`
-	Vendor           string                              `json:"vendor,omitempty"`
-	Category         MarketplaceCategory                 `json:"category,omitempty"`
-	Transport        MarketplaceTransport                `json:"transport,omitempty"`
-	Description      string                              `json:"description,omitempty"`
-	IconUrl          string                              `json:"iconUrl,omitempty"`
-	DocumentationUrl string                              `json:"documentationUrl,omitempty"`
-	VideoUrl         string                              `json:"videoUrl,omitempty"`
-	Availability     MarketplaceAvailability             `json:"availability,omitempty"`
-	ConnectSteps     []string                            `json:"connectSteps,omitempty"`
-	OAuthRedirectUrl string                              `json:"oAuthRedirectUrl,omitempty"`
-	Kind             MarketplaceListingKind              `json:"kind,omitempty"`
-	Workflow         *MarketplaceWorkflowTemplateDto     `json:"workflow,omitempty"`
-	IsOfficial       bool                                `json:"isOfficial"`
-	Tags             []string                            `json:"tags,omitempty"`
-	SpecVersion      float64                             `json:"specVersion,omitempty"`
-	ConfigFields     []*MarketplaceFieldDefinitionDto    `json:"configFields,omitempty"`
-	SecretFields     []*MarketplaceFieldDefinitionDto    `json:"secretFields,omitempty"`
-	InstallForm      *MarketplaceInstallFormDto          `json:"installForm,omitempty"`
-	ValidationSteps  []*MarketplaceValidationStepDto     `json:"validationSteps,omitempty"`
-	Functions        []*MarketplaceFunctionDefinitionDto `json:"functions,omitempty"`
+	ViewId               string                              `json:"viewId,omitempty"`
+	Slug                 string                              `json:"slug,omitempty"`
+	DisplayName          string                              `json:"displayName,omitempty"`
+	Vendor               string                              `json:"vendor,omitempty"`
+	Category             MarketplaceCategory                 `json:"category,omitempty"`
+	Transport            MarketplaceTransport                `json:"transport,omitempty"`
+	Description          string                              `json:"description,omitempty"`
+	IconUrl              string                              `json:"iconUrl,omitempty"`
+	DocumentationUrl     string                              `json:"documentationUrl,omitempty"`
+	VideoUrl             string                              `json:"videoUrl,omitempty"`
+	Availability         MarketplaceAvailability             `json:"availability,omitempty"`
+	ConnectSteps         []string                            `json:"connectSteps,omitempty"`
+	OAuthRedirectUrl     string                              `json:"oAuthRedirectUrl,omitempty"`
+	OAuthSignIn          bool                                `json:"oAuthSignIn"`
+	OAuthInstallAppReady *bool                               `json:"oAuthInstallAppReady,omitempty"`
+	Kind                 MarketplaceListingKind              `json:"kind,omitempty"`
+	Workflow             *MarketplaceWorkflowTemplateDto     `json:"workflow,omitempty"`
+	IsOfficial           bool                                `json:"isOfficial"`
+	Tags                 []string                            `json:"tags,omitempty"`
+	SpecVersion          float64                             `json:"specVersion,omitempty"`
+	ConfigFields         []*MarketplaceFieldDefinitionDto    `json:"configFields,omitempty"`
+	SecretFields         []*MarketplaceFieldDefinitionDto    `json:"secretFields,omitempty"`
+	InstallForm          *MarketplaceInstallFormDto          `json:"installForm,omitempty"`
+	ValidationSteps      []*MarketplaceValidationStepDto     `json:"validationSteps,omitempty"`
+	Functions            []*MarketplaceFunctionDefinitionDto `json:"functions,omitempty"`
 }
 
 // AdminPortalModuleDto DTO.
@@ -9352,14 +9355,6 @@ type GetMarketplaceFunctionRunsResponse struct {
 	Runs []*MarketplaceFunctionRunDto `json:"runs,omitempty"`
 }
 
-// InvokeMarketplaceFunctionResponse DTO.
-type InvokeMarketplaceFunctionResponse struct {
-	ResponseBase
-	IsSuccess       bool   `json:"isSuccess"`
-	Output          any    `json:"output,omitempty"`
-	VendorRequestId string `json:"vendorRequestId,omitempty"`
-}
-
 // GetCodeIntegrationResponse DTO.
 type GetCodeIntegrationResponse struct {
 	ResponseBase
@@ -9410,6 +9405,14 @@ type InvokeCodeFunctionResponse struct {
 	DurationMs float64 `json:"durationMs,omitempty"`
 	RequestId  string  `json:"requestId,omitempty"`
 	Logs       string  `json:"logs,omitempty"`
+}
+
+// InvokeMarketplaceFunctionResponse DTO.
+type InvokeMarketplaceFunctionResponse struct {
+	ResponseBase
+	IsSuccess       bool   `json:"isSuccess"`
+	Output          any    `json:"output,omitempty"`
+	VendorRequestId string `json:"vendorRequestId,omitempty"`
 }
 
 // InvokeCodeWorkflowResponse DTO.
