@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
@@ -158,6 +159,14 @@ func emailCases() []emailCase {
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.GetEmailSettings(ctx, nil, nil)
 			}},
+		{"UpdateEmailClickTracking", http.MethodPatch, "/v2/notifications/email/settings/click-tracking",
+			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
+				return n.UpdateEmailClickTracking(ctx, map[string]any{"enabled": true}, nil)
+			}},
+		{"RecordEmailClicks", http.MethodPost, "/v2/notifications/email/clicks",
+			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
+				return n.RecordEmailClicks(ctx, recordClicksBody, nil)
+			}},
 		{"GetEmailSignatures", http.MethodGet, "/v2/notifications/email/signatures",
 			func(ctx context.Context, n *NotificationsModule, e *EmailModule) error {
 				return n.GetEmailSignatures(ctx, nil, nil)
@@ -280,13 +289,14 @@ func TestEmailEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The whole Email surface is 51 routes (gateway endpoint manifest, Email
+// The whole Email surface is 53 routes (gateway endpoint manifest, Email
 // campaign 2026-10: the duplicate campaigns/{campaignId}/messages/{notificationId}
 // read was removed, GET /{version}/email/preferences was added; gateway 2.3.9
-// added POST campaigns/{Id}/retry-failed). If the
+// added POST campaigns/{Id}/retry-failed; email click ids 2026-11 added PATCH
+// settings/click-tracking and POST clicks). If the
 // gateway grows or drops one, this count changes and the test says so.
 func TestEmailSurfaceSize(t *testing.T) {
-	const want = 51
+	const want = 53
 	if got := len(emailCases()); got != want {
 		t.Errorf("email endpoint count: got %d want %d", got, want)
 	}
@@ -392,4 +402,72 @@ func TestRetryFailedEmailNotificationsSendsTheSelection(t *testing.T) {
 		return m.RetryFailedEmailNotifications(context.Background(), testCampaignID, retryFailedBody, nil)
 	})
 	assertFields(t, got, retryFailedBody)
+}
+
+// recordClicksBody is a full click as the gateway reads it: the click id, the
+// url it was on, when, and the browser that sent it.
+var recordClicksBody = map[string]any{
+	"clicks": []any{
+		map[string]any{
+			"nblid":     "ntf_1.3.v1.Ab12",
+			"url":       "https://shop.example.com/sale?nblid=ntf_1.3.v1.Ab12",
+			"clickedAt": "2026-11-11T10:00:00Z",
+			"userAgent": "Mozilla/5.0",
+		},
+	},
+}
+
+// UpdateEmailClickTracking sends the switch as `enabled` in the JSON body,
+// false included: off is a real value, not an absent one.
+func TestUpdateEmailClickTrackingSendsEnabled(t *testing.T) {
+	for _, enabled := range []bool{true, false} {
+		got := sendAndCapture(t, func(m *NotificationsModule) error {
+			return m.UpdateEmailClickTracking(context.Background(), map[string]any{"enabled": enabled}, nil)
+		})
+		assertFields(t, got, map[string]any{"enabled": enabled})
+	}
+}
+
+// RecordEmailClicks sends the clicks under their JSON names.
+func TestRecordEmailClicksSendsTheClicks(t *testing.T) {
+	got := sendAndCapture(t, func(m *NotificationsModule) error {
+		return m.RecordEmailClicks(context.Background(), recordClicksBody, nil)
+	})
+	assertFields(t, got, recordClicksBody)
+}
+
+// The answer decodes into dtos.RecordEmailClicksResponse: the counts and one
+// result per click, a rejected one with its reason and a flagged one with
+// the flag, its reason and who the email went to.
+func TestRecordEmailClicksDecodesTheAnswer(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"recorded":1,"duplicates":0,"flagged":1,"rejected":1,"clicks":[` +
+			`{"index":0,"status":"rejected","reason":"not-valid"},` +
+			`{"index":1,"status":"recorded","flag":"suspected-scanner","flagReason":"too-soon",` +
+			`"campaignId":"cmp_1","notificationId":"ntf_1","linkIndex":3,"to":["ann@example.com"]}]}`))
+	}))
+	defer srv.Close()
+
+	n := &NotificationsModule{t: newEmailTestTransport(srv.URL, "key_1")}
+	var out dtos.RecordEmailClicksResponse
+	if err := n.RecordEmailClicks(context.Background(), recordClicksBody, &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out.Recorded != 1 || out.Flagged != 1 || out.Rejected != 1 || len(out.Clicks) != 2 {
+		t.Fatalf("counts: got %+v", out)
+	}
+	if c := out.Clicks[0]; c.Status != "rejected" || c.Reason != "not-valid" {
+		t.Errorf("rejected click: got %+v", c)
+	}
+	c := out.Clicks[1]
+	if c.Status != "recorded" || c.Flag != "suspected-scanner" || c.FlagReason != "too-soon" {
+		t.Errorf("flagged click: got %+v", c)
+	}
+	if c.CampaignId != "cmp_1" || c.NotificationId != "ntf_1" || c.LinkIndex == nil || *c.LinkIndex != 3 {
+		t.Errorf("flagged click ids: got %+v", c)
+	}
+	if len(c.To) != 1 || c.To[0] != "ann@example.com" {
+		t.Errorf("flagged click to: got %v", c.To)
+	}
 }

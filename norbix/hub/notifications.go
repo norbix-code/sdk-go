@@ -270,6 +270,41 @@ func (m *NotificationsModule) GetEmailSettings(ctx context.Context, req map[stri
 	}, out)
 }
 
+// UpdateEmailClickTracking performs PATCH /{version}/notifications/email/settings/click-tracking (scope: project).
+// Switches the project's email click ids on or off (off by default). Body: enabled (a
+// dtos.UpdateEmailClickTracking). When on, every web link of a marketing email gets
+// ?nblid=<id>; clicks come back only from sites the project owns, through RecordEmailClicks.
+// The current value is dtos.ProjectDto.EmailClickTracking. Answers an empty response.
+func (m *NotificationsModule) UpdateEmailClickTracking(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/settings/click-tracking",
+		Method:     "PATCH",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RecordEmailClicks performs POST /{version}/notifications/email/clicks (scope: project).
+// Records clicks handed back with their click ids. Body: clicks, 1 to 500 of
+// dtos.EmailClickDto (nblid, url?, clickedAt?, userAgent?); 0 or more than 500 is
+// CM-ERRORS-EMAILS-030. Idempotent: the same click (nblid + url + clickedAt) again answers
+// "duplicate". Answers dtos.RecordEmailClicksResponse: the counts and one result per click
+// (status recorded | duplicate | rejected, reason not-valid | not-found | in-future, flag
+// suspected-scanner with flagReason, and campaignId, notificationId, linkIndex, to[]).
+// A click id that is not valid is a rejected row, not an error.
+func (m *NotificationsModule) RecordEmailClicks(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/notifications/email/clicks",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ConfirmEmailIntegrationHumanDelivery performs POST /{version}/notifications/email/integrations/confirm-human-delivery (scope: project).
 func (m *NotificationsModule) ConfirmEmailIntegrationHumanDelivery(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
