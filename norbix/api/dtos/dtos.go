@@ -2293,6 +2293,14 @@ type StartPaymentCheckoutResponse struct {
 	Order    *PaymentOrderDto         `json:"order,omitempty"`
 }
 
+// InvokeMarketplaceFunctionResponse DTO.
+type InvokeMarketplaceFunctionResponse struct {
+	ResponseBase
+	IsSuccess       bool   `json:"isSuccess"`
+	Output          any    `json:"output,omitempty"`
+	VendorRequestId string `json:"vendorRequestId,omitempty"`
+}
+
 // InvokeCodeWorkflowResponse DTO.
 type InvokeCodeWorkflowResponse struct {
 	ResponseBase
@@ -3534,6 +3542,13 @@ type StartPaymentCheckoutRequest struct {
 	ReturnUrl         string `json:"returnUrl,omitempty"`
 	PreferredCountry  string `json:"preferredCountry,omitempty"`
 	PreferredProvider string `json:"preferredProvider,omitempty"`
+}
+
+// InvokeMarketplaceFunction DTO.
+type InvokeMarketplaceFunction struct {
+	CodeMashRequestBase
+	FunctionViewId string         `json:"functionViewId,omitempty"`
+	Payload        map[string]any `json:"payload,omitempty"`
 }
 
 // InvokeCodeWorkflow DTO.
