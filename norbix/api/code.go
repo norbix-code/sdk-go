@@ -36,6 +36,9 @@ func (m *CodeModule) GetCodeWorkflowWaitingRuns(ctx context.Context, req map[str
 
 // Beta: ResumeCodeWorkflowRun performs POST /{version}/code/workflows/runs/{RunId}/resume (scope: project).
 // Body: stepId?, decision? ("approved" | "rejected"), payload?. Answers dtos.WorkflowRunResponse.
+// A group approval (a wait step with `require`) records the caller's answer and
+// answers the run still "waiting" until enough assignees answered: read
+// Run.WaitingOn[].Answers. A second answer by the same person is CM-ERRORS-WORKFLOWS-016.
 func (m *CodeModule) ResumeCodeWorkflowRun(ctx context.Context, runId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"RunId": runId,
