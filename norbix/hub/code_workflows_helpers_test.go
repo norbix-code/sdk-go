@@ -249,3 +249,46 @@ func TestWaitForWorkflowRunReadsNonObjectStepValues(t *testing.T) {
 		t.Errorf("StepOutput ids: got %v ok=%v err=%v", ids, ok, err)
 	}
 }
+
+// Group approval (Code.Workflows.md §3.3b): a resume of a wait step with
+// `require` records the caller's answer and answers the run still waiting.
+// The answer decodes into the typed WaitingOn fields: Require is a pointer
+// (nil on a wait where the first answer decides) and Answers the people who
+// answered so far.
+func TestResumeOfAGroupApprovalAnswersTheRunStillWaiting(t *testing.T) {
+	const stillWaiting = `{"run":{"runId":"` + testWorkflowRunID + `","status":"waiting","waitingOn":[` +
+		`{"stepId":"approve","kind":"approval","assignees":["usr_1","usr_2","usr_3"],"require":2,` +
+		`"answers":[{"userId":"usr_1","decision":"approved","at":"2026-11-12T09:30:00Z"}]},` +
+		`{"stepId":"sign","kind":"approval","assignees":["usr_9"]}]}}`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/v2/code/workflows/runs/"+testWorkflowRunID+"/resume" {
+			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, stillWaiting)
+	}))
+	defer srv.Close()
+
+	var out dtos.WorkflowRunResponse
+	err := newCodeTestModule(srv.URL).ResumeCodeWorkflowRun(context.Background(), testWorkflowRunID,
+		map[string]any{"stepId": "approve", "decision": "approved"}, &out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out.Run == nil || out.Run.Status != "waiting" || len(out.Run.WaitingOn) != 2 {
+		t.Fatalf("run: got %+v", out.Run)
+	}
+	group := out.Run.WaitingOn[0]
+	if group.Require == nil || *group.Require != 2 {
+		t.Errorf("require: got %v want 2", group.Require)
+	}
+	if len(group.Answers) != 1 || group.Answers[0] == nil {
+		t.Fatalf("answers: got %+v", group.Answers)
+	}
+	if a := group.Answers[0]; a.UserId != "usr_1" || a.Decision != "approved" || a.At != "2026-11-12T09:30:00Z" {
+		t.Errorf("answer: got %+v", a)
+	}
+	if single := out.Run.WaitingOn[1]; single.Require != nil || len(single.Answers) != 0 {
+		t.Errorf("a wait without require: got require=%v answers=%+v", single.Require, single.Answers)
+	}
+}

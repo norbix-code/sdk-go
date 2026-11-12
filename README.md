@@ -957,6 +957,13 @@ timeout, a read every second; a timeout is a `*hub.WorkflowRunTimeoutError`
 with `LastStatus` and `LastRun`), and `hub.StepOutput[T]` decodes the output of
 a step's latest successful execution (highest pass, then highest attempt).
 
+Group approval: a wait step whose `config` has `"require": "all"` (or a number)
+needs that many of its assignees to approve. A resume records the caller's
+answer and answers the run still `waiting` until enough people answered — read
+`run.WaitingOn[].Answers` (`UserId`, `Decision`, `At`) and
+`run.WaitingOn[].Require` (`*float64`, nil when the first answer decides). A
+second answer by the same person is the error `CM-ERRORS-WORKFLOWS-016`.
+
 ```go
 var started dtos.InvokeCodeWorkflowResponse
 err := client.Hub.Code.InvokeCodeWorkflow(ctx, "wf_…", map[string]any{

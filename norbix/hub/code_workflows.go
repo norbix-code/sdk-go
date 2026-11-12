@@ -8,6 +8,14 @@
 //   - StepOutput[T] reads the output of a step from a run. Go methods cannot
 //     take type parameters, so it is a package function, not a method.
 //
+// Group approval (Code.Workflows.md §3.3b): a wait step with `require` ("all"
+// or a number) stays parked until enough of its assignees answered. A resume
+// (ResumeCodeWorkflowRun, ResumeCodeWorkflowRunByKey, a resume link) records
+// the caller's answer and answers the run still "waiting"; read who answered
+// in run.WaitingOn[].Answers and how many approvals are needed in
+// run.WaitingOn[].Require. A second answer by the same person is refused
+// with CM-ERRORS-WORKFLOWS-016.
+//
 // Workflows are in beta; bugs may occur.
 
 package hub
@@ -73,6 +81,11 @@ var workflowRunSettled = map[string]bool{
 // *WorkflowRunTimeoutError carrying the last status and run. A refused read
 // is returned as it came; a cancelled ctx returns ctx.Err(). An answer with
 // no run is an *errors.Error with code NORBIX_WORKFLOW_RUN_MISSING.
+//
+// "waiting" is not final. A group approval (a wait step with `require`) is
+// still "waiting" after a resume until enough assignees answered: the answers
+// so far are in run.WaitingOn[].Answers, the number needed in
+// run.WaitingOn[].Require (nil when the first answer decides).
 func (m *CodeModule) WaitForWorkflowRun(ctx context.Context, runID string, opts WaitForWorkflowRunOptions) (*dtos.WorkflowRunDto, error) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -142,6 +155,11 @@ func (m *CodeModule) WaitForWorkflowRun(ctx context.Context, runID string, opts 
 // step never succeeded in this run. The output is decoded by a JSON round trip,
 // so T may be a struct with json tags, a map or any JSON-shaped type. An output
 // cut by the gateway (WorkflowRunStepDto.OutputTruncated) is decoded as it is.
+//
+// A group approval's wait step has not succeeded while the run still waits, so
+// ok is false — read run.WaitingOn[].Answers until then. Once decided, its
+// output carries require, approvals, rejections, answers and pending next to
+// decision.
 func StepOutput[T any](run *dtos.WorkflowRunDto, stepID string) (value T, ok bool, err error) {
 	if run == nil {
 		return value, false, nil
