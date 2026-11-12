@@ -6935,14 +6935,23 @@ type CodeFunctionRunDto struct {
 	TriggerRunId               string   `json:"triggerRunId,omitempty"`
 }
 
+// WorkflowWaitAnswerDto DTO.
+type WorkflowWaitAnswerDto struct {
+	UserId   string `json:"userId,omitempty"`
+	Decision string `json:"decision,omitempty"`
+	At       string `json:"at,omitempty"`
+}
+
 // WorkflowWaitingOnDto DTO.
 type WorkflowWaitingOnDto struct {
-	StepId     string   `json:"stepId,omitempty"`
-	Kind       string   `json:"kind,omitempty"`
-	Until      string   `json:"until,omitempty"`
-	Key        string   `json:"key,omitempty"`
-	Assignees  []string `json:"assignees,omitempty"`
-	ChildRunId string   `json:"childRunId,omitempty"`
+	StepId     string                   `json:"stepId,omitempty"`
+	Kind       string                   `json:"kind,omitempty"`
+	Until      string                   `json:"until,omitempty"`
+	Key        string                   `json:"key,omitempty"`
+	Assignees  []string                 `json:"assignees,omitempty"`
+	Require    *float64                 `json:"require,omitempty"`
+	Answers    []*WorkflowWaitAnswerDto `json:"answers,omitempty"`
+	ChildRunId string                   `json:"childRunId,omitempty"`
 }
 
 // WorkflowRunStepDto DTO.
