@@ -280,7 +280,6 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 
 | method | verb | path |
 |---|---|---|
-| `DisableDatabase(ctx, req, out)` | `PUT` | `/database/disable` |
 | `EnableDatabase(ctx, req, out)` | `PUT` | `/database/enable` |
 
 **Records and collections**

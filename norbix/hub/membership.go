@@ -11,18 +11,6 @@ import (
 // MembershipModule groups the membership endpoints on the HUB.
 type MembershipModule struct{ t *transport.Transport }
 
-// DisableMembership performs PUT /{version}/membership/disable (scope: project).
-func (m *MembershipModule) DisableMembership(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/membership/disable",
-		Method:     "PUT",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // EnableMembership performs PUT /{version}/membership/enable (scope: project).
 func (m *MembershipModule) EnableMembership(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -329,21 +317,6 @@ func (m *MembershipModule) SaveMembershipIntegration(ctx context.Context, req ma
 	}, out)
 }
 
-// SetMembershipIntegrationAsDefault performs PUT /{version}/membership/integrations/{Id}/default (scope: project).
-func (m *MembershipModule) SetMembershipIntegrationAsDefault(ctx context.Context, id string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"Id": id,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/membership/integrations/{Id}/default",
-		Method:     "PUT",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // GetPasskeySettings performs GET /{version}/membership/passkey/settings (scope: project).
 func (m *MembershipModule) GetPasskeySettings(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -362,18 +335,6 @@ func (m *MembershipModule) SavePasskeySettings(ctx context.Context, req map[stri
 		Target:     transport.TargetHub,
 		Path:       "/{version}/membership/passkey/settings",
 		Method:     "POST",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetPolicyOptions performs GET /{version}/membership/policies/new/options (scope: project).
-func (m *MembershipModule) GetPolicyOptions(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/membership/policies/new/options",
-		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
 		Scope:      transport.ScopeProject,

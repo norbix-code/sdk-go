@@ -104,10 +104,6 @@ func integrationRouteCases() []integrationRouteCase {
 			func(ctx context.Context, h *Namespace) error {
 				return h.Membership.DisableMembershipIntegration(ctx, id, body, nil)
 			}},
-		{"Membership.SetMembershipIntegrationAsDefault", http.MethodPut, "/v2/membership/integrations/" + id + "/default",
-			func(ctx context.Context, h *Namespace) error {
-				return h.Membership.SetMembershipIntegrationAsDefault(ctx, id, body, nil)
-			}},
 		{"Membership.DeleteMembershipIntegration", http.MethodDelete, "/v2/membership/integrations/" + id,
 			func(ctx context.Context, h *Namespace) error {
 				return h.Membership.DeleteMembershipIntegration(ctx, id, body, nil)
@@ -187,8 +183,8 @@ func newIntegrationRoutesNamespace(baseURL string) *Namespace {
 
 func TestIntegrationRoutesHitTheExpectedRoute(t *testing.T) {
 	cases := integrationRouteCases()
-	if len(cases) != 35 {
-		t.Fatalf("cases: got %d want 35 (code 8, logs 7, membership 7, payments 11, shared 2)", len(cases))
+	if len(cases) != 34 {
+		t.Fatalf("cases: got %d want 34 (code 8, logs 7, membership 6, payments 11, shared 2)", len(cases))
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

@@ -37,10 +37,6 @@ type hubDatabaseCase struct {
 
 func hubDatabaseCases() []hubDatabaseCase {
 	return []hubDatabaseCase{
-		{"DisableDatabase", http.MethodPut, "/v2/database/disable", nil, nil,
-			func(ctx context.Context, m *DatabaseModule) error {
-				return m.DisableDatabase(ctx, nil, nil)
-			}},
 		{"EnableDatabase", http.MethodPut, "/v2/database/enable", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.EnableDatabase(ctx, nil, nil)
@@ -387,11 +383,12 @@ func TestHubDatabaseEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The HUB database surface is 67 routes (imports excluded). If the gateway
+// The HUB database surface is 67 routes (imports excluded; Database cannot
+// be disabled, so there is no disable route). If the gateway
 // grows one and a method is added, this count changes, so a new endpoint
 // cannot arrive untested.
 func TestHubDatabaseSurfaceSize(t *testing.T) {
-	const want = 68
+	const want = 67
 	if got := len(hubDatabaseCases()); got != want {
 		t.Errorf("database endpoint count: got %d want %d", got, want)
 	}
