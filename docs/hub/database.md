@@ -274,13 +274,9 @@ err = client.Hub.Database.UpdateDatabaseSchemaListSettings(ctx, schemaID, map[st
 
 ## Methods
 
-### Hub — `client.Hub.Database` (67 methods)
+### Hub — `client.Hub.Database` (66 methods)
 
-**Module**
-
-| method | verb | path |
-|---|---|---|
-| `EnableDatabase(ctx, req, out)` | `PUT` | `/database/enable` |
+Database is always on: there is no method to enable or disable it.
 
 **Records and collections**
 

@@ -12,7 +12,7 @@ import (
 )
 
 // Turning a whole module on or off changes project state, so the gateway
-// serves these 16 routes as PUT (gateway refactoringV2; before, they were
+// serves these 14 routes as PUT (gateway refactoringV2; before, they were
 // GET). A GET still works on the gateway for a while, but it is deprecated and
 // logs a warning on every call, so the SDK must send PUT. Each case asserts
 // the verb, the resolved path and that no body or query string is sent.
@@ -27,9 +27,6 @@ type moduleToggleCase struct {
 
 func moduleToggleCases() []moduleToggleCase {
 	return []moduleToggleCase{
-		{"EnableDatabase", "/v2/database/enable", func(ctx context.Context, t *transport.Transport) error {
-			return (&DatabaseModule{t: t}).EnableDatabase(ctx, nil, nil)
-		}},
 		{"EnableFiles", "/v2/files/enable", func(ctx context.Context, t *transport.Transport) error {
 			return (&FilesModule{t: t}).EnableFiles(ctx, nil, nil)
 		}},
@@ -65,9 +62,6 @@ func moduleToggleCases() []moduleToggleCase {
 		}},
 		{"DisableLogging", "/v2/logs/disable", func(ctx context.Context, t *transport.Transport) error {
 			return (&LogsModule{t: t}).DisableLogging(ctx, nil, nil)
-		}},
-		{"EnableMembership", "/v2/membership/enable", func(ctx context.Context, t *transport.Transport) error {
-			return (&MembershipModule{t: t}).EnableMembership(ctx, nil, nil)
 		}},
 		{"EnableCode", "/v2/code/enable", func(ctx context.Context, t *transport.Transport) error {
 			return (&CodeModule{t: t}).EnableCode(ctx, nil, nil)
@@ -129,11 +123,11 @@ func TestModuleEnableDisableUsePut(t *testing.T) {
 	}
 }
 
-// The gateway has exactly 16 module on/off routes: 9 enable routes and 7
-// disable routes (Membership and Database cannot be disabled). A new module
+// The gateway has exactly 14 module on/off routes, for 7 modules (Membership
+// and Database are always on and have none). A new module
 // toggle must be added here too, so its verb is checked.
 func TestModuleToggleSurfaceSize(t *testing.T) {
-	if got := len(moduleToggleCases()); got != 16 {
-		t.Fatalf("module toggle cases: got %d want 16", got)
+	if got := len(moduleToggleCases()); got != 14 {
+		t.Fatalf("module toggle cases: got %d want 14", got)
 	}
 }
