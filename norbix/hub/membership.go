@@ -547,3 +547,191 @@ func (m *MembershipModule) CreateExecutionIdentity(ctx context.Context, req map[
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// ImportUsers performs POST /{version}/membership/users/import (scope: project).
+//
+// Imports users in one call: users rows, ignoreDefaultRoles, dryRun (dtos.ImportUsersRequest).
+func (m *MembershipModule) ImportUsers(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/import",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RepairLoginProjectIds performs POST /{version}/membership/users/repair-logins (scope: project).
+//
+// Repairs the project ids of the sign-in records; dryRun reports without writing (dtos.RepairLoginProjectIdsRequest).
+func (m *MembershipModule) RepairLoginProjectIds(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/repair-logins",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetAuthenticationSettings performs GET /{version}/membership/authentication (scope: project).
+//
+// Reads the sign-in settings: logout URL, user names, credential modes (dtos.GetAuthenticationSettings).
+func (m *MembershipModule) GetAuthenticationSettings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/authentication",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetAuthorizationSettings performs GET /{version}/membership/authorization (scope: project).
+//
+// Reads the registration, invitation, verification and password settings (dtos.GetAuthorizationSettings).
+func (m *MembershipModule) GetAuthorizationSettings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/authorization",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateAuthorizationSettings performs PUT /{version}/membership/authorization (scope: project).
+//
+// Saves the registration, invitation, verification and password settings (dtos.UpdateAuthorizationSettings).
+func (m *MembershipModule) UpdateAuthorizationSettings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/authorization",
+		Method:     "PUT",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ListServiceUserApiKeys performs GET /{version}/membership/users/{Id}/api-keys (scope: project).
+//
+// Lists the API keys of a service user (dtos.ListServiceUserApiKeysRequest).
+func (m *MembershipModule) ListServiceUserApiKeys(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{Id}/api-keys",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// IssueServiceUserApiKey performs POST /{version}/membership/users/{Id}/api-keys (scope: project).
+//
+// Issues an API key for a service user: name, scopes, expiresInDays, notes. The key text is in the answer once (dtos.IssueServiceUserApiKeyRequest).
+func (m *MembershipModule) IssueServiceUserApiKey(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{Id}/api-keys",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteServiceUserApiKey performs DELETE /{version}/membership/users/{Id}/api-keys/{KeyId} (scope: project).
+//
+// Deletes one API key of a service user (dtos.DeleteServiceUserApiKeyRequest).
+func (m *MembershipModule) DeleteServiceUserApiKey(ctx context.Context, id string, keyId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id":    id,
+		"KeyId": keyId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{Id}/api-keys/{KeyId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RepairContactRoles performs POST /{version}/membership/users/repair-roles (scope: project).
+//
+// Repairs the roles of every contact; dryRun reports without writing (dtos.RepairContactRolesRequest).
+func (m *MembershipModule) RepairContactRoles(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/repair-roles",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateContact performs PATCH /{version}/membership/users/{contactId} (scope: project).
+//
+// Changes the profile fields of a contact (dtos.UpdateContactRequest).
+func (m *MembershipModule) UpdateContact(ctx context.Context, contactId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ClearContactBounce performs POST /{version}/membership/users/{contactId}/marketing-state/{channel}/clear-bounce (scope: project).
+//
+// Clears the bounce flag of the contact on a channel (Email, Sms, Push) (dtos.ClearContactBounceRequest).
+func (m *MembershipModule) ClearContactBounce(ctx context.Context, contactId string, channel string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"contactId": contactId,
+		"channel":   channel,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{contactId}/marketing-state/{channel}/clear-bounce",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetUserAiPlan performs PUT /{version}/membership/users/{userId}/ai-plan (scope: project).
+//
+// Gives the user an AI plan (planId) (dtos.SetUserAiPlan).
+func (m *MembershipModule) SetUserAiPlan(ctx context.Context, userId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"userId": userId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/users/{userId}/ai-plan",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
