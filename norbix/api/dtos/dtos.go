@@ -540,6 +540,10 @@ type IVersionBasedRequest struct {
 type IHasCorrelationIdRequest struct {
 }
 
+// IHasEnv DTO.
+type IHasEnv struct {
+}
+
 // CodeMashRequestBase DTO.
 type CodeMashRequestBase struct {
 	RequestBase
@@ -549,10 +553,6 @@ type CodeMashRequestBase struct {
 
 // IHasProjectId DTO.
 type IHasProjectId struct {
-}
-
-// IHasEnv DTO.
-type IHasEnv struct {
 }
 
 // UserGeneralInfoDto DTO.
@@ -1294,11 +1294,27 @@ type WorkflowRunActorDto struct {
 	Kind   string `json:"kind,omitempty"`
 }
 
+// WorkflowWaitSlotDto DTO.
+type WorkflowWaitSlotDto struct {
+	Label      string `json:"label,omitempty"`
+	UserId     string `json:"userId,omitempty"`
+	Role       string `json:"role,omitempty"`
+	Tag        string `json:"tag,omitempty"`
+	TeamRole   *bool  `json:"teamRole,omitempty"`
+	AnsweredBy string `json:"answeredBy,omitempty"`
+	Decision   string `json:"decision,omitempty"`
+	At         string `json:"at,omitempty"`
+	Override   *bool  `json:"override,omitempty"`
+}
+
 // WorkflowWaitAnswerDto DTO.
 type WorkflowWaitAnswerDto struct {
-	UserId   string `json:"userId,omitempty"`
-	Decision string `json:"decision,omitempty"`
-	At       string `json:"at,omitempty"`
+	UserId   string    `json:"userId,omitempty"`
+	Kind     string    `json:"kind,omitempty"`
+	Decision string    `json:"decision,omitempty"`
+	Slots    []float64 `json:"slots,omitempty"`
+	Override *bool     `json:"override,omitempty"`
+	At       string    `json:"at,omitempty"`
 }
 
 // WorkflowWaitingOnDto DTO.
@@ -1309,7 +1325,9 @@ type WorkflowWaitingOnDto struct {
 	Key        string                   `json:"key,omitempty"`
 	Assignees  []string                 `json:"assignees,omitempty"`
 	Require    *float64                 `json:"require,omitempty"`
+	Slots      []*WorkflowWaitSlotDto   `json:"slots,omitempty"`
 	Answers    []*WorkflowWaitAnswerDto `json:"answers,omitempty"`
+	Mine       *bool                    `json:"mine,omitempty"`
 	ChildRunId string                   `json:"childRunId,omitempty"`
 }
 

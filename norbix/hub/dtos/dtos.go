@@ -1653,7 +1653,6 @@ type RoleName struct {
 type OAuthModeConfig struct {
 	Name               *DisplayName `json:"name,omitempty"`
 	CallbackUrl        string       `json:"callbackUrl,omitempty"`
-	LogoutUrl          string       `json:"logoutUrl,omitempty"`
 	FailureRedirectUrl string       `json:"failureRedirectUrl,omitempty"`
 	RoleName           *RoleName    `json:"roleName,omitempty"`
 }
@@ -4493,12 +4492,12 @@ type IVersionBasedRequest struct {
 type IHasCorrelationIdRequest struct {
 }
 
-// IHasProjectId DTO.
-type IHasProjectId struct {
-}
-
 // IHasEnv DTO.
 type IHasEnv struct {
+}
+
+// IHasProjectId DTO.
+type IHasProjectId struct {
 }
 
 // IHasAccountId DTO.
@@ -4680,12 +4679,6 @@ type GetTrigger struct {
 type SaveTrigger struct {
 	CodeMashRequestBase
 	Trigger *SaveTriggerRequest `json:"trigger,omitempty"`
-}
-
-// CredentialsSettingsModeDto DTO.
-type CredentialsSettingsModeDto struct {
-	Name      string `json:"name,omitempty"`
-	LogoutUrl string `json:"logoutUrl,omitempty"`
 }
 
 // CursorArgs DTO.
@@ -6206,17 +6199,9 @@ type MembershipAuthorizationViewDto struct {
 	AllowAnyoneToSignUp          bool                           `json:"allowAnyoneToSignUp"`
 }
 
-// MembershipCredentialsSettingsModeDto DTO.
-type MembershipCredentialsSettingsModeDto struct {
-	Name      string `json:"name,omitempty"`
-	LogoutUrl string `json:"logoutUrl,omitempty"`
-}
-
 // MembershipCredentialsSettingsDto DTO.
 type MembershipCredentialsSettingsDto struct {
-	LogoutUrl      string                                  `json:"logoutUrl,omitempty"`
-	AllowUsernames bool                                    `json:"allowUsernames"`
-	Modes          []*MembershipCredentialsSettingsModeDto `json:"modes,omitempty"`
+	AllowUsernames bool `json:"allowUsernames"`
 }
 
 // MembershipAuthenticationViewDto DTO.
@@ -6943,11 +6928,27 @@ type CodeFunctionRunDto struct {
 	TriggerRunId               string   `json:"triggerRunId,omitempty"`
 }
 
+// WorkflowWaitSlotDto DTO.
+type WorkflowWaitSlotDto struct {
+	Label      string `json:"label,omitempty"`
+	UserId     string `json:"userId,omitempty"`
+	Role       string `json:"role,omitempty"`
+	Tag        string `json:"tag,omitempty"`
+	TeamRole   *bool  `json:"teamRole,omitempty"`
+	AnsweredBy string `json:"answeredBy,omitempty"`
+	Decision   string `json:"decision,omitempty"`
+	At         string `json:"at,omitempty"`
+	Override   *bool  `json:"override,omitempty"`
+}
+
 // WorkflowWaitAnswerDto DTO.
 type WorkflowWaitAnswerDto struct {
-	UserId   string `json:"userId,omitempty"`
-	Decision string `json:"decision,omitempty"`
-	At       string `json:"at,omitempty"`
+	UserId   string    `json:"userId,omitempty"`
+	Kind     string    `json:"kind,omitempty"`
+	Decision string    `json:"decision,omitempty"`
+	Slots    []float64 `json:"slots,omitempty"`
+	Override *bool     `json:"override,omitempty"`
+	At       string    `json:"at,omitempty"`
 }
 
 // WorkflowWaitingOnDto DTO.
@@ -6958,7 +6959,9 @@ type WorkflowWaitingOnDto struct {
 	Key        string                   `json:"key,omitempty"`
 	Assignees  []string                 `json:"assignees,omitempty"`
 	Require    *float64                 `json:"require,omitempty"`
+	Slots      []*WorkflowWaitSlotDto   `json:"slots,omitempty"`
 	Answers    []*WorkflowWaitAnswerDto `json:"answers,omitempty"`
+	Mine       *bool                    `json:"mine,omitempty"`
 	ChildRunId string                   `json:"childRunId,omitempty"`
 }
 
@@ -11818,16 +11821,6 @@ type DeleteAiServiceUserRequest struct {
 	Id string `json:"id,omitempty"`
 }
 
-// DisableMembership DTO.
-type DisableMembership struct {
-	CodeMashRequestBase
-}
-
-// EnableMembership DTO.
-type EnableMembership struct {
-	CodeMashRequestBase
-}
-
 // ImportUsersRequest DTO.
 type ImportUsersRequest struct {
 	CodeMashRequestBase
@@ -12018,12 +12011,6 @@ type SaveMembershipIntegration struct {
 	Integration *MembershipIntegrationRequest `json:"integration,omitempty"`
 }
 
-// SetMembershipIntegrationAsDefaultRequest DTO.
-type SetMembershipIntegrationAsDefaultRequest struct {
-	CodeMashRequestBase
-	Id string `json:"id,omitempty"`
-}
-
 // GetExecutionIdentitiesRequest DTO.
 type GetExecutionIdentitiesRequest struct {
 	CodeMashRequestBase
@@ -12106,19 +12093,7 @@ type GetAuthenticationSettings struct {
 // UpdateAuthenticationSettings DTO.
 type UpdateAuthenticationSettings struct {
 	CodeMashRequestBase
-	LogoutUrl      string                        `json:"logoutUrl,omitempty"`
-	AllowUsernames bool                          `json:"allowUsernames"`
-	Modes          []*CredentialsSettingsModeDto `json:"modes,omitempty"`
-}
-
-// DisableDatabase DTO.
-type DisableDatabase struct {
-	CodeMashRequestBase
-}
-
-// EnableDatabase DTO.
-type EnableDatabase struct {
-	CodeMashRequestBase
+	AllowUsernames bool `json:"allowUsernames"`
 }
 
 // DeleteSchemaTrigger DTO.
