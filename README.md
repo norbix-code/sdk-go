@@ -287,6 +287,40 @@ FunctionId}, InvocationType}`; a Workflow action is
   (`"roleNames": []string{"Editor","User"}` → `roleNames=Editor&roleNames=User`);
   before, only `[]any` did and a `[]string` went as `"[Editor User]"`.
 
+### Membership: social sign-in and link identity
+
+Project users can sign in with Google, Apple, Microsoft, GitHub, Facebook, X or
+Okta. The project's enabled providers are in the public config
+(`client.API.Public.GetPublicProjectConfig` → `auth.socialSignIn`: `provider`,
+`displayName`, `startPath`).
+
+```go
+m := client.API.Membership
+
+// 1. Send the browser (on a phone: the system browser) here. Not a call: it redirects.
+startURL, err := m.SocialSignInURL("google", "", "https://app.example.com/oauth/callback")
+
+// 2. The return page gets ?code=…&provider=google (or ?error=…). Trade the code within 2 minutes:
+var token dtos.SocialSignInTokenResponse
+err = m.ExchangeSocialSignInCode(ctx, "google", map[string]any{"code": code}, &token)
+// token.BearerToken: the project JWT (14 days, no refresh token)
+
+// Link another provider to the signed-in user (yourself only):
+var start dtos.StartLinkIdentityResponse
+err = m.StartLinkIdentity(ctx, "usr_…", map[string]any{"provider": "github",
+	"returnUrl": "https://app.example.com/settings"}, &start)
+// send the browser to start.AuthorizeUrl; it comes back with ?intent=link&code=…
+err = m.LinkIdentity(ctx, "usr_…", map[string]any{"code": linkCode}, nil)
+```
+
+- `SocialSignInURL(provider, mode, returnURL)` puts the project id and a
+  non-PROD env in the query, because a navigation sends no headers. The start
+  and the provider callback have no call method.
+- `LinkIdentity` now takes `{"code": …}` (the link code); the old `provider` /
+  `providerToken` body is gone.
+- Refusals: `CM-ERRORS-MEMBERSHIP-051` (code used, expired or unknown), `-055`
+  (409, the provider account belongs to another user), `-056` (403, not yourself).
+
 ### Database: nested fields, expanded references, files by id
 
 - A schema may hold `object` and `array` fields at any depth

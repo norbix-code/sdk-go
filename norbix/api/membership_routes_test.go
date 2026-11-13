@@ -65,7 +65,9 @@ func apiMembershipCases() []apiMembershipCase {
 	assignRoles := map[string]any{"id": amUser, "roles": []any{"Editor"}}
 	byID := map[string]any{"id": amUser}
 	prefs := map[string]any{"blockAllMarketingMessages": false, "blockedTags": []any{"promo"}}
-	link := map[string]any{"provider": "Google", "providerToken": "g_tok"}
+	link := map[string]any{"code": "link_code"}
+	linkStart := map[string]any{"provider": "google", "mode": "app", "returnUrl": "https://app.example.test/settings"}
+	exchange := map[string]any{"code": "one_time"}
 	tag := map[string]any{"subscribed": true}
 	mapAuth := map[string]any{"authId": amAuth, "databaseIntegrationId": amDb}
 	setRoles := map[string]any{"roles": []any{"Editor", "User"}}
@@ -185,8 +187,16 @@ func apiMembershipCases() []apiMembershipCase {
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.UpdateUserPreferences(ctx, amUser, prefs, nil)
 			}},
+		{"StartLinkIdentity", http.MethodPost, "/v2/membership/auth/" + amUser + "/link-identity/start", nil, linkStart,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.StartLinkIdentity(ctx, amUser, linkStart, nil)
+			}},
 		{"LinkIdentity", http.MethodPost, "/v2/membership/auth/" + amUser + "/link-identity", nil, link,
 			func(ctx context.Context, m *MembershipModule) error { return m.LinkIdentity(ctx, amUser, link, nil) }},
+		{"ExchangeSocialSignInCode", http.MethodPost, "/v2/membership/auth/social/google/exchange", nil, exchange,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.ExchangeSocialSignInCode(ctx, "google", exchange, nil)
+			}},
 		{"SetContactTagSubscription", http.MethodPut, "/v2/membership/users/" + amContact + "/marketing-state/Email/Marketing/tags/news", nil, tag,
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.SetContactTagSubscription(ctx, amContact, "Email", "Marketing", "news", tag, nil)
@@ -341,11 +351,12 @@ func TestEveryAPIMembershipRouteHitsTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// Users list 7 + user new 10 + user edit 20 + passkey & user-auth 19.
+// Users list 7 + user new 10 + user edit 20 + passkey & user-auth 19 + social
+// sign-in and link 2 (exchange, link start; link finish is in user edit).
 // An API membership route added to a screen changes this count, so it cannot
 // arrive untested.
 func TestAPIMembershipRouteSurfaceSize(t *testing.T) {
-	const want = 7 + 10 + 20 + 19
+	const want = 7 + 10 + 20 + 19 + 2
 	if got := len(apiMembershipCases()); got != want {
 		t.Errorf("api membership route count: got %d want %d", got, want)
 	}
