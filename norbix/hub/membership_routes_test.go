@@ -137,8 +137,6 @@ func membershipRouteCases() []membershipRouteCase {
 		// Settings — module switch, authentication, authorization, password complexity, passkeys.
 		{"EnableMembership", http.MethodPut, "/v2/membership/enable", nil, nil,
 			func(ctx context.Context, m *MembershipModule) error { return m.EnableMembership(ctx, nil, nil) }},
-		{"DisableMembership", http.MethodPut, "/v2/membership/disable", nil, nil,
-			func(ctx context.Context, m *MembershipModule) error { return m.DisableMembership(ctx, nil, nil) }},
 		{"GetAuthenticationSettings", http.MethodGet, "/v2/membership/authentication", nil, nil,
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.GetAuthenticationSettings(ctx, nil, nil)
@@ -256,11 +254,12 @@ func TestEveryHubMembershipRouteHitsTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// Users list 7 + user edit 7 + roles 5 + policies 5 + settings 9 + API keys 3.
+// Users list 7 + user edit 7 + roles 5 + policies 5 + settings 8 + API keys 3.
+// (Membership cannot be disabled, so settings has no disable route.)
 // A Hub membership route added to a screen changes this count, so it cannot
 // arrive untested.
 func TestHubMembershipRouteSurfaceSize(t *testing.T) {
-	const want = 7 + 7 + 5 + 5 + 9 + 3
+	const want = 7 + 7 + 5 + 5 + 8 + 3
 	if got := len(membershipRouteCases()); got != want {
 		t.Errorf("hub membership route count: got %d want %d", got, want)
 	}

@@ -11,18 +11,6 @@ import (
 // DatabaseModule groups the database endpoints on the HUB.
 type DatabaseModule struct{ t *transport.Transport }
 
-// DisableDatabase performs PUT /{version}/database/disable (scope: project).
-func (m *DatabaseModule) DisableDatabase(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/database/disable",
-		Method:     "PUT",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // EnableDatabase performs PUT /{version}/database/enable (scope: project).
 func (m *DatabaseModule) EnableDatabase(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
