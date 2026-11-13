@@ -14,9 +14,10 @@ import (
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
-// The four workflow (beta) routes an app user calls on the API (gateway
-// campaign audit/workflows, docs/architecture/Code.Workflows.md §7, item
-// gw-wait-notify) and the module method that calls each one. Each case
+// The eleven workflow (beta) routes on the API (gateway campaign
+// audit/workflows, docs/architecture/Code.Workflows.md §7, item
+// gw-wait-notify; the run routes since the Code + Scheduler coverage
+// campaign, as in sdk-ts) and the module method that calls each one. Each case
 // asserts the verb, the fully-resolved path (version substituted, ids
 // filled), the query string and the JSON body. The hub base URL is invalid,
 // so a route sent to the wrong host fails here.
@@ -24,6 +25,7 @@ import (
 // Nothing leaves the process: every call goes to a local test server.
 
 const (
+	testAPIWorkflowID    = "wf_3kQ9mZ2vXc8LpR4wT7yH1n"
 	testAPIWorkflowRunID = "wfr_4hT2b9QkLm3XcT1yRfGh7a"
 	testAPIResumeToken   = "signed.resume.token"
 )
@@ -39,6 +41,10 @@ type apiCodeCase struct {
 
 func apiCodeCases() []apiCodeCase {
 	resume := map[string]any{"stepId": "approve", "decision": "approved", "payload": map[string]any{"note": "ok"}}
+	invoke := map[string]any{"payload": map[string]any{"orderId": "ord_1"}, "waitSeconds": 10, "runVersion": "draft"}
+	byKey := map[string]any{"key": "order-ord_1", "decision": "rejected"}
+	retry := map[string]any{"stepId": "charge"}
+	cancel := map[string]any{"reason": "duplicate order"}
 	return []apiCodeCase{
 		{"GetCodeWorkflowWaitingRuns", http.MethodGet, "/v2/code/workflows/runs",
 			url.Values{"assignee": {"me"}, "pageSize": {"20"}, "waitingKind": {"approval"}}, nil,
@@ -56,6 +62,36 @@ func apiCodeCases() []apiCodeCase {
 		{"UseCodeWorkflowResumeLink", http.MethodPost, "/v2/code/workflows/resume/" + testAPIResumeToken, nil, nil,
 			func(ctx context.Context, m *CodeModule) error {
 				return m.UseCodeWorkflowResumeLink(ctx, testAPIResumeToken, nil, nil)
+			}},
+		{"InvokeCodeWorkflow", http.MethodPost, "/v2/code/workflows/" + testAPIWorkflowID + "/invoke", nil, invoke,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.InvokeCodeWorkflow(ctx, testAPIWorkflowID, invoke, nil)
+			}},
+		{"GetCodeWorkflowRuns", http.MethodGet, "/v2/code/workflows/" + testAPIWorkflowID + "/runs",
+			url.Values{"pageSize": {"50"}, "status": {"failed"}}, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetCodeWorkflowRuns(ctx, testAPIWorkflowID, map[string]any{"status": "failed", "pageSize": 50}, nil)
+			}},
+		{"GetCodeWorkflowRun", http.MethodGet, "/v2/code/workflows/runs/" + testAPIWorkflowRunID, nil, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetCodeWorkflowRun(ctx, testAPIWorkflowRunID, nil, nil)
+			}},
+		{"GetCodeWorkflowRunLogs", http.MethodGet, "/v2/code/workflows/runs/" + testAPIWorkflowRunID + "/logs",
+			url.Values{"level": {"error"}, "stepId": {"approve"}}, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetCodeWorkflowRunLogs(ctx, testAPIWorkflowRunID, map[string]any{"stepId": "approve", "level": "error"}, nil)
+			}},
+		{"ResumeCodeWorkflowRunByKey", http.MethodPost, "/v2/code/workflows/" + testAPIWorkflowID + "/resume", nil, byKey,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.ResumeCodeWorkflowRunByKey(ctx, testAPIWorkflowID, byKey, nil)
+			}},
+		{"RetryCodeWorkflowRunStep", http.MethodPost, "/v2/code/workflows/runs/" + testAPIWorkflowRunID + "/retry", nil, retry,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.RetryCodeWorkflowRunStep(ctx, testAPIWorkflowRunID, retry, nil)
+			}},
+		{"CancelCodeWorkflowRun", http.MethodPost, "/v2/code/workflows/runs/" + testAPIWorkflowRunID + "/cancel", nil, cancel,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.CancelCodeWorkflowRun(ctx, testAPIWorkflowRunID, cancel, nil)
 			}},
 	}
 }
@@ -164,7 +200,7 @@ func TestAPICodeWorkflowInboxNeedsSignIn(t *testing.T) {
 }
 
 func TestAPICodeSurfaceSize(t *testing.T) {
-	const want = 4
+	const want = 11
 	if got := len(apiCodeCases()); got != want {
 		t.Errorf("api code case count: got %d want %d", got, want)
 	}

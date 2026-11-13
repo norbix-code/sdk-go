@@ -95,6 +95,24 @@ func (m *SchedulerModule) GetSchedulerTask(ctx context.Context, id string, req m
 	}, out)
 }
 
+// GetSchedulerTaskRuns performs GET /{version}/scheduler/tasks/{id}/runs (scope: project).
+// Hand-written: gen_modules.py is in no checkout (Code + Scheduler coverage campaign, 2026-11-13).
+// Query: take? (1–50, default 10). Answers dtos.GetSchedulerTaskRunsResponse: the task's latest
+// runs, newest first, each with its outcome ("Fired", "Failed", "Skipped") and a reason code.
+func (m *SchedulerModule) GetSchedulerTaskRuns(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/scheduler/tasks/{id}/runs",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetSchedulerTasks performs GET /{version}/scheduler/tasks (scope: project).
 func (m *SchedulerModule) GetSchedulerTasks(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -110,10 +128,12 @@ func (m *SchedulerModule) GetSchedulerTasks(ctx context.Context, req map[string]
 // SaveSchedulerTask performs POST /{version}/scheduler/tasks (scope: project).
 //
 // req carries initiatorUserId, name, cron (5 fields, UTC), isEnabled,
-// stopOnError, an optional taskId (update) and task. "task" may be a
-// dtos.EmailCampaignSchedulerTaskRequest (type "EmailCampaign", the only task
-// type the gateway runs today) or the same shape as a map. See
-// docs/hub/scheduler.md for a full example.
+// stopOnError, an optional taskId (update) and task. "task" is one of the
+// generated task bodies — dtos.EmailCampaignSchedulerTaskRequest ("EmailCampaign"),
+// SmsCampaign…, PushCampaign…, dtos.CodeFunctionSchedulerTaskRequest
+// ("CodeFunctionalCall": functionRef, invocationType, config, mappedTokens),
+// dtos.WorkflowSchedulerTaskRequest ("WorkflowCall": workflowRef, payload) — or
+// the same shape as a map. See docs/hub/scheduler.md for a full example.
 func (m *SchedulerModule) SaveSchedulerTask(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,

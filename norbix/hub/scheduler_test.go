@@ -78,6 +78,11 @@ func schedulerCases() []schedulerCase {
 			func(ctx context.Context, m *SchedulerModule) error {
 				return m.GetSchedulerTask(ctx, testSchedulerTaskID, nil, nil)
 			}},
+		{"GetSchedulerTaskRuns", http.MethodGet, "/v2/scheduler/tasks/" + testSchedulerTaskID + "/runs",
+			url.Values{"take": {"20"}}, nil,
+			func(ctx context.Context, m *SchedulerModule) error {
+				return m.GetSchedulerTaskRuns(ctx, testSchedulerTaskID, map[string]any{"take": 20}, nil)
+			}},
 		{"SaveSchedulerTask", http.MethodPost, "/v2/scheduler/tasks", nil,
 			map[string]any{
 				"initiatorUserId": testInitiatorUserID,
@@ -177,10 +182,10 @@ func TestSchedulerEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The scheduler surface is 8 routes. If the gateway grows one and the module
+// The scheduler surface is 9 routes. If the gateway grows one and the module
 // is regenerated, this count changes, so a new endpoint cannot arrive untested.
 func TestSchedulerSurfaceSize(t *testing.T) {
-	const want = 8
+	const want = 9
 	if got := len(schedulerCases()); got != want {
 		t.Errorf("scheduler endpoint count: got %d want %d", got, want)
 	}
@@ -233,4 +238,22 @@ func TestSaveSchedulerTaskSendsTaskIDInTheBodyOnUpdate(t *testing.T) {
 		t.Errorf("path: got %q", gotPath)
 	}
 	assertFields(t, got, map[string]any{"taskId": testSchedulerTaskID})
+}
+
+// The run history decodes into the generated response: the outcome is the
+// member name the gateway writes ("Fired", "Failed", "Skipped").
+func TestGetSchedulerTaskRunsDecodesTheRuns(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"runs":[{"logId":"log_2","atUtc":"2026-11-13T09:00:00Z","outcome":"Failed","reason":"run-failed","executionIdentityIsDefault":true},{"logId":"log_1","outcome":"Fired"}]}`)
+	}))
+	defer srv.Close()
+
+	var out dtos.GetSchedulerTaskRunsResponse
+	if err := newSchedulerTestModule(srv.URL).GetSchedulerTaskRuns(context.Background(), testSchedulerTaskID, nil, &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(out.Runs) != 2 || out.Runs[0].Outcome != dtos.SchedulerTaskRunOutcomeFailed || out.Runs[0].Reason != "run-failed" || out.Runs[1].Outcome != dtos.SchedulerTaskRunOutcomeFired {
+		t.Errorf("runs: got %+v", out.Runs)
+	}
 }
