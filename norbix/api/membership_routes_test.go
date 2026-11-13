@@ -65,9 +65,11 @@ func apiMembershipCases() []apiMembershipCase {
 	assignRoles := map[string]any{"id": amUser, "roles": []any{"Editor"}}
 	byID := map[string]any{"id": amUser}
 	prefs := map[string]any{"blockAllMarketingMessages": false, "blockedTags": []any{"promo"}}
-	link := map[string]any{"code": "link_code"}
-	linkStart := map[string]any{"provider": "google", "mode": "app", "returnUrl": "https://app.example.test/settings"}
-	exchange := map[string]any{"code": "one_time"}
+	// PKCE: the RFC 7636 appendix B verifier and its S256 challenge.
+	link := map[string]any{"code": "link_code", "codeVerifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"}
+	linkStart := map[string]any{"provider": "google", "mode": "app", "returnUrl": "https://app.example.test/settings",
+		"codeChallenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"}
+	exchange := map[string]any{"code": "one_time", "codeVerifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"}
 	tag := map[string]any{"subscribed": true}
 	mapAuth := map[string]any{"authId": amAuth, "databaseIntegrationId": amDb}
 	setRoles := map[string]any{"roles": []any{"Editor", "User"}}
