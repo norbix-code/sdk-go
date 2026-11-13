@@ -249,3 +249,35 @@ func TestProjectScopeStillRequiresAuth(t *testing.T) {
 		t.Errorf("expected CodeNotAuthenticated, got %v", err)
 	}
 }
+
+// A typed list on a GET or DELETE goes on the query as one value per item,
+// the same as []any: roleNames=Editor&roleNames=User, never "[Editor User]".
+func TestQueryExpandsTypedSlices(t *testing.T) {
+	var gotQuery map[string][]string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	err := newTestTransport(srv.URL).Send(context.Background(), Request{
+		Target: TargetAPI,
+		Path:   "/{version}/membership/auth",
+		Method: http.MethodGet,
+		Body: map[string]any{
+			"roleNames": []string{"Editor", "User"},
+			"userIds":   []any{"usr_1"},
+			"pages":     []int{1, 2},
+			"search":    "ana",
+		},
+		Scope: ScopeProject,
+	}, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	got, _ := json.Marshal(gotQuery)
+	want := `{"pages":["1","2"],"roleNames":["Editor","User"],"search":["ana"],"userIds":["usr_1"]}`
+	if string(got) != want {
+		t.Errorf("query: got %s want %s", got, want)
+	}
+}
