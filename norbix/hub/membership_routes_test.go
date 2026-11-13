@@ -52,7 +52,7 @@ func membershipRouteCases() []membershipRouteCase {
 	roleUpdate := map[string]any{"id": mbRole, "roleName": "Editor", "policies": []any{"pol_1", "pol_2"}}
 	policy := map[string]any{"policyName": "Read orders", "description": "Orders only", "policyDocumentJson": `{"statements":[]}`}
 	policyUpdate := map[string]any{"id": mbPolicy, "policyName": "Read orders", "policyDocumentJson": `{"statements":[]}`}
-	authn := map[string]any{"logoutUrl": "https://app.example.test/bye", "allowUsernames": true}
+	authn := map[string]any{"allowUsernames": true}
 	authz := map[string]any{"allowAnyoneToSignUp": false, "inviteOnly": true, "defaultRoles": []any{"User"}}
 	complexity := map[string]any{"minLength": 12, "minNumbers": 1, "allowedSpecial": "!@#"}
 	passkey := map[string]any{"enabled": true, "codeTtlMinutes": 10, "rpId": "app.example.test"}
