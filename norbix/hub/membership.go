@@ -11,18 +11,6 @@ import (
 // MembershipModule groups the membership endpoints on the HUB.
 type MembershipModule struct{ t *transport.Transport }
 
-// EnableMembership performs PUT /{version}/membership/enable (scope: project).
-func (m *MembershipModule) EnableMembership(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/membership/enable",
-		Method:     "PUT",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // DeleteMembershipTrigger performs DELETE /{version}/membership/triggers/{triggerId} (scope: project).
 func (m *MembershipModule) DeleteMembershipTrigger(ctx context.Context, triggerId string, req map[string]any, out any) error {
 	pathParams := map[string]string{

@@ -11,18 +11,6 @@ import (
 // DatabaseModule groups the database endpoints on the HUB.
 type DatabaseModule struct{ t *transport.Transport }
 
-// EnableDatabase performs PUT /{version}/database/enable (scope: project).
-func (m *DatabaseModule) EnableDatabase(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/database/enable",
-		Method:     "PUT",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // DeleteSchemaTrigger performs DELETE /{version}/database/schemas/triggers/{triggerId} (scope: project).
 //
 // It acts on the copy of the trigger in the request environment (norbix-env, PROD when absent); no
