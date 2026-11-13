@@ -316,6 +316,9 @@ err = m.LinkIdentity(ctx, "usr_…", map[string]any{"code": linkCode}, nil)
 - `SocialSignInURL(provider, mode, returnURL)` puts the project id and a
   non-PROD env in the query, because a navigation sends no headers. The start
   and the provider callback have no call method.
+- `ExchangeSocialSignInCode` sends no credentials, even when the client has
+  a key or a JWT: the gateway refuses an old token on any route, and the
+  exchange is how a user signs in again.
 - `LinkIdentity` now takes `{"code": …}` (the link code); the old `provider` /
   `providerToken` body is gone.
 - Refusals: `CM-ERRORS-MEMBERSHIP-051` (code used, expired or unknown), `-055`
