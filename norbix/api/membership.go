@@ -422,14 +422,33 @@ func (m *MembershipModule) RefreshPasskeyToken(ctx context.Context, req map[stri
 	}, out)
 }
 
-// LinkIdentity performs POST /{version}/membership/auth/{userId}/link-identity (scope: project).
-func (m *MembershipModule) LinkIdentity(ctx context.Context, userId string, req map[string]any, out any) error {
+// StartLinkIdentity performs POST /{version}/membership/auth/{UserId}/link-identity/start (scope: project).
+//
+// Starts linking a social provider to the signed-in user (yourself only): body provider, mode, returnUrl; answers authorizeUrl (dtos.StartLinkIdentityRequest).
+func (m *MembershipModule) StartLinkIdentity(ctx context.Context, userId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
-		"userId": userId,
+		"UserId": userId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
-		Path:       "/{version}/membership/auth/{userId}/link-identity",
+		Path:       "/{version}/membership/auth/{UserId}/link-identity/start",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// LinkIdentity performs POST /{version}/membership/auth/{UserId}/link-identity (scope: project).
+//
+// Finishes a link as the same signed-in user who started it: body code, the one-time link code from the return page (dtos.LinkIdentityRequest).
+func (m *MembershipModule) LinkIdentity(ctx context.Context, userId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"UserId": userId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/auth/{UserId}/link-identity",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
@@ -757,6 +776,23 @@ func (m *MembershipModule) SetUserAiPlan(ctx context.Context, userId string, req
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ExchangeSocialSignInCode performs POST /{version}/membership/auth/social/{Provider}/exchange (scope: optional).
+//
+// Trades the one-time code from the social sign-in return page (2 minutes, once) for the project JWT: body code (dtos.ExchangeSocialSignInCodeRequest).
+func (m *MembershipModule) ExchangeSocialSignInCode(ctx context.Context, provider string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Provider": provider,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/auth/social/{Provider}/exchange",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 

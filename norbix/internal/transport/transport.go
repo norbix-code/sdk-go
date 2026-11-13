@@ -335,6 +335,42 @@ func pow2(n int) float64 {
 	return r
 }
 
+// NavigationURL is the full URL of a GET route that a browser navigates to (a
+// link or a redirect, not a call). A navigation carries no headers, so the
+// project id and a non-PROD env go into the query (?projectId=…&env=…),
+// followed by query in order; empty values are left out.
+func (t *Transport) NavigationURL(target Target, path string, pathParams map[string]string, query [][2]string) (string, error) {
+	base := t.Cfg.BaseURLAPI
+	version := t.Cfg.APIVersion
+	if target == TargetHub {
+		base = t.Cfg.BaseURLHub
+		version = t.Cfg.HubVersion
+	}
+	escaped := make(map[string]string, len(pathParams))
+	for k, v := range pathParams {
+		escaped[k] = url.PathEscape(v)
+	}
+	full, _, err := buildURLAndBody(base, path, version, http.MethodGet, escaped, nil)
+	if err != nil {
+		return "", err
+	}
+	params := [][2]string{{"projectId", t.Cfg.ProjectID}}
+	if t.Cfg.Env != "" && t.Cfg.Env != "PROD" {
+		params = append(params, [2]string{"env", t.Cfg.Env})
+	}
+	params = append(params, query...)
+	parts := make([]string, 0, len(params))
+	for _, p := range params {
+		if p[1] != "" {
+			parts = append(parts, url.QueryEscape(p[0])+"="+url.QueryEscape(p[1]))
+		}
+	}
+	if len(parts) == 0 {
+		return full, nil
+	}
+	return full + "?" + strings.Join(parts, "&"), nil
+}
+
 // buildURLAndBody substitutes path params, fills {version}, then either
 // query-encodes (GET/DELETE) or JSON-encodes (others) the remaining body.
 func buildURLAndBody(

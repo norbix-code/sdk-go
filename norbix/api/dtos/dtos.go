@@ -840,6 +840,13 @@ type PublicBrandDto struct {
 	IconUrl     string `json:"iconUrl,omitempty"`
 }
 
+// PublicSocialSignInDto DTO.
+type PublicSocialSignInDto struct {
+	Provider    string `json:"provider,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
+	StartPath   string `json:"startPath,omitempty"`
+}
+
 // PublicPasswordPolicyDto DTO.
 type PublicPasswordPolicyDto struct {
 	MinLength      float64  `json:"minLength,omitempty"`
@@ -854,6 +861,7 @@ type PublicPasswordPolicyDto struct {
 // PublicAuthDto DTO.
 type PublicAuthDto struct {
 	SocialProviders []string                 `json:"socialProviders,omitempty"`
+	SocialSignIn    []*PublicSocialSignInDto `json:"socialSignIn,omitempty"`
 	Passkey         bool                     `json:"passkey"`
 	Methods         []string                 `json:"methods,omitempty"`
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
@@ -2071,6 +2079,27 @@ type GetUserPreferencesResponse struct {
 	Preferences *UserMarketingPreferencesDto `json:"preferences,omitempty"`
 }
 
+// StartLinkIdentityResponse DTO.
+type StartLinkIdentityResponse struct {
+	ResponseBase
+	AuthorizeUrl string `json:"authorizeUrl,omitempty"`
+}
+
+// SocialSignInStartResponse DTO.
+type SocialSignInStartResponse struct {
+	ResponseBase
+}
+
+// SocialSignInTokenResponse DTO.
+type SocialSignInTokenResponse struct {
+	ResponseBase
+	BearerToken string            `json:"bearerToken,omitempty"`
+	UserId      string            `json:"userId,omitempty"`
+	DisplayName string            `json:"displayName,omitempty"`
+	ExpiresAt   string            `json:"expiresAt,omitempty"`
+	Meta        map[string]string `json:"meta,omitempty"`
+}
+
 // CredentialChangedResponse DTO.
 type CredentialChangedResponse struct {
 	ResponseBase
@@ -2686,6 +2715,7 @@ type GetPublicProjectBrandAsset struct {
 type GetPublicProjectConfig struct {
 	RequestBase
 	ProjectId string `json:"projectId,omitempty"`
+	Env       string `json:"env,omitempty"`
 }
 
 // GetPublicProjectLegal DTO.
@@ -2945,14 +2975,20 @@ type FinishInvitationRequest struct {
 	LastName    string `json:"lastName,omitempty"`
 }
 
+// StartLinkIdentityRequest DTO.
+type StartLinkIdentityRequest struct {
+	CodeMashRequestBase
+	UserId    string `json:"userId,omitempty"`
+	Provider  string `json:"provider,omitempty"`
+	Mode      string `json:"mode,omitempty"`
+	ReturnUrl string `json:"returnUrl,omitempty"`
+}
+
 // LinkIdentityRequest DTO.
 type LinkIdentityRequest struct {
 	CodeMashRequestBase
-	UserId                string `json:"userId,omitempty"`
-	Provider              string `json:"provider,omitempty"`
-	ProviderToken         string `json:"providerToken,omitempty"`
-	EmailToVerify         string `json:"emailToVerify,omitempty"`
-	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+	UserId string `json:"userId,omitempty"`
+	Code   string `json:"code,omitempty"`
 }
 
 // MapAuthToUserRequest DTO.
@@ -2987,6 +3023,30 @@ type SetContactTagSubscriptionRequest struct {
 	Channel     string `json:"channel,omitempty"`
 	Tag         string `json:"tag,omitempty"`
 	Subscribed  bool   `json:"subscribed"`
+}
+
+// StartSocialSignInRequest DTO.
+type StartSocialSignInRequest struct {
+	CodeMashRequestBase
+	Provider  string `json:"provider,omitempty"`
+	Mode      string `json:"mode,omitempty"`
+	ReturnUrl string `json:"returnUrl,omitempty"`
+}
+
+// SocialSignInCallbackRequest DTO.
+type SocialSignInCallbackRequest struct {
+	CodeMashRequestBase
+	Provider string `json:"provider,omitempty"`
+	Code     string `json:"code,omitempty"`
+	State    string `json:"state,omitempty"`
+	Error    string `json:"error,omitempty"`
+}
+
+// ExchangeSocialSignInCodeRequest DTO.
+type ExchangeSocialSignInCodeRequest struct {
+	CodeMashRequestBase
+	Provider string `json:"provider,omitempty"`
+	Code     string `json:"code,omitempty"`
 }
 
 // UnblockUserRequest DTO.
