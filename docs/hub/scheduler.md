@@ -4,7 +4,7 @@
 
 The scheduler runs a task on a cron schedule. Every Scheduler endpoint the
 gateway exposes has a `hub.SchedulerModule` method (`client.Hub.Scheduler`).
-All 8 are covered by `norbix/hub/scheduler_test.go`, which asserts the verb,
+All 9 are covered by `norbix/hub/scheduler_test.go`, which asserts the verb,
 the fully-resolved path, the query string and the JSON body of each one.
 
 Each method takes a context, any route id as a plain argument, an untyped
@@ -20,6 +20,7 @@ to discard it).
 | `DisableScheduler(ctx, req, out)` | `PUT` | `/scheduler/disable` | — |
 | `GetSchedulerTasks(ctx, req, out)` | `GET` | `/scheduler/tasks` | query: `pageSize`, `startingAfter`, `endingBefore`, `type`, `enabled` |
 | `GetSchedulerTask(ctx, id, req, out)` | `GET` | `/scheduler/tasks/{id}` | path: `id` |
+| `GetSchedulerTaskRuns(ctx, id, req, out)` | `GET` | `/scheduler/tasks/{id}/runs` | path: `id`; query: `take` (1–50, default 10) |
 | `SaveSchedulerTask(ctx, req, out)` | `POST` | `/scheduler/tasks` | body (see below) |
 | `EnableSchedulerTask(ctx, id, req, out)` | `PUT` | `/scheduler/tasks/{Id}/enable` | path: `id` |
 | `DisableSchedulerTask(ctx, id, req, out)` | `PUT` | `/scheduler/tasks/{Id}/disable` | path: `id` |
@@ -42,9 +43,11 @@ if err := client.Hub.Scheduler.EnableScheduler(ctx, nil, nil); err != nil {
 
 ## Save a task (create or update)
 
-**Only `EmailCampaign` tasks run today.** The other `SchedulerTaskType`
-values (`PushCampaign`, `SmsCampaign`, `CodeFunctionalCall`, `WebhookCall`)
-exist in the type but the gateway refuses them on save.
+The gateway runs `EmailCampaign`, `SmsCampaign`, `PushCampaign`,
+`CodeFunctionalCall` (call a cloud function), `MarketplaceFunctionCall` and
+`WorkflowCall` (start a workflow) tasks; `WebhookCall` exists in the type but
+the gateway refuses it on save. The Code and Workflow bodies are below the
+email example.
 
 The request:
 
@@ -55,7 +58,7 @@ The request:
 | `cron` | yes | exactly **5 fields** (minute hour day-of-month month day-of-week), evaluated in **UTC** — `0 9 * * 1` is every Monday 09:00 UTC |
 | `isEnabled` | yes | start enabled or not |
 | `stopOnError` | yes | disable the task after a failed run |
-| `task` | yes | what to run — `dtos.EmailCampaignSchedulerTaskRequest` |
+| `task` | yes | what to run — `dtos.EmailCampaignSchedulerTaskRequest`, `dtos.CodeFunctionSchedulerTaskRequest`, `dtos.WorkflowSchedulerTaskRequest`, … |
 | `taskId` | on update | the `tsk_…` id to update; leave it out to create |
 | `description` | no | notes |
 
@@ -125,6 +128,41 @@ set — instead:
 
 To update, send the same request with `"taskId": "tsk_…"`.
 
+### Call a cloud function on a cron ("Code call")
+
+```go
+"task": dtos.CodeFunctionSchedulerTaskRequest{
+	Type:           dtos.SchedulerTaskTypeCodeFunctionalCall,
+	FunctionRef:    &dtos.FunctionRefDto{IntegrationId: "int_lambda", FunctionId: "nightly-report", Qualifier: "live"},
+	InvocationType: dtos.CodeInvocationTypeAsync,
+	Config:         `{"source":"scheduler"}`,
+},
+```
+
+goes on the wire as `"task": {"type": "CodeFunctionalCall", "functionRef":
+{"integrationId": "int_lambda", "functionId": "nightly-report", "qualifier":
+"live"}, "invocationType": "Async", "config": "{\"source\":\"scheduler\"}"}`. Each
+fire sends the function one event envelope (`scheduler.task.fired`) as the
+task's initiator, who needs `code:execute` on the integration
+(`CM-ERRORS-SCHEDULER-012` otherwise). `Config` may hold `@Model.X` bindings;
+map each one in `MappedTokens`.
+
+### Start a workflow on a cron ("Workflow call")
+
+```go
+"task": dtos.WorkflowSchedulerTaskRequest{
+	Type:        dtos.SchedulerTaskTypeWorkflowCall,
+	WorkflowRef: "wf_3kQ9mZ2vXc8LpR4wT7yH1n",
+	Payload:     map[string]string{"source": "scheduler"},
+},
+```
+
+goes on the wire as `"task": {"type": "WorkflowCall", "workflowRef":
+"wf_3kQ9mZ2vXc8LpR4wT7yH1n", "payload": {"source": "scheduler"}}`. `Payload`
+fills the run's `@Model.Request.*` values (strings only). The run acts as the
+workflow's own execution identity; the initiator needs `code:execute` on the
+workflow.
+
 ## Read tasks
 
 ```go
@@ -138,6 +176,14 @@ err := client.Hub.Scheduler.GetSchedulerTasks(ctx, map[string]any{
 var one dtos.GetSchedulerTaskResponse
 err = client.Hub.Scheduler.GetSchedulerTask(ctx, "tsk_123", nil, &one)
 // one.Item.PayloadJson holds the saved task body as JSON.
+```
+
+## Run history
+
+```go
+var runs dtos.GetSchedulerTaskRunsResponse
+err := client.Hub.Scheduler.GetSchedulerTaskRuns(ctx, "tsk_123", map[string]any{"take": 20}, &runs)
+// runs.Runs, newest first: Outcome "Fired" | "Failed" | "Skipped", Reason on a failed or skipped run.
 ```
 
 ## Pause, resume, delete

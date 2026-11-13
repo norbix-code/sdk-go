@@ -15,7 +15,10 @@ import (
 
 // CodeModule groups the Code endpoints on the API: the workflow (beta) routes
 // an app user needs to answer a waiting run — the inbox of runs waiting on
-// them, the resume by run id and the signed resume link from a notification.
+// them, the resume by run id and the signed resume link from a notification —
+// and the run routes an app's backend calls on the API host: start a run,
+// list a workflow's runs, read a run and its log lines, resume by key, retry
+// a failed step, stop a run (the api twins of the hub routes, as in sdk-ts).
 // Workflows are in beta; bugs may occur. Path ids are positional arguments;
 // leave them out of req.
 type CodeModule struct{ t *transport.Transport }
@@ -83,5 +86,119 @@ func (m *CodeModule) UseCodeWorkflowResumeLink(ctx context.Context, token string
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeOptional,
+	}, out)
+}
+
+// Beta: InvokeCodeWorkflow performs POST /{version}/code/workflows/{Id}/invoke (scope: project).
+// Body: payload?, waitSeconds? (0–30), runVersion? ("draft" or a version number as a string).
+// Answers dtos.InvokeCodeWorkflowResponse; a run that is not finished answers 202 with its runId.
+func (m *CodeModule) InvokeCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/{Id}/invoke",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowRuns performs GET /{version}/code/workflows/{Id}/runs (scope: project).
+// Query: status?, from?, to?, pageSize?, startingAfter?, endingBefore?. Answers dtos.WorkflowRunsResponse,
+// newest first.
+func (m *CodeModule) GetCodeWorkflowRuns(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/{Id}/runs",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowRun performs GET /{version}/code/workflows/runs/{RunId} (scope: project).
+// Answers dtos.WorkflowRunResponse: the run header and every step execution.
+func (m *CodeModule) GetCodeWorkflowRun(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/runs/{RunId}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: GetCodeWorkflowRunLogs performs GET /{version}/code/workflows/runs/{RunId}/logs (scope: project).
+// Query: stepId?, level?, pageSize?, startingAfter?, endingBefore?. Answers dtos.WorkflowRunLogsResponse.
+func (m *CodeModule) GetCodeWorkflowRunLogs(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/runs/{RunId}/logs",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: ResumeCodeWorkflowRunByKey performs POST /{version}/code/workflows/{Id}/resume (scope: project).
+// Body: key, stepId?, decision? ("approved" | "rejected"), payload?. Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) ResumeCodeWorkflowRunByKey(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/{Id}/resume",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: RetryCodeWorkflowRunStep performs POST /{version}/code/workflows/runs/{RunId}/retry (scope: project).
+// Body: stepId? (the failed step by default). Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) RetryCodeWorkflowRunStep(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/runs/{RunId}/retry",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: CancelCodeWorkflowRun performs POST /{version}/code/workflows/runs/{RunId}/cancel (scope: project).
+// Body: reason?. Stops a running or waiting run. Answers dtos.WorkflowRunResponse.
+func (m *CodeModule) CancelCodeWorkflowRun(ctx context.Context, runId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"RunId": runId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/code/workflows/runs/{RunId}/cancel",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
 	}, out)
 }

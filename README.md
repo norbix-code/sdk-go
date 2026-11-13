@@ -945,11 +945,14 @@ module has the 26 routes under `/{version}/code/workflows` (`SaveCodeWorkflow`,
 `GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
 `ResumeCodeWorkflowRun`, `RetryCodeWorkflowRunStep`, `CancelCodeWorkflowRun`,
 `GetCodeWorkflowSchema`, `EnableCodeWorkflows`, …); the request and answer types
-are the generated `dtos.*`. The API client has the four an app user needs
-(`client.API.Code`): the inbox of runs waiting on them
-(`GetCodeWorkflowWaitingRuns`, `assignee: "me"`), `ResumeCodeWorkflowRun` and
-the signed resume link from a notification (`OpenCodeWorkflowResumeLink`,
-`UseCodeWorkflowResumeLink` — no sign-in needed, the token is the key).
+are the generated `dtos.*`. The API client (`client.API.Code`) has the
+eleven run routes: the four an app user needs — the inbox of runs waiting on
+them (`GetCodeWorkflowWaitingRuns`, `assignee: "me"`), `ResumeCodeWorkflowRun`
+and the signed resume link from a notification (`OpenCodeWorkflowResumeLink`,
+`UseCodeWorkflowResumeLink` — no sign-in needed, the token is the key) — and
+the seven an app's backend calls on the API host: `InvokeCodeWorkflow`,
+`GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
+`ResumeCodeWorkflowRunByKey`, `RetryCodeWorkflowRunStep`, `CancelCodeWorkflowRun`.
 
 Two helpers: `client.Hub.Code.WaitForWorkflowRun` reads the run until its
 status is `succeeded`, `failed`, `cancelled` or `waiting` (defaults: 60 s
@@ -1028,7 +1031,7 @@ Project owners configure the assistant on the Hub: `client.Hub.Account`
   and clean the log list, log settings, log integrations (MongoDB, Datadog, AWS
   CloudWatch, …) — test an integration after saving it: nothing is delivered
   until its last test passed
-- [Scheduler](docs/hub/scheduler.md) — cron tasks (email campaigns), module enable / disable (PUT)
+- [Scheduler](docs/hub/scheduler.md) — cron tasks (email / SMS / push campaigns, Code calls, workflow starts), run history, module enable / disable (PUT)
 
 ## Package layout
 
