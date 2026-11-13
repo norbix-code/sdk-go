@@ -2978,17 +2978,19 @@ type FinishInvitationRequest struct {
 // StartLinkIdentityRequest DTO.
 type StartLinkIdentityRequest struct {
 	CodeMashRequestBase
-	UserId    string `json:"userId,omitempty"`
-	Provider  string `json:"provider,omitempty"`
-	Mode      string `json:"mode,omitempty"`
-	ReturnUrl string `json:"returnUrl,omitempty"`
+	UserId        string `json:"userId,omitempty"`
+	Provider      string `json:"provider,omitempty"`
+	Mode          string `json:"mode,omitempty"`
+	ReturnUrl     string `json:"returnUrl,omitempty"`
+	CodeChallenge string `json:"codeChallenge,omitempty"`
 }
 
 // LinkIdentityRequest DTO.
 type LinkIdentityRequest struct {
 	CodeMashRequestBase
-	UserId string `json:"userId,omitempty"`
-	Code   string `json:"code,omitempty"`
+	UserId       string `json:"userId,omitempty"`
+	Code         string `json:"code,omitempty"`
+	CodeVerifier string `json:"codeVerifier,omitempty"`
 }
 
 // MapAuthToUserRequest DTO.
@@ -3028,9 +3030,10 @@ type SetContactTagSubscriptionRequest struct {
 // StartSocialSignInRequest DTO.
 type StartSocialSignInRequest struct {
 	CodeMashRequestBase
-	Provider  string `json:"provider,omitempty"`
-	Mode      string `json:"mode,omitempty"`
-	ReturnUrl string `json:"returnUrl,omitempty"`
+	Provider      string `json:"provider,omitempty"`
+	Mode          string `json:"mode,omitempty"`
+	ReturnUrl     string `json:"returnUrl,omitempty"`
+	CodeChallenge string `json:"codeChallenge,omitempty"`
 }
 
 // SocialSignInCallbackRequest DTO.
@@ -3045,8 +3048,9 @@ type SocialSignInCallbackRequest struct {
 // ExchangeSocialSignInCodeRequest DTO.
 type ExchangeSocialSignInCodeRequest struct {
 	CodeMashRequestBase
-	Provider string `json:"provider,omitempty"`
-	Code     string `json:"code,omitempty"`
+	Provider     string `json:"provider,omitempty"`
+	Code         string `json:"code,omitempty"`
+	CodeVerifier string `json:"codeVerifier,omitempty"`
 }
 
 // UnblockUserRequest DTO.

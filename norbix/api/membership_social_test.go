@@ -103,3 +103,41 @@ func TestExchangeSocialSignInCodeSendsNoCredentials(t *testing.T) {
 		t.Errorf("norbix-project-id: got %q", gotProject)
 	}
 }
+
+func TestPKCEChallengeMatchesTheRFC7636Vector(t *testing.T) {
+	got, err := PKCEChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk")
+	if err != nil || got != "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM" {
+		t.Errorf("got %q, %v", got, err)
+	}
+	if _, err := PKCEChallenge("short"); err == nil {
+		t.Error("a short verifier must be refused")
+	}
+}
+
+func TestNewPKCEMakesAVerifierAndItsChallenge(t *testing.T) {
+	a, err := NewPKCE()
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := NewPKCE()
+	if len(a.CodeVerifier) != 43 || a.CodeVerifier == b.CodeVerifier {
+		t.Errorf("verifier %q / %q", a.CodeVerifier, b.CodeVerifier)
+	}
+	if c, _ := PKCEChallenge(a.CodeVerifier); c != a.CodeChallenge {
+		t.Errorf("challenge %q want %q", a.CodeChallenge, c)
+	}
+}
+
+func TestSocialSignInURLWithOptionsCarriesTheChallengeLast(t *testing.T) {
+	const challenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+	got, err := socialModule("PROD").SocialSignInURLWithOptions("google",
+		SocialSignInOptions{Mode: "app", ReturnURL: "https://app.test/cb", CodeChallenge: challenge})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "https://api.test/v3/membership/auth/social/google?projectId=proj_1&mode=app" +
+		"&returnUrl=https%3A%2F%2Fapp.test%2Fcb&codeChallenge=" + challenge
+	if got != want {
+		t.Errorf("got  %q\nwant %q", got, want)
+	}
+}

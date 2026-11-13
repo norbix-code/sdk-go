@@ -297,20 +297,25 @@ Okta. The project's enabled providers are in the public config
 ```go
 m := client.API.Membership
 
-// 1. Send the browser (on a phone: the system browser) here. Not a call: it redirects.
-startURL, err := m.SocialSignInURL("google", "", "https://app.example.com/oauth/callback")
+// 1. PKCE: keep the verifier (memory on a device, the session on a server); only the challenge travels.
+pkce, err := api.NewPKCE()
+// Send the browser (on a phone: the system browser) here. Not a call: it redirects.
+startURL, err := m.SocialSignInURLWithOptions("google", api.SocialSignInOptions{
+	ReturnURL: "https://app.example.com/oauth/callback", CodeChallenge: pkce.CodeChallenge})
 
 // 2. The return page gets ?code=…&provider=google (or ?error=…). Trade the code within 2 minutes:
 var token dtos.SocialSignInTokenResponse
-err = m.ExchangeSocialSignInCode(ctx, "google", map[string]any{"code": code}, &token)
+err = m.ExchangeSocialSignInCode(ctx, "google",
+	map[string]any{"code": code, "codeVerifier": pkce.CodeVerifier}, &token)
 // token.BearerToken: the project JWT (14 days, no refresh token)
 
 // Link another provider to the signed-in user (yourself only):
 var start dtos.StartLinkIdentityResponse
+linkPKCE, err := api.NewPKCE()
 err = m.StartLinkIdentity(ctx, "usr_…", map[string]any{"provider": "github",
-	"returnUrl": "https://app.example.com/settings"}, &start)
+	"returnUrl": "https://app.example.com/settings", "codeChallenge": linkPKCE.CodeChallenge}, &start)
 // send the browser to start.AuthorizeUrl; it comes back with ?intent=link&code=…
-err = m.LinkIdentity(ctx, "usr_…", map[string]any{"code": linkCode}, nil)
+err = m.LinkIdentity(ctx, "usr_…", map[string]any{"code": linkCode, "codeVerifier": linkPKCE.CodeVerifier}, nil)
 ```
 
 - `SocialSignInURL(provider, mode, returnURL)` puts the project id and a
@@ -321,8 +326,17 @@ err = m.LinkIdentity(ctx, "usr_…", map[string]any{"code": linkCode}, nil)
   exchange is how a user signs in again.
 - `LinkIdentity` now takes `{"code": …}` (the link code); the old `provider` /
   `providerToken` body is gone.
+- PKCE (S256) is optional but strongly recommended: `api.NewPKCE()` gives
+  `CodeVerifier` and `CodeChallenge` (32 random bytes, base64url). A code
+  started with a challenge needs its verifier; a verifier for a code started
+  without one is refused too.
 - Refusals: `CM-ERRORS-MEMBERSHIP-051` (code used, expired or unknown), `-055`
-  (409, the provider account belongs to another user), `-056` (403, not yourself).
+  (409, the provider account belongs to another user), `-056` (403, not
+  yourself), `-058` (PKCE: `context.Reason` `verifier_missing`,
+  `verifier_wrong` or `challenge_missing`; the code is used up — start
+  again), `-059` (the challenge is not a 43-character S256). A refused
+  `returnUrl` sends the browser to the mode's failure page with
+  `error=return_url_not_allowed`.
 
 ### Database: nested fields, expanded references, files by id
 
