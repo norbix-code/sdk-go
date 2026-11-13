@@ -266,6 +266,27 @@ FunctionId}, InvocationType}`; a Workflow action is
   messages keep theirs).
 - `dtos.SmsCampaignDto.CreatedById` says who created the campaign.
 
+### Membership: users, settings and service-user API keys
+
+- Users (contacts) on both hosts: `GetAllContacts`, `CreateContact`,
+  `GetContact`, `UpdateContact`, `DeleteContact`, `MergeContacts`,
+  `RepairContactRoles`, `Add/Remove/PromoteContactIdentity`,
+  `ClearContactBounce(ctx, contactId, "Email", …)` and `SetUserAiPlan` live on
+  `client.Hub.Membership` and on `client.API.Membership` (a project API key
+  calls the API host). `ImportUsers` and `RepairLoginProjectIds` are Hub only.
+- Settings: `GetAuthenticationSettings`, `GetAuthorizationSettings` and
+  `UpdateAuthorizationSettings` read and save the Membership settings tabs next
+  to `UpdateAuthenticationSettings` and `UpdatePasswordComplexity`.
+- A service user's API keys: `ListServiceUserApiKeys(ctx, userId, …)`,
+  `IssueServiceUserApiKey(ctx, userId, map[string]any{"name": "ci", "scopes":
+  []string{"database:read"}}, &out)` (the key text is in the answer once) and
+  `DeleteServiceUserApiKey(ctx, userId, keyId, …)`.
+- `client.API.Membership.FinishInvitation` completes an invitation (sign-in
+  optional) and `SendTestPasswordReset` sends a test reset email.
+- A typed list on a read now goes on the query one value per item
+  (`"roleNames": []string{"Editor","User"}` → `roleNames=Editor&roleNames=User`);
+  before, only `[]any` did and a `[]string` went as `"[Editor User]"`.
+
 ### Database: nested fields, expanded references, files by id
 
 - A schema may hold `object` and `array` fields at any depth
