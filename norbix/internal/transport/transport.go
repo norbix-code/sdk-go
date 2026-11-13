@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 
@@ -396,9 +397,21 @@ func buildURLAndBody(
 	return full, b, nil
 }
 
+// toIterable expands a list into one query value per item. Any slice or
+// array counts ([]string, []int, []any …), not only []any, so a typed list
+// goes on the query as roleNames=a&roleNames=b instead of "[a b]".
+// []byte is a value, not a list.
 func toIterable(v any) []any {
 	if list, ok := v.([]any); ok {
 		return list
+	}
+	rv := reflect.ValueOf(v)
+	if (rv.Kind() == reflect.Slice || rv.Kind() == reflect.Array) && rv.Type().Elem().Kind() != reflect.Uint8 {
+		out := make([]any, rv.Len())
+		for i := range out {
+			out[i] = rv.Index(i).Interface()
+		}
+		return out
 	}
 	return []any{v}
 }
