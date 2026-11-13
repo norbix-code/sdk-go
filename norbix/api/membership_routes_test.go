@@ -274,6 +274,9 @@ func apiMembershipCases() []apiMembershipCase {
 	}
 }
 
+// Calls that must go out with no credentials at all, though the client has a key.
+var noCredentialRoutes = map[string]struct{}{"ExchangeSocialSignInCode": {}}
+
 func TestEveryAPIMembershipRouteHitsTheExpectedRoute(t *testing.T) {
 	for _, c := range apiMembershipCases() {
 		t.Run(c.name, func(t *testing.T) {
@@ -315,8 +318,14 @@ func TestEveryAPIMembershipRouteHitsTheExpectedRoute(t *testing.T) {
 			if gotPath != c.path {
 				t.Errorf("path: got %q want %q", gotPath, c.path)
 			}
-			if gotAuth != "Bearer key_1" {
-				t.Errorf("authorization: got %q", gotAuth)
+			wantAuth := "Bearer key_1"
+			if _, open := noCredentialRoutes[c.name]; open {
+				// The gateway judges any token it gets, even on an open route, and
+				// refuses an old one, so these calls send none.
+				wantAuth = ""
+			}
+			if gotAuth != wantAuth {
+				t.Errorf("authorization: got %q want %q", gotAuth, wantAuth)
 			}
 			if gotProject != "proj_1" {
 				t.Errorf("project header: got %q", gotProject)

@@ -779,9 +779,11 @@ func (m *MembershipModule) SetUserAiPlan(ctx context.Context, userId string, req
 	}, out)
 }
 
-// ExchangeSocialSignInCode performs POST /{version}/membership/auth/social/{Provider}/exchange (scope: optional).
+// ExchangeSocialSignInCode performs POST /{version}/membership/auth/social/{Provider}/exchange (scope: unauthenticated).
 //
 // Trades the one-time code from the social sign-in return page (2 minutes, once) for the project JWT: body code (dtos.ExchangeSocialSignInCodeRequest).
+// Sends no credentials: the gateway judges any token it gets, even on this open
+// route, and refuses an old one (credential version 401, another env 403).
 func (m *MembershipModule) ExchangeSocialSignInCode(ctx context.Context, provider string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Provider": provider,
@@ -792,7 +794,7 @@ func (m *MembershipModule) ExchangeSocialSignInCode(ctx context.Context, provide
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
-		Scope:      transport.ScopeOptional,
+		Scope:      transport.ScopeUnauthenticated,
 	}, out)
 }
 

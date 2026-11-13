@@ -4967,6 +4967,13 @@ type PublicBrandDto struct {
 	IconUrl     string `json:"iconUrl,omitempty"`
 }
 
+// PublicSocialSignInDto DTO.
+type PublicSocialSignInDto struct {
+	Provider    string `json:"provider,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
+	StartPath   string `json:"startPath,omitempty"`
+}
+
 // PublicPasswordPolicyDto DTO.
 type PublicPasswordPolicyDto struct {
 	MinLength      float64  `json:"minLength,omitempty"`
@@ -4981,6 +4988,7 @@ type PublicPasswordPolicyDto struct {
 // PublicAuthDto DTO.
 type PublicAuthDto struct {
 	SocialProviders []string                 `json:"socialProviders,omitempty"`
+	SocialSignIn    []*PublicSocialSignInDto `json:"socialSignIn,omitempty"`
 	Passkey         bool                     `json:"passkey"`
 	Methods         []string                 `json:"methods,omitempty"`
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
@@ -10984,6 +10992,7 @@ type GetPublicProjectBrandAsset struct {
 type GetPublicProjectConfig struct {
 	RequestBase
 	ProjectId string `json:"projectId,omitempty"`
+	Env       string `json:"env,omitempty"`
 }
 
 // GetPublicProjectLegal DTO.
