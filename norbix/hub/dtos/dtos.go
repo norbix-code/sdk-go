@@ -2509,6 +2509,7 @@ type TriggerActionWorkflowDto struct {
 	TriggerActionDto
 	WorkflowRef string            `json:"workflowRef,omitempty"`
 	Payload     map[string]string `json:"payload,omitempty"`
+	ResumeKey   string            `json:"resumeKey,omitempty"`
 }
 
 // RequestBase DTO.
@@ -8127,27 +8128,28 @@ type AccountComplianceDto struct {
 
 // SupportCaseDto DTO.
 type SupportCaseDto struct {
-	ViewId          string                `json:"viewId,omitempty"`
-	AccountId       string                `json:"accountId,omitempty"`
-	ProjectId       string                `json:"projectId,omitempty"`
-	ReporterId      string                `json:"reporterId,omitempty"`
-	Kind            SupportCaseKind       `json:"kind,omitempty"`
-	Severity        SupportCaseSeverity   `json:"severity,omitempty"`
-	Status          SupportCaseStatus     `json:"status,omitempty"`
-	CustomerStatus  SupportCustomerStatus `json:"customerStatus,omitempty"`
-	Subject         string                `json:"subject,omitempty"`
-	AffectedModule  string                `json:"affectedModule,omitempty"`
-	DeploymentMode  DeploymentMode        `json:"deploymentMode,omitempty"`
-	GatewayVersion  string                `json:"gatewayVersion,omitempty"`
-	Region          string                `json:"region,omitempty"`
-	PlanTier        string                `json:"planTier,omitempty"`
-	OpenedOn        float64               `json:"openedOn,omitempty"`
-	FirstResponseOn *float64              `json:"firstResponseOn,omitempty"`
-	ResolvedOn      *float64              `json:"resolvedOn,omitempty"`
-	ClosedOn        *float64              `json:"closedOn,omitempty"`
-	Resolution      string                `json:"resolution,omitempty"`
-	MessageCount    float64               `json:"messageCount,omitempty"`
-	LastMessageOn   *float64              `json:"lastMessageOn,omitempty"`
+	ViewId            string                `json:"viewId,omitempty"`
+	AccountId         string                `json:"accountId,omitempty"`
+	ProjectId         string                `json:"projectId,omitempty"`
+	ReporterId        string                `json:"reporterId,omitempty"`
+	Kind              SupportCaseKind       `json:"kind,omitempty"`
+	Severity          SupportCaseSeverity   `json:"severity,omitempty"`
+	Status            SupportCaseStatus     `json:"status,omitempty"`
+	CustomerStatus    SupportCustomerStatus `json:"customerStatus,omitempty"`
+	Subject           string                `json:"subject,omitempty"`
+	AffectedModule    string                `json:"affectedModule,omitempty"`
+	DeploymentMode    DeploymentMode        `json:"deploymentMode,omitempty"`
+	GatewayVersion    string                `json:"gatewayVersion,omitempty"`
+	Region            string                `json:"region,omitempty"`
+	PlanTier          string                `json:"planTier,omitempty"`
+	OpenedOn          float64               `json:"openedOn,omitempty"`
+	FirstResponseOn   *float64              `json:"firstResponseOn,omitempty"`
+	ResolvedOn        *float64              `json:"resolvedOn,omitempty"`
+	ClosedOn          *float64              `json:"closedOn,omitempty"`
+	Resolution        string                `json:"resolution,omitempty"`
+	MessageCount      float64               `json:"messageCount,omitempty"`
+	CountedMessageIds []string              `json:"countedMessageIds,omitempty"`
+	LastMessageOn     *float64              `json:"lastMessageOn,omitempty"`
 }
 
 // SupportCaseMessageDto DTO.
