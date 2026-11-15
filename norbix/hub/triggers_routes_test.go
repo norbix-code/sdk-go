@@ -275,6 +275,19 @@ func TestTriggerSaveSendsCodeAndWorkflowActions(t *testing.T) {
 		WorkflowRef:      "wf_onboard",
 		Payload:          map[string]string{"source": "go"},
 	}
+	// The same action resuming the run that waits on a key instead of starting one.
+	resume := dtos.TriggerActionWorkflowDto{
+		TriggerActionDto: dtos.TriggerActionDto{Type: dtos.TriggerActionTypeWorkflow},
+		WorkflowRef:      "wf_onboard",
+		ResumeKey:        "purchase-@Model.Trigger.User.Id",
+		Payload:          map[string]string{"plan": "@Model.Trigger.Record.plan"},
+	}
+	wantResume := map[string]any{
+		"type":        "Workflow",
+		"workflowRef": "wf_onboard",
+		"resumeKey":   "purchase-@Model.Trigger.User.Id",
+		"payload":     map[string]any{"plan": "@Model.Trigger.Record.plan"},
+	}
 	wantCode := map[string]any{
 		"type":           "Code",
 		"functionRef":    map[string]any{"integrationId": "int_lambda", "functionId": "notify-sales", "qualifier": "live"},
@@ -316,6 +329,7 @@ func TestTriggerSaveSendsCodeAndWorkflowActions(t *testing.T) {
 	}{
 		{"Code", code, wantCode},
 		{"Workflow", workflow, wantWorkflow},
+		{"WorkflowResume", resume, wantResume},
 	}
 	for _, s := range saves {
 		for _, a := range actions {
