@@ -619,18 +619,6 @@ func (m *AccountModule) SendInviteToTeamMember(ctx context.Context, req map[stri
 	}, out)
 }
 
-// GetLicenses performs GET /{version}/account/licenses (scope: project).
-func (m *AccountModule) GetLicenses(ctx context.Context, req map[string]any, out any) error {
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/account/licenses",
-		Method:     "GET",
-		PathParams: nil,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // GetProjectAiSettings performs GET /{version}/account/projects/{projectId}/ai/settings (scope: project).
 func (m *AccountModule) GetProjectAiSettings(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
