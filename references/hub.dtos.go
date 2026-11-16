@@ -1,10 +1,10 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-10-07 10:13:50
+Date: 2026-11-16 09:03:25
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:49826
+BaseUrl: http://localhost:5001
 
 //GlobalNamespace:
 //MakePropertiesOptional: False
@@ -27,11 +27,12 @@ import (
 type EmailProvider string
 
 const (
-	EmailProviderSmtp     EmailProvider = "Smtp"
-	EmailProviderSendGrid               = "SendGrid"
-	EmailProviderMailGun                = "MailGun"
-	EmailProviderAwsSes                 = "AwsSes"
-	EmailProviderFake                   = "Fake"
+	EmailProviderSmtp               EmailProvider = "Smtp"
+	EmailProviderSendGrid                         = "SendGrid"
+	EmailProviderMailGun                          = "MailGun"
+	EmailProviderAwsSes                           = "AwsSes"
+	EmailProviderFake                             = "Fake"
+	EmailProviderAzureCommunication               = "AzureCommunication"
 )
 
 type EmailIntegrationRequest struct {
@@ -61,30 +62,51 @@ type SmtpEmailIntegrationRequest struct {
 	Password string        `json:"password"`
 }
 
-type AwsIntegrationType string
+type CloudAuthMode string
 
 const (
-	AwsIntegrationTypeIam              AwsIntegrationType = "Iam"
-	AwsIntegrationTypeCrossAccountRole                    = "CrossAccountRole"
+	CloudAuthModeAccessKey        CloudAuthMode = "AccessKey"
+	CloudAuthModeKeyless                        = "Keyless"
+	CloudAuthModeCrossAccountRole               = "CrossAccountRole"
 )
 
 type AwsSesEmailIntegrationRequest struct {
 	EmailIntegrationRequest
-	Provider         EmailProvider      `json:"provider,omitempty"`
-	IntegrationType  AwsIntegrationType `json:"integrationType,omitempty"`
-	AwsRegion        string             `json:"awsRegion"`
-	EmailIdentityArn string             `json:"emailIdentityArn"`
-	ConfigurationSet *string            `json:"configurationSet,omitempty"`
-	RoleArn          *string            `json:"roleArn,omitempty"`
-	ExternalId       *string            `json:"externalId,omitempty"`
-	AccessKey        *string            `json:"accessKey,omitempty"`
-	SecretKey        *string            `json:"secretKey,omitempty"`
+	Provider EmailProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret), CrossAccountRole (no stored secret; the install must run on AWS) or AccessKey (a stored IAM access key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret), CrossAccountRole (no stored secret; the install must run on AWS) or AccessKey (a stored IAM access key, less secure).")
+	AuthMode         *CloudAuthMode `json:"authMode,omitempty"`
+	AwsRegion        string         `json:"awsRegion"`
+	EmailIdentityArn string         `json:"emailIdentityArn"`
+	ConfigurationSet *string        `json:"configurationSet,omitempty"`
+	/** @description Keyless: the ARN of the role that trusts this integration's Norbix token. CrossAccountRole: the ARN of the role that trusts this install's AWS account. */
+	// @ApiMember(Description="Keyless: the ARN of the role that trusts this integration's Norbix token. CrossAccountRole: the ARN of the role that trusts this install's AWS account.")
+	RoleArn *string `json:"roleArn,omitempty"`
+	/** @description CrossAccountRole: this Norbix account's id (the role's trust names it as sts:ExternalId). Any other value is refused. */
+	// @ApiMember(Description="CrossAccountRole: this Norbix account's id (the role's trust names it as sts:ExternalId). Any other value is refused.")
+	ExternalId *string `json:"externalId,omitempty"`
+	/** @description AccessKey: the IAM access key id. */
+	// @ApiMember(Description="AccessKey: the IAM access key id.")
+	AccessKey *string `json:"accessKey,omitempty"`
+	/** @description AccessKey: the IAM secret access key. */
+	// @ApiMember(Description="AccessKey: the IAM secret access key.")
+	SecretKey *string `json:"secretKey,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk         *bool   `json:"acceptKeyRisk,omitempty"`
+	DeliveryEventsEnabled *bool   `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn           *string `json:"snsTopicArn,omitempty"`
+	/** @description The SQS queue URL (https://sqs.<region>.amazonaws.com/<account>/<name>) the configuration set's SNS topic delivers to. Norbix polls it with this integration's credentials. Requires ConfigurationSet. */
+	// @ApiMember(Description="The SQS queue URL (https://sqs.<region>.amazonaws.com/<account>/<name>) the configuration set's SNS topic delivers to. Norbix polls it with this integration's credentials. Requires ConfigurationSet.")
+	DeliveryEventsQueueUrl *string `json:"deliveryEventsQueueUrl,omitempty"`
 }
 
 type SendGridEmailIntegrationRequest struct {
 	EmailIntegrationRequest
-	Provider EmailProvider `json:"provider,omitempty"`
-	ApiKey   string        `json:"apiKey"`
+	Provider              EmailProvider `json:"provider,omitempty"`
+	ApiKey                string        `json:"apiKey"`
+	DeliveryEventsEnabled *bool         `json:"deliveryEventsEnabled,omitempty"`
+	EventWebhookPublicKey *string       `json:"eventWebhookPublicKey,omitempty"`
 }
 
 type MailGunRegion string
@@ -103,6 +125,24 @@ type MailGunEmailIntegrationRequest struct {
 	Region            MailGunRegion `json:"region,omitempty"`
 }
 
+type AzureCommunicationEmailIntegrationRequest struct {
+	EmailIntegrationRequest
+	Provider              EmailProvider  `json:"provider,omitempty"`
+	AuthMode              *CloudAuthMode `json:"authMode,omitempty"`
+	Endpoint              string         `json:"endpoint"`
+	TenantId              *string        `json:"tenantId,omitempty"`
+	ClientId              *string        `json:"clientId,omitempty"`
+	AcceptKeyRisk         *bool          `json:"acceptKeyRisk,omitempty"`
+	AccessKey             string         `json:"accessKey"`
+	DeliveryEventsEnabled *bool          `json:"deliveryEventsEnabled,omitempty"`
+	EventGridKey          *string        `json:"eventGridKey,omitempty"`
+}
+
+type FakeEmailIntegrationRequest struct {
+	EmailIntegrationRequest
+	Provider EmailProvider `json:"provider,omitempty"`
+}
+
 type EmailCampaignRecipientsSourceTypes string
 
 const (
@@ -111,26 +151,40 @@ const (
 	EmailCampaignRecipientsSourceTypesAccountUsers                                      = "AccountUsers"
 	EmailCampaignRecipientsSourceTypesEmail                                             = "Email"
 	EmailCampaignRecipientsSourceTypesCollection                                        = "Collection"
+	EmailCampaignRecipientsSourceTypesTriggerSubject                                    = "TriggerSubject"
 )
 
 type TokenMappingResolverType string
 
 const (
-	TokenMappingResolverTypeNotSet          TokenMappingResolverType = "NotSet"
-	TokenMappingResolverTypeCustom                                   = "Custom"
-	TokenMappingResolverTypeProject                                  = "Project"
-	TokenMappingResolverTypeProjectSocials                           = "ProjectSocials"
-	TokenMappingResolverTypeInitiator                                = "Initiator"
-	TokenMappingResolverTypeRecipient                                = "Recipient"
-	TokenMappingResolverTypeSchemaRecord                             = "SchemaRecord"
-	TokenMappingResolverTypeTargetUser                               = "TargetUser"
-	TokenMappingResolverTypeTagDefinitions                           = "TagDefinitions"
-	TokenMappingResolverTypeEmailSignatures                          = "EmailSignatures"
-	TokenMappingResolverTypeCampaign                                 = "Campaign"
-	TokenMappingResolverTypeTemplate                                 = "Template"
-	TokenMappingResolverTypeEmailFooters                             = "EmailFooters"
-	TokenMappingResolverTypeOld                                      = "Old"
-	TokenMappingResolverTypeNew                                      = "New"
+	TokenMappingResolverTypeNotSet            TokenMappingResolverType = "NotSet"
+	TokenMappingResolverTypeCustom                                     = "Custom"
+	TokenMappingResolverTypeProject                                    = "Project"
+	TokenMappingResolverTypeProjectSocials                             = "ProjectSocials"
+	TokenMappingResolverTypeInitiator                                  = "Initiator"
+	TokenMappingResolverTypeRecipient                                  = "Recipient"
+	TokenMappingResolverTypeSchemaRecord                               = "SchemaRecord"
+	TokenMappingResolverTypeTargetUser                                 = "TargetUser"
+	TokenMappingResolverTypeTagDefinitions                             = "TagDefinitions"
+	TokenMappingResolverTypeEmailSignatures                            = "EmailSignatures"
+	TokenMappingResolverTypeCampaign                                   = "Campaign"
+	TokenMappingResolverTypeTemplate                                   = "Template"
+	TokenMappingResolverTypeEmailFooters                               = "EmailFooters"
+	TokenMappingResolverTypeOld                                        = "Old"
+	TokenMappingResolverTypeNew                                        = "New"
+	TokenMappingResolverTypeRequestInput                               = "RequestInput"
+	TokenMappingResolverTypeIntegrationConfig                          = "IntegrationConfig"
+	TokenMappingResolverTypeIntegrationSecret                          = "IntegrationSecret"
+	TokenMappingResolverTypeStepOutput                                 = "StepOutput"
+)
+
+type SecretValueFormat string
+
+const (
+	SecretValueFormatRaw      SecretValueFormat = "Raw"
+	SecretValueFormatBearer                     = "Bearer"
+	SecretValueFormatBasic                      = "Basic"
+	SecretValueFormatPrefixed                   = "Prefixed"
 )
 
 // @DataContract
@@ -141,6 +195,10 @@ type TokenMappingDto struct {
 	Value string `json:"value"`
 	// @DataMember
 	Resolver TokenMappingResolverType `json:"resolver,omitempty"`
+	// @DataMember
+	SecretKeys []string `json:"secretKeys,omitempty"`
+	// @DataMember
+	SecretFormat *SecretValueFormat `json:"secretFormat,omitempty"`
 }
 
 type EmailCampaignRequest struct {
@@ -228,6 +286,7 @@ const (
 	TriggerActionTypeWebhookCall                   = "WebhookCall"
 	TriggerActionTypeSseCall                       = "SseCall"
 	TriggerActionTypeMarketplace                   = "Marketplace"
+	TriggerActionTypeWorkflow                      = "Workflow"
 )
 
 // @DataContract
@@ -239,13 +298,14 @@ type TriggerActionDto struct {
 }
 
 type SaveTriggerRequest struct {
-	Type           TriggerType `json:"type,omitempty"`
-	TriggerId      *string     `json:"triggerId,omitempty"`
-	Name           string      `json:"name"`
-	Description    *string     `json:"description,omitempty"`
-	IsEnabled      bool        `json:"isEnabled,omitempty"`
-	PreExecuteCode *string     `json:"preExecuteCode,omitempty"`
-	Action         interface{} `json:"action"`
+	Type                TriggerType `json:"type,omitempty"`
+	TriggerId           *string     `json:"triggerId,omitempty"`
+	Name                string      `json:"name"`
+	Description         *string     `json:"description,omitempty"`
+	IsEnabled           bool        `json:"isEnabled,omitempty"`
+	PreExecuteCode      *string     `json:"preExecuteCode,omitempty"`
+	Action              interface{} `json:"action"`
+	ExecutionIdentityId *string     `json:"executionIdentityId,omitempty"`
 }
 
 type MembershipTriggerType string
@@ -270,9 +330,12 @@ type MembershipTriggerRequest struct {
 type SchemaTriggerType string
 
 const (
-	SchemaTriggerTypeOnInserted SchemaTriggerType = "OnInserted"
-	SchemaTriggerTypeOnDeleted                    = "OnDeleted"
-	SchemaTriggerTypeOnUpdated                    = "OnUpdated"
+	SchemaTriggerTypeOnInserted     SchemaTriggerType = "OnInserted"
+	SchemaTriggerTypeOnDeleted                        = "OnDeleted"
+	SchemaTriggerTypeOnUpdated                        = "OnUpdated"
+	SchemaTriggerTypeOnInsertedMany                   = "OnInsertedMany"
+	SchemaTriggerTypeOnUpdatedMany                    = "OnUpdatedMany"
+	SchemaTriggerTypeOnDeletedMany                    = "OnDeletedMany"
 )
 
 type SchemaTriggerRequest struct {
@@ -303,6 +366,7 @@ const (
 	PaymentTriggerTypeOnOrderCreated        PaymentTriggerType = "OnOrderCreated"
 	PaymentTriggerTypeOnOrderPaid                              = "OnOrderPaid"
 	PaymentTriggerTypeOnWebhookCallReceived                    = "OnWebhookCallReceived"
+	PaymentTriggerTypeOnOrderPaymentChanged                    = "OnOrderPaymentChanged"
 )
 
 type PaymentTriggerRequest struct {
@@ -331,13 +395,17 @@ type MongoDbConnectionStringDatabaseIntegrationRequest struct {
 	DatabaseIntegrationRequest
 	Provider         DatabaseProvider `json:"provider,omitempty"`
 	DatabaseName     *string          `json:"databaseName,omitempty"`
+	AuthMode         *CloudAuthMode   `json:"authMode,omitempty"`
+	Audience         *string          `json:"audience,omitempty"`
 	ConnectionString string           `json:"connectionString"`
 }
 
 type MongoDbAtlasFlexManagedDatabaseIntegrationRequest struct {
 	DatabaseIntegrationRequest
-	Provider         DatabaseProvider `json:"provider,omitempty"`
-	NorbixRegionCode string           `json:"norbixRegionCode"`
+	Provider           DatabaseProvider `json:"provider,omitempty"`
+	NorbixRegionCode   string           `json:"norbixRegionCode"`
+	FlexClusterId      *string          `json:"flexClusterId,omitempty"`
+	ClusterDisplayName *string          `json:"clusterDisplayName,omitempty"`
 }
 
 type FileProvider string
@@ -396,37 +464,84 @@ type AppleICloudFilesIntegrationRequest struct {
 	P8PrivateKey        string       `json:"p8PrivateKey"`
 }
 
-type AwsS3IntegrationType string
-
-const (
-	AwsS3IntegrationTypeIam              AwsS3IntegrationType = "Iam"
-	AwsS3IntegrationTypeCrossAccountRole                      = "CrossAccountRole"
-)
-
 type AwsS3FilesIntegrationRequest struct {
 	FilesIntegrationRequest
-	Provider        FileProvider         `json:"provider,omitempty"`
-	IntegrationType AwsS3IntegrationType `json:"integrationType,omitempty"`
-	BucketName      string               `json:"bucketName"`
-	Region          string               `json:"region"`
-	RoleArn         *string              `json:"roleArn,omitempty"`
-	ExternalId      *string              `json:"externalId,omitempty"`
-	AccessKey       *string              `json:"accessKey,omitempty"`
-	SecretKey       *string              `json:"secretKey,omitempty"`
+	Provider FileProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret), CrossAccountRole (no stored secret; the install must run on AWS) or AccessKey (a stored IAM access key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret), CrossAccountRole (no stored secret; the install must run on AWS) or AccessKey (a stored IAM access key, less secure).")
+	AuthMode   *CloudAuthMode `json:"authMode,omitempty"`
+	BucketName string         `json:"bucketName"`
+	Region     string         `json:"region"`
+	/** @description Keyless: the ARN of the role that trusts this integration's Norbix token (arn:aws:iam::<account>:role/<name>). CrossAccountRole: the ARN of the role that trusts this install's AWS account. */
+	// @ApiMember(Description="Keyless: the ARN of the role that trusts this integration's Norbix token (arn:aws:iam::<account>:role/<name>). CrossAccountRole: the ARN of the role that trusts this install's AWS account.")
+	RoleArn *string `json:"roleArn,omitempty"`
+	/** @description CrossAccountRole: this Norbix account's id (the role's trust names it as sts:ExternalId). Any other value is refused. */
+	// @ApiMember(Description="CrossAccountRole: this Norbix account's id (the role's trust names it as sts:ExternalId). Any other value is refused.")
+	ExternalId *string `json:"externalId,omitempty"`
+	/** @description AccessKey: the IAM access key id. */
+	// @ApiMember(Description="AccessKey: the IAM access key id.")
+	AccessKey *string `json:"accessKey,omitempty"`
+	/** @description AccessKey: the IAM secret access key. */
+	// @ApiMember(Description="AccessKey: the IAM secret access key.")
+	SecretKey *string `json:"secretKey,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
 }
 
 type GoogleCloudFilesIntegrationRequest struct {
 	FilesIntegrationRequest
-	Provider              FileProvider `json:"provider,omitempty"`
-	BucketName            string       `json:"bucketName"`
-	ServiceAccountJsonKey string       `json:"serviceAccountJsonKey"`
+	Provider FileProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure).")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	/** @description The Cloud Storage bucket. */
+	// @ApiMember(Description="The Cloud Storage bucket.")
+	BucketName string `json:"bucketName"`
+	/** @description Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool. */
+	// @ApiMember(Description="Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool.")
+	ProjectNumber *string `json:"projectNumber,omitempty"`
+	/** @description Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens).")
+	PoolId *string `json:"poolId,omitempty"`
+	/** @description Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens).")
+	ProviderId *string `json:"providerId,omitempty"`
+	/** @description Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com). */
+	// @ApiMember(Description="Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com).")
+	ServiceAccountEmail *string `json:"serviceAccountEmail,omitempty"`
+	/** @description AccessKey: the service-account JSON key. */
+	// @ApiMember(Description="AccessKey: the service-account JSON key.")
+	ServiceAccountJsonKey *string `json:"serviceAccountJsonKey,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
 }
 
 type AzureBlobFilesIntegrationRequest struct {
 	FilesIntegrationRequest
-	Provider         FileProvider `json:"provider,omitempty"`
-	BlobName         string       `json:"blobName"`
-	ConnectionString string       `json:"connectionString"`
+	Provider FileProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret) or AccessKey (a stored connection string, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret) or AccessKey (a stored connection string, less secure).")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	/** @description The container. */
+	// @ApiMember(Description="The container.")
+	BlobName string `json:"blobName"`
+	/** @description Keyless: the storage account name (3–24 lowercase letters and digits). */
+	// @ApiMember(Description="Keyless: the storage account name (3–24 lowercase letters and digits).")
+	StorageAccount *string `json:"storageAccount,omitempty"`
+	/** @description Keyless: the Entra tenant id of the managed identity. */
+	// @ApiMember(Description="Keyless: the Entra tenant id of the managed identity.")
+	TenantId *string `json:"tenantId,omitempty"`
+	/** @description Keyless: the managed identity's client id. */
+	// @ApiMember(Description="Keyless: the managed identity's client id.")
+	ClientId *string `json:"clientId,omitempty"`
+	/** @description AccessKey: the storage account connection string. */
+	// @ApiMember(Description="AccessKey: the storage account connection string.")
+	ConnectionString string `json:"connectionString"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
 }
 
 type LocalFilesIntegrationRequest struct {
@@ -497,6 +612,7 @@ type AwsS3LoggingIntegrationType string
 const (
 	AwsS3LoggingIntegrationTypeIam              AwsS3LoggingIntegrationType = "Iam"
 	AwsS3LoggingIntegrationTypeCrossAccountRole                             = "CrossAccountRole"
+	AwsS3LoggingIntegrationTypeKeyless                                      = "Keyless"
 )
 
 type AwsS3LoggingIntegrationRequest struct {
@@ -546,11 +662,14 @@ type PrometheusLoggingIntegrationRequest struct {
 
 type DataDogLoggingIntegrationRequest struct {
 	LoggingIntegrationRequest
-	Provider    LoggingProvider `json:"provider,omitempty"`
-	Site        string          `json:"site"`
-	ServiceName string          `json:"serviceName"`
-	Environment string          `json:"environment"`
-	ApiKey      string          `json:"apiKey"`
+	Provider LoggingProvider `json:"provider,omitempty"`
+	/** @description The Datadog site of your account, one of: datadoghq.com, us3.datadoghq.com, us5.datadoghq.com, datadoghq.eu, ap1.datadoghq.com, ap2.datadoghq.com, ddog-gov.com (DataDogSites.All). */
+	// @ApiMember(Description="The Datadog site of your account, one of: datadoghq.com, us3.datadoghq.com, us5.datadoghq.com, datadoghq.eu, ap1.datadoghq.com, ap2.datadoghq.com, ddog-gov.com (DataDogSites.All).", IsRequired=true)
+	Site string `json:"site"`
+	/** @description The Datadog service tag of the forwarded logs. Optional: empty = the project id (pr_…). The env tag is not asked: it is the Norbix environment of the entry, lower-cased (prod, test, …). */
+	// @ApiMember(Description="The Datadog service tag of the forwarded logs. Optional: empty = the project id (pr_…). The env tag is not asked: it is the Norbix environment of the entry, lower-cased (prod, test, …).")
+	ServiceName *string `json:"serviceName,omitempty"`
+	ApiKey      string  `json:"apiKey"`
 }
 
 type InternalKafkaLoggingIntegrationRequest struct {
@@ -651,7 +770,6 @@ type RoleName struct {
 type OAuthModeConfig struct {
 	Name               DisplayName `json:"name"`
 	CallbackUrl        string      `json:"callbackUrl"`
-	LogoutUrl          *string     `json:"logoutUrl,omitempty"`
 	FailureRedirectUrl *string     `json:"failureRedirectUrl,omitempty"`
 	RoleName           *RoleName   `json:"roleName,omitempty"`
 }
@@ -736,6 +854,8 @@ const (
 	PaymentGatewayPlatformCheckOutCom                         = "CheckOutCom"
 	PaymentGatewayPlatformMollie                              = "Mollie"
 	PaymentGatewayPlatformWorldpay                            = "Worldpay"
+	PaymentGatewayPlatformMontonio                            = "Montonio"
+	PaymentGatewayPlatformNeopay                              = "Neopay"
 )
 
 type PaymentIntegrationRequest struct {
@@ -805,25 +925,123 @@ type StripePaymentIntegrationRequest struct {
 type AppleInAppPaymentIntegrationRequest struct {
 	PaymentIntegrationRequest
 	Provider                              PaymentGatewayPlatform `json:"provider,omitempty"`
-	MerchantIdentifier                    string                 `json:"merchantIdentifier"`
-	MerchantDomain                        string                 `json:"merchantDomain"`
-	DisplayName                           string                 `json:"displayName"`
-	MerchantIdentityCertificateP12Base64  string                 `json:"merchantIdentityCertificateP12Base64"`
-	MerchantIdentityCertificatePassword   string                 `json:"merchantIdentityCertificatePassword"`
-	PaymentProcessingCertificateP12Base64 string                 `json:"paymentProcessingCertificateP12Base64"`
-	PaymentProcessingCertificatePassword  string                 `json:"paymentProcessingCertificatePassword"`
-	WebhookBundleId                       *string                `json:"webhookBundleId,omitempty"`
+	WebhookBundleId                       string                 `json:"webhookBundleId"`
+	MerchantIdentifier                    *string                `json:"merchantIdentifier,omitempty"`
+	MerchantDomain                        *string                `json:"merchantDomain,omitempty"`
+	DisplayName                           *string                `json:"displayName,omitempty"`
+	MerchantIdentityCertificateP12Base64  *string                `json:"merchantIdentityCertificateP12Base64,omitempty"`
+	MerchantIdentityCertificatePassword   *string                `json:"merchantIdentityCertificatePassword,omitempty"`
+	PaymentProcessingCertificateP12Base64 *string                `json:"paymentProcessingCertificateP12Base64,omitempty"`
+	PaymentProcessingCertificatePassword  *string                `json:"paymentProcessingCertificatePassword,omitempty"`
 }
 
 type GoogleInAppPaymentIntegrationRequest struct {
 	PaymentIntegrationRequest
-	Provider           PaymentGatewayPlatform `json:"provider,omitempty"`
-	MerchantId         string                 `json:"merchantId"`
-	MerchantName       string                 `json:"merchantName"`
-	Gateway            string                 `json:"gateway"`
-	PrivateKeyOrToken  string                 `json:"privateKeyOrToken"`
-	GatewayMerchantId  *string                `json:"gatewayMerchantId,omitempty"`
-	WebhookPackageName *string                `json:"webhookPackageName,omitempty"`
+	Provider PaymentGatewayPlatform `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure).")
+	AuthMode           *CloudAuthMode `json:"authMode,omitempty"`
+	WebhookPackageName string         `json:"webhookPackageName"`
+	MerchantId         *string        `json:"merchantId,omitempty"`
+	MerchantName       *string        `json:"merchantName,omitempty"`
+	Gateway            *string        `json:"gateway,omitempty"`
+	/** @description Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool. */
+	// @ApiMember(Description="Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool.")
+	ProjectNumber *string `json:"projectNumber,omitempty"`
+	/** @description Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens).")
+	PoolId *string `json:"poolId,omitempty"`
+	/** @description Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens).")
+	ProviderId *string `json:"providerId,omitempty"`
+	/** @description Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com). */
+	// @ApiMember(Description="Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com).")
+	ServiceAccountEmail *string `json:"serviceAccountEmail,omitempty"`
+	/** @description AccessKey: the service-account JSON key. A Google Pay gateway token may also go here, in either mode. */
+	// @ApiMember(Description="AccessKey: the service-account JSON key. A Google Pay gateway token may also go here, in either mode.")
+	PrivateKeyOrToken *string `json:"privateKeyOrToken,omitempty"`
+	GatewayMerchantId *string `json:"gatewayMerchantId,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
+}
+
+type MontonioPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider  PaymentGatewayPlatform `json:"provider,omitempty"`
+	AccessKey string                 `json:"accessKey"`
+	SecretKey string                 `json:"secretKey"`
+	IsSandbox *bool                  `json:"isSandbox,omitempty"`
+	Locale    *string                `json:"locale,omitempty"`
+}
+
+type NeopayPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider   PaymentGatewayPlatform `json:"provider,omitempty"`
+	ProjectId  string                 `json:"projectId"`
+	ProjectKey string                 `json:"projectKey"`
+	IsSandbox  *bool                  `json:"isSandbox,omitempty"`
+	Country    *string                `json:"country,omitempty"`
+	Locale     *string                `json:"locale,omitempty"`
+}
+
+type ShopifyPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider      PaymentGatewayPlatform `json:"provider,omitempty"`
+	ShopDomain    string                 `json:"shopDomain"`
+	WebhookSecret string                 `json:"webhookSecret"`
+}
+
+type WooCommercePaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider       PaymentGatewayPlatform `json:"provider,omitempty"`
+	StoreUrl       string                 `json:"storeUrl"`
+	WebhookSecret  string                 `json:"webhookSecret"`
+	ConsumerKey    *string                `json:"consumerKey,omitempty"`
+	ConsumerSecret *string                `json:"consumerSecret,omitempty"`
+}
+
+type MagentoPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider      PaymentGatewayPlatform `json:"provider,omitempty"`
+	StoreUrl      string                 `json:"storeUrl"`
+	WebhookSecret string                 `json:"webhookSecret"`
+}
+
+type BraintreePaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider      PaymentGatewayPlatform `json:"provider,omitempty"`
+	MerchantId    string                 `json:"merchantId"`
+	Environment   string                 `json:"environment"`
+	PrivateKey    string                 `json:"privateKey"`
+	WebhookSecret *string                `json:"webhookSecret,omitempty"`
+}
+
+type AuthorizeNetPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider            PaymentGatewayPlatform `json:"provider,omitempty"`
+	MerchantLoginId     string                 `json:"merchantLoginId"`
+	Environment         string                 `json:"environment"`
+	TransactionKey      string                 `json:"transactionKey"`
+	WebhookSignatureKey *string                `json:"webhookSignatureKey,omitempty"`
+}
+
+type CheckOutComPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider        PaymentGatewayPlatform `json:"provider,omitempty"`
+	MerchantAccount string                 `json:"merchantAccount"`
+	Environment     string                 `json:"environment"`
+	SecretKey       string                 `json:"secretKey"`
+	WebhookSecret   *string                `json:"webhookSecret,omitempty"`
+}
+
+type WorldpayPaymentIntegrationRequest struct {
+	PaymentIntegrationRequest
+	Provider      PaymentGatewayPlatform `json:"provider,omitempty"`
+	MerchantCode  string                 `json:"merchantCode"`
+	Environment   string                 `json:"environment"`
+	ApiKey        string                 `json:"apiKey"`
+	WebhookSecret string                 `json:"webhookSecret"`
 }
 
 // @DataContract
@@ -857,19 +1075,33 @@ type PushIntegrationRequest struct {
 
 type EdgeWebPushIntegrationRequest struct {
 	PushIntegrationRequest
-	Provider        PushProvider `json:"provider,omitempty"`
-	VapidPublicKey  string       `json:"vapidPublicKey"`
-	VapidPrivateKey string       `json:"vapidPrivateKey"`
-	Subject         *string      `json:"subject,omitempty"`
+	Provider PushProvider `json:"provider,omitempty"`
+	/** @description VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey. */
+	// @ApiMember(Description="VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey.", IsRequired=true)
+	VapidPublicKey string `json:"vapidPublicKey"`
+	/** @description VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret. */
+	// @ApiMember(Description="VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret.", IsRequired=true)
+	VapidPrivateKey string `json:"vapidPrivateKey"`
+	/** @description Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:. */
+	// @ApiMember(Description="Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:.")
+	Subject *string `json:"subject,omitempty"`
 }
 
 type ChromePluginPushIntegrationRequest struct {
 	PushIntegrationRequest
-	Provider        PushProvider `json:"provider,omitempty"`
-	ExtensionId     string       `json:"extensionId"`
-	VapidPublicKey  string       `json:"vapidPublicKey"`
-	VapidPrivateKey string       `json:"vapidPrivateKey"`
-	Subject         *string      `json:"subject,omitempty"`
+	Provider PushProvider `json:"provider,omitempty"`
+	/** @description The extension's Chrome id: 32 lower-case letters a–p, as shown on chrome://extensions. */
+	// @ApiMember(Description="The extension's Chrome id: 32 lower-case letters a–p, as shown on chrome://extensions.", IsRequired=true)
+	ExtensionId string `json:"extensionId"`
+	/** @description VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey. */
+	// @ApiMember(Description="VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey.", IsRequired=true)
+	VapidPublicKey string `json:"vapidPublicKey"`
+	/** @description VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret. */
+	// @ApiMember(Description="VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret.", IsRequired=true)
+	VapidPrivateKey string `json:"vapidPrivateKey"`
+	/** @description Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:. */
+	// @ApiMember(Description="Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:.")
+	Subject *string `json:"subject,omitempty"`
 }
 
 type SafariPushIntegrationRequest struct {
@@ -882,26 +1114,62 @@ type SafariPushIntegrationRequest struct {
 
 type ChromeWebPushIntegrationRequest struct {
 	PushIntegrationRequest
-	Provider        PushProvider `json:"provider,omitempty"`
-	VapidPublicKey  string       `json:"vapidPublicKey"`
-	VapidPrivateKey string       `json:"vapidPrivateKey"`
-	Subject         *string      `json:"subject,omitempty"`
+	Provider PushProvider `json:"provider,omitempty"`
+	/** @description VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey. */
+	// @ApiMember(Description="VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey.", IsRequired=true)
+	VapidPublicKey string `json:"vapidPublicKey"`
+	/** @description VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret. */
+	// @ApiMember(Description="VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret.", IsRequired=true)
+	VapidPrivateKey string `json:"vapidPrivateKey"`
+	/** @description Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:. */
+	// @ApiMember(Description="Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:.")
+	Subject *string `json:"subject,omitempty"`
 }
 
 type FirefoxWebPushIntegrationRequest struct {
 	PushIntegrationRequest
-	Provider        PushProvider `json:"provider,omitempty"`
-	VapidPublicKey  string       `json:"vapidPublicKey"`
-	VapidPrivateKey string       `json:"vapidPrivateKey"`
-	Subject         *string      `json:"subject,omitempty"`
+	Provider PushProvider `json:"provider,omitempty"`
+	/** @description VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey. */
+	// @ApiMember(Description="VAPID public key (URL-safe Base-64, 65 bytes), generated together with the private key — e.g. `npx web-push generate-vapid-keys`. The browser subscribes with it as applicationServerKey.", IsRequired=true)
+	VapidPublicKey string `json:"vapidPublicKey"`
+	/** @description VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret. */
+	// @ApiMember(Description="VAPID private key (URL-safe Base-64, 32 bytes). Stored as a secret.", IsRequired=true)
+	VapidPrivateKey string `json:"vapidPrivateKey"`
+	/** @description Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:. */
+	// @ApiMember(Description="Contact e-mail the browser push services can reach you at, e.g. admin@example.com. An e-mail address only (no URL); it is sent as mailto:.")
+	Subject *string `json:"subject,omitempty"`
 }
 
 type AndroidFirebasePushIntegrationRequest struct {
 	PushIntegrationRequest
-	Provider           PushProvider `json:"provider,omitempty"`
-	ProjectId          string       `json:"projectId"`
-	ClientEmail        string       `json:"clientEmail"`
-	ServiceAccountJson string       `json:"serviceAccountJson"`
+	Provider PushProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure).")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	/** @description The Firebase project id. */
+	// @ApiMember(Description="The Firebase project id.")
+	ProjectId string `json:"projectId"`
+	/** @description AccessKey: the client_email of the service-account key. Keyless: leave empty. */
+	// @ApiMember(Description="AccessKey: the client_email of the service-account key. Keyless: leave empty.")
+	ClientEmail string `json:"clientEmail"`
+	/** @description Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool. */
+	// @ApiMember(Description="Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool.")
+	ProjectNumber *string `json:"projectNumber,omitempty"`
+	/** @description Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens).")
+	PoolId *string `json:"poolId,omitempty"`
+	/** @description Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens).")
+	ProviderId *string `json:"providerId,omitempty"`
+	/** @description Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com). */
+	// @ApiMember(Description="Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com).")
+	ServiceAccountEmail *string `json:"serviceAccountEmail,omitempty"`
+	/** @description AccessKey: the service-account JSON key. */
+	// @ApiMember(Description="AccessKey: the service-account JSON key.")
+	ServiceAccountJson *string `json:"serviceAccountJson,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
 }
 
 type AppleApnsPushIntegrationRequest struct {
@@ -912,6 +1180,95 @@ type AppleApnsPushIntegrationRequest struct {
 	KeyId        string       `json:"keyId"`
 	PrivateKey   string       `json:"privateKey"`
 	IsProduction bool         `json:"isProduction,omitempty"`
+}
+
+type FakePushIntegrationRequest struct {
+	PushIntegrationRequest
+	Provider PushProvider `json:"provider,omitempty"`
+}
+
+type SmsProvider string
+
+const (
+	SmsProviderTwilio   SmsProvider = "Twilio"
+	SmsProviderVonage               = "Vonage"
+	SmsProviderPlivo                = "Plivo"
+	SmsProviderTelnyx               = "Telnyx"
+	SmsProviderBird                 = "Bird"
+	SmsProviderTelesign             = "Telesign"
+	SmsProviderSinch                = "Sinch"
+	SmsProviderFake                 = "Fake"
+)
+
+type SmsIntegrationRequest struct {
+	IntegrationId   *string     `json:"integrationId,omitempty"`
+	Provider        SmsProvider `json:"provider,omitempty"`
+	IntegrationName string      `json:"integrationName"`
+	IsEnabled       bool        `json:"isEnabled,omitempty"`
+}
+
+type BirdSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider   SmsProvider `json:"provider,omitempty"`
+	Originator string      `json:"originator"`
+	Region     string      `json:"region"`
+	ApiKey     string      `json:"apiKey"`
+}
+
+type PlivoSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider        SmsProvider `json:"provider,omitempty"`
+	AuthId          string      `json:"authId"`
+	FromPhoneNumber string      `json:"fromPhoneNumber"`
+	AuthToken       string      `json:"authToken"`
+}
+
+type SinchSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider        SmsProvider `json:"provider,omitempty"`
+	ServicePlanId   string      `json:"servicePlanId"`
+	FromPhoneNumber string      `json:"fromPhoneNumber"`
+	ApiKey          string      `json:"apiKey"`
+	ApiSecret       string      `json:"apiSecret"`
+}
+
+type TelesignSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider   SmsProvider `json:"provider,omitempty"`
+	CustomerId string      `json:"customerId"`
+	FromSender string      `json:"fromSender"`
+	ApiKey     string      `json:"apiKey"`
+}
+
+type TelnyxSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider           SmsProvider `json:"provider,omitempty"`
+	MessagingProfileId string      `json:"messagingProfileId"`
+	FromPhoneNumber    string      `json:"fromPhoneNumber"`
+	ApiKey             string      `json:"apiKey"`
+}
+
+type TwilioSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider              SmsProvider `json:"provider,omitempty"`
+	AccountSid            string      `json:"accountSid"`
+	FromPhoneNumber       string      `json:"fromPhoneNumber"`
+	AuthToken             string      `json:"authToken"`
+	DeliveryEventsEnabled *bool       `json:"deliveryEventsEnabled,omitempty"`
+	StatusCallbackUrl     *string     `json:"statusCallbackUrl,omitempty"`
+}
+
+type VonageSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider   SmsProvider `json:"provider,omitempty"`
+	ApiKey     string      `json:"apiKey"`
+	FromSender string      `json:"fromSender"`
+	ApiSecret  string      `json:"apiSecret"`
+}
+
+type FakeSmsIntegrationRequest struct {
+	SmsIntegrationRequest
+	Provider SmsProvider `json:"provider,omitempty"`
 }
 
 type CodeProvider string
@@ -927,6 +1284,7 @@ const (
 	CodeProviderNetlify                           = "Netlify"
 	CodeProviderSupabaseEdge                      = "SupabaseEdge"
 	CodeProviderModal                             = "Modal"
+	CodeProviderFake                              = "Fake"
 )
 
 type CodeIntegrationRequest struct {
@@ -936,38 +1294,71 @@ type CodeIntegrationRequest struct {
 	IsEnabled       bool         `json:"isEnabled,omitempty"`
 }
 
-type AwsLambdaIntegrationType string
-
-const (
-	AwsLambdaIntegrationTypeIam              AwsLambdaIntegrationType = "Iam"
-	AwsLambdaIntegrationTypeCrossAccountRole                          = "CrossAccountRole"
-)
-
 type AwsLambdaCodeIntegrationRequest struct {
 	CodeIntegrationRequest
-	Provider        CodeProvider             `json:"provider,omitempty"`
-	IntegrationType AwsLambdaIntegrationType `json:"integrationType,omitempty"`
-	Region          string                   `json:"region"`
-	RoleArn         *string                  `json:"roleArn,omitempty"`
-	ExternalId      *string                  `json:"externalId,omitempty"`
-	AccessKey       *string                  `json:"accessKey,omitempty"`
-	SecretKey       *string                  `json:"secretKey,omitempty"`
+	Provider CodeProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret), CrossAccountRole (no stored secret; the install must run on AWS) or AccessKey (a stored IAM access key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret), CrossAccountRole (no stored secret; the install must run on AWS) or AccessKey (a stored IAM access key, less secure).")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	Region   string         `json:"region"`
+	/** @description Keyless: the ARN of the role that trusts this integration's Norbix token. CrossAccountRole: the ARN of the role that trusts this install's AWS account. */
+	// @ApiMember(Description="Keyless: the ARN of the role that trusts this integration's Norbix token. CrossAccountRole: the ARN of the role that trusts this install's AWS account.")
+	RoleArn *string `json:"roleArn,omitempty"`
+	/** @description CrossAccountRole: this Norbix account's id (the role's trust names it as sts:ExternalId). Any other value is refused. */
+	// @ApiMember(Description="CrossAccountRole: this Norbix account's id (the role's trust names it as sts:ExternalId). Any other value is refused.")
+	ExternalId *string `json:"externalId,omitempty"`
+	/** @description AccessKey: the IAM access key id. */
+	// @ApiMember(Description="AccessKey: the IAM access key id.")
+	AccessKey *string `json:"accessKey,omitempty"`
+	/** @description AccessKey: the IAM secret access key. */
+	// @ApiMember(Description="AccessKey: the IAM secret access key.")
+	SecretKey *string `json:"secretKey,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
 }
 
 type AzureFunctionsCodeIntegrationRequest struct {
 	CodeIntegrationRequest
-	Provider              CodeProvider `json:"provider,omitempty"`
-	FunctionAppName       string       `json:"functionAppName"`
-	ResourceGroup         *string      `json:"resourceGroup,omitempty"`
-	ConnectionStringOrKey string       `json:"connectionStringOrKey"`
+	Provider              CodeProvider   `json:"provider,omitempty"`
+	AuthMode              *CloudAuthMode `json:"authMode,omitempty"`
+	FunctionAppName       string         `json:"functionAppName"`
+	ResourceGroup         *string        `json:"resourceGroup,omitempty"`
+	SubscriptionId        *string        `json:"subscriptionId,omitempty"`
+	TenantId              *string        `json:"tenantId,omitempty"`
+	ClientId              *string        `json:"clientId,omitempty"`
+	ConnectionStringOrKey string         `json:"connectionStringOrKey"`
+	AcceptKeyRisk         *bool          `json:"acceptKeyRisk,omitempty"`
 }
 
 type GoogleCloudFunctionsCodeIntegrationRequest struct {
 	CodeIntegrationRequest
-	Provider              CodeProvider `json:"provider,omitempty"`
-	ProjectId             string       `json:"projectId"`
-	Region                *string      `json:"region,omitempty"`
-	ServiceAccountJsonKey string       `json:"serviceAccountJsonKey"`
+	Provider CodeProvider `json:"provider,omitempty"`
+	/** @description Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret) or AccessKey (a stored service-account JSON key, less secure).")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	/** @description The Google Cloud project id the functions live in. */
+	// @ApiMember(Description="The Google Cloud project id the functions live in.")
+	ProjectId string  `json:"projectId"`
+	Region    *string `json:"region,omitempty"`
+	/** @description Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool. */
+	// @ApiMember(Description="Keyless: the Google Cloud project NUMBER (digits) that holds the workload identity pool.")
+	ProjectNumber *string `json:"projectNumber,omitempty"`
+	/** @description Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool id (4–32 lowercase letters, digits and hyphens).")
+	PoolId *string `json:"poolId,omitempty"`
+	/** @description Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens). */
+	// @ApiMember(Description="Keyless: the workload identity pool provider id (4–32 lowercase letters, digits and hyphens).")
+	ProviderId *string `json:"providerId,omitempty"`
+	/** @description Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com). */
+	// @ApiMember(Description="Keyless: the email of the service account Norbix acts as (…@<project>.iam.gserviceaccount.com).")
+	ServiceAccountEmail *string `json:"serviceAccountEmail,omitempty"`
+	/** @description AccessKey: the service-account JSON key. */
+	// @ApiMember(Description="AccessKey: the service-account JSON key.")
+	ServiceAccountJsonKey *string `json:"serviceAccountJsonKey,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
 }
 
 type LlmProvider string
@@ -1201,7 +1592,7 @@ type FileChecksumDto struct {
 // @DataContract
 type FileResourceDto struct {
 	// @DataMember(Order=1)
-	Id string `json:"id"`
+	Id *string `json:"id,omitempty"`
 	// @DataMember(Order=2)
 	OriginalFileName string `json:"originalFileName"`
 	// @DataMember(Order=3)
@@ -1369,6 +1760,7 @@ const (
 	PushCampaignRecipientsSourceTypesCollection                                       = "Collection"
 	PushCampaignRecipientsSourceTypesDevices                                          = "Devices"
 	PushCampaignRecipientsSourceTypesAccountUsers                                     = "AccountUsers"
+	PushCampaignRecipientsSourceTypesTriggerSubject                                   = "TriggerSubject"
 )
 
 // @DataContract
@@ -1397,6 +1789,27 @@ type TriggerActionPushDto struct {
 }
 
 // @DataContract
+type FunctionRefDto struct {
+	// @DataMember
+	IntegrationId string `json:"integrationId"`
+	// @DataMember
+	Provider *CodeProvider `json:"provider,omitempty"`
+	// @DataMember
+	FunctionId string `json:"functionId"`
+	// @DataMember
+	Qualifier *string `json:"qualifier,omitempty"`
+	// @DataMember
+	DisplayName *string `json:"displayName,omitempty"`
+}
+
+type CodeInvocationType string
+
+const (
+	CodeInvocationTypeSync  CodeInvocationType = "Sync"
+	CodeInvocationTypeAsync                    = "Async"
+)
+
+// @DataContract
 type CodeDeliverySettingsDto struct {
 	// @DataMember
 	MappedTokens []TokenMappingDto `json:"mappedTokens,omitempty"`
@@ -1406,9 +1819,21 @@ type CodeDeliverySettingsDto struct {
 type TriggerActionCodeDto struct {
 	TriggerActionDto
 	// @DataMember
-	FunctionId string `json:"functionId"`
+	FunctionRef *FunctionRefDto `json:"functionRef,omitempty"`
 	// @DataMember
-	DeliverySettings CodeDeliverySettingsDto `json:"deliverySettings"`
+	RunAsUserId *string `json:"runAsUserId,omitempty"`
+	// @DataMember
+	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
+	// @DataMember
+	Config *string `json:"config,omitempty"`
+	// @DataMember
+	DeliverySettings *CodeDeliverySettingsDto `json:"deliverySettings,omitempty"`
+	// @DataMember
+	FunctionId *string `json:"functionId,omitempty"`
+	// @DataMember
+	ActivationCode *string `json:"activationCode,omitempty"`
+	// @DataMember
+	Meta map[string]string `json:"meta,omitempty"`
 }
 
 // @DataContract
@@ -1420,7 +1845,7 @@ type WebhookDeliverySettingsDto struct {
 	// @DataMember
 	ContentType *string `json:"contentType,omitempty"`
 	// @DataMember
-	IncludeRawPayload bool `json:"includeRawPayload,omitempty"`
+	IncludeRawPayload *bool `json:"includeRawPayload,omitempty"`
 	// @DataMember
 	MappedTokens []TokenMappingDto `json:"mappedTokens,omitempty"`
 }
@@ -1440,6 +1865,7 @@ const (
 	SmsCampaignRecipientsSourceTypesAccountUsers                                    = "AccountUsers"
 	SmsCampaignRecipientsSourceTypesPhoneNumbers                                    = "PhoneNumbers"
 	SmsCampaignRecipientsSourceTypesCollection                                      = "Collection"
+	SmsCampaignRecipientsSourceTypesTriggerSubject                                  = "TriggerSubject"
 )
 
 // @DataContract
@@ -1499,14 +1925,25 @@ type TriggerActionMarketplaceDto struct {
 	FunctionId string `json:"functionId"`
 	// @DataMember
 	Payload map[string]string `json:"payload,omitempty"`
+	// @DataMember
+	RunAsUserId *string `json:"runAsUserId,omitempty"`
+}
+
+// @DataContract
+type TriggerActionWorkflowDto struct {
+	TriggerActionDto
+	// @DataMember
+	WorkflowRef *string `json:"workflowRef,omitempty"`
+	// @DataMember
+	Payload map[string]string `json:"payload,omitempty"`
+	/** @description Resume the run of the workflow that waits on this key instead of starting one. May hold @Model.Trigger.* tokens of the event. No waiting run = the trigger run is skipped (no-waiting-run). */
+	// @DataMember
+	// @ApiMember(Description="Resume the run of the workflow that waits on this key instead of starting one. May hold @Model.Trigger.* tokens of the event. No waiting run = the trigger run is skipped (no-waiting-run).")
+	ResumeKey *string `json:"resumeKey,omitempty"`
 }
 
 // @DataContract(Namespace="http://codemash.io/types/")
 type RequestBase struct {
-	/** @description Specify culture code when your response from the API should be localised. E.g.: en */
-	// @DataMember
-	// @ApiMember(DataType="string", Description="Specify culture code when your response from the API should be localised. E.g.: en", Name="CultureCode", ParameterType="header")
-	CultureCode *string `json:"cultureCode,omitempty"`
 	/** @description TimeZone */
 	// @DataMember
 	// @ApiMember(DataType="string", Description="TimeZone", Name="TimeZoneId", ParameterType="header")
@@ -1636,6 +2073,8 @@ type EmailToCollectionRecordsDeliverySettingsDto struct {
 	RoleNames []string `json:"roleNames,omitempty"`
 	// @DataMember
 	Languages []string `json:"languages,omitempty"`
+	// @DataMember
+	RecordIds []string `json:"recordIds,omitempty"`
 }
 
 type PushDeviceDeliveryFamily string
@@ -1688,6 +2127,8 @@ type PushToCollectionRecordsDeliverySettingsDto struct {
 	RoleNames []string `json:"roleNames,omitempty"`
 	// @DataMember
 	Languages []string `json:"languages,omitempty"`
+	// @DataMember
+	RecordIds []string `json:"recordIds,omitempty"`
 }
 
 // @DataContract
@@ -1741,6 +2182,8 @@ type SmsToCollectionRecordsDeliverySettingsDto struct {
 	RoleNames []string `json:"roleNames,omitempty"`
 	// @DataMember
 	Languages []string `json:"languages,omitempty"`
+	// @DataMember
+	RecordIds []string `json:"recordIds,omitempty"`
 }
 
 // @DataContract
@@ -1748,6 +2191,37 @@ type SmsToPhoneNumbersDeliverySettingsDto struct {
 	SmsCampaignDeliverySettingsDto
 	// @DataMember
 	PhoneNumbers []string `json:"phoneNumbers"`
+}
+
+// @DataContract
+type EmailToTriggerSubjectDeliverySettingsDto struct {
+	EmailCampaignDeliverySettingsDto
+	// @DataMember
+	SubjectAuthId *string `json:"subjectAuthId,omitempty"`
+	// @DataMember
+	SubjectEmail *string `json:"subjectEmail,omitempty"`
+	// @DataMember
+	SubjectLanguage *string `json:"subjectLanguage,omitempty"`
+}
+
+// @DataContract
+type PushToTriggerSubjectDeliverySettingsDto struct {
+	PushCampaignDeliverySettingsDto
+	// @DataMember
+	SubjectAuthId *string `json:"subjectAuthId,omitempty"`
+	// @DataMember
+	SubjectLanguage *string `json:"subjectLanguage,omitempty"`
+}
+
+// @DataContract
+type SmsToTriggerSubjectDeliverySettingsDto struct {
+	SmsCampaignDeliverySettingsDto
+	// @DataMember
+	SubjectAuthId *string `json:"subjectAuthId,omitempty"`
+	// @DataMember
+	SubjectPhone *string `json:"subjectPhone,omitempty"`
+	// @DataMember
+	SubjectLanguage *string `json:"subjectLanguage,omitempty"`
 }
 
 type IntegrationDto struct {
@@ -1857,33 +2331,63 @@ type CodeIntegrationDto struct {
 	Provider CodeProvider `json:"provider,omitempty"`
 }
 
+type AwsLambdaKeylessCodeIntegrationDto struct {
+	CodeIntegrationDto
+	Region   string        `json:"region"`
+	RoleArn  string        `json:"roleArn"`
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
+}
+
 type AwsLambdaCrossAccountRoleCodeIntegrationDto struct {
 	CodeIntegrationDto
-	Region     string `json:"region"`
-	RoleArn    string `json:"roleArn"`
-	ExternalId string `json:"externalId"`
+	Region     string        `json:"region"`
+	RoleArn    string        `json:"roleArn"`
+	ExternalId string        `json:"externalId"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type AwsLambdaIamCodeIntegrationDto struct {
 	CodeIntegrationDto
-	Region string `json:"region"`
+	Region   string        `json:"region"`
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type AzureFunctionsCodeIntegrationDto struct {
 	CodeIntegrationDto
-	FunctionAppName string  `json:"functionAppName"`
-	ResourceGroup   *string `json:"resourceGroup,omitempty"`
+	FunctionAppName string        `json:"functionAppName"`
+	ResourceGroup   *string       `json:"resourceGroup,omitempty"`
+	AuthMode        CloudAuthMode `json:"authMode,omitempty"`
+	SubscriptionId  *string       `json:"subscriptionId,omitempty"`
+	TenantId        *string       `json:"tenantId,omitempty"`
+	ClientId        *string       `json:"clientId,omitempty"`
 }
 
 type GoogleCloudFunctionsCodeIntegrationDto struct {
 	CodeIntegrationDto
-	ProjectId string  `json:"projectId"`
-	Region    *string `json:"region,omitempty"`
+	ProjectId           string        `json:"projectId"`
+	Region              *string       `json:"region,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       *string       `json:"projectNumber,omitempty"`
+	PoolId              *string       `json:"poolId,omitempty"`
+	ProviderId          *string       `json:"providerId,omitempty"`
+	ServiceAccountEmail *string       `json:"serviceAccountEmail,omitempty"`
+}
+
+type PaymentsIntegrationConnectionDto struct {
+	Provider          string     `json:"provider"`
+	AccountId         *string    `json:"accountId,omitempty"`
+	AccountName       *string    `json:"accountName,omitempty"`
+	ConnectedBy       string     `json:"connectedBy"`
+	ConnectedAtUtc    time.Time  `json:"connectedAtUtc,omitempty"`
+	IsConnected       bool       `json:"isConnected,omitempty"`
+	DisconnectedAtUtc *time.Time `json:"disconnectedAtUtc,omitempty"`
+	DisconnectReason  *string    `json:"disconnectReason,omitempty"`
 }
 
 type PaymentsIntegrationDto struct {
 	IntegrationDto
-	GatewayPlatform PaymentGatewayPlatform `json:"gatewayPlatform,omitempty"`
+	GatewayPlatform PaymentGatewayPlatform            `json:"gatewayPlatform,omitempty"`
+	Connection      *PaymentsIntegrationConnectionDto `json:"connection,omitempty"`
 }
 
 type AdyenPaymentIntegrationDto struct {
@@ -1895,17 +2399,24 @@ type AdyenPaymentIntegrationDto struct {
 
 type AppleInAppPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	MerchantIdentifier string `json:"merchantIdentifier"`
-	MerchantDomain     string `json:"merchantDomain"`
-	DisplayName        string `json:"displayName"`
+	WebhookBundleId    *string `json:"webhookBundleId,omitempty"`
+	MerchantIdentifier *string `json:"merchantIdentifier,omitempty"`
+	MerchantDomain     *string `json:"merchantDomain,omitempty"`
+	DisplayName        *string `json:"displayName,omitempty"`
 }
 
 type GoogleInAppPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	MerchantId        string  `json:"merchantId"`
-	MerchantName      string  `json:"merchantName"`
-	Gateway           string  `json:"gateway"`
-	GatewayMerchantId *string `json:"gatewayMerchantId,omitempty"`
+	WebhookPackageName  *string       `json:"webhookPackageName,omitempty"`
+	MerchantId          *string       `json:"merchantId,omitempty"`
+	MerchantName        *string       `json:"merchantName,omitempty"`
+	Gateway             *string       `json:"gateway,omitempty"`
+	GatewayMerchantId   *string       `json:"gatewayMerchantId,omitempty"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       *string       `json:"projectNumber,omitempty"`
+	PoolId              *string       `json:"poolId,omitempty"`
+	ProviderId          *string       `json:"providerId,omitempty"`
+	ServiceAccountEmail *string       `json:"serviceAccountEmail,omitempty"`
 }
 
 type LemonSqueezyPaymentIntegrationDto struct {
@@ -1942,48 +2453,165 @@ type StripePaymentIntegrationDto struct {
 
 type ShopifyPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	ShopDomain    string  `json:"shopDomain"`
-	WebhookSecret *string `json:"webhookSecret,omitempty"`
+	ShopDomain string `json:"shopDomain"`
 }
 
 type WooCommercePaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	StoreUrl      string  `json:"storeUrl"`
-	WebhookSecret *string `json:"webhookSecret,omitempty"`
+	StoreUrl string `json:"storeUrl"`
 }
 
 type MagentoPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	StoreUrl      string  `json:"storeUrl"`
-	WebhookSecret *string `json:"webhookSecret,omitempty"`
+	StoreUrl string `json:"storeUrl"`
 }
 
 type BraintreePaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	MerchantId    string  `json:"merchantId"`
-	Environment   string  `json:"environment"`
-	WebhookSecret *string `json:"webhookSecret,omitempty"`
+	MerchantId  string `json:"merchantId"`
+	Environment string `json:"environment"`
 }
 
 type AuthorizeNetPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	MerchantLoginId     string  `json:"merchantLoginId"`
-	Environment         string  `json:"environment"`
-	WebhookSignatureKey *string `json:"webhookSignatureKey,omitempty"`
+	MerchantLoginId string `json:"merchantLoginId"`
+	Environment     string `json:"environment"`
 }
 
 type CheckOutComPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	MerchantAccount string  `json:"merchantAccount"`
-	Environment     string  `json:"environment"`
-	WebhookSecret   *string `json:"webhookSecret,omitempty"`
+	MerchantAccount string `json:"merchantAccount"`
+	Environment     string `json:"environment"`
 }
 
 type WorldpayPaymentIntegrationDto struct {
 	PaymentsIntegrationDto
-	MerchantCode  string  `json:"merchantCode"`
-	Environment   string  `json:"environment"`
-	WebhookSecret *string `json:"webhookSecret,omitempty"`
+	MerchantCode string `json:"merchantCode"`
+	Environment  string `json:"environment"`
+}
+
+type MontonioPaymentIntegrationDto struct {
+	PaymentsIntegrationDto
+	AccessKey string  `json:"accessKey"`
+	IsSandbox bool    `json:"isSandbox,omitempty"`
+	Locale    *string `json:"locale,omitempty"`
+}
+
+type NeopayPaymentIntegrationDto struct {
+	PaymentsIntegrationDto
+	ProjectId string  `json:"projectId"`
+	IsSandbox bool    `json:"isSandbox,omitempty"`
+	Country   *string `json:"country,omitempty"`
+	Locale    *string `json:"locale,omitempty"`
+}
+
+// @DataContract
+type PaymentOrderLineDto struct {
+	// @DataMember
+	Sku string `json:"sku"`
+	// @DataMember
+	Title string `json:"title"`
+	// @DataMember
+	Quantity int `json:"quantity,omitempty"`
+	// @DataMember
+	UnitAmountMinor int64 `json:"unitAmountMinor,omitempty"`
+	// @DataMember
+	AmountMinor int64 `json:"amountMinor,omitempty"`
+}
+
+// @DataContract
+type PaymentOrderCheckoutDto struct {
+	// @DataMember
+	Attempt int `json:"attempt,omitempty"`
+	// @DataMember
+	IntegrationId string `json:"integrationId"`
+	// @DataMember
+	Provider string `json:"provider"`
+	// @DataMember
+	ProviderOrderId string `json:"providerOrderId"`
+	// @DataMember
+	ProviderReference string `json:"providerReference"`
+	// @DataMember
+	PaymentUrl string `json:"paymentUrl"`
+	// @DataMember
+	Method string `json:"method"`
+	// @DataMember
+	StartedOnUtc time.Time `json:"startedOnUtc,omitempty"`
+	// @DataMember
+	ExpiresAtUtc time.Time `json:"expiresAtUtc,omitempty"`
+}
+
+// @DataContract
+type PaymentOrderDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	BuyerUserId string `json:"buyerUserId"`
+	// @DataMember
+	MerchantReference string `json:"merchantReference"`
+	// @DataMember
+	Currency string `json:"currency"`
+	// @DataMember
+	PriceVersion string `json:"priceVersion"`
+	// @DataMember
+	Lines []PaymentOrderLineDto `json:"lines"`
+	// @DataMember
+	TotalMinor int64 `json:"totalMinor,omitempty"`
+	// @DataMember
+	Metadata map[string]string `json:"metadata"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	CreatedOnUtc time.Time `json:"createdOnUtc,omitempty"`
+	// @DataMember
+	UpdatedOnUtc time.Time `json:"updatedOnUtc,omitempty"`
+	// @DataMember
+	Checkouts []PaymentOrderCheckoutDto `json:"checkouts"`
+	// @DataMember
+	SettledMinor *int64 `json:"settledMinor,omitempty"`
+	// @DataMember
+	RefundedMinor int64 `json:"refundedMinor,omitempty"`
+	// @DataMember
+	PaidOnUtc *time.Time `json:"paidOnUtc,omitempty"`
+	// @DataMember
+	ProviderPaymentId *string `json:"providerPaymentId,omitempty"`
+	// @DataMember
+	Mismatches []string `json:"mismatches"`
+}
+
+type PaymentEventDto struct {
+	IntegrationId   string            `json:"integrationId"`
+	Provider        string            `json:"provider"`
+	ProviderEventId string            `json:"providerEventId"`
+	OrderId         *string           `json:"orderId,omitempty"`
+	BuyerUserId     *string           `json:"buyerUserId,omitempty"`
+	EventName       string            `json:"eventName"`
+	Status          string            `json:"status"`
+	AmountMinor     *int64            `json:"amountMinor,omitempty"`
+	Currency        *string           `json:"currency,omitempty"`
+	ExternalIds     map[string]string `json:"externalIds,omitempty"`
+	OccurredOn      *time.Time        `json:"occurredOn,omitempty"`
+	ReceivedOn      time.Time         `json:"receivedOn,omitempty"`
+}
+
+// @DataContract
+type PaymentOrderEventDto struct {
+	// @DataMember
+	OrderEventId string `json:"orderEventId"`
+	// @DataMember
+	Event string `json:"event"`
+	// @DataMember
+	From string `json:"from"`
+	// @DataMember
+	To string `json:"to"`
+	// @DataMember
+	Reason string `json:"reason"`
+	// @DataMember
+	Order PaymentOrderDto `json:"order"`
+	// @DataMember
+	Payment PaymentEventDto `json:"payment"`
 }
 
 type MembershipIntegrationDto struct {
@@ -2074,7 +2702,6 @@ type DataDogLoggingIntegrationDto struct {
 	LoggingIntegrationDto
 	Site        string `json:"site"`
 	ServiceName string `json:"serviceName"`
-	Environment string `json:"environment"`
 }
 
 type ElasticSearchLoggingIntegrationDto struct {
@@ -2142,23 +2769,37 @@ type AppleICloudFilesIntegrationDto struct {
 	RelativePath        *string `json:"relativePath,omitempty"`
 }
 
+type AwsS3KeylessFilesIntegrationDto struct {
+	FilesIntegrationDto
+	BucketName string        `json:"bucketName"`
+	Region     string        `json:"region"`
+	RoleArn    string        `json:"roleArn"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
+}
+
 type AwsS3CrossAccountRoleFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BucketName string `json:"bucketName"`
-	Region     string `json:"region"`
-	RoleArn    string `json:"roleArn"`
-	ExternalId string `json:"externalId"`
+	BucketName string        `json:"bucketName"`
+	Region     string        `json:"region"`
+	RoleArn    string        `json:"roleArn"`
+	ExternalId string        `json:"externalId"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type AwsS3IamFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BucketName string `json:"bucketName"`
-	Region     string `json:"region"`
+	BucketName string        `json:"bucketName"`
+	Region     string        `json:"region"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type AzureBlobFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BlobName string `json:"blobName"`
+	BlobName       string        `json:"blobName"`
+	AuthMode       CloudAuthMode `json:"authMode,omitempty"`
+	StorageAccount *string       `json:"storageAccount,omitempty"`
+	TenantId       *string       `json:"tenantId,omitempty"`
+	ClientId       *string       `json:"clientId,omitempty"`
 }
 
 type DropBoxFilesIntegrationDto struct {
@@ -2176,7 +2817,12 @@ type FtpFilesIntegrationDto struct {
 
 type GoogleCloudFilesIntegrationDto struct {
 	FilesIntegrationDto
-	BucketName string `json:"bucketName"`
+	BucketName          string        `json:"bucketName"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       *string       `json:"projectNumber,omitempty"`
+	PoolId              *string       `json:"poolId,omitempty"`
+	ProviderId          *string       `json:"providerId,omitempty"`
+	ServiceAccountEmail *string       `json:"serviceAccountEmail,omitempty"`
 }
 
 type GoogleDriveFilesIntegrationDto struct {
@@ -2191,13 +2837,17 @@ type LocalFilesIntegrationDto struct {
 
 type DatabaseIntegrationDto struct {
 	IntegrationDto
-	Provider      DatabaseProvider `json:"provider,omitempty"`
-	IsSystemOwned bool             `json:"isSystemOwned,omitempty"`
+	Provider         DatabaseProvider `json:"provider,omitempty"`
+	IsSystemOwned    bool             `json:"isSystemOwned,omitempty"`
+	CanManageIndexes *bool            `json:"canManageIndexes,omitempty"`
 }
 
 type MongoDbConnectionStringIntegrationDto struct {
 	DatabaseIntegrationDto
-	DatabaseName *string `json:"databaseName,omitempty"`
+	DatabaseName  *string       `json:"databaseName,omitempty"`
+	AuthMode      CloudAuthMode `json:"authMode,omitempty"`
+	Audience      *string       `json:"audience,omitempty"`
+	ProjectViewId *string       `json:"projectViewId,omitempty"`
 }
 
 type IntegrationStatus string
@@ -2219,21 +2869,9 @@ type MongoDbAtlasFlexManagedIntegrationDto struct {
 	Status           IntegrationStatus `json:"status,omitempty"`
 	AtlasProjectId   *string           `json:"atlasProjectId,omitempty"`
 	AtlasClusterName *string           `json:"atlasClusterName,omitempty"`
+	FlexClusterId    *string           `json:"flexClusterId,omitempty"`
 	FailureReason    *string           `json:"failureReason,omitempty"`
 }
-
-type SmsProvider string
-
-const (
-	SmsProviderTwilio   SmsProvider = "Twilio"
-	SmsProviderVonage               = "Vonage"
-	SmsProviderPlivo                = "Plivo"
-	SmsProviderTelnyx               = "Telnyx"
-	SmsProviderBird                 = "Bird"
-	SmsProviderTelesign             = "Telesign"
-	SmsProviderSinch                = "Sinch"
-	SmsProviderFake                 = "Fake"
-)
 
 type SmsIntegrationDto struct {
 	IntegrationDto
@@ -2274,6 +2912,10 @@ type TwilioSmsIntegrationDto struct {
 	SmsIntegrationDto
 	AccountSid      string `json:"accountSid"`
 	FromPhoneNumber string `json:"fromPhoneNumber"`
+	// @DataMember
+	DeliveryEventsEnabled *bool `json:"deliveryEventsEnabled,omitempty"`
+	// @DataMember
+	StatusCallbackUrl *string `json:"statusCallbackUrl,omitempty"`
 }
 
 type VonageSmsIntegrationDto struct {
@@ -2293,14 +2935,21 @@ type PushIntegrationDto struct {
 
 type AndroidFirebasePushIntegrationDto struct {
 	PushIntegrationDto
-	ProjectId   string `json:"projectId"`
-	ClientEmail string `json:"clientEmail"`
+	ProjectId           string        `json:"projectId"`
+	ClientEmail         string        `json:"clientEmail"`
+	AuthMode            CloudAuthMode `json:"authMode,omitempty"`
+	ProjectNumber       *string       `json:"projectNumber,omitempty"`
+	PoolId              *string       `json:"poolId,omitempty"`
+	ProviderId          *string       `json:"providerId,omitempty"`
+	ServiceAccountEmail *string       `json:"serviceAccountEmail,omitempty"`
 }
 
 type AppleApnsPushIntegrationDto struct {
 	PushIntegrationDto
-	TeamId      string `json:"teamId"`
-	AppBundleId string `json:"appBundleId"`
+	TeamId       string  `json:"teamId"`
+	AppBundleId  string  `json:"appBundleId"`
+	KeyId        *string `json:"keyId,omitempty"`
+	IsProduction bool    `json:"isProduction,omitempty"`
 }
 
 type ChromePluginPushIntegrationDto struct {
@@ -2346,19 +2995,30 @@ type EmailIntegrationDto struct {
 
 type AwsSesEmailIntegrationDto struct {
 	EmailIntegrationDto
-	Region               string  `json:"region"`
-	IdentityArn          string  `json:"identityArn"`
-	ConfigurationSetName *string `json:"configurationSetName,omitempty"`
+	Region                 string  `json:"region"`
+	IdentityArn            string  `json:"identityArn"`
+	ConfigurationSetName   *string `json:"configurationSetName,omitempty"`
+	DeliveryEventsEnabled  *bool   `json:"deliveryEventsEnabled,omitempty"`
+	SnsTopicArn            *string `json:"snsTopicArn,omitempty"`
+	DeliveryEventsQueueUrl *string `json:"deliveryEventsQueueUrl,omitempty"`
+}
+
+type AwsKeylessEmailIntegrationDto struct {
+	AwsSesEmailIntegrationDto
+	RoleArn  string        `json:"roleArn"`
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type AwsCrossAccountRoleEmailIntegrationDto struct {
 	AwsSesEmailIntegrationDto
-	RoleArn    string `json:"roleArn"`
-	ExternalId string `json:"externalId"`
+	RoleArn    string        `json:"roleArn"`
+	ExternalId string        `json:"externalId"`
+	AuthMode   CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type AwsIamEmailIntegrationDto struct {
 	AwsSesEmailIntegrationDto
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
 }
 
 type MailGunEmailIntegrationDto struct {
@@ -2369,12 +3029,29 @@ type MailGunEmailIntegrationDto struct {
 
 type SendGridEmailIntegrationDto struct {
 	EmailIntegrationDto
+	DeliveryEventsEnabled *bool   `json:"deliveryEventsEnabled,omitempty"`
+	EventWebhookPublicKey *string `json:"eventWebhookPublicKey,omitempty"`
 }
 
 type SmtpEmailIntegrationDto struct {
 	EmailIntegrationDto
 	HostName string `json:"hostName"`
 	Port     int    `json:"port,omitempty"`
+}
+
+// @DataContract
+type AzureCommunicationEmailIntegrationDto struct {
+	EmailIntegrationDto
+	// @DataMember
+	Endpoint string `json:"endpoint"`
+	// @DataMember
+	DeliveryEventsEnabled *bool `json:"deliveryEventsEnabled,omitempty"`
+	// @DataMember
+	AuthMode CloudAuthMode `json:"authMode,omitempty"`
+	// @DataMember
+	TenantId *string `json:"tenantId,omitempty"`
+	// @DataMember
+	ClientId *string `json:"clientId,omitempty"`
 }
 
 type FakeEmailIntegrationDto struct {
@@ -2407,12 +3084,26 @@ type WebhookIntegrationDto struct {
 type SchedulerTaskType string
 
 const (
-	SchedulerTaskTypeEmailCampaign      SchedulerTaskType = "EmailCampaign"
-	SchedulerTaskTypePushCampaign                         = "PushCampaign"
-	SchedulerTaskTypeSmsCampaign                          = "SmsCampaign"
-	SchedulerTaskTypeCodeFunctionalCall                   = "CodeFunctionalCall"
-	SchedulerTaskTypeWebhookCall                          = "WebhookCall"
+	SchedulerTaskTypeEmailCampaign           SchedulerTaskType = "EmailCampaign"
+	SchedulerTaskTypePushCampaign                              = "PushCampaign"
+	SchedulerTaskTypeSmsCampaign                               = "SmsCampaign"
+	SchedulerTaskTypeCodeFunctionalCall                        = "CodeFunctionalCall"
+	SchedulerTaskTypeWebhookCall                               = "WebhookCall"
+	SchedulerTaskTypeMarketplaceFunctionCall                   = "MarketplaceFunctionCall"
+	SchedulerTaskTypeWorkflowCall                              = "WorkflowCall"
 )
+
+// @DataContract
+type ExecutionIdentitySummaryDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	IsDefault bool `json:"isDefault,omitempty"`
+	// @DataMember
+	Status string `json:"status"`
+}
 
 // @DataContract
 type SchedulerTaskDto struct {
@@ -2442,6 +3133,20 @@ type SchedulerTaskDto struct {
 	CreatedAtUnix *int64 `json:"createdAtUnix,omitempty"`
 	// @DataMember
 	UpdatedAtUnix *int64 `json:"updatedAtUnix,omitempty"`
+	// @DataMember
+	EndsAtUnix *int64 `json:"endsAtUnix,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	ExecutionIdentity *ExecutionIdentitySummaryDto `json:"executionIdentity,omitempty"`
+	// @DataMember
+	HasEnded bool `json:"hasEnded,omitempty"`
+	// @DataMember
+	IsFailing bool `json:"isFailing,omitempty"`
+	// @DataMember
+	LastFailureReason *string `json:"lastFailureReason,omitempty"`
+	// @DataMember
+	LastFailedAtUnix *int64 `json:"lastFailedAtUnix,omitempty"`
 }
 
 type SchedulerTaskRequest struct {
@@ -2462,6 +3167,8 @@ type IdResponse struct {
 	Id *string `json:"id,omitempty"`
 	// @DataMember
 	Status *string `json:"status,omitempty"`
+	// @DataMember
+	Warnings []string `json:"warnings,omitempty"`
 }
 
 // @DataContract(Namespace="http://codemash.io/types/")
@@ -2605,6 +3312,24 @@ const (
 )
 
 // @DataContract
+type MarketplaceValidationStepResultDto struct {
+	// @DataMember
+	Key string `json:"key"`
+	// @DataMember
+	Label string `json:"label"`
+	// @DataMember
+	RequiredForFunctions bool `json:"requiredForFunctions,omitempty"`
+	// @DataMember
+	Succeeded bool `json:"succeeded,omitempty"`
+	// @DataMember
+	Skipped bool `json:"skipped,omitempty"`
+	// @DataMember
+	Message *string `json:"message,omitempty"`
+	// @DataMember
+	ErrorCode *string `json:"errorCode,omitempty"`
+}
+
+// @DataContract
 type MarketplaceIntegrationDto struct {
 	IntegrationDto
 	// @DataMember
@@ -2619,41 +3344,30 @@ type MarketplaceIntegrationDto struct {
 	Description *string `json:"description,omitempty"`
 	// @DataMember
 	Config IReadOnlyDictionary[string, string] `json:"config"`
+	// @DataMember
+	LastValidationSteps []MarketplaceValidationStepResultDto `json:"lastValidationSteps,omitempty"`
+	// @DataMember
+	SignedIn bool `json:"signedIn,omitempty"`
+	// @DataMember
+	SignedInBy *string `json:"signedInBy,omitempty"`
+	// @DataMember
+	SignedInAt *time.Time `json:"signedInAt,omitempty"`
+	// @DataMember
+	TokenExpiresAt *time.Time `json:"tokenExpiresAt,omitempty"`
 }
 
-type MarketplaceTokenResolverKind string
-
-const (
-	MarketplaceTokenResolverKindStatic            MarketplaceTokenResolverKind = "Static"
-	MarketplaceTokenResolverKindRequest                                        = "Request"
-	MarketplaceTokenResolverKindProject                                        = "Project"
-	MarketplaceTokenResolverKindInitiator                                      = "Initiator"
-	MarketplaceTokenResolverKindCustom                                         = "Custom"
-	MarketplaceTokenResolverKindIntegrationConfig                              = "IntegrationConfig"
-	MarketplaceTokenResolverKindIntegrationSecret                              = "IntegrationSecret"
-)
-
-type MarketplaceSecretValueFormat string
-
-const (
-	MarketplaceSecretValueFormatRaw      MarketplaceSecretValueFormat = "Raw"
-	MarketplaceSecretValueFormatBearer                                = "Bearer"
-	MarketplaceSecretValueFormatBasic                                 = "Basic"
-	MarketplaceSecretValueFormatPrefixed                              = "Prefixed"
-)
-
 // @DataContract
-type MarketplaceTokenMappingDto struct {
+type MarketplaceFunctionParameterDto struct {
 	// @DataMember
-	Token string `json:"token"`
+	Name string `json:"name"`
 	// @DataMember
-	Resolver MarketplaceTokenResolverKind `json:"resolver,omitempty"`
+	Type string `json:"type"`
 	// @DataMember
-	Value *string `json:"value,omitempty"`
+	Description *string `json:"description,omitempty"`
 	// @DataMember
-	SecretKeys []string `json:"secretKeys,omitempty"`
+	IsRequired bool `json:"isRequired,omitempty"`
 	// @DataMember
-	Format MarketplaceSecretValueFormat `json:"format,omitempty"`
+	DefaultValue *string `json:"defaultValue,omitempty"`
 }
 
 // @DataContract
@@ -2671,9 +3385,48 @@ type MarketplaceFunctionDto struct {
 	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
 	// @DataMember
-	RequestTemplate string `json:"requestTemplate"`
+	RequestTemplate *string `json:"requestTemplate,omitempty"`
 	// @DataMember
-	MappedTokens []MarketplaceTokenMappingDto `json:"mappedTokens"`
+	Arguments map[string]string `json:"arguments"`
+	// @DataMember
+	Inputs []MarketplaceFunctionParameterDto `json:"inputs"`
+	// @DataMember
+	MappedTokens []TokenMappingDto `json:"mappedTokens"`
+}
+
+type MarketplaceAvailability string
+
+const (
+	MarketplaceAvailabilityDevelopment MarketplaceAvailability = "Development"
+	MarketplaceAvailabilityStaging                             = "Staging"
+	MarketplaceAvailabilityProduction                          = "Production"
+)
+
+type MarketplaceListingKind string
+
+const (
+	MarketplaceListingKindConnector MarketplaceListingKind = "Connector"
+	MarketplaceListingKindWorkflow                         = "Workflow"
+)
+
+// @DataContract
+type MarketplaceWorkflowReferenceDto struct {
+	// @DataMember
+	Key string `json:"key"`
+	// @DataMember
+	Kind string `json:"kind"`
+	// @DataMember
+	Label string `json:"label"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+}
+
+// @DataContract
+type MarketplaceWorkflowTemplateDto struct {
+	// @DataMember
+	DefinitionJson string `json:"definitionJson"`
+	// @DataMember
+	References IReadOnlyList[MarketplaceWorkflowReferenceDto] `json:"references"`
 }
 
 type MarketplaceFieldType string
@@ -2713,17 +3466,13 @@ type MarketplaceFieldDefinitionDto struct {
 }
 
 // @DataContract
-type MarketplaceFunctionParameterDto struct {
+type MarketplaceInstallFormDto struct {
 	// @DataMember
-	Name string `json:"name"`
+	DataSchema string `json:"dataSchema"`
 	// @DataMember
-	Type string `json:"type"`
+	UiSchema string `json:"uiSchema"`
 	// @DataMember
-	Description *string `json:"description,omitempty"`
-	// @DataMember
-	IsRequired bool `json:"isRequired,omitempty"`
-	// @DataMember
-	DefaultValue *string `json:"defaultValue,omitempty"`
+	SecretKeys []string `json:"secretKeys"`
 }
 
 type MarketplaceParameterLocation string
@@ -2768,6 +3517,34 @@ type MarketplaceHttpRequestSpecDto struct {
 }
 
 // @DataContract
+type MarketplaceValidationStepDto struct {
+	// @DataMember
+	Key string `json:"key"`
+	// @DataMember
+	Label string `json:"label"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+	// @DataMember
+	RequiredForFunctions bool `json:"requiredForFunctions,omitempty"`
+	// @DataMember
+	Probe *MarketplaceHttpRequestSpecDto `json:"probe,omitempty"`
+	// @DataMember
+	AuthKinds []string `json:"authKinds,omitempty"`
+}
+
+type MarketplaceFormKind string
+
+const (
+	MarketplaceFormKindGeneric        MarketplaceFormKind = "Generic"
+	MarketplaceFormKindDatabaseQuery                      = "DatabaseQuery"
+	MarketplaceFormKindDatabaseWrite                      = "DatabaseWrite"
+	MarketplaceFormKindMessage                            = "Message"
+	MarketplaceFormKindPrompt                             = "Prompt"
+	MarketplaceFormKindWeb                                = "Web"
+	MarketplaceFormKindMembershipUser                     = "MembershipUser"
+)
+
+// @DataContract
 type MarketplaceFunctionDefinitionDto struct {
 	// @DataMember
 	DefinitionId *string `json:"definitionId,omitempty"`
@@ -2780,6 +3557,10 @@ type MarketplaceFunctionDefinitionDto struct {
 	// @DataMember
 	Group *string `json:"group,omitempty"`
 	// @DataMember
+	FormKind MarketplaceFormKind `json:"formKind,omitempty"`
+	// @DataMember
+	Inputs IReadOnlyList[MarketplaceFunctionParameterDto] `json:"inputs"`
+	// @DataMember
 	Parameters IReadOnlyList[MarketplaceFunctionParameterDto] `json:"parameters"`
 	// @DataMember
 	RequestSchema *string `json:"requestSchema,omitempty"`
@@ -2788,7 +3569,7 @@ type MarketplaceFunctionDefinitionDto struct {
 	// @DataMember
 	Request *MarketplaceHttpRequestSpecDto `json:"request,omitempty"`
 	// @DataMember
-	DefaultTokenMappings []MarketplaceTokenMappingDto `json:"defaultTokenMappings"`
+	DefaultTokenMappings []TokenMappingDto `json:"defaultTokenMappings"`
 }
 
 // @DataContract
@@ -2812,6 +3593,22 @@ type MarketplaceListingDto struct {
 	// @DataMember
 	DocumentationUrl *string `json:"documentationUrl,omitempty"`
 	// @DataMember
+	VideoUrl *string `json:"videoUrl,omitempty"`
+	// @DataMember
+	Availability MarketplaceAvailability `json:"availability,omitempty"`
+	// @DataMember
+	ConnectSteps IReadOnlyList[string] `json:"connectSteps"`
+	// @DataMember
+	OAuthRedirectUrl *string `json:"oAuthRedirectUrl,omitempty"`
+	// @DataMember
+	OAuthSignIn bool `json:"oAuthSignIn,omitempty"`
+	// @DataMember
+	OAuthInstallAppReady *bool `json:"oAuthInstallAppReady,omitempty"`
+	// @DataMember
+	Kind MarketplaceListingKind `json:"kind,omitempty"`
+	// @DataMember
+	Workflow *MarketplaceWorkflowTemplateDto `json:"workflow,omitempty"`
+	// @DataMember
 	IsOfficial bool `json:"isOfficial,omitempty"`
 	// @DataMember
 	Tags IReadOnlyList[string] `json:"tags"`
@@ -2821,6 +3618,10 @@ type MarketplaceListingDto struct {
 	ConfigFields IReadOnlyList[MarketplaceFieldDefinitionDto] `json:"configFields"`
 	// @DataMember
 	SecretFields IReadOnlyList[MarketplaceFieldDefinitionDto] `json:"secretFields"`
+	// @DataMember
+	InstallForm *MarketplaceInstallFormDto `json:"installForm,omitempty"`
+	// @DataMember
+	ValidationSteps IReadOnlyList[MarketplaceValidationStepDto] `json:"validationSteps"`
 	// @DataMember
 	Functions IReadOnlyList[MarketplaceFunctionDefinitionDto] `json:"functions"`
 }
@@ -3002,6 +3803,610 @@ type ConversationSnapshotEntryWireDto struct {
 	CoversUpToSeq int64  `json:"coversUpToSeq,omitempty"`
 }
 
+type CodeFunctionSource string
+
+const (
+	CodeFunctionSourceDatabase   CodeFunctionSource = "Database"
+	CodeFunctionSourceMembership                    = "Membership"
+	CodeFunctionSourceFiles                         = "Files"
+	CodeFunctionSourcePayments                      = "Payments"
+	CodeFunctionSourceAi                            = "Ai"
+	CodeFunctionSourceScheduler                     = "Scheduler"
+	CodeFunctionSourceManual                        = "Manual"
+	CodeFunctionSourceWorkflow                      = "Workflow"
+)
+
+type CodeFunctionCallerKind string
+
+const (
+	CodeFunctionCallerKindUser   CodeFunctionCallerKind = "User"
+	CodeFunctionCallerKindApiKey                        = "ApiKey"
+	CodeFunctionCallerKindSystem                        = "System"
+)
+
+// @DataContract
+type CodeFunctionCallerDto struct {
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	Email *string `json:"email,omitempty"`
+	// @DataMember
+	Kind CodeFunctionCallerKind `json:"kind,omitempty"`
+}
+
+// @DataContract
+type CodeFunctionRunAsDto struct {
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	AccessToken *string `json:"accessToken,omitempty"`
+	// @DataMember
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+}
+
+// @DataContract
+type CodeFunctionContextDto struct {
+	// @DataMember
+	AccountId string `json:"accountId"`
+	// @DataMember
+	ProjectId string `json:"projectId"`
+	// @DataMember
+	Environment string `json:"environment"`
+	// @DataMember
+	Region *string `json:"region,omitempty"`
+	// @DataMember
+	HubUrl string `json:"hubUrl"`
+	// @DataMember
+	ApiUrl string `json:"apiUrl"`
+	// @DataMember
+	EchoUrl string `json:"echoUrl"`
+	// @DataMember
+	TriggerId *string `json:"triggerId,omitempty"`
+	// @DataMember
+	TaskId *string `json:"taskId,omitempty"`
+	// @DataMember
+	CorrelationId *string `json:"correlationId,omitempty"`
+	// @DataMember
+	Caller *CodeFunctionCallerDto `json:"caller,omitempty"`
+	// @DataMember
+	RunAs *CodeFunctionRunAsDto `json:"runAs,omitempty"`
+	// @DataMember
+	WorkflowId *string `json:"workflowId,omitempty"`
+	// @DataMember
+	RunId *string `json:"runId,omitempty"`
+	// @DataMember
+	StepId *string `json:"stepId,omitempty"`
+}
+
+type ResourceKindDto string
+
+const (
+	ResourceKindDtoContact         ResourceKindDto = "contact"
+	ResourceKindDtoDocument                        = "document"
+	ResourceKindDtoFile                            = "file"
+	ResourceKindDtoPaymentCustomer                 = "paymentCustomer"
+	ResourceKindDtoOrder                           = "order"
+	ResourceKindDtoPayment                         = "payment"
+	ResourceKindDtoProduct                         = "product"
+	ResourceKindDtoIntegration                     = "integration"
+)
+
+type ResourceRefDto struct {
+	ProjectId     string          `json:"projectId"`
+	IntegrationId *string         `json:"integrationId,omitempty"`
+	Kind          ResourceKindDto `json:"kind,omitempty"`
+}
+
+type DocumentRefDto struct {
+	ResourceRefDto
+	Kind                  ResourceKindDto `json:"kind,omitempty"`
+	DatabaseIntegrationId string          `json:"databaseIntegrationId"`
+	SchemaId              string          `json:"schemaId"`
+	ExternalId            string          `json:"externalId"`
+}
+
+// @DataContract
+type DatabaseRecordsBatchDto struct {
+	// @DataMember
+	Ids []string `json:"ids"`
+	// @DataMember
+	Count int64 `json:"count,omitempty"`
+	// @DataMember
+	Truncated bool `json:"truncated,omitempty"`
+	// @DataMember
+	Documents []map[string]interface{} `json:"documents,omitempty"`
+}
+
+// @DataContract
+type DatabaseRecordChangeDto struct {
+	// @DataMember
+	Collection string `json:"collection"`
+	// @DataMember
+	SchemaId string `json:"schemaId"`
+	// @DataMember
+	SchemaVersion *int `json:"schemaVersion,omitempty"`
+	// @DataMember
+	RecordId *string `json:"recordId,omitempty"`
+	// @DataMember
+	Old map[string]interface{} `json:"old,omitempty"`
+	// @DataMember
+	New map[string]interface{} `json:"new,omitempty"`
+	// @DataMember
+	Truncated bool `json:"truncated,omitempty"`
+	// @DataMember
+	OldRef *DocumentRefDto `json:"oldRef,omitempty"`
+	// @DataMember
+	NewRef *DocumentRefDto `json:"newRef,omitempty"`
+	// @DataMember
+	Records *DatabaseRecordsBatchDto `json:"records,omitempty"`
+}
+
+// @DataContract
+type UserChangeDto struct {
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	Old map[string]interface{} `json:"old,omitempty"`
+	// @DataMember
+	New map[string]interface{} `json:"new,omitempty"`
+}
+
+// @DataContract
+type FileChangeDto struct {
+	// @DataMember
+	Old map[string]interface{} `json:"old,omitempty"`
+	// @DataMember
+	New map[string]interface{} `json:"new,omitempty"`
+	// @DataMember
+	Path *string `json:"path,omitempty"`
+}
+
+// @DataContract
+type PaymentFactDto struct {
+	// @DataMember
+	IntegrationId string `json:"integrationId"`
+	// @DataMember
+	Provider string `json:"provider"`
+	// @DataMember
+	ProviderEventId string `json:"providerEventId"`
+	// @DataMember
+	OrderId *string `json:"orderId,omitempty"`
+	// @DataMember
+	EventName string `json:"eventName"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	AmountMinor *int64 `json:"amountMinor,omitempty"`
+	// @DataMember
+	Currency *string `json:"currency,omitempty"`
+	// @DataMember
+	ExternalIds map[string]string `json:"externalIds,omitempty"`
+	// @DataMember
+	OccurredOn *time.Time `json:"occurredOn,omitempty"`
+	// @DataMember
+	ReceivedOn time.Time `json:"receivedOn,omitempty"`
+}
+
+// @DataContract
+type AiUsageEventDto struct {
+	// @DataMember
+	Payload map[string]interface{} `json:"payload"`
+	// @DataMember
+	TargetUserId *string `json:"targetUserId,omitempty"`
+}
+
+// @DataContract
+type ScheduledTaskInfoDto struct {
+	// @DataMember
+	TaskId string `json:"taskId"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	FiredAt time.Time `json:"firedAt,omitempty"`
+}
+
+// @DataContract
+type MarketplaceFunctionCallDto struct {
+	// @DataMember
+	FunctionId string `json:"functionId"`
+	// @DataMember
+	FunctionKey string `json:"functionKey"`
+	// @DataMember
+	IntegrationId string `json:"integrationId"`
+	// @DataMember
+	Payload map[string]interface{} `json:"payload"`
+}
+
+// @DataContract
+type WorkflowStepInfoDto struct {
+	// @DataMember
+	WorkflowId string `json:"workflowId"`
+	// @DataMember
+	RunId string `json:"runId"`
+	// @DataMember
+	StepId string `json:"stepId"`
+	// @DataMember
+	Version *int `json:"version,omitempty"`
+	// @DataMember
+	Request map[string]interface{} `json:"request,omitempty"`
+}
+
+// @DataContract
+type CodeFunctionDataDto struct {
+	// @DataMember
+	Database *DatabaseRecordChangeDto `json:"database,omitempty"`
+	// @DataMember
+	User *UserChangeDto `json:"user,omitempty"`
+	// @DataMember
+	File *FileChangeDto `json:"file,omitempty"`
+	// @DataMember
+	Payment *PaymentFactDto `json:"payment,omitempty"`
+	// @DataMember
+	Order *PaymentOrderEventDto `json:"order,omitempty"`
+	// @DataMember
+	Ai *AiUsageEventDto `json:"ai,omitempty"`
+	// @DataMember
+	Task *ScheduledTaskInfoDto `json:"task,omitempty"`
+	// @DataMember
+	Payload map[string]interface{} `json:"payload,omitempty"`
+	// @DataMember
+	Marketplace *MarketplaceFunctionCallDto `json:"marketplace,omitempty"`
+	// @DataMember
+	Workflow *WorkflowStepInfoDto `json:"workflow,omitempty"`
+}
+
+// @DataContract
+type CodeFunctionEventDto struct {
+	// @DataMember
+	SpecVersion string `json:"specVersion"`
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	EventId string `json:"eventId"`
+	// @DataMember
+	Event string `json:"event"`
+	// @DataMember
+	Source CodeFunctionSource `json:"source,omitempty"`
+	// @DataMember
+	CreatedOn time.Time `json:"createdOn,omitempty"`
+	// @DataMember
+	Context CodeFunctionContextDto `json:"context"`
+	// @DataMember
+	Data CodeFunctionDataDto `json:"data"`
+	// @DataMember
+	Config map[string]interface{} `json:"config,omitempty"`
+}
+
+type FakeCodeIntegrationDto struct {
+	CodeIntegrationDto
+}
+
+type FakeCodeIntegrationRequest struct {
+	CodeIntegrationRequest
+	Provider CodeProvider `json:"provider,omitempty"`
+}
+
+type CodeFunctionSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type           SchedulerTaskType  `json:"type,omitempty"`
+	FunctionRef    *FunctionRefDto    `json:"functionRef,omitempty"`
+	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
+	Config         *string            `json:"config,omitempty"`
+	MappedTokens   []TokenMappingDto  `json:"mappedTokens,omitempty"`
+}
+
+type MarketplaceFunctionSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type       SchedulerTaskType `json:"type,omitempty"`
+	FunctionId *string           `json:"functionId,omitempty"`
+	Payload    map[string]string `json:"payload,omitempty"`
+}
+
+type WorkflowSchedulerTaskRequest struct {
+	SchedulerTaskRequest
+	Type        SchedulerTaskType `json:"type,omitempty"`
+	WorkflowRef *string           `json:"workflowRef,omitempty"`
+	Payload     map[string]string `json:"payload,omitempty"`
+}
+
+type AwsCloudWatchLoggingIntegrationRequest struct {
+	LoggingIntegrationRequest
+	Provider  LoggingProvider `json:"provider,omitempty"`
+	Region    string          `json:"region"`
+	LogGroup  string          `json:"logGroup"`
+	LogStream string          `json:"logStream"`
+	/** @description Keyless (the default when omitted; no stored secret) or AccessKey (a stored IAM access key, less secure). */
+	// @ApiMember(Description="Keyless (the default when omitted; no stored secret) or AccessKey (a stored IAM access key, less secure).")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	/** @description Keyless: the ARN of the role that trusts this integration's Norbix token (arn:aws:iam::<account>:role/<name>). */
+	// @ApiMember(Description="Keyless: the ARN of the role that trusts this integration's Norbix token (arn:aws:iam::<account>:role/<name>).")
+	RoleArn *string `json:"roleArn,omitempty"`
+	/** @description AccessKey: the IAM access key id. */
+	// @ApiMember(Description="AccessKey: the IAM access key id.")
+	AccessKey *string `json:"accessKey,omitempty"`
+	/** @description AccessKey: the IAM secret access key. */
+	// @ApiMember(Description="AccessKey: the IAM secret access key.")
+	SecretKey *string `json:"secretKey,omitempty"`
+	/** @description AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise). */
+	// @ApiMember(Description="AccessKey: true = I accept that Norbix stores this long-lived secret (required with AuthMode AccessKey; may be omitted otherwise).")
+	AcceptKeyRisk *bool `json:"acceptKeyRisk,omitempty"`
+}
+
+type AwsCloudWatchLoggingIntegrationDto struct {
+	LoggingIntegrationDto
+	Region    string        `json:"region"`
+	LogGroup  string        `json:"logGroup"`
+	LogStream string        `json:"logStream"`
+	AuthMode  CloudAuthMode `json:"authMode,omitempty"`
+	RoleArn   *string       `json:"roleArn,omitempty"`
+}
+
+type AzureMonitorLogsLoggingIntegrationRequest struct {
+	LoggingIntegrationRequest
+	Provider LoggingProvider `json:"provider,omitempty"`
+	/** @description Keyless, or omit it. This destination has no other mode. */
+	// @ApiMember(Description="Keyless, or omit it. This destination has no other mode.")
+	AuthMode *CloudAuthMode `json:"authMode,omitempty"`
+	/** @description The Entra tenant id of the managed identity. */
+	// @ApiMember(Description="The Entra tenant id of the managed identity.")
+	TenantId *string `json:"tenantId,omitempty"`
+	/** @description The managed identity's client id. */
+	// @ApiMember(Description="The managed identity's client id.")
+	ClientId *string `json:"clientId,omitempty"`
+	/** @description The data collection rule's logs ingestion endpoint or a data collection endpoint: https://<name>.ingest.monitor.azure.com. */
+	// @ApiMember(Description="The data collection rule's logs ingestion endpoint or a data collection endpoint: https://<name>.ingest.monitor.azure.com.")
+	IngestionEndpoint *string `json:"ingestionEndpoint,omitempty"`
+	/** @description The data collection rule's immutable id: dcr- and 32 hex digits. */
+	// @ApiMember(Description="The data collection rule's immutable id: dcr- and 32 hex digits.")
+	DataCollectionRuleId *string `json:"dataCollectionRuleId,omitempty"`
+	/** @description The rule's stream: Custom-<table>_CL. */
+	// @ApiMember(Description="The rule's stream: Custom-<table>_CL.")
+	StreamName *string `json:"streamName,omitempty"`
+}
+
+type AzureMonitorLogsLoggingIntegrationDto struct {
+	LoggingIntegrationDto
+	IngestionEndpoint    string        `json:"ingestionEndpoint"`
+	DataCollectionRuleId string        `json:"dataCollectionRuleId"`
+	StreamName           string        `json:"streamName"`
+	TenantId             string        `json:"tenantId"`
+	ClientId             string        `json:"clientId"`
+	AuthMode             CloudAuthMode `json:"authMode,omitempty"`
+}
+
+// @DataContract
+type QuickConnectProviderDto struct {
+	// @DataMember
+	Module string `json:"module"`
+	// @DataMember
+	Provider string `json:"provider"`
+	// @DataMember
+	Available bool `json:"available,omitempty"`
+	// @DataMember
+	CallbackKind string `json:"callbackKind"`
+	// @DataMember
+	RequiredInputs []string `json:"requiredInputs"`
+	// @DataMember
+	Modes []string `json:"modes"`
+	// @DataMember
+	RedirectUrl string `json:"redirectUrl"`
+	// @DataMember
+	PlatformWebhookUrls []string `json:"platformWebhookUrls"`
+}
+
+// @DataContract
+type QuickConnectTargetDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Detail *string `json:"detail,omitempty"`
+}
+
+type JsonSchemaFieldDto struct {
+	// @DataMember
+	FieldName string `json:"fieldName"`
+}
+
+type StringFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Format *string `json:"format,omitempty"`
+	// @DataMember
+	Pattern *string `json:"pattern,omitempty"`
+	// @DataMember
+	MinLength *int `json:"minLength,omitempty"`
+	// @DataMember
+	MaxLength *int `json:"maxLength,omitempty"`
+	// @DataMember
+	TranslateOptions *IReadOnlyDictionary[string, string] `json:"translateOptions,omitempty"`
+	// @DataMember
+	Default *string `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
+}
+
+type DecimalFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Minimum *float64 `json:"minimum,omitempty"`
+	// @DataMember
+	Maximum *float64 `json:"maximum,omitempty"`
+	// @DataMember
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	// @DataMember
+	Default *float64 `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
+}
+
+type CurrencyDefaultDto struct {
+	// @DataMember
+	Value float64 `json:"value,omitempty"`
+	// @DataMember
+	Currency string `json:"currency"`
+}
+
+type CurrencyFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	AllowedCurrencies *IReadOnlyList[string] `json:"allowedCurrencies,omitempty"`
+	// @DataMember
+	MultipleOf *float64 `json:"multipleOf,omitempty"`
+	// @DataMember
+	Minimum *float64 `json:"minimum,omitempty"`
+	// @DataMember
+	Maximum *float64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *CurrencyDefaultDto `json:"default,omitempty"`
+}
+
+type BooleanFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Default *bool `json:"default,omitempty"`
+}
+
+type DateFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Minimum *int64 `json:"minimum,omitempty"`
+	// @DataMember
+	Maximum *int64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *int64 `json:"default,omitempty"`
+}
+
+type IntegerFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Minimum *int64 `json:"minimum,omitempty"`
+	// @DataMember
+	Maximum *int64 `json:"maximum,omitempty"`
+	// @DataMember
+	Default *int64 `json:"default,omitempty"`
+	// @DataMember
+	Unique *bool `json:"unique,omitempty"`
+}
+
+type GeolocationFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	AllowedTypes *IReadOnlyList[string] `json:"allowedTypes,omitempty"`
+}
+
+type TagsFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	Default *IReadOnlyList[string] `json:"default,omitempty"`
+}
+
+type FileFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Storages *IReadOnlyList[string] `json:"storages,omitempty"`
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	AllowedFileType *string `json:"allowedFileType,omitempty"`
+	// @DataMember
+	MaxSizeMb *float64 `json:"maxSizeMb,omitempty"`
+}
+
+type TaxonomySelectionFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	TaxonomyId *string `json:"taxonomyId,omitempty"`
+	// @DataMember
+	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
+}
+
+type CollectionSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	CollectionId *string `json:"collectionId,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
+	// @DataMember
+	Multiple bool `json:"multiple,omitempty"`
+}
+
+type UserSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
+}
+
+type RoleSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	DisplayField *string `json:"displayField,omitempty"`
+}
+
+type EnumSelectionFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Values *IReadOnlyList[string] `json:"values,omitempty"`
+	// @DataMember
+	Multiple bool `json:"multiple,omitempty"`
+	// @DataMember
+	Default *IReadOnlyList[string] `json:"default,omitempty"`
+}
+
+type ObjectFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Properties IReadOnlyList[interface{}] `json:"properties"`
+	// @DataMember
+	Required *IReadOnlyList[string] `json:"required,omitempty"`
+}
+
+type ArrayFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	Items interface{} `json:"items"`
+	// @DataMember
+	MinItems *int `json:"minItems,omitempty"`
+	// @DataMember
+	MaxItems *int `json:"maxItems,omitempty"`
+	// @DataMember
+	UniqueItems *bool `json:"uniqueItems,omitempty"`
+}
+
+type JsonFieldDto struct {
+	JsonSchemaFieldDto
+	// @DataMember
+	MaxBytes *int `json:"maxBytes,omitempty"`
+}
+
+type ManagedServiceBundle string
+
+const (
+	ManagedServiceBundleStarter ManagedServiceBundle = "Starter"
+	ManagedServiceBundleGrowth                       = "Growth"
+	ManagedServiceBundleScale                        = "Scale"
+)
+
+type SubscriptionBillingPeriod string
+
+const (
+	SubscriptionBillingPeriodMonthly SubscriptionBillingPeriod = "Monthly"
+	SubscriptionBillingPeriodAnnual                            = "Annual"
+)
+
 type SubscriptionType string
 
 const (
@@ -3055,6 +4460,22 @@ type TagDefinitionDto struct {
 	TagDefinitionBaseDto
 	// @DataMember
 	DefaultDelivery map[DeliveryChannel]bool `json:"defaultDelivery"`
+}
+
+// @DataContract
+type PromotionIntegrationChoiceDto struct {
+	/** @description The SOURCE integration id (int_…), as listed in the preview's integrations[].id. */
+	// @DataMember
+	// @ApiMember(Description="The SOURCE integration id (int_…), as listed in the preview's integrations[].id.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description 'seed' = copy the integration (with its secret) into the target; 'skip' = leave it out; 'map' = point the promoted content at an existing target integration of the same module (mapToId). */
+	// @DataMember
+	// @ApiMember(Description="'seed' = copy the integration (with its secret) into the target; 'skip' = leave it out; 'map' = point the promoted content at an existing target integration of the same module (mapToId).", IsRequired=true)
+	Action string `json:"action"`
+	/** @description Only for 'map': the TARGET integration id (same module), from the preview's integrations[].targets[].id. */
+	// @DataMember
+	// @ApiMember(Description="Only for 'map': the TARGET integration id (same module), from the preview's integrations[].targets[].id.")
+	MapToId *string `json:"mapToId,omitempty"`
 }
 
 // @DataContract
@@ -3148,16 +4569,96 @@ type ProjectAiAssistantRequestBase struct {
 	IsDefault bool `json:"isDefault,omitempty"`
 }
 
+type TeamMemberRoleInput struct {
+	/** @description Account role id (acc_…_nr_…) or its template id (GUID), as get_account_team_roles lists it. */
+	// @ApiMember(Description="Account role id (acc_…_nr_…) or its template id (GUID), as get_account_team_roles lists it.", IsRequired=true)
+	RoleId string `json:"roleId"`
+	/** @description Environment names the role applies in, e.g. ["TEST"]. Empty or omitted = every environment. */
+	// @ApiMember(Description="Environment names the role applies in, e.g. [\"TEST\"]. Empty or omitted = every environment.")
+	Environments []string `json:"environments,omitempty"`
+	/** @description Project ids (pr_…) the role applies to. Empty or omitted = every project. Not allowed on the Account Administrator role. */
+	// @ApiMember(Description="Project ids (pr_…) the role applies to. Empty or omitted = every project. Not allowed on the Account Administrator role.")
+	Projects []string `json:"projects,omitempty"`
+}
+
 // @DataContract
-type AiScopeDto struct {
+type AiProjectRoleIdsDto struct {
 	// @DataMember
-	Reach string `json:"reach"`
+	ProjectId string `json:"projectId"`
 	// @DataMember
-	ProjectId *string `json:"projectId,omitempty"`
+	RoleIds []string `json:"roleIds"`
+}
+
+// @DataContract
+type RoleEnvironmentsDto struct {
 	// @DataMember
-	Rights string `json:"rights"`
+	RoleId string `json:"roleId"`
 	// @DataMember
-	Envs []string `json:"envs"`
+	Environments []string `json:"environments"`
+}
+
+type Gender string
+
+const (
+	GenderMale   Gender = "Male"
+	GenderFemale        = "Female"
+	GenderOther         = "Other"
+)
+
+type MarketingBlockReason string
+
+const (
+	MarketingBlockReasonUnspecified  MarketingBlockReason = "Unspecified"
+	MarketingBlockReasonUnsubscribed                      = "Unsubscribed"
+	MarketingBlockReasonComplaint                         = "Complaint"
+	MarketingBlockReasonHardBounce                        = "HardBounce"
+	MarketingBlockReasonInvalidEmail                      = "InvalidEmail"
+	MarketingBlockReasonAdminBlock                        = "AdminBlock"
+)
+
+type UserGeneralInfoDto struct {
+	Phone                     *string                `json:"phone,omitempty"`
+	PrimaryEmail              *string                `json:"primaryEmail,omitempty"`
+	DisplayName               *string                `json:"displayName,omitempty"`
+	FirstName                 *string                `json:"firstName,omitempty"`
+	LastName                  *string                `json:"lastName,omitempty"`
+	FullName                  *string                `json:"fullName,omitempty"`
+	AddressLine1              *string                `json:"addressLine1,omitempty"`
+	AddressLine2              *string                `json:"addressLine2,omitempty"`
+	Country                   *string                `json:"country,omitempty"`
+	City                      *string                `json:"city,omitempty"`
+	State                     *string                `json:"state,omitempty"`
+	PostalCode                *string                `json:"postalCode,omitempty"`
+	Company                   *string                `json:"company,omitempty"`
+	Gender                    *Gender                `json:"gender,omitempty"`
+	BirthDate                 *int64                 `json:"birthDate,omitempty"`
+	TimeZone                  *string                `json:"timeZone,omitempty"`
+	Language                  *string                `json:"language,omitempty"`
+	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages,omitempty"`
+	BlockedTags               map[string][]string    `json:"blockedTags,omitempty"`
+	BlockReasons              []MarketingBlockReason `json:"blockReasons,omitempty"`
+	ExtraMetadata             *string                `json:"extraMetadata,omitempty"`
+	Notes                     *string                `json:"notes,omitempty"`
+}
+
+// @DataContract
+type ImportUserRowDto struct {
+	// @DataMember(Name="email")
+	Email *string `json:"email,omitempty"`
+	// @DataMember(Name="userName")
+	UserName *string `json:"userName,omitempty"`
+	// @DataMember(Name="userGeneralInfo")
+	UserGeneralInfo *UserGeneralInfoDto `json:"userGeneralInfo,omitempty"`
+	// @DataMember(Name="roles")
+	Roles []string `json:"roles,omitempty"`
+	// @DataMember(Name="createdOn")
+	CreatedOn *int64 `json:"createdOn,omitempty"`
+	// @DataMember(Name="hashFormat")
+	HashFormat *string `json:"hashFormat,omitempty"`
+	// @DataMember(Name="passwordHash")
+	PasswordHash *string `json:"passwordHash,omitempty"`
+	// @DataMember(Name="passwordSalt")
+	PasswordSalt *string `json:"passwordSalt,omitempty"`
 }
 
 // @DataContract
@@ -3206,11 +4707,6 @@ type SaveTrigger struct {
 	Trigger interface{} `json:"trigger"`
 }
 
-type CredentialsSettingsModeDto struct {
-	Name      *string `json:"name,omitempty"`
-	LogoutUrl *string `json:"logoutUrl,omitempty"`
-}
-
 type CursorArgs struct {
 	Field string `json:"field"`
 	Order int    `json:"order,omitempty"`
@@ -3223,6 +4719,11 @@ type PagingArgs struct {
 	EndingBefore  *string     `json:"endingBefore,omitempty"`
 }
 
+type SchemaUniqueIndexDto struct {
+	// @DataMember
+	Fields []string `json:"fields"`
+}
+
 type SchemaSettingsDto struct {
 	// @DataMember
 	SoftDelete bool `json:"softDelete,omitempty"`
@@ -3230,6 +4731,10 @@ type SchemaSettingsDto struct {
 	HasRecordOwner bool `json:"hasRecordOwner,omitempty"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
+	// @DataMember
+	UniqueIndexes []SchemaUniqueIndexDto `json:"uniqueIndexes,omitempty"`
+	// @DataMember
+	EndUserOwnRecords *bool `json:"endUserOwnRecords,omitempty"`
 }
 
 type SchemaEmbedSettingsDto struct {
@@ -3246,6 +4751,10 @@ type SchemaEmbedSettingsDto struct {
 type SchemaListColumnDto struct {
 	// @DataMember
 	Field string `json:"field"`
+	// @DataMember
+	Primary bool `json:"primary,omitempty"`
+	// @DataMember
+	LinkReference bool `json:"linkReference,omitempty"`
 }
 
 type SchemaListSortDto struct {
@@ -3260,17 +4769,8 @@ type SchemaListSettingsDto struct {
 	Columns []SchemaListColumnDto `json:"columns"`
 	// @DataMember
 	DefaultSort *SchemaListSortDto `json:"defaultSort,omitempty"`
-}
-
-type ImportColumnMappingDto struct {
 	// @DataMember
-	CsvColumnIndex int `json:"csvColumnIndex,omitempty"`
-	// @DataMember
-	CsvHeader *string `json:"csvHeader,omitempty"`
-	// @DataMember
-	PropertyName *string `json:"propertyName,omitempty"`
-	// @DataMember
-	DontImportOnError bool `json:"dontImportOnError,omitempty"`
+	Filters []string `json:"filters"`
 }
 
 // @DataContract
@@ -3287,7 +4787,7 @@ type EmailValidationIntegrationRequest struct {
 	IntegrationId   *string                 `json:"integrationId,omitempty"`
 	Provider        EmailValidationProvider `json:"provider,omitempty"`
 	IntegrationName string                  `json:"integrationName"`
-	IsEnabled       bool                    `json:"isEnabled,omitempty"`
+	IsEnabled       *bool                   `json:"isEnabled,omitempty"`
 }
 
 type SaveEmailTemplate struct {
@@ -3321,6 +4821,26 @@ type TranslationDto struct {
 	Content string `json:"content"`
 }
 
+// @DataContract
+type EmailClickDto struct {
+	/** @description The nblid value from the clicked link's query string. */
+	// @DataMember
+	// @ApiMember(Description="The nblid value from the clicked link's query string.", IsRequired=true)
+	Nblid string `json:"nblid"`
+	/** @description Optional. The page that was opened (kept on the click, at most 2048 characters). */
+	// @DataMember
+	// @ApiMember(Description="Optional. The page that was opened (kept on the click, at most 2048 characters).")
+	Url *string `json:"url,omitempty"`
+	/** @description Optional. When the link was opened (UTC; a time with no zone is taken as UTC). Default: now. The same nblid, url and time sent again is recorded once; with no time, a link already clicked is not recorded again. */
+	// @DataMember
+	// @ApiMember(Description="Optional. When the link was opened (UTC; a time with no zone is taken as UTC). Default: now. The same nblid, url and time sent again is recorded once; with no time, a link already clicked is not recorded again.")
+	ClickedAt *time.Time `json:"clickedAt,omitempty"`
+	/** @description Optional. The browser's user agent. A known mail scanner or bot is flagged suspected-scanner. */
+	// @DataMember
+	// @ApiMember(Description="Optional. The browser's user agent. A known mail scanner or bot is flagged suspected-scanner.")
+	UserAgent *string `json:"userAgent,omitempty"`
+}
+
 type SaveSmsTemplate struct {
 	CodeMashRequestBase
 	/** @description Display name for the SMS template. */
@@ -3340,12 +4860,168 @@ type SaveSmsTemplate struct {
 	Translations []SmsMessageTranslationDto `json:"translations"`
 }
 
-type SmsIntegrationRequest struct {
-	IntegrationId   *string     `json:"integrationId,omitempty"`
-	Provider        SmsProvider `json:"provider,omitempty"`
-	IntegrationName string      `json:"integrationName"`
-	IsEnabled       bool        `json:"isEnabled,omitempty"`
+// @DataContract
+type WorkflowStepRetryDto struct {
+	/** @description 0–10 automatic retries. */
+	// @DataMember
+	// @ApiMember(Description="0–10 automatic retries.")
+	Count int `json:"count,omitempty"`
+	/** @description 1–3600 seconds before the first retry, doubled per attempt. */
+	// @DataMember
+	// @ApiMember(Description="1–3600 seconds before the first retry, doubled per attempt.")
+	BackoffSeconds int `json:"backoffSeconds,omitempty"`
 }
+
+// @DataContract
+type WorkflowOnErrorDto struct {
+	/** @description fail | continue | goto */
+	// @DataMember
+	// @ApiMember(Description="fail | continue | goto", IsRequired=true)
+	Action string `json:"action"`
+	/** @description goto: the step to jump to. */
+	// @DataMember
+	// @ApiMember(Description="goto: the step to jump to.")
+	Goto *string `json:"goto,omitempty"`
+}
+
+// @DataContract
+type WorkflowStepDto struct {
+	/** @description ^[A-Za-z_][A-Za-z0-9_]{0,63}$, unique in the definition. */
+	// @DataMember
+	// @ApiMember(Description="^[A-Za-z_][A-Za-z0-9_]{0,63}$, unique in the definition.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description email.send | sms.send | push.send | code.invoke | webhook.call | sse.publish | marketplace.invoke | condition | transform | log | delay | wait | parallel | join | workflow.start | database.find | database.insert | database.update | database.replace | database.delete | ai.invoke | foreach */
+	// @DataMember
+	// @ApiMember(Description="email.send | sms.send | push.send | code.invoke | webhook.call | sse.publish | marketplace.invoke | condition | transform | log | delay | wait | parallel | join | workflow.start | database.find | database.insert | database.update | database.replace | database.delete | ai.invoke | foreach", IsRequired=true)
+	Kind string `json:"kind"`
+	// @DataMember
+	Name *string `json:"name,omitempty"`
+	/** @description The step after this one; absent = the branch ends. */
+	// @DataMember
+	// @ApiMember(Description="The step after this one; absent = the branch ends.")
+	Next *string `json:"next,omitempty"`
+	/** @description condition: the step when the expression is true. */
+	// @DataMember
+	// @ApiMember(Description="condition: the step when the expression is true.")
+	Then *string `json:"then,omitempty"`
+	/** @description condition: the step when the expression is false. */
+	// @DataMember
+	// @ApiMember(Description="condition: the step when the expression is false.")
+	Else *string `json:"else,omitempty"`
+	/** @description wait (approval): the step when rejected; absent = the branch ends. */
+	// @DataMember
+	// @ApiMember(Description="wait (approval): the step when rejected; absent = the branch ends.")
+	Rejected *string `json:"rejected,omitempty"`
+	/** @description wait: the step when the wait times out; absent = the run fails (-022). */
+	// @DataMember
+	// @ApiMember(Description="wait: the step when the wait times out; absent = the run fails (-022).")
+	OnTimeout *string `json:"onTimeout,omitempty"`
+	// @DataMember
+	Retry *WorkflowStepRetryDto `json:"retry,omitempty"`
+	/** @description A step still running after it is failed with reason=timeout (default 300, cap 3600). */
+	// @DataMember
+	// @ApiMember(Description="A step still running after it is failed with reason=timeout (default 300, cap 3600).")
+	TimeoutSeconds *int `json:"timeoutSeconds,omitempty"`
+	// @DataMember
+	OnError *WorkflowOnErrorDto `json:"onError,omitempty"`
+	/** @description Action kinds: the trigger action body (type may be left out — the kind implies it). */
+	// @DataMember
+	// @ApiMember(Description="Action kinds: the trigger action body (type may be left out — the kind implies it).")
+	Action map[string]interface{} `json:"action,omitempty"`
+	/** @description Flow kinds: expression | level, message, meta | seconds, until | mode, key, inputs, assignees, timeoutSeconds, notify | branches, join | mode | workflowRef, payload, wait, timeoutSeconds | items, body, concurrency. One assignees entry is a usr_ id, a @Model.* binding, or a rule: role:<name or id>, tag:<name>, the two joined with '+', or teamrole:<name>. */
+	// @DataMember
+	// @ApiMember(Description="Flow kinds: expression | level, message, meta | seconds, until | mode, key, inputs, assignees, timeoutSeconds, notify | branches, join | mode | workflowRef, payload, wait, timeoutSeconds | items, body, concurrency. One assignees entry is a usr_ id, a @Model.* binding, or a rule: role:<name or id>, tag:<name>, the two joined with '+', or teamrole:<name>.")
+	Config map[string]interface{} `json:"config,omitempty"`
+}
+
+// @DataContract
+type WorkflowLimitsDto struct {
+	/** @description Step executions per run; default 200, cap 5000. */
+	// @DataMember
+	// @ApiMember(Description="Step executions per run; default 200, cap 5000.")
+	MaxStepRuns *int `json:"maxStepRuns,omitempty"`
+	/** @description Wall-clock from start, including parked time; default 604800 (7 days), cap 31536000 (one year). */
+	// @DataMember
+	// @ApiMember(Description="Wall-clock from start, including parked time; default 604800 (7 days), cap 31536000 (one year).")
+	MaxDurationSeconds *int `json:"maxDurationSeconds,omitempty"`
+	/** @description The longest one delay / wait may park; default 604800 (7 days), cap 31536000 (one year). A signed resume link still lives at most 7 days, so a longer wait is answered in the dashboard, the CLI or an SDK. */
+	// @DataMember
+	// @ApiMember(Description="The longest one delay / wait may park; default 604800 (7 days), cap 31536000 (one year). A signed resume link still lives at most 7 days, so a longer wait is answered in the dashboard, the CLI or an SDK.")
+	MaxWaitSeconds *int `json:"maxWaitSeconds,omitempty"`
+	/** @description Branch heads per parallel; default 10, cap 20. */
+	// @DataMember
+	// @ApiMember(Description="Branch heads per parallel; default 10, cap 20.")
+	MaxParallelBranches *int `json:"maxParallelBranches,omitempty"`
+	/** @description Nesting of workflow.start and trigger-started descendants; default 3, cap 5. */
+	// @DataMember
+	// @ApiMember(Description="Nesting of workflow.start and trigger-started descendants; default 3, cap 5.")
+	MaxDepth *int `json:"maxDepth,omitempty"`
+	/** @description Elements one foreach accepts; a longer list fails the step. Default 100, cap 1000. */
+	// @DataMember
+	// @ApiMember(Description="Elements one foreach accepts; a longer list fails the step. Default 100, cap 1000.")
+	MaxForeachItems *int `json:"maxForeachItems,omitempty"`
+	/** @description Elements of one foreach queued or running at once; default 5, cap 20. */
+	// @DataMember
+	// @ApiMember(Description="Elements of one foreach queued or running at once; default 5, cap 20.")
+	MaxForeachConcurrency *int `json:"maxForeachConcurrency,omitempty"`
+}
+
+// @DataContract
+type WorkflowDefinitionDto struct {
+	/** @description Optional: the version of this shape; absent = "1". */
+	// @DataMember
+	// @ApiMember(Description="Optional: the version of this shape; absent = \"1\".")
+	SchemaVersion string `json:"schemaVersion"`
+	/** @description wf_… — absent on the first save, required on an update. */
+	// @DataMember
+	// @ApiMember(Description="wf_… — absent on the first save, required on an update.")
+	WorkflowId *string `json:"workflowId,omitempty"`
+	/** @description 1–120 characters. */
+	// @DataMember
+	// @ApiMember(Description="1–120 characters.", IsRequired=true)
+	Name string `json:"name"`
+	/** @description Up to 2 000 characters. */
+	// @DataMember
+	// @ApiMember(Description="Up to 2 000 characters.")
+	Description *string `json:"description,omitempty"`
+	/** @description Read-only: the published version number (null on a draft). Ignored on save. */
+	// @DataMember
+	// @ApiMember(Description="Read-only: the published version number (null on a draft). Ignored on save.")
+	Version *int `json:"version,omitempty"`
+	/** @description Read-only on save (use the enable / disable routes). */
+	// @DataMember
+	// @ApiMember(Description="Read-only on save (use the enable / disable routes).")
+	IsEnabled bool `json:"isEnabled,omitempty"`
+	/** @description usr_… — the service user every step runs as (the execution identity). Optional: absent = the env's default identity "Project triggers"; the caller then needs what every step needs. Naming another one needs membership:assign on it. */
+	// @DataMember
+	// @ApiMember(Description="usr_… — the service user every step runs as (the execution identity). Optional: absent = the env's default identity \"Project triggers\"; the caller then needs what every step needs. Naming another one needs membership:assign on it.")
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	/** @description Optional JSON Schema (draft 2020-12, type object) of the manual-invoke payload. */
+	// @DataMember
+	// @ApiMember(Description="Optional JSON Schema (draft 2020-12, type object) of the manual-invoke payload.")
+	Inputs map[string]interface{} `json:"inputs,omitempty"`
+	// @DataMember
+	Start *string `json:"start,omitempty"`
+	/** @description 1–200 steps. */
+	// @DataMember
+	// @ApiMember(Description="1–200 steps.", IsRequired=true)
+	Steps []WorkflowStepDto `json:"steps"`
+	// @DataMember
+	OnError *WorkflowOnErrorDto `json:"onError,omitempty"`
+	// @DataMember
+	Limits *WorkflowLimitsDto `json:"limits,omitempty"`
+}
+
+type MarketplaceAccessLevel string
+
+const (
+	MarketplaceAccessLevelNone          MarketplaceAccessLevel = "None"
+	MarketplaceAccessLevelViewer                               = "Viewer"
+	MarketplaceAccessLevelFunctionsOnly                        = "FunctionsOnly"
+	MarketplaceAccessLevelReadOnly                             = "ReadOnly"
+	MarketplaceAccessLevelFullAccess                           = "FullAccess"
+	MarketplaceAccessLevelManage                               = "Manage"
+)
 
 type SavePushTemplate struct {
 	CodeMashRequestBase
@@ -3418,30 +5094,22 @@ type EmbeddingIntegrationRequest struct {
 	IntegrationId   *string           `json:"integrationId,omitempty"`
 	Provider        EmbeddingProvider `json:"provider,omitempty"`
 	IntegrationName string            `json:"integrationName"`
-	IsEnabled       bool              `json:"isEnabled,omitempty"`
+	IsEnabled       *bool             `json:"isEnabled,omitempty"`
 	Endpoint        *string           `json:"endpoint,omitempty"`
 	Model           string            `json:"model"`
 	Dimension       int               `json:"dimension,omitempty"`
 	ApiKey          string            `json:"apiKey"`
 }
 
-type ResourceKindDto string
-
-const (
-	ResourceKindDtoContact         ResourceKindDto = "contact"
-	ResourceKindDtoDocument                        = "document"
-	ResourceKindDtoFile                            = "file"
-	ResourceKindDtoPaymentCustomer                 = "paymentCustomer"
-	ResourceKindDtoOrder                           = "order"
-	ResourceKindDtoPayment                         = "payment"
-	ResourceKindDtoProduct                         = "product"
-	ResourceKindDtoIntegration                     = "integration"
-)
-
-type ResourceRefDto struct {
-	ProjectId     string          `json:"projectId"`
-	IntegrationId *string         `json:"integrationId,omitempty"`
-	Kind          ResourceKindDto `json:"kind,omitempty"`
+type ImportColumnMappingDto struct {
+	// @DataMember
+	CsvColumnIndex int `json:"csvColumnIndex,omitempty"`
+	// @DataMember
+	CsvHeader *string `json:"csvHeader,omitempty"`
+	// @DataMember
+	PropertyName *string `json:"propertyName,omitempty"`
+	// @DataMember
+	DontImportOnError bool `json:"dontImportOnError,omitempty"`
 }
 
 type CaseResolutionFixKind string
@@ -3489,24 +5157,6 @@ const (
 	CodeMashRuntimeProduction                  = "Production"
 )
 
-// @DataContract
-type EchoLicenseDto struct {
-	// @DataMember(Name="domain")
-	Domain *string `json:"domain,omitempty"`
-	// @DataMember(Name="accountId")
-	AccountId *string `json:"accountId,omitempty"`
-	// @DataMember(Name="email")
-	Email *string `json:"email,omitempty"`
-	// @DataMember(Name="release")
-	Release *string `json:"release,omitempty"`
-	// @DataMember(Name="expire")
-	Expire int64 `json:"expire,omitempty"`
-	// @DataMember(Name="isTrial")
-	IsTrial bool `json:"isTrial,omitempty"`
-	// @DataMember(Name="cap")
-	Cap int `json:"cap,omitempty"`
-}
-
 type EchoRegionDto struct {
 	Code        string `json:"code"`
 	DisplayName string `json:"displayName"`
@@ -3514,12 +5164,41 @@ type EchoRegionDto struct {
 	HubUrl      string `json:"hubUrl"`
 }
 
+type EchoAgentSnippetDto struct {
+	Client      string `json:"client"`
+	Kind        string `json:"kind"`
+	Recommended bool   `json:"recommended,omitempty"`
+	Auth        string `json:"auth"`
+	Config      string `json:"config"`
+}
+
 type EchoAgentDto struct {
-	McpUrl            string  `json:"mcpUrl"`
-	OAuthMetadataUrl  *string `json:"oAuthMetadataUrl,omitempty"`
-	InstallationType  string  `json:"installationType"`
-	OnboardingDocsUrl string  `json:"onboardingDocsUrl"`
-	ToolsUrl          string  `json:"toolsUrl"`
+	McpUrl                 string                `json:"mcpUrl"`
+	OAuthMetadataUrl       *string               `json:"oAuthMetadataUrl,omitempty"`
+	InstallationType       string                `json:"installationType"`
+	OnboardingDocsUrl      string                `json:"onboardingDocsUrl"`
+	ToolsUrl               string                `json:"toolsUrl"`
+	OpenApiUrl             *string               `json:"openApiUrl,omitempty"`
+	CliPackage             string                `json:"cliPackage"`
+	CliInstallCommand      string                `json:"cliInstallCommand"`
+	DeviceAuthorizationUrl string                `json:"deviceAuthorizationUrl"`
+	DeviceTokenUrl         string                `json:"deviceTokenUrl"`
+	Snippets               []EchoAgentSnippetDto `json:"snippets"`
+}
+
+type EchoHostingPlatformDto struct {
+	Provider string `json:"provider"`
+	IsAws    bool   `json:"isAws,omitempty"`
+}
+
+type EchoConnectDto struct {
+	Providers []QuickConnectProviderDto `json:"providers"`
+}
+
+type EchoKeylessDto struct {
+	Issuer            string  `json:"issuer"`
+	Available         bool    `json:"available,omitempty"`
+	UnavailableReason *string `json:"unavailableReason,omitempty"`
 }
 
 type PublicBrandDto struct {
@@ -3528,6 +5207,12 @@ type PublicBrandDto struct {
 	AccentColor *string `json:"accentColor,omitempty"`
 	LogoUrl     *string `json:"logoUrl,omitempty"`
 	IconUrl     *string `json:"iconUrl,omitempty"`
+}
+
+type PublicSocialSignInDto struct {
+	Provider    string `json:"provider"`
+	DisplayName string `json:"displayName"`
+	StartPath   string `json:"startPath"`
 }
 
 type PublicPasswordPolicyDto struct {
@@ -3542,6 +5227,7 @@ type PublicPasswordPolicyDto struct {
 
 type PublicAuthDto struct {
 	SocialProviders []string                 `json:"socialProviders"`
+	SocialSignIn    []PublicSocialSignInDto  `json:"socialSignIn"`
 	Passkey         bool                     `json:"passkey,omitempty"`
 	Methods         []string                 `json:"methods,omitempty"`
 	PasswordPolicy  *PublicPasswordPolicyDto `json:"passwordPolicy,omitempty"`
@@ -3559,6 +5245,14 @@ type PublicAiChatDto struct {
 }
 
 // @DataContract
+type ExecutionIdentityRefusalDto struct {
+	// @DataMember
+	ErrorCode string `json:"errorCode"`
+	// @DataMember
+	Message string `json:"message"`
+}
+
+// @DataContract
 type TriggerAttentionDto struct {
 	// @DataMember
 	TriggerId string `json:"triggerId"`
@@ -3568,6 +5262,156 @@ type TriggerAttentionDto struct {
 	Reason string `json:"reason"`
 	// @DataMember
 	AtUtc time.Time `json:"atUtc,omitempty"`
+}
+
+type PaginatedResponse[TViewModelProjection any] struct {
+	Items         IList[TViewModelProjection] `json:"items"`
+	HasMore       bool                        `json:"hasMore,omitempty"`
+	HasPrevious   bool                        `json:"hasPrevious,omitempty"`
+	StartingAfter *string                     `json:"startingAfter,omitempty"`
+	EndingBefore  *string                     `json:"endingBefore,omitempty"`
+}
+
+// @DataContract
+type WorkflowRunActorDto struct {
+	// @DataMember
+	UserId *string `json:"userId,omitempty"`
+	// @DataMember
+	Kind string `json:"kind"`
+}
+
+// @DataContract
+type WorkflowRunErrorDto struct {
+	// @DataMember
+	Code *string `json:"code,omitempty"`
+	// @DataMember
+	StepId *string `json:"stepId,omitempty"`
+	// @DataMember
+	Reason *string `json:"reason,omitempty"`
+	// @DataMember
+	Message *string `json:"message,omitempty"`
+}
+
+// @DataContract
+type TriggerRunProducedDto struct {
+	// @DataMember
+	Kind string `json:"kind"`
+	// @DataMember
+	Id *string `json:"id,omitempty"`
+}
+
+// @DataContract
+type TriggerRunListProjection struct {
+	// @DataMember
+	RunId string `json:"runId"`
+	// @DataMember
+	TriggerId string `json:"triggerId"`
+	// @DataMember
+	TriggerType TriggerType `json:"triggerType,omitempty"`
+	// @DataMember
+	TriggerName *string `json:"triggerName,omitempty"`
+	// @DataMember
+	Event string `json:"event"`
+	// @DataMember
+	Action *string `json:"action,omitempty"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	StartedAt time.Time `json:"startedAt,omitempty"`
+	// @DataMember
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+	// @DataMember
+	DurationMs *int64 `json:"durationMs,omitempty"`
+	// @DataMember
+	StartedBy *WorkflowRunActorDto `json:"startedBy,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	ExecutionIdentityName *string `json:"executionIdentityName,omitempty"`
+	// @DataMember
+	ExecutionIdentityIsDefault bool `json:"executionIdentityIsDefault,omitempty"`
+	// @DataMember
+	Error *WorkflowRunErrorDto `json:"error,omitempty"`
+	// @DataMember
+	Produced *TriggerRunProducedDto `json:"produced,omitempty"`
+}
+
+// @DataContract
+type TriggerRunDto struct {
+	TriggerRunListProjection
+	// @DataMember
+	SchemaId *string `json:"schemaId,omitempty"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	CorrelationId *string `json:"correlationId,omitempty"`
+	// @DataMember
+	Queue *string `json:"queue,omitempty"`
+	// @DataMember
+	MessageId *string `json:"messageId,omitempty"`
+	// @DataMember
+	MissingPermissions *string `json:"missingPermissions,omitempty"`
+	// @DataMember
+	Deliveries *int `json:"deliveries,omitempty"`
+	// @DataMember
+	RecordCount *int `json:"recordCount,omitempty"`
+}
+
+type TriggerActivationTestProblem struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Line    int    `json:"line,omitempty"`
+	Column  int    `json:"column,omitempty"`
+}
+
+// @DataContract
+type FlexClusterDatabaseDto struct {
+	// @DataMember
+	ProjectId string `json:"projectId"`
+	// @DataMember
+	ProjectName string `json:"projectName"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	IntegrationId string `json:"integrationId"`
+	// @DataMember
+	IntegrationName string `json:"integrationName"`
+	// @DataMember
+	DatabaseName *string `json:"databaseName,omitempty"`
+}
+
+// @DataContract
+type FlexClusterUsageDto struct {
+	// @DataMember
+	DatabaseCount int `json:"databaseCount,omitempty"`
+	// @DataMember
+	StorageBytes *int64 `json:"storageBytes,omitempty"`
+	// @DataMember
+	Connections *int `json:"connections,omitempty"`
+	// @DataMember
+	OperationsPerSecond *float64 `json:"operationsPerSecond,omitempty"`
+}
+
+// @DataContract
+type FlexClusterDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	DisplayName string `json:"displayName"`
+	// @DataMember
+	AtlasClusterName string `json:"atlasClusterName"`
+	// @DataMember
+	NorbixRegionCode string `json:"norbixRegionCode"`
+	// @DataMember
+	TierCode string `json:"tierCode"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	Databases []FlexClusterDatabaseDto `json:"databases"`
+	// @DataMember
+	Usage FlexClusterUsageDto `json:"usage"`
+	// @DataMember
+	NearLimits []string `json:"nearLimits"`
 }
 
 // @DataContract
@@ -3620,6 +5464,40 @@ type AccountStatusDto struct {
 	AllowedProjects []string `json:"allowedProjects,omitempty"`
 	// @DataMember
 	TrialWasIssued bool `json:"trialWasIssued,omitempty"`
+	// @DataMember
+	Bundle *ManagedServiceBundle `json:"bundle,omitempty"`
+	// @DataMember
+	BillingPeriod *SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+	// @DataMember
+	IsTrial bool `json:"isTrial,omitempty"`
+	// @DataMember
+	RenewsOn *time.Time `json:"renewsOn,omitempty"`
+	// @DataMember
+	EnabledProjects int `json:"enabledProjects,omitempty"`
+	// @DataMember
+	EmailVerified bool `json:"emailVerified,omitempty"`
+	// @DataMember
+	JoinedByInvitation bool `json:"joinedByInvitation,omitempty"`
+}
+
+// @DataContract
+type BundlePriceDto struct {
+	// @DataMember
+	Amount int64 `json:"amount,omitempty"`
+	// @DataMember
+	Currency string `json:"currency"`
+}
+
+// @DataContract
+type ManagedServiceBundleDto struct {
+	// @DataMember
+	Bundle ManagedServiceBundle `json:"bundle,omitempty"`
+	// @DataMember
+	ProjectCap int `json:"projectCap,omitempty"`
+	// @DataMember
+	Monthly BundlePriceDto `json:"monthly"`
+	// @DataMember
+	Annual BundlePriceDto `json:"annual"`
 }
 
 // @DataContract
@@ -3659,6 +5537,30 @@ type UsageBillingIngestionFailureDto struct {
 }
 
 // @DataContract
+type UsageWorkflowProjectDto struct {
+	// @DataMember
+	ProjectId string `json:"projectId"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	Runs int64 `json:"runs,omitempty"`
+	// @DataMember
+	StepRuns int64 `json:"stepRuns,omitempty"`
+}
+
+// @DataContract
+type UsageWorkflowPeriodDto struct {
+	// @DataMember
+	Period string `json:"period"`
+	// @DataMember
+	Runs int64 `json:"runs,omitempty"`
+	// @DataMember
+	StepRuns int64 `json:"stepRuns,omitempty"`
+	// @DataMember
+	PerProject []UsageWorkflowProjectDto `json:"perProject"`
+}
+
+// @DataContract
 type UsageBillingDto struct {
 	// @DataMember
 	AccountId string `json:"accountId"`
@@ -3666,6 +5568,116 @@ type UsageBillingDto struct {
 	Atlas map[string]UsageBillingPeriodDto `json:"atlas"`
 	// @DataMember
 	IngestionFailures []UsageBillingIngestionFailureDto `json:"ingestionFailures"`
+	// @DataMember
+	Workflows map[string]UsageWorkflowPeriodDto `json:"workflows"`
+}
+
+// @DataContract
+type PromotionSummaryDto struct {
+	// @DataMember
+	Added int `json:"added,omitempty"`
+	// @DataMember
+	Changed int `json:"changed,omitempty"`
+	// @DataMember
+	Unchanged int `json:"unchanged,omitempty"`
+	// @DataMember
+	Deleted int `json:"deleted,omitempty"`
+	// @DataMember
+	Kept int `json:"kept,omitempty"`
+	// @DataMember
+	Skipped int `json:"skipped,omitempty"`
+	// @DataMember
+	RecordsAtRisk int64 `json:"recordsAtRisk,omitempty"`
+	// @DataMember
+	IntegrationsSeeded int `json:"integrationsSeeded,omitempty"`
+	// @DataMember
+	IntegrationsSkipped int `json:"integrationsSkipped,omitempty"`
+	// @DataMember
+	IntegrationsMapped int `json:"integrationsMapped,omitempty"`
+	// @DataMember
+	IntegrationsRemoved int `json:"integrationsRemoved,omitempty"`
+	// @DataMember
+	IsNoOp bool `json:"isNoOp,omitempty"`
+}
+
+// @DataContract
+type PromotionItemChangeDto struct {
+	// @DataMember
+	Type string `json:"type"`
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name *string `json:"name,omitempty"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	MatchedBy *string `json:"matchedBy,omitempty"`
+	// @DataMember
+	PreviousTargetId *string `json:"previousTargetId,omitempty"`
+	// @DataMember
+	BuiltIn bool `json:"builtIn,omitempty"`
+	// @DataMember
+	RecordCount *int64 `json:"recordCount,omitempty"`
+	// @DataMember
+	Note *string `json:"note,omitempty"`
+}
+
+// @DataContract
+type PromotionIntegrationTargetDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Provider string `json:"provider"`
+	// @DataMember
+	IsDefault bool `json:"isDefault,omitempty"`
+}
+
+// @DataContract
+type PromotionIntegrationChangeDto struct {
+	// @DataMember
+	Module string `json:"module"`
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Provider string `json:"provider"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	DefaultAction string `json:"defaultAction"`
+	// @DataMember
+	Action *string `json:"action,omitempty"`
+	// @DataMember
+	TargetId *string `json:"targetId,omitempty"`
+	// @DataMember
+	MapToId *string `json:"mapToId,omitempty"`
+	// @DataMember
+	HoldsSecret bool `json:"holdsSecret,omitempty"`
+	// @DataMember
+	IsFake bool `json:"isFake,omitempty"`
+	// @DataMember
+	RealSender bool `json:"realSender,omitempty"`
+	// @DataMember
+	Targets []PromotionIntegrationTargetDto `json:"targets"`
+	// @DataMember
+	Warning *string `json:"warning,omitempty"`
+	// @DataMember
+	Note *string `json:"note,omitempty"`
+}
+
+// @DataContract
+type PromotionNotPromotedDto struct {
+	// @DataMember
+	Area string `json:"area"`
+	// @DataMember
+	Scope string `json:"scope"`
+	// @DataMember
+	Reason string `json:"reason"`
+	// @DataMember
+	Count *int `json:"count,omitempty"`
 }
 
 // @DataContract
@@ -3689,7 +5701,29 @@ type PromotionBlockerDto struct {
 }
 
 // @DataContract
+type PromotionTermChangeDto struct {
+	// @DataMember
+	TaxonomyId string `json:"taxonomyId"`
+	// @DataMember
+	TermId string `json:"termId"`
+	// @DataMember
+	Slug *string `json:"slug,omitempty"`
+	// @DataMember
+	Change string `json:"change"`
+}
+
+// @DataContract
 type PromotionResultDto struct {
+	// @DataMember
+	Summary PromotionSummaryDto `json:"summary"`
+	// @DataMember
+	Items []PromotionItemChangeDto `json:"items"`
+	// @DataMember
+	Integrations []PromotionIntegrationChangeDto `json:"integrations"`
+	// @DataMember
+	NotPromoted []PromotionNotPromotedDto `json:"notPromoted"`
+	// @DataMember
+	RequiresConfirmation bool `json:"requiresConfirmation,omitempty"`
 	// @DataMember
 	ContentMirrored []PromotionItemDto `json:"contentMirrored"`
 	// @DataMember
@@ -3703,15 +5737,51 @@ type PromotionResultDto struct {
 	// @DataMember
 	Blockers []PromotionBlockerDto `json:"blockers"`
 	// @DataMember
+	TermChanges []PromotionTermChangeDto `json:"termChanges"`
+	// @DataMember
+	Warnings []PromotionBlockerDto `json:"warnings"`
+	// @DataMember
 	FromVersion *int64 `json:"fromVersion,omitempty"`
 	// @DataMember
 	WasDryRun bool `json:"wasDryRun,omitempty"`
+	// @DataMember
+	Promoted *bool `json:"promoted,omitempty"`
+	// @DataMember
+	Message *string `json:"message,omitempty"`
+}
+
+// @DataContract
+type BuiltInRepairDto struct {
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	Items []PromotionItemChangeDto `json:"items"`
+	// @DataMember
+	IsNoOp bool `json:"isNoOp,omitempty"`
+}
+
+// @DataContract
+type EnvironmentAdminUrlDto struct {
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	AdminUrl *string `json:"adminUrl,omitempty"`
+	// @DataMember
+	EffectiveAdminUrl *string `json:"effectiveAdminUrl,omitempty"`
+	// @DataMember
+	Source string `json:"source"`
+	// @DataMember
+	Note *string `json:"note,omitempty"`
 }
 
 // @DataContract
 type ProjectEnvironmentsDto struct {
 	// @DataMember
 	Environments []string `json:"environments"`
+	// @DataMember
+	PromotionOrder []string `json:"promotionOrder"`
+	// @DataMember
+	AdminUrls []EnvironmentAdminUrlDto `json:"adminUrls"`
 }
 
 type ProjectStatus string
@@ -3770,6 +5840,22 @@ type NotificationSettingsDto struct {
 	Channels  []NotificationSettingsChannelDto `json:"channels"`
 	AllGroups []GroupDefinitionDto             `json:"allGroups"`
 	AllTags   []TagDefinitionDto               `json:"allTags"`
+}
+
+// @DataContract
+type ProjectEnvironmentAdminUrlDto struct {
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	Url string `json:"url"`
+}
+
+// @DataContract
+type ProjectEnvironmentExecutionIdentityDto struct {
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	UserId string `json:"userId"`
 }
 
 // @DataContract
@@ -3866,6 +5952,10 @@ type TriggerDto struct {
 	ActivationCode *string `json:"activationCode,omitempty"`
 	// @DataMember
 	SavedByAuthId *string `json:"savedByAuthId,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	ExecutionIdentity *ExecutionIdentitySummaryDto `json:"executionIdentity,omitempty"`
 }
 
 // @DataContract
@@ -3944,6 +6034,7 @@ type PolicyItemDto struct {
 	Name        string          `json:"name"`
 	Description *string         `json:"description,omitempty"`
 	IsSystem    bool            `json:"isSystem,omitempty"`
+	Version     string          `json:"version"`
 	Permissions []PermissionDto `json:"permissions,omitempty"`
 }
 
@@ -3968,9 +6059,21 @@ type MembershipDto struct {
 	// @DataMember
 	CustomPolicies []PolicyItemDto `json:"customPolicies,omitempty"`
 	// @DataMember
+	SystemRoleAttachments []RoleItemDto `json:"systemRoleAttachments,omitempty"`
+	// @DataMember
 	Authorization *AuthorizationDto `json:"authorization,omitempty"`
 	// @DataMember
 	RequireEmailValidation bool `json:"requireEmailValidation,omitempty"`
+}
+
+// @DataContract
+type LogSettingsDto struct {
+	// @DataMember
+	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs,omitempty"`
+	// @DataMember
+	SkipHttpBodyMeta bool `json:"skipHttpBodyMeta,omitempty"`
+	// @DataMember
+	AiChatLoggingEnabled bool `json:"aiChatLoggingEnabled,omitempty"`
 }
 
 // @DataContract
@@ -3979,6 +6082,8 @@ type LoggingDto struct {
 	IsEnabled bool `json:"isEnabled,omitempty"`
 	// @DataMember
 	IsEstablished bool `json:"isEstablished,omitempty"`
+	// @DataMember
+	Settings *LogSettingsDto `json:"settings,omitempty"`
 }
 
 // @DataContract
@@ -4009,6 +6114,8 @@ type SchedulerDto struct {
 type CodeDto struct {
 	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
+	// @DataMember
+	WorkflowsEnabled bool `json:"workflowsEnabled,omitempty"`
 }
 
 // @DataContract
@@ -4102,6 +6209,12 @@ type ProjectDto struct {
 	// @DataMember
 	AllowedOrigins []string `json:"allowedOrigins,omitempty"`
 	// @DataMember
+	EmailClickTracking bool `json:"emailClickTracking,omitempty"`
+	// @DataMember
+	EnvironmentAdminUrls []ProjectEnvironmentAdminUrlDto `json:"environmentAdminUrls,omitempty"`
+	// @DataMember
+	DefaultExecutionIdentities []ProjectEnvironmentExecutionIdentityDto `json:"defaultExecutionIdentities,omitempty"`
+	// @DataMember
 	ExposeBrandToAdminPortal bool `json:"exposeBrandToAdminPortal,omitempty"`
 	// @DataMember
 	ExposeAuthToAdminPortal bool `json:"exposeAuthToAdminPortal,omitempty"`
@@ -4191,6 +6304,103 @@ type ProjectListItemDto struct {
 	PrimaryRegion *ProjectRegionDto `json:"primaryRegion,omitempty"`
 	// @DataMember
 	AdditionalRegions []ProjectRegionDto `json:"additionalRegions,omitempty"`
+	// @DataMember
+	ModulesCount int `json:"modulesCount,omitempty"`
+	// @DataMember
+	UsersCount int `json:"usersCount,omitempty"`
+}
+
+type ProjectHealthSeverity string
+
+const (
+	ProjectHealthSeverityWarning ProjectHealthSeverity = "Warning"
+	ProjectHealthSeverityError                         = "Error"
+)
+
+// @Flags()
+type ApplicationModule int
+
+const (
+	ApplicationModuleAccount      ApplicationModule = 0
+	ApplicationModuleMembership   ApplicationModule = 1
+	ApplicationModuleDatabase     ApplicationModule = 2
+	ApplicationModuleFiles        ApplicationModule = 4
+	ApplicationModuleCode         ApplicationModule = 8
+	ApplicationModuleEmail        ApplicationModule = 16
+	ApplicationModulePush         ApplicationModule = 32
+	ApplicationModulePayment      ApplicationModule = 64
+	ApplicationModuleScheduler    ApplicationModule = 128
+	ApplicationModuleLogging      ApplicationModule = 256
+	ApplicationModuleServerEvents ApplicationModule = 512
+	ApplicationModuleAi           ApplicationModule = 1024
+	ApplicationModuleSms          ApplicationModule = 2048
+	ApplicationModuleProject      ApplicationModule = 4096
+	ApplicationModuleCompliance   ApplicationModule = 8192
+	ApplicationModuleContacts     ApplicationModule = 16384
+	ApplicationModuleMarketplace  ApplicationModule = 32768
+	ApplicationModuleDiagnostics  ApplicationModule = 65536
+)
+
+// @DataContract
+type ProjectHealthWarningDto struct {
+	// @DataMember
+	Code string `json:"code"`
+	// @DataMember
+	Severity ProjectHealthSeverity `json:"severity,omitempty"`
+	// @DataMember
+	Module ApplicationModule `json:"module,omitempty"`
+	// @DataMember
+	Title string `json:"title"`
+	// @DataMember
+	Detail string `json:"detail"`
+	// @DataMember
+	FixPath string `json:"fixPath"`
+	// @DataMember
+	ItemId *string `json:"itemId,omitempty"`
+}
+
+// @DataContract
+type ProjectHealthStatsDto struct {
+	// @DataMember
+	UsersTotal *int64 `json:"usersTotal,omitempty"`
+	// @DataMember
+	UsersNew30d *int64 `json:"usersNew30d,omitempty"`
+	// @DataMember
+	UsersNewPrev30d *int64 `json:"usersNewPrev30d,omitempty"`
+	// @DataMember
+	EmailsSent30d *int64 `json:"emailsSent30d,omitempty"`
+	// @DataMember
+	EmailsSentPrev30d *int64 `json:"emailsSentPrev30d,omitempty"`
+	// @DataMember
+	EmailsFailed30d *int64 `json:"emailsFailed30d,omitempty"`
+	// @DataMember
+	EmailsFailedPrev30d *int64 `json:"emailsFailedPrev30d,omitempty"`
+	// @DataMember
+	ApiCallsThisMonth *int64 `json:"apiCallsThisMonth,omitempty"`
+	// @DataMember
+	ApiCallsPrevMonth *int64 `json:"apiCallsPrevMonth,omitempty"`
+}
+
+// @DataContract
+type ProjectHealthSkippedCheckDto struct {
+	// @DataMember
+	Check string `json:"check"`
+	// @DataMember
+	Reason string `json:"reason"`
+}
+
+// @DataContract
+type ProjectHealthDto struct {
+	// @DataMember
+	CheckedAtUtc time.Time `json:"checkedAtUtc,omitempty"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	Warnings []ProjectHealthWarningDto `json:"warnings"`
+	// @DataMember
+	Stats ProjectHealthStatsDto `json:"stats"`
+	// @DataMember
+	SkippedChecks []ProjectHealthSkippedCheckDto `json:"skippedChecks"`
 }
 
 // @DataContract
@@ -4307,27 +6517,12 @@ type ProjectAiUsageDto struct {
 	Wallet ProjectAiWalletDto `json:"wallet"`
 }
 
-// @Flags()
-type ApplicationModule int
+type LanguageGapKind string
 
 const (
-	ApplicationModuleAccount      ApplicationModule = 0
-	ApplicationModuleMembership   ApplicationModule = 1
-	ApplicationModuleDatabase     ApplicationModule = 2
-	ApplicationModuleFiles        ApplicationModule = 4
-	ApplicationModuleCode         ApplicationModule = 8
-	ApplicationModuleEmail        ApplicationModule = 16
-	ApplicationModulePush         ApplicationModule = 32
-	ApplicationModulePayment      ApplicationModule = 64
-	ApplicationModuleScheduler    ApplicationModule = 128
-	ApplicationModuleLogging      ApplicationModule = 256
-	ApplicationModuleServerEvents ApplicationModule = 512
-	ApplicationModuleAi           ApplicationModule = 1024
-	ApplicationModuleSms          ApplicationModule = 2048
-	ApplicationModuleProject      ApplicationModule = 4096
-	ApplicationModuleCompliance   ApplicationModule = 8192
-	ApplicationModuleContacts     ApplicationModule = 16384
-	ApplicationModuleMarketplace  ApplicationModule = 32768
+	LanguageGapKindTemplate  LanguageGapKind = "Template"
+	LanguageGapKindFooter                    = "Footer"
+	LanguageGapKindSignature                 = "Signature"
 )
 
 // @DataContract
@@ -4335,19 +6530,13 @@ type TemplateLanguageGapDto struct {
 	// @DataMember
 	Module ApplicationModule `json:"module,omitempty"`
 	// @DataMember
+	Kind LanguageGapKind `json:"kind,omitempty"`
+	// @DataMember
 	TemplateId string `json:"templateId"`
 	// @DataMember
 	TemplateName string `json:"templateName"`
 	// @DataMember
 	MissingLanguages []string `json:"missingLanguages"`
-}
-
-type PaginatedResponse[TViewModelProjection any] struct {
-	Items         IList[TViewModelProjection] `json:"items"`
-	HasMore       bool                        `json:"hasMore,omitempty"`
-	HasPrevious   bool                        `json:"hasPrevious,omitempty"`
-	StartingAfter *string                     `json:"startingAfter,omitempty"`
-	EndingBefore  *string                     `json:"endingBefore,omitempty"`
 }
 
 type AuthType string
@@ -4376,55 +6565,12 @@ type LoginDto struct {
 	LastAccessInformation         *AccessInformationDto `json:"lastAccessInformation,omitempty"`
 }
 
-type Gender string
-
-const (
-	GenderMale   Gender = "Male"
-	GenderFemale        = "Female"
-	GenderOther         = "Other"
-)
-
-type MarketingBlockReason string
-
-const (
-	MarketingBlockReasonUnspecified  MarketingBlockReason = "Unspecified"
-	MarketingBlockReasonUnsubscribed                      = "Unsubscribed"
-	MarketingBlockReasonComplaint                         = "Complaint"
-	MarketingBlockReasonHardBounce                        = "HardBounce"
-	MarketingBlockReasonInvalidEmail                      = "InvalidEmail"
-	MarketingBlockReasonAdminBlock                        = "AdminBlock"
-)
-
-type UserGeneralInfoDto struct {
-	Phone                     *string                `json:"phone,omitempty"`
-	PrimaryEmail              *string                `json:"primaryEmail,omitempty"`
-	DisplayName               *string                `json:"displayName,omitempty"`
-	FirstName                 *string                `json:"firstName,omitempty"`
-	LastName                  *string                `json:"lastName,omitempty"`
-	FullName                  *string                `json:"fullName,omitempty"`
-	AddressLine1              *string                `json:"addressLine1,omitempty"`
-	AddressLine2              *string                `json:"addressLine2,omitempty"`
-	Country                   *string                `json:"country,omitempty"`
-	City                      *string                `json:"city,omitempty"`
-	State                     *string                `json:"state,omitempty"`
-	PostalCode                *string                `json:"postalCode,omitempty"`
-	Company                   *string                `json:"company,omitempty"`
-	Gender                    *Gender                `json:"gender,omitempty"`
-	BirthDate                 *int64                 `json:"birthDate,omitempty"`
-	TimeZone                  *string                `json:"timeZone,omitempty"`
-	Language                  *string                `json:"language,omitempty"`
-	BlockAllMarketingMessages bool                   `json:"blockAllMarketingMessages,omitempty"`
-	BlockedTags               map[string][]string    `json:"blockedTags,omitempty"`
-	BlockReasons              []MarketingBlockReason `json:"blockReasons,omitempty"`
-	ExtraMetadata             *string                `json:"extraMetadata,omitempty"`
-	Notes                     *string                `json:"notes,omitempty"`
-}
-
 type AuthStatus string
 
 const (
 	AuthStatusRegistered        AuthStatus = "Registered"
 	AuthStatusPendingValidation            = "PendingValidation"
+	AuthStatusInvited                      = "Invited"
 	AuthStatusActive                       = "Active"
 	AuthStatusUnregistered                 = "Unregistered"
 	AuthStatusSuspended                    = "Suspended"
@@ -4433,19 +6579,20 @@ const (
 )
 
 type AuthDto struct {
-	Id           string              `json:"id"`
-	Type         AuthType            `json:"type,omitempty"`
-	Email        *string             `json:"email,omitempty"`
-	UserName     *string             `json:"userName,omitempty"`
-	Registration *RegistrationDto    `json:"registration,omitempty"`
-	Login        *LoginDto           `json:"login,omitempty"`
-	GeneralInfo  *UserGeneralInfoDto `json:"generalInfo,omitempty"`
-	Roles        []string            `json:"roles,omitempty"`
-	PushDevices  []string            `json:"pushDevices,omitempty"`
-	Tags         []string            `json:"tags,omitempty"`
-	Status       AuthStatus          `json:"status,omitempty"`
-	CreatedOn    time.Time           `json:"createdOn,omitempty"`
-	ModifiedOn   time.Time           `json:"modifiedOn,omitempty"`
+	Id                string              `json:"id"`
+	Type              AuthType            `json:"type,omitempty"`
+	Email             *string             `json:"email,omitempty"`
+	UserName          *string             `json:"userName,omitempty"`
+	Registration      *RegistrationDto    `json:"registration,omitempty"`
+	Login             *LoginDto           `json:"login,omitempty"`
+	GeneralInfo       *UserGeneralInfoDto `json:"generalInfo,omitempty"`
+	Roles             []string            `json:"roles,omitempty"`
+	PushDevices       []string            `json:"pushDevices,omitempty"`
+	Tags              []string            `json:"tags,omitempty"`
+	Status            AuthStatus          `json:"status,omitempty"`
+	CreatedOn         time.Time           `json:"createdOn,omitempty"`
+	ModifiedOn        time.Time           `json:"modifiedOn,omitempty"`
+	CredentialVersion *string             `json:"credentialVersion,omitempty"`
 }
 
 type AccountPasswordPolicyDto struct {
@@ -4470,6 +6617,15 @@ type AccountTeamRoleDto struct {
 	Policies    []string `json:"policies,omitempty"`
 }
 
+type TeamInvitationDto struct {
+	Id           string              `json:"id"`
+	Email        string              `json:"email"`
+	Roles        []string            `json:"roles"`
+	RoleProjects map[string][]string `json:"roleProjects"`
+	SentOn       time.Time           `json:"sentOn,omitempty"`
+	ExpiresOn    time.Time           `json:"expiresOn,omitempty"`
+}
+
 type AccountPasskeyListItemDto struct {
 	CredentialId    string    `json:"credentialId"`
 	FriendlyName    string    `json:"friendlyName"`
@@ -4479,132 +6635,27 @@ type AccountPasskeyListItemDto struct {
 }
 
 // @DataContract
-type LicenseDomainDnsRecordDto struct {
+type AiRoleDto struct {
 	// @DataMember
-	Host string `json:"host"`
+	Id string `json:"id"`
 	// @DataMember
-	RecordType string `json:"recordType"`
+	Name string `json:"name"`
 	// @DataMember
-	Resolved bool `json:"resolved,omitempty"`
+	Description string `json:"description"`
 	// @DataMember
-	Required bool `json:"required,omitempty"`
+	IsSystem bool `json:"isSystem,omitempty"`
+	// @DataMember
+	Environments []string `json:"environments"`
 }
 
 // @DataContract
-type LicenseDomainDnsStatusDto struct {
+type AiProjectRolesDto struct {
 	// @DataMember
-	Domain string `json:"domain"`
+	Id string `json:"id"`
 	// @DataMember
-	AllRequiredResolved bool `json:"allRequiredResolved,omitempty"`
+	Name string `json:"name"`
 	// @DataMember
-	Records []LicenseDomainDnsRecordDto `json:"records"`
-}
-
-// @DataContract
-type LicenseDomainVerificationChallengeDto struct {
-	// @DataMember
-	Domain string `json:"domain"`
-	// @DataMember
-	TxtHost string `json:"txtHost"`
-	// @DataMember
-	TxtValue string `json:"txtValue"`
-	// @DataMember
-	ExpiresAtUtc time.Time `json:"expiresAtUtc,omitempty"`
-	// @DataMember
-	Verified bool `json:"verified,omitempty"`
-	// @DataMember
-	VerifiedAtUtc *time.Time `json:"verifiedAtUtc,omitempty"`
-	// @DataMember
-	Skipped bool `json:"skipped,omitempty"`
-}
-
-// @DataContract
-type LicenseDomainVerificationStatusDto struct {
-	// @DataMember
-	Domain string `json:"domain"`
-	// @DataMember
-	Verified bool `json:"verified,omitempty"`
-	// @DataMember
-	Skipped bool `json:"skipped,omitempty"`
-	// @DataMember
-	TxtHost *string `json:"txtHost,omitempty"`
-	// @DataMember
-	ExpectedTxtValue *string `json:"expectedTxtValue,omitempty"`
-	// @DataMember
-	ObservedTxtValue *string `json:"observedTxtValue,omitempty"`
-	// @DataMember
-	ExpiresAtUtc *time.Time `json:"expiresAtUtc,omitempty"`
-	// @DataMember
-	VerifiedAtUtc *time.Time `json:"verifiedAtUtc,omitempty"`
-	// @DataMember
-	Message *string `json:"message,omitempty"`
-}
-
-type CodeMashSubscriptionDto struct {
-	ViewId            string    `json:"viewId"`
-	Domain            string    `json:"domain"`
-	WillExpireOn      time.Time `json:"willExpireOn,omitempty"`
-	IssuedOn          time.Time `json:"issuedOn,omitempty"`
-	IsTrial           bool      `json:"isTrial,omitempty"`
-	SubscriptionRefId string    `json:"subscriptionRefId"`
-}
-
-type LicenseDto struct {
-	CodeMashSubscriptionDto
-	IsEnterprise bool `json:"isEnterprise,omitempty"`
-	ProjectCap   int  `json:"projectCap,omitempty"`
-}
-
-// @DataContract
-type LicenseHeartbeatVerdictDto struct {
-	// @DataMember(Name="status")
-	Status string `json:"status"`
-	// @DataMember(Name="proofToken")
-	ProofToken *string `json:"proofToken,omitempty"`
-	// @DataMember(Name="serverTimeUtc")
-	ServerTimeUtc time.Time `json:"serverTimeUtc,omitempty"`
-	// @DataMember(Name="graceUntilUtc")
-	GraceUntilUtc *time.Time `json:"graceUntilUtc,omitempty"`
-	// @DataMember(Name="installationId")
-	InstallationId string `json:"installationId,omitempty"`
-	// @DataMember(Name="licenseAccountId")
-	LicenseAccountId *string `json:"licenseAccountId,omitempty"`
-	// @DataMember(Name="domain")
-	Domain *string `json:"domain,omitempty"`
-	// @DataMember(Name="signature")
-	Signature *string `json:"signature,omitempty"`
-	// @DataMember(Name="message")
-	Message *string `json:"message,omitempty"`
-}
-
-// @DataContract
-type InstallationLicenseStatusDto struct {
-	// @DataMember(Name="storedMode")
-	StoredMode string `json:"storedMode"`
-	// @DataMember(Name="effectiveMode")
-	EffectiveMode string `json:"effectiveMode"`
-	// @DataMember(Name="isProduction")
-	IsProduction bool `json:"isProduction,omitempty"`
-	// @DataMember(Name="graceDaysLeft")
-	GraceDaysLeft *int `json:"graceDaysLeft,omitempty"`
-	// @DataMember(Name="graceUntilUtc")
-	GraceUntilUtc *time.Time `json:"graceUntilUtc,omitempty"`
-	// @DataMember(Name="lastProvenAtUtc")
-	LastProvenAtUtc *time.Time `json:"lastProvenAtUtc,omitempty"`
-	// @DataMember(Name="lastHeartbeatAtUtc")
-	LastHeartbeatAtUtc *time.Time `json:"lastHeartbeatAtUtc,omitempty"`
-	// @DataMember(Name="installationDomain")
-	InstallationDomain *string `json:"installationDomain,omitempty"`
-	// @DataMember(Name="licensedDomain")
-	LicensedDomain *string `json:"licensedDomain,omitempty"`
-	// @DataMember(Name="hostKind")
-	HostKind *string `json:"hostKind,omitempty"`
-	// @DataMember(Name="isTrialLicense")
-	IsTrialLicense bool `json:"isTrialLicense,omitempty"`
-	// @DataMember(Name="licenseExpireUtc")
-	LicenseExpireUtc *time.Time `json:"licenseExpireUtc,omitempty"`
-	// @DataMember(Name="message")
-	Message *string `json:"message,omitempty"`
+	Roles []AiRoleDto `json:"roles"`
 }
 
 // @DataContract
@@ -4624,11 +6675,73 @@ type AiServiceUserDto struct {
 	// @DataMember
 	Name string `json:"name"`
 	// @DataMember
-	Scope AiScopeDto `json:"scope"`
+	AccountRoles []AiRoleDto `json:"accountRoles"`
+	// @DataMember
+	Projects []AiProjectRolesDto `json:"projects"`
 	// @DataMember
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// @DataMember
 	Keys []AiServiceUserKeyDto `json:"keys"`
+}
+
+// @DataContract
+type ImportUserErrorDto struct {
+	// @DataMember(Name="code")
+	Code *string `json:"code,omitempty"`
+	// @DataMember(Name="message")
+	Message string `json:"message"`
+}
+
+// @DataContract
+type ImportUserOutcomeDto struct {
+	// @DataMember(Name="row")
+	Row int `json:"row,omitempty"`
+	// @DataMember(Name="login")
+	Login *string `json:"login,omitempty"`
+	// @DataMember(Name="outcome")
+	Outcome string `json:"outcome"`
+	// @DataMember(Name="userId")
+	UserId *string `json:"userId,omitempty"`
+	// @DataMember(Name="errors")
+	Errors []ImportUserErrorDto `json:"errors"`
+}
+
+// @DataContract
+type UsersImportDto struct {
+	// @DataMember(Name="dryRun")
+	DryRun bool `json:"dryRun,omitempty"`
+	// @DataMember(Name="received")
+	Received int `json:"received,omitempty"`
+	// @DataMember(Name="imported")
+	Imported int `json:"imported,omitempty"`
+	// @DataMember(Name="valid")
+	Valid int `json:"valid,omitempty"`
+	// @DataMember(Name="existing")
+	Existing int `json:"existing,omitempty"`
+	// @DataMember(Name="invalid")
+	Invalid int `json:"invalid,omitempty"`
+	// @DataMember(Name="failed")
+	Failed int `json:"failed,omitempty"`
+	// @DataMember(Name="rows")
+	Rows []ImportUserOutcomeDto `json:"rows"`
+}
+
+// @DataContract
+type LoginProjectRepairDto struct {
+	// @DataMember(Name="dryRun")
+	DryRun bool `json:"dryRun,omitempty"`
+	// @DataMember(Name="loginsWithoutProject")
+	LoginsWithoutProject int `json:"loginsWithoutProject,omitempty"`
+	// @DataMember(Name="loginsToRepair")
+	LoginsToRepair int `json:"loginsToRepair,omitempty"`
+	// @DataMember(Name="loginsRepaired")
+	LoginsRepaired int `json:"loginsRepaired,omitempty"`
+	// @DataMember(Name="accountLoginsSkipped")
+	AccountLoginsSkipped int `json:"accountLoginsSkipped,omitempty"`
+	// @DataMember(Name="otherProjectLoginsSkipped")
+	OtherProjectLoginsSkipped int `json:"otherProjectLoginsSkipped,omitempty"`
+	// @DataMember(Name="loginsWithoutEvidence")
+	LoginsWithoutEvidence int `json:"loginsWithoutEvidence,omitempty"`
 }
 
 type ServiceUserApiKeyDto struct {
@@ -4636,6 +6749,7 @@ type ServiceUserApiKeyDto struct {
 	Name          string     `json:"name"`
 	VisibleKey    *string    `json:"visibleKey,omitempty"`
 	Scopes        []string   `json:"scopes"`
+	Environment   *string    `json:"environment,omitempty"`
 	CreatedDate   time.Time  `json:"createdDate,omitempty"`
 	ExpiryDate    *time.Time `json:"expiryDate,omitempty"`
 	CancelledDate *time.Time `json:"cancelledDate,omitempty"`
@@ -4658,6 +6772,8 @@ type TriggerProjectionList struct {
 	HasPreExecuteCode bool `json:"hasPreExecuteCode,omitempty"`
 	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
 }
 
 // @DataContract
@@ -4704,6 +6820,34 @@ type MembershipIntegrationListProjection struct {
 	IntegrationListProjection
 	// @DataMember
 	Provider MembershipProvider `json:"provider,omitempty"`
+}
+
+// @DataContract
+type ExecutionIdentityUsageDto struct {
+	// @DataMember
+	Triggers int `json:"triggers,omitempty"`
+	// @DataMember
+	Tasks int `json:"tasks,omitempty"`
+	// @DataMember
+	Workflows int `json:"workflows,omitempty"`
+}
+
+// @DataContract
+type ExecutionIdentityDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	IsDefault bool `json:"isDefault,omitempty"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	RoleIds []string `json:"roleIds"`
+	// @DataMember
+	CanAssign bool `json:"canAssign,omitempty"`
+	// @DataMember
+	UsedBy ExecutionIdentityUsageDto `json:"usedBy"`
 }
 
 // @DataContract
@@ -4786,24 +6930,28 @@ type MembershipAuthorizationViewDto struct {
 	DefaultSubscribeToNews bool `json:"defaultSubscribeToNews,omitempty"`
 	// @DataMember
 	PasswordComplexity *PasswordComplexityDto `json:"passwordComplexity,omitempty"`
-}
-
-// @DataContract
-type MembershipCredentialsSettingsModeDto struct {
 	// @DataMember
-	Name *string `json:"name,omitempty"`
+	DefaultRoles []string `json:"defaultRoles,omitempty"`
 	// @DataMember
-	LogoutUrl *string `json:"logoutUrl,omitempty"`
+	AllowedRegistrationRoles []string `json:"allowedRegistrationRoles,omitempty"`
+	// @DataMember
+	AllowGuestUsers bool `json:"allowGuestUsers,omitempty"`
+	// @DataMember
+	GuestCleanupPeriodDays *int `json:"guestCleanupPeriodDays,omitempty"`
+	// @DataMember
+	AllowEmailRegistration bool `json:"allowEmailRegistration,omitempty"`
+	// @DataMember
+	AllowUsernameRegistration bool `json:"allowUsernameRegistration,omitempty"`
+	// @DataMember
+	InviteOnly bool `json:"inviteOnly,omitempty"`
+	// @DataMember
+	AllowAnyoneToSignUp bool `json:"allowAnyoneToSignUp,omitempty"`
 }
 
 // @DataContract
 type MembershipCredentialsSettingsDto struct {
 	// @DataMember
-	LogoutUrl *string `json:"logoutUrl,omitempty"`
-	// @DataMember
 	AllowUsernames bool `json:"allowUsernames,omitempty"`
-	// @DataMember
-	Modes []MembershipCredentialsSettingsModeDto `json:"modes,omitempty"`
 }
 
 // @DataContract
@@ -4821,11 +6969,6 @@ type SchemaTriggerProjectionList struct {
 	Type SchemaTriggerType `json:"type,omitempty"`
 	// @DataMember
 	Env *string `json:"env,omitempty"`
-}
-
-type JsonSchemaFieldDto struct {
-	// @DataMember
-	FieldName string `json:"fieldName"`
 }
 
 type DataSchemaDto struct {
@@ -4851,6 +6994,8 @@ type TaxonomyDto struct {
 	ParentId *string `json:"parentId,omitempty"`
 	// @DataMember
 	Description *string `json:"description,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 	// @DataMember
 	TermsMetaDataSchema *DataSchemaDto `json:"termsMetaDataSchema,omitempty"`
 	// @DataMember
@@ -4883,6 +7028,8 @@ type TaxonomyListProjection struct {
 	ParentName *string `json:"parentName,omitempty"`
 	// @DataMember
 	DependencyRefs []TaxonomyRef `json:"dependencyRefs,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
 }
 
 type TermMultiParentDto struct {
@@ -4965,6 +7112,8 @@ type TermDto struct {
 	MultiParents []TermMultiParentDto `json:"multiParents,omitempty"`
 	// @DataMember
 	Meta *interface{} `json:"meta,omitempty"`
+	// @DataMember
+	Origin *string `json:"origin,omitempty"`
 }
 
 // @DataContract
@@ -4999,6 +7148,30 @@ type AppliedCollectionDto struct {
 	Published bool `json:"published,omitempty"`
 	// @DataMember
 	LinkedFields []string `json:"linkedFields"`
+}
+
+// @DataContract
+type EndUserOwnRecordsRowDto struct {
+	// @DataMember(Name="schemaId")
+	SchemaId string `json:"schemaId"`
+	// @DataMember(Name="schemaName")
+	SchemaName string `json:"schemaName"`
+	// @DataMember(Name="hasRecordOwner")
+	HasRecordOwner bool `json:"hasRecordOwner,omitempty"`
+	// @DataMember(Name="endUserOwnRecords")
+	EndUserOwnRecords bool `json:"endUserOwnRecords,omitempty"`
+	// @DataMember(Name="action")
+	Action string `json:"action"`
+}
+
+// @DataContract
+type EndUserOwnRecordsReportDto struct {
+	// @DataMember(Name="dryRun")
+	DryRun bool `json:"dryRun,omitempty"`
+	// @DataMember(Name="env")
+	Env string `json:"env"`
+	// @DataMember(Name="schemas")
+	Schemas []EndUserOwnRecordsRowDto `json:"schemas"`
 }
 
 type SchemaDto struct {
@@ -5054,6 +7227,53 @@ type SchemaDraftDto struct {
 	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 }
 
+type SchemaIndexDto struct {
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Keys []string `json:"keys"`
+	// @DataMember
+	Unique bool `json:"unique,omitempty"`
+	// @DataMember
+	Reason string `json:"reason"`
+	// @DataMember
+	Field string `json:"field"`
+}
+
+type SchemaIndexIntegrationStatusDto struct {
+	// @DataMember
+	IntegrationId string `json:"integrationId"`
+	// @DataMember
+	State string `json:"state"`
+	// @DataMember
+	Wanted []SchemaIndexDto `json:"wanted"`
+	// @DataMember
+	Created []string `json:"created"`
+	// @DataMember
+	Dropped []string `json:"dropped"`
+	// @DataMember
+	OverCap []SchemaIndexDto `json:"overCap"`
+	// @DataMember
+	RefusedReason *string `json:"refusedReason,omitempty"`
+	// @DataMember
+	LastRunUtc time.Time `json:"lastRunUtc,omitempty"`
+}
+
+type SchemaIndexStatusDto struct {
+	// @DataMember
+	SchemaId string `json:"schemaId"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	Collection string `json:"collection"`
+	// @DataMember
+	State string `json:"state"`
+	// @DataMember
+	Integrations []SchemaIndexIntegrationStatusDto `json:"integrations"`
+	// @DataMember
+	LastRunUtc time.Time `json:"lastRunUtc,omitempty"`
+}
+
 type SchemaDiffDto struct {
 	// @DataMember
 	FromVersion int `json:"fromVersion,omitempty"`
@@ -5090,6 +7310,8 @@ type CollectionIndexDto struct {
 	Name string `json:"name"`
 	// @DataMember
 	Keys []CollectionIndexKeyDto `json:"keys"`
+	// @DataMember
+	CreatedByNorbix bool `json:"createdByNorbix,omitempty"`
 }
 
 // @DataContract
@@ -5142,78 +7364,6 @@ type IntegrationTestResultItemDto struct {
 	Errors *IReadOnlyList[string] `json:"errors,omitempty"`
 }
 
-// @DataContract
-type SchemaRefDto struct {
-	// @DataMember(Order=1)
-	SchemaId string `json:"schemaId"`
-	// @DataMember(Order=2)
-	SchemaName string `json:"schemaName"`
-	// @DataMember(Order=3)
-	DatabaseIntegrationId string `json:"databaseIntegrationId"`
-}
-
-type CollectionImportDto struct {
-	// @DataMember
-	Id string `json:"id"`
-	// @DataMember
-	Schema SchemaRefDto `json:"schema"`
-	// @DataMember
-	File FileResourceRefDto `json:"file"`
-	// @DataMember
-	ErrorFile *FileResourceRefDto `json:"errorFile,omitempty"`
-	// @DataMember
-	Delimiter string `json:"delimiter"`
-	// @DataMember
-	HasHeader bool `json:"hasHeader,omitempty"`
-	// @DataMember
-	Status string `json:"status"`
-	// @DataMember
-	TotalRows int64 `json:"totalRows,omitempty"`
-	// @DataMember
-	TotalImported int64 `json:"totalImported,omitempty"`
-	// @DataMember
-	TotalErrors int64 `json:"totalErrors,omitempty"`
-	// @DataMember
-	FailureReason *string `json:"failureReason,omitempty"`
-	// @DataMember
-	Mapping []ImportColumnMappingDto `json:"mapping,omitempty"`
-	// @DataMember
-	CreatedOn time.Time `json:"createdOn,omitempty"`
-	// @DataMember
-	StartedOn *time.Time `json:"startedOn,omitempty"`
-	// @DataMember
-	CompletedOn *time.Time `json:"completedOn,omitempty"`
-}
-
-type ImportUploadTargetDto struct {
-	// @DataMember
-	Url string `json:"url"`
-	// @DataMember
-	ContentType string `json:"contentType"`
-	// @DataMember
-	File FileResourceRefDto `json:"file"`
-}
-
-type ImportFileColumnDto struct {
-	// @DataMember
-	Index int `json:"index,omitempty"`
-	// @DataMember
-	Header string `json:"header"`
-	// @DataMember
-	Samples []string `json:"samples"`
-	// @DataMember
-	DetectedType string `json:"detectedType"`
-}
-
-type ImportFileAnalysisDto struct {
-	// @DataMember
-	File FileResourceRefDto `json:"file"`
-	// @DataMember
-	Columns []ImportFileColumnDto `json:"columns"`
-	// @DataMember
-	SampleRowCount int `json:"sampleRowCount,omitempty"`
-}
-
 type MongoDbAggregateListProjection struct {
 	// @DataMember
 	ViewId string `json:"viewId"`
@@ -5238,16 +7388,10 @@ type FilesIntegrationListProjection struct {
 	Provider FileProvider `json:"provider,omitempty"`
 }
 
-// @DataContract
-type PublicFolderDto struct {
-	// @DataMember(Order=1)
-	Path string `json:"path"`
-	// @DataMember(Order=2)
-	PublicId string `json:"publicId"`
-	// @DataMember(Order=3)
-	PublicUrl *string `json:"publicUrl,omitempty"`
-	// @DataMember(Order=4)
-	Inherited bool `json:"inherited,omitempty"`
+type KeylessIntegrationSetupTemplate struct {
+	Kind     string `json:"kind"`
+	FileName string `json:"fileName"`
+	Content  string `json:"content"`
 }
 
 // @DataContract
@@ -5330,6 +7474,14 @@ type HtmlFromMjmlResponse struct {
 
 type SystemEmailTemplateListProjection struct {
 	EmailTemplateListProjection
+	// @DataMember
+	ImagePreview *string `json:"imagePreview,omitempty"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+	// @DataMember
+	Theme *SystemEmailTemplateTheme `json:"theme,omitempty"`
+	// @DataMember
+	SystemTags []string `json:"systemTags,omitempty"`
 }
 
 // @DataContract
@@ -5393,211 +7545,26 @@ type EmailLinkPreferencesDto struct {
 	BlockReasons              []string `json:"blockReasons"`
 }
 
-type CampaignStatus string
-
-const (
-	CampaignStatusPending    CampaignStatus = "Pending"
-	CampaignStatusRegistered                = "Registered"
-	CampaignStatusScheduled                 = "Scheduled"
-	CampaignStatusStarted                   = "Started"
-	CampaignStatusStopped                   = "Stopped"
-	CampaignStatusProcessing                = "Processing"
-	CampaignStatusCompleted                 = "Completed"
-	CampaignStatusFailed                    = "Failed"
-)
-
-type CampaignStatusChangeEntryDto struct {
-	Time   time.Time      `json:"time,omitempty"`
-	Status CampaignStatus `json:"status,omitempty"`
-	Errors []ErrorDto     `json:"errors,omitempty"`
-}
-
 // @DataContract
-type CampaignDto struct {
+type EmailClickResultDto struct {
 	// @DataMember
-	ViewId string `json:"viewId"`
+	Index int `json:"index,omitempty"`
 	// @DataMember
-	CreatedOn time.Time `json:"createdOn,omitempty"`
+	Status string `json:"status"`
 	// @DataMember
-	Language string `json:"language"`
+	Reason *string `json:"reason,omitempty"`
 	// @DataMember
-	ForceCampaignLanguage bool `json:"forceCampaignLanguage,omitempty"`
+	Flag *string `json:"flag,omitempty"`
 	// @DataMember
-	CampaignProcessingIntegrationId *string `json:"campaignProcessingIntegrationId,omitempty"`
+	FlagReason *string `json:"flagReason,omitempty"`
 	// @DataMember
-	StatusHistory []CampaignStatusChangeEntryDto `json:"statusHistory"`
+	CampaignId *string `json:"campaignId,omitempty"`
 	// @DataMember
-	Status *CampaignStatusChangeEntryDto `json:"status,omitempty"`
+	NotificationId *string `json:"notificationId,omitempty"`
 	// @DataMember
-	TokenMappingValues []TokenMappingDto `json:"tokenMappingValues,omitempty"`
+	LinkIndex *int `json:"linkIndex,omitempty"`
 	// @DataMember
-	Notes *string `json:"notes,omitempty"`
-	// @DataMember
-	CreatedById *string `json:"createdById,omitempty"`
-	// @DataMember
-	TimeZoneId *string `json:"timeZoneId,omitempty"`
-	// @DataMember
-	UserId string `json:"userId"`
-	// @DataMember
-	Id *string `json:"id,omitempty"`
-}
-
-// @DataContract
-type EmailCampaignDto struct {
-	CampaignDto
-	// @DataMember
-	DeliverySettings EmailCampaignDeliverySettingsDto `json:"deliverySettings"`
-	// @DataMember
-	Template EmailTemplateDto `json:"template"`
-	// @DataMember
-	ValidationIntegrationId *string `json:"validationIntegrationId,omitempty"`
-	// @DataMember
-	TemplateIsSystem bool `json:"templateIsSystem,omitempty"`
-}
-
-// @DataContract
-type EmailCampaignListProjection struct {
-	// @DataMember
-	ViewId string `json:"viewId"`
-	// @DataMember
-	TemplateName string `json:"templateName"`
-	// @DataMember
-	TemplateId string `json:"templateId"`
-	// @DataMember
-	IntegrationId *string `json:"integrationId,omitempty"`
-	// @DataMember
-	Language string `json:"language"`
-	// @DataMember
-	Strategy string `json:"strategy"`
-	// @DataMember
-	LatestStatus *CampaignStatus `json:"latestStatus,omitempty"`
-	// @DataMember
-	CreatedOn time.Time `json:"createdOn,omitempty"`
-}
-
-type CampaignBatchStatus string
-
-const (
-	CampaignBatchStatusRegistered CampaignBatchStatus = "Registered"
-	CampaignBatchStatusProcessing                     = "Processing"
-	CampaignBatchStatusCompleted                      = "Completed"
-	CampaignBatchStatusFailed                         = "Failed"
-)
-
-type BatchStatusChangeEntryDto struct {
-	Time   time.Time           `json:"time,omitempty"`
-	Status CampaignBatchStatus `json:"status,omitempty"`
-	Errors []ErrorDto          `json:"errors,omitempty"`
-}
-
-// @DataContract
-type CampaignBatchDto struct {
-	// @DataMember
-	CampaignId string `json:"campaignId"`
-	// @DataMember
-	BatchId string `json:"batchId"`
-	// @DataMember
-	StartAfter *string `json:"startAfter,omitempty"`
-	// @DataMember
-	StatusHistory []BatchStatusChangeEntryDto `json:"statusHistory"`
-	// @DataMember
-	Id string `json:"id"`
-}
-
-// @DataContract
-type EmailRecipientDto struct {
-	// @DataMember
-	EmailAddress string `json:"emailAddress"`
-	// @DataMember
-	Language *string `json:"language,omitempty"`
-	// @DataMember
-	TimeZoneId *string `json:"timeZoneId,omitempty"`
-	// @DataMember
-	UserTokenMappings []TokenMappingDto `json:"userTokenMappings,omitempty"`
-}
-
-// @DataContract
-type EmailRecipientsDto struct {
-	// @DataMember
-	To []EmailRecipientDto `json:"to,omitempty"`
-	// @DataMember
-	Cc []EmailRecipientDto `json:"cc,omitempty"`
-	// @DataMember
-	Bcc []EmailRecipientDto `json:"bcc,omitempty"`
-	// @DataMember
-	StartingAfter *string `json:"startingAfter,omitempty"`
-	// @DataMember
-	HasMore bool `json:"hasMore,omitempty"`
-}
-
-// @DataContract
-type EmailCampaignBatchDto struct {
-	CampaignBatchDto
-	// @DataMember
-	Recipients *EmailRecipientsDto `json:"recipients,omitempty"`
-}
-
-type CampaignNotificationStatus string
-
-const (
-	CampaignNotificationStatusCompleted                         CampaignNotificationStatus = "Completed"
-	CampaignNotificationStatusBlockedByUserPreferenceBlockAll                              = "BlockedByUserPreferenceBlockAll"
-	CampaignNotificationStatusBlockedByUserPreferenceBlockByTag                            = "BlockedByUserPreferenceBlockByTag"
-	CampaignNotificationStatusFailed                                                       = "Failed"
-	CampaignNotificationStatusViewed                                                       = "Viewed"
-	CampaignNotificationStatusClicked                                                      = "Clicked"
-	CampaignNotificationStatusBlockedByValidation                                          = "BlockedByValidation"
-)
-
-type NotificationStatusChangeEntryDto struct {
-	Time     time.Time                  `json:"time,omitempty"`
-	Status   CampaignNotificationStatus `json:"status,omitempty"`
-	SourceId *string                    `json:"sourceId,omitempty"`
-	Errors   []ErrorDto                 `json:"errors,omitempty"`
-	Tags     []string                   `json:"tags,omitempty"`
-}
-
-// @DataContract
-type CampaignBatchNotificationDto struct {
-	// @DataMember
-	CampaignId string `json:"campaignId"`
-	// @DataMember
-	BatchId string `json:"batchId"`
-	// @DataMember
-	NotificationId string `json:"notificationId"`
-	// @DataMember
-	RefNotificationId *string `json:"refNotificationId,omitempty"`
-	// @DataMember
-	Body *string `json:"body,omitempty"`
-	// @DataMember
-	Model map[string]string `json:"model,omitempty"`
-	// @DataMember
-	StatusHistory []NotificationStatusChangeEntryDto `json:"statusHistory"`
-	// @DataMember
-	Id string `json:"id"`
-}
-
-// @DataContract
-type EmailCampaignBatchNotificationDto struct {
-	CampaignBatchNotificationDto
-	// @DataMember
-	Subject *string `json:"subject,omitempty"`
-	// @DataMember
-	Recipients EmailRecipientsDto `json:"recipients"`
-	// @DataMember
-	Content *EmailMessageContentDto `json:"content,omitempty"`
-}
-
-// @DataContract
-type CampaignStatsDto struct {
-	// @DataMember
-	Batches int `json:"batches,omitempty"`
-	// @DataMember
-	Sent int `json:"sent,omitempty"`
-	// @DataMember
-	Failed int `json:"failed,omitempty"`
-	// @DataMember
-	SuccessRate float64 `json:"successRate,omitempty"`
+	To []string `json:"to,omitempty"`
 }
 
 // @DataContract
@@ -5617,54 +7584,165 @@ type SmsIntegrationListProjection struct {
 }
 
 // @DataContract
-type SmsCampaignDto struct {
-	CampaignDto
+type WorkflowVersionSummaryDto struct {
 	// @DataMember
-	Recipients SmsCampaignDeliverySettingsDto `json:"recipients"`
+	Version int `json:"version,omitempty"`
 	// @DataMember
-	Template SmsTemplateDto `json:"template"`
+	Name string `json:"name"`
+	// @DataMember
+	StepCount int `json:"stepCount,omitempty"`
+	// @DataMember
+	PublishedAt time.Time `json:"publishedAt,omitempty"`
+	// @DataMember
+	PublishedByAuthId *string `json:"publishedByAuthId,omitempty"`
 }
 
 // @DataContract
-type SmsRecipientDto struct {
+type WorkflowValidationIssueDto struct {
 	// @DataMember
-	PhoneNumber string `json:"phoneNumber"`
+	Code string `json:"code"`
 	// @DataMember
-	UserId string `json:"userId"`
+	Message string `json:"message"`
 	// @DataMember
-	Language *string `json:"language,omitempty"`
+	Path *string `json:"path,omitempty"`
 	// @DataMember
-	UserTokenMappings []TokenMappingDto `json:"userTokenMappings,omitempty"`
+	StepId *string `json:"stepId,omitempty"`
 	// @DataMember
-	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	Line *int `json:"line,omitempty"`
 	// @DataMember
-	Record *string `json:"record,omitempty"`
+	Column *int `json:"column,omitempty"`
 }
 
 // @DataContract
-type SmsRecipientsDto struct {
+type WorkflowDto struct {
 	// @DataMember
-	To []SmsRecipientDto `json:"to,omitempty"`
+	WorkflowId string `json:"workflowId"`
 	// @DataMember
-	StartingAfter *string `json:"startingAfter,omitempty"`
+	Env string `json:"env"`
 	// @DataMember
-	HasMore bool `json:"hasMore,omitempty"`
+	Definition WorkflowDefinitionDto `json:"definition"`
+	// @DataMember
+	Version int `json:"version,omitempty"`
+	// @DataMember
+	IsPublished bool `json:"isPublished,omitempty"`
+	// @DataMember
+	HasDraft bool `json:"hasDraft,omitempty"`
+	// @DataMember
+	IsEnabled bool `json:"isEnabled,omitempty"`
+	// @DataMember
+	DisabledReason *string `json:"disabledReason,omitempty"`
+	// @DataMember
+	DraftUpdatedAt *time.Time `json:"draftUpdatedAt,omitempty"`
+	// @DataMember
+	PublishedAt *time.Time `json:"publishedAt,omitempty"`
+	// @DataMember
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	// @DataMember
+	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+	// @DataMember
+	SavedByAuthId *string `json:"savedByAuthId,omitempty"`
+	// @DataMember
+	Versions []WorkflowVersionSummaryDto `json:"versions"`
+	// @DataMember
+	Warnings []WorkflowValidationIssueDto `json:"warnings"`
 }
 
 // @DataContract
-type SmsCampaignBatchDto struct {
-	CampaignBatchDto
+type WorkflowStepDiffDto struct {
 	// @DataMember
-	Recipients SmsRecipientsDto `json:"recipients"`
+	StepId string `json:"stepId"`
+	// @DataMember
+	Paths []string `json:"paths"`
 }
 
 // @DataContract
-type SmsCampaignBatchNotificationDto struct {
-	CampaignBatchNotificationDto
+type WorkflowVersionDiffDto struct {
 	// @DataMember
-	Recipients SmsRecipientsDto `json:"recipients"`
+	FromVersion int `json:"fromVersion,omitempty"`
 	// @DataMember
-	Content *SmsMessageContentDto `json:"content,omitempty"`
+	ToVersion int `json:"toVersion,omitempty"`
+	// @DataMember
+	AddedSteps []string `json:"addedSteps"`
+	// @DataMember
+	RemovedSteps []string `json:"removedSteps"`
+	// @DataMember
+	ChangedSteps []WorkflowStepDiffDto `json:"changedSteps"`
+	// @DataMember
+	ChangedFields []string `json:"changedFields"`
+}
+
+// @DataContract
+type WorkflowLastRunDto struct {
+	// @DataMember
+	RunId string `json:"runId"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+}
+
+// @DataContract
+type WorkflowListProjection struct {
+	// @DataMember
+	ViewId string `json:"viewId"`
+	// @DataMember
+	WorkflowId string `json:"workflowId"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	Version int `json:"version,omitempty"`
+	// @DataMember
+	IsPublished bool `json:"isPublished,omitempty"`
+	// @DataMember
+	HasDraft bool `json:"hasDraft,omitempty"`
+	// @DataMember
+	IsEnabled bool `json:"isEnabled,omitempty"`
+	// @DataMember
+	DisabledReason *string `json:"disabledReason,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+	// @DataMember
+	LastRun *WorkflowLastRunDto `json:"lastRun,omitempty"`
+	// @DataMember
+	WaitingRuns int `json:"waitingRuns,omitempty"`
+}
+
+// @DataContract
+type WorkflowStepKindSchemaDto struct {
+	// @DataMember
+	Kind string `json:"kind"`
+	// @DataMember
+	Description string `json:"description"`
+	// @DataMember
+	ConfigSchema map[string]interface{} `json:"configSchema,omitempty"`
+	// @DataMember
+	OutputSchema map[string]interface{} `json:"outputSchema,omitempty"`
+	// @DataMember
+	Requires []string `json:"requires"`
+}
+
+// @DataContract
+type WorkflowBindingFamilyDto struct {
+	// @DataMember
+	Family string `json:"family"`
+	// @DataMember
+	Description string `json:"description"`
+}
+
+// @DataContract
+type WorkflowSchemaDto struct {
+	// @DataMember
+	SchemaVersion string `json:"schemaVersion"`
+	// @DataMember
+	Definition map[string]interface{} `json:"definition"`
+	// @DataMember
+	StepKinds []WorkflowStepKindSchemaDto `json:"stepKinds"`
+	// @DataMember
+	Bindings []WorkflowBindingFamilyDto `json:"bindings"`
 }
 
 // @DataContract
@@ -5689,6 +7767,84 @@ type MarketplaceListingProjection struct {
 	Tags IReadOnlyList[string] `json:"tags"`
 	// @DataMember
 	FunctionCount int `json:"functionCount,omitempty"`
+	// @DataMember
+	Availability MarketplaceAvailability `json:"availability,omitempty"`
+	// @DataMember
+	Kind MarketplaceListingKind `json:"kind,omitempty"`
+	// @DataMember
+	VideoUrl *string `json:"videoUrl,omitempty"`
+}
+
+// @DataContract
+type MarketplaceAccessCustomPolicyDto struct {
+	// @DataMember
+	PolicyId string `json:"policyId"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	UsedByRoles int `json:"usedByRoles,omitempty"`
+}
+
+// @DataContract
+type MarketplaceAccessRoleDto struct {
+	// @DataMember
+	RoleId string `json:"roleId"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Scope string `json:"scope"`
+	// @DataMember
+	IsSystem bool `json:"isSystem,omitempty"`
+	// @DataMember
+	Fixed bool `json:"fixed,omitempty"`
+	// @DataMember
+	Package MarketplaceAccessLevel `json:"package,omitempty"`
+	// @DataMember
+	IsCustom bool `json:"isCustom,omitempty"`
+	// @DataMember
+	Manage bool `json:"manage,omitempty"`
+	// @DataMember
+	Custom IReadOnlyList[MarketplaceAccessCustomPolicyDto] `json:"custom"`
+	// @DataMember
+	DefaultNotApplied *string `json:"defaultNotApplied,omitempty"`
+	// @DataMember
+	CanChange bool `json:"canChange,omitempty"`
+}
+
+// @DataContract
+type MarketplaceAccessPackageDto struct {
+	// @DataMember
+	Kind MarketplaceAccessLevel `json:"kind,omitempty"`
+	// @DataMember
+	PolicyId string `json:"policyId"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Exists bool `json:"exists,omitempty"`
+}
+
+// @DataContract
+type MarketplaceAccessToolDto struct {
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	ReadOnly bool `json:"readOnly,omitempty"`
+	// @DataMember
+	Grantable bool `json:"grantable,omitempty"`
+	// @DataMember
+	Curated bool `json:"curated,omitempty"`
+	// @DataMember
+	ExcludedFromFullAccess bool `json:"excludedFromFullAccess,omitempty"`
+}
+
+// @DataContract
+type MarketplaceAccessFunctionDto struct {
+	// @DataMember
+	FunctionId string `json:"functionId"`
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	FunctionKey string `json:"functionKey"`
 }
 
 // @DataContract
@@ -5717,6 +7873,40 @@ type MarketplaceIntegrationListProjection struct {
 	HumanDeliveryConfirmedAtUtc *time.Time `json:"humanDeliveryConfirmedAtUtc,omitempty"`
 	// @DataMember
 	RequiresHumanDeliveryConfirmation bool `json:"requiresHumanDeliveryConfirmation,omitempty"`
+	// @DataMember
+	SignedIn bool `json:"signedIn,omitempty"`
+	// @DataMember
+	SignedInAt *time.Time `json:"signedInAt,omitempty"`
+}
+
+// @DataContract
+type MarketplaceMcpToolDto struct {
+	// @DataMember
+	Name string `json:"name"`
+	// @DataMember
+	Title *string `json:"title,omitempty"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+	// @DataMember
+	InputSchema string `json:"inputSchema"`
+	// @DataMember
+	ReadOnlyHint *bool `json:"readOnlyHint,omitempty"`
+	// @DataMember
+	DestructiveHint *bool `json:"destructiveHint,omitempty"`
+}
+
+// @DataContract
+type MarketplaceAccessChangesDto struct {
+	// @DataMember
+	ReadOnlyAdded IReadOnlyList[string] `json:"readOnlyAdded"`
+	// @DataMember
+	ReadOnlyRemoved IReadOnlyList[string] `json:"readOnlyRemoved"`
+	// @DataMember
+	NotGrantable IReadOnlyList[string] `json:"notGrantable"`
+	// @DataMember
+	ReadOnlyHintOverridden IReadOnlyList[string] `json:"readOnlyHintOverridden"`
+	// @DataMember
+	ExcludedFromFullAccess IReadOnlyList[string] `json:"excludedFromFullAccess"`
 }
 
 // @DataContract
@@ -5735,6 +7925,44 @@ type MarketplaceFunctionProjection struct {
 	MappingCount int `json:"mappingCount,omitempty"`
 }
 
+// @DataContract
+type MarketplaceFunctionRunDto struct {
+	// @DataMember
+	FiredAt time.Time `json:"firedAt,omitempty"`
+	// @DataMember
+	Event string `json:"event"`
+	// @DataMember
+	Source string `json:"source"`
+	// @DataMember
+	FunctionId string `json:"functionId"`
+	// @DataMember
+	RunAsUserId *string `json:"runAsUserId,omitempty"`
+	// @DataMember
+	Succeeded bool `json:"succeeded,omitempty"`
+	// @DataMember
+	Status *string `json:"status,omitempty"`
+	// @DataMember
+	DurationMs *int64 `json:"durationMs,omitempty"`
+	// @DataMember
+	Error *string `json:"error,omitempty"`
+	// @DataMember
+	VendorRequestId *string `json:"vendorRequestId,omitempty"`
+	// @DataMember
+	CorrelationId *string `json:"correlationId,omitempty"`
+	// @DataMember
+	HasDetails bool `json:"hasDetails,omitempty"`
+	// @DataMember
+	TriggerId *string `json:"triggerId,omitempty"`
+	// @DataMember
+	TaskId *string `json:"taskId,omitempty"`
+	// @DataMember
+	Input *string `json:"input,omitempty"`
+	// @DataMember
+	IntegrationId *string `json:"integrationId,omitempty"`
+	// @DataMember
+	ToolName *string `json:"toolName,omitempty"`
+}
+
 type CodeIntegrationListProjection struct {
 	IntegrationListProjection
 	// @DataMember
@@ -5742,148 +7970,282 @@ type CodeIntegrationListProjection struct {
 }
 
 // @DataContract
-type PushTemplateListProjection struct {
-	TemplateListProjection
+type CodeFunctionDescriptorDto struct {
 	// @DataMember
-	Languages []string `json:"languages"`
+	FunctionId string `json:"functionId"`
+	// @DataMember
+	DisplayName string `json:"displayName"`
+	// @DataMember
+	Runtime *string `json:"runtime,omitempty"`
+	// @DataMember
+	Region *string `json:"region,omitempty"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+	// @DataMember
+	LastModified *time.Time `json:"lastModified,omitempty"`
+	// @DataMember
+	Tags map[string]string `json:"tags,omitempty"`
+	// @DataMember
+	Arn *string `json:"arn,omitempty"`
 }
 
-type PushSettings struct {
-	MarketingTags     []TagDefinitionDto `json:"marketingTags,omitempty"`
-	TransactionalTags []TagDefinitionDto `json:"transactionalTags,omitempty"`
-}
+type CodeFunctionQualifierKindDto string
 
-type PushIntegrationListProjection struct {
-	IntegrationListProjection
+const (
+	CodeFunctionQualifierKindDtoAlias   CodeFunctionQualifierKindDto = "Alias"
+	CodeFunctionQualifierKindDtoVersion                              = "Version"
+)
+
+// @DataContract
+type CodeFunctionQualifierDto struct {
 	// @DataMember
-	Provider PushProvider `json:"provider,omitempty"`
+	Name string `json:"name"`
+	// @DataMember
+	Kind CodeFunctionQualifierKindDto `json:"kind,omitempty"`
+	// @DataMember
+	Description *string `json:"description,omitempty"`
+	// @DataMember
+	TargetVersion *string `json:"targetVersion,omitempty"`
 }
 
 // @DataContract
-type PushDeviceListProjection struct {
+type CodeFunctionRunDto struct {
 	// @DataMember
-	Id string `json:"id"`
+	FiredAt time.Time `json:"firedAt,omitempty"`
+	// @DataMember
+	Event string `json:"event"`
+	// @DataMember
+	Source string `json:"source"`
+	// @DataMember
+	Succeeded bool `json:"succeeded,omitempty"`
+	// @DataMember
+	StatusCode *int `json:"statusCode,omitempty"`
+	// @DataMember
+	DurationMs *int64 `json:"durationMs,omitempty"`
+	// @DataMember
+	Error *string `json:"error,omitempty"`
+	// @DataMember
+	RequestId *string `json:"requestId,omitempty"`
+	// @DataMember
+	Input *string `json:"input,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	ExecutionIdentityName *string `json:"executionIdentityName,omitempty"`
+	// @DataMember
+	ExecutionIdentityIsDefault bool `json:"executionIdentityIsDefault,omitempty"`
+	// @DataMember
+	TriggerRunId *string `json:"triggerRunId,omitempty"`
+}
+
+// @DataContract
+type WorkflowWaitSlotDto struct {
+	/** @description As the author wrote it: a usr_ id, role:<name>, tag:<name>, role:<name>+tag:<name> or teamrole:<name>. Show this. */
+	// @DataMember
+	// @ApiMember(Description="As the author wrote it: a usr_ id, role:<name>, tag:<name>, role:<name>+tag:<name> or teamrole:<name>. Show this.")
+	Label string `json:"label"`
+	// @DataMember
+	UserId *string `json:"userId,omitempty"`
+	// @DataMember
+	Role *string `json:"role,omitempty"`
+	// @DataMember
+	Tag *string `json:"tag,omitempty"`
+	// @DataMember
+	TeamRole *bool `json:"teamRole,omitempty"`
+	// @DataMember
+	AnsweredBy *string `json:"answeredBy,omitempty"`
+	// @DataMember
+	Decision *string `json:"decision,omitempty"`
+	// @DataMember
+	At *time.Time `json:"at,omitempty"`
+	/** @description True = somebody who was not asked answered for this slot, using the override right. */
+	// @DataMember
+	// @ApiMember(Description="True = somebody who was not asked answered for this slot, using the override right.")
+	Override *bool `json:"override,omitempty"`
+}
+
+// @DataContract
+type WorkflowWaitAnswerDto struct {
 	// @DataMember
 	UserId string `json:"userId"`
 	// @DataMember
-	DeviceOs string `json:"deviceOs"`
+	Kind *string `json:"kind,omitempty"`
 	// @DataMember
-	Token string `json:"token"`
+	Decision string `json:"decision"`
+	/** @description Which slots this answer filled (places in `slots`, from 0). One person who matches two rules fills both with one answer. */
 	// @DataMember
-	Brand *string `json:"brand,omitempty"`
+	// @ApiMember(Description="Which slots this answer filled (places in `slots`, from 0). One person who matches two rules fills both with one answer.")
+	Slots []int `json:"slots,omitempty"`
+	/** @description True = this person was not asked and answered on the override right. */
 	// @DataMember
-	Manufacturer *string `json:"manufacturer,omitempty"`
+	// @ApiMember(Description="True = this person was not asked and answered on the override right.")
+	Override *bool `json:"override,omitempty"`
 	// @DataMember
-	ModelName *string `json:"modelName,omitempty"`
-	// @DataMember
-	DeviceName *string `json:"deviceName,omitempty"`
-	// @DataMember
-	DeviceType *string `json:"deviceType,omitempty"`
-	// @DataMember
-	OsName *string `json:"osName,omitempty"`
-	// @DataMember
-	OsVersion *string `json:"osVersion,omitempty"`
-	// @DataMember
-	PlatformApiLevel *int `json:"platformApiLevel,omitempty"`
+	At time.Time `json:"at,omitempty"`
 }
 
 // @DataContract
-type PushAudienceCountDto struct {
+type WorkflowWaitingOnDto struct {
 	// @DataMember
-	Devices int `json:"devices,omitempty"`
+	StepId string `json:"stepId"`
 	// @DataMember
-	Recipients int `json:"recipients,omitempty"`
+	Kind string `json:"kind"`
 	// @DataMember
-	SkippedUserIds int `json:"skippedUserIds,omitempty"`
+	Until *time.Time `json:"until,omitempty"`
 	// @DataMember
-	IsCapped bool `json:"isCapped,omitempty"`
+	Key *string `json:"key,omitempty"`
+	/** @description The people told when the wait parked. An approval addressed to a role tells everybody who held that role then, so this list can be longer or shorter than `slots` — count `slots`, never this. */
+	// @DataMember
+	// @ApiMember(Description="The people told when the wait parked. An approval addressed to a role tells everybody who held that role then, so this list can be longer or shorter than `slots` — count `slots`, never this.")
+	Assignees []string `json:"assignees,omitempty"`
+	/** @description A group approval: how many of `slots` must approve. Absent = the first answer decides. */
+	// @DataMember
+	// @ApiMember(Description="A group approval: how many of `slots` must approve. Absent = the first answer decides.")
+	Require *int `json:"require,omitempty"`
+	/** @description One entry per thing the approval asks for: a person or a rule, and whether it is filled. The unit `require`, `approvals` and `rejections` count. */
+	// @DataMember
+	// @ApiMember(Description="One entry per thing the approval asks for: a person or a rule, and whether it is filled. The unit `require`, `approvals` and `rejections` count.")
+	Slots []WorkflowWaitSlotDto `json:"slots,omitempty"`
+	// @DataMember
+	Answers []WorkflowWaitAnswerDto `json:"answers,omitempty"`
+	/** @description Inbox rows only: true = this approval is yours; false = none of it is yours, so answering it is an override, if you hold the right. Absent = nobody is asked for a slot here, or it was not worked out. */
+	// @DataMember
+	// @ApiMember(Description="Inbox rows only: true = this approval is yours; false = none of it is yours, so answering it is an override, if you hold the right. Absent = nobody is asked for a slot here, or it was not worked out.")
+	Mine *bool `json:"mine,omitempty"`
+	// @DataMember
+	ChildRunId *string `json:"childRunId,omitempty"`
 }
 
 // @DataContract
-type PushCampaignDto struct {
-	CampaignDto
+type WorkflowRunStepDto struct {
 	// @DataMember
-	Recipients PushCampaignDeliverySettingsDto `json:"recipients"`
+	StepId string `json:"stepId"`
 	// @DataMember
-	Template PushTemplateDto `json:"template"`
+	Kind string `json:"kind"`
+	// @DataMember
+	Name *string `json:"name,omitempty"`
+	// @DataMember
+	ForeachStepId *string `json:"foreachStepId,omitempty"`
+	// @DataMember
+	ItemIndex *int `json:"itemIndex,omitempty"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	Attempt int `json:"attempt,omitempty"`
+	// @DataMember
+	Pass int `json:"pass,omitempty"`
+	// @DataMember
+	StartedAt *time.Time `json:"startedAt,omitempty"`
+	// @DataMember
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+	// @DataMember
+	DurationMs *int64 `json:"durationMs,omitempty"`
+	// @DataMember
+	Input *interface{} `json:"input,omitempty"`
+	// @DataMember
+	InputTruncated bool `json:"inputTruncated,omitempty"`
+	// @DataMember
+	Output *interface{} `json:"output,omitempty"`
+	// @DataMember
+	OutputTruncated bool `json:"outputTruncated,omitempty"`
+	// @DataMember
+	Error *WorkflowRunErrorDto `json:"error,omitempty"`
+	// @DataMember
+	ResumedBy *WorkflowRunActorDto `json:"resumedBy,omitempty"`
+	// @DataMember
+	Decision *string `json:"decision,omitempty"`
 }
 
 // @DataContract
-type PushRecipientDto struct {
+type WorkflowRunDto struct {
 	// @DataMember
-	DeviceTokens []PushDeviceDeliveryTokenDto `json:"deviceTokens"`
+	RunId string `json:"runId"`
 	// @DataMember
-	UserId string `json:"userId"`
+	WorkflowId string `json:"workflowId"`
 	// @DataMember
-	Language *string `json:"language,omitempty"`
+	Version *int `json:"version,omitempty"`
 	// @DataMember
-	UserTokenMappings []TokenMappingDto `json:"userTokenMappings,omitempty"`
+	IsDraft bool `json:"isDraft,omitempty"`
 	// @DataMember
-	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	Status string `json:"status"`
 	// @DataMember
-	Record *string `json:"record,omitempty"`
+	Source string `json:"source"`
+	// @DataMember
+	StartedBy *WorkflowRunActorDto `json:"startedBy,omitempty"`
+	// @DataMember
+	TriggerId *string `json:"triggerId,omitempty"`
+	// @DataMember
+	TaskId *string `json:"taskId,omitempty"`
+	// @DataMember
+	ParentRunId *string `json:"parentRunId,omitempty"`
+	// @DataMember
+	Depth int `json:"depth,omitempty"`
+	// @DataMember
+	Env string `json:"env"`
+	// @DataMember
+	CorrelationId *string `json:"correlationId,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	ExecutionIdentityName *string `json:"executionIdentityName,omitempty"`
+	// @DataMember
+	ExecutionIdentityIsDefault bool `json:"executionIdentityIsDefault,omitempty"`
+	// @DataMember
+	StartedAt time.Time `json:"startedAt,omitempty"`
+	// @DataMember
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+	// @DataMember
+	DurationMs *int64 `json:"durationMs,omitempty"`
+	// @DataMember
+	WaitingOn []WorkflowWaitingOnDto `json:"waitingOn"`
+	// @DataMember
+	Error *WorkflowRunErrorDto `json:"error,omitempty"`
+	// @DataMember
+	Output *interface{} `json:"output,omitempty"`
+	// @DataMember
+	StepRuns int `json:"stepRuns,omitempty"`
+	// @DataMember
+	Steps []WorkflowRunStepDto `json:"steps"`
+	// @DataMember
+	Request map[string]interface{} `json:"request,omitempty"`
+	// @DataMember
+	Trigger map[string]interface{} `json:"trigger,omitempty"`
 }
 
 // @DataContract
-type PushRecipientsDto struct {
+type WorkflowRunListProjection struct {
 	// @DataMember
-	To []PushRecipientDto `json:"to,omitempty"`
+	RunId string `json:"runId"`
 	// @DataMember
-	StartingAfter *string `json:"startingAfter,omitempty"`
+	WorkflowId string `json:"workflowId"`
 	// @DataMember
-	HasMore bool `json:"hasMore,omitempty"`
-}
-
-// @DataContract
-type PushCampaignBatchDto struct {
-	CampaignBatchDto
+	Version *int `json:"version,omitempty"`
 	// @DataMember
-	Recipients PushRecipientsDto `json:"recipients"`
-}
-
-// @DataContract
-type PushCampaignBatchNotificationDto struct {
-	CampaignBatchNotificationDto
+	IsDraft bool `json:"isDraft,omitempty"`
 	// @DataMember
-	Subject *string `json:"subject,omitempty"`
+	Status string `json:"status"`
 	// @DataMember
-	Recipients PushRecipientsDto `json:"recipients"`
+	Source string `json:"source"`
 	// @DataMember
-	Content *PushMessageContentDto `json:"content,omitempty"`
-}
-
-type PaymentsWebhookLogEntry struct {
-	IntegrationId   string    `json:"integrationId"`
-	Source          string    `json:"source"`
-	Env             *string   `json:"env,omitempty"`
-	EventName       *string   `json:"eventName,omitempty"`
-	ProviderEventId *string   `json:"providerEventId,omitempty"`
-	StatusCode      int       `json:"statusCode,omitempty"`
-	Description     string    `json:"description"`
-	ReceivedOn      time.Time `json:"receivedOn,omitempty"`
-}
-
-// @DataContract
-type PaymentTriggerProjectionList struct {
-	TriggerProjectionList
+	StartedAt time.Time `json:"startedAt,omitempty"`
 	// @DataMember
-	Type PaymentTriggerType `json:"type,omitempty"`
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
 	// @DataMember
-	Integrations []string `json:"integrations,omitempty"`
+	DurationMs *int64 `json:"durationMs,omitempty"`
 	// @DataMember
-	Events []string `json:"events,omitempty"`
-}
-
-type PaymentsIntegrationListProjection struct {
-	IntegrationListProjection
+	StartedBy *WorkflowRunActorDto `json:"startedBy,omitempty"`
 	// @DataMember
-	GatewayPlatform PaymentGatewayPlatform `json:"gatewayPlatform,omitempty"`
-}
-
-type LoggingIntegrationListProjection struct {
-	IntegrationListProjection
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
 	// @DataMember
-	Provider LoggingProvider `json:"provider,omitempty"`
+	ExecutionIdentityName *string `json:"executionIdentityName,omitempty"`
+	// @DataMember
+	ExecutionIdentityIsDefault bool `json:"executionIdentityIsDefault,omitempty"`
+	// @DataMember
+	CurrentStepIds []string `json:"currentStepIds"`
+	// @DataMember
+	WaitingOn []WorkflowWaitingOnDto `json:"waitingOn"`
+	// @DataMember
+	Error *WorkflowRunErrorDto `json:"error,omitempty"`
 }
 
 // @DataContract
@@ -5911,13 +8273,247 @@ type TenantLogEntryDto struct {
 	// @DataMember
 	Env string `json:"env"`
 	// @DataMember
+	Origin string `json:"origin"`
+	// @DataMember
 	Meta *IReadOnlyDictionary[string, string] `json:"meta,omitempty"`
 }
 
+// @DataContract
+type PushTemplateListProjection struct {
+	TemplateListProjection
+	// @DataMember
+	Languages []string `json:"languages"`
+}
+
+type PushSettings struct {
+	MarketingTags     []TagDefinitionDto `json:"marketingTags,omitempty"`
+	TransactionalTags []TagDefinitionDto `json:"transactionalTags,omitempty"`
+}
+
+type PushIntegrationListProjection struct {
+	IntegrationListProjection
+	// @DataMember
+	Provider PushProvider `json:"provider,omitempty"`
+}
+
+// @DataContract
+type PushDeviceListProjection struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	UserDisplayName *string `json:"userDisplayName,omitempty"`
+	// @DataMember
+	UserEmail *string `json:"userEmail,omitempty"`
+	// @DataMember
+	DeviceOs string `json:"deviceOs"`
+	// @DataMember
+	Token string `json:"token"`
+	// @DataMember
+	Brand *string `json:"brand,omitempty"`
+	// @DataMember
+	Manufacturer *string `json:"manufacturer,omitempty"`
+	// @DataMember
+	ModelName *string `json:"modelName,omitempty"`
+	// @DataMember
+	DeviceName *string `json:"deviceName,omitempty"`
+	// @DataMember
+	DeviceType *string `json:"deviceType,omitempty"`
+	// @DataMember
+	OsName *string `json:"osName,omitempty"`
+	// @DataMember
+	OsVersion *string `json:"osVersion,omitempty"`
+	// @DataMember
+	PlatformApiLevel *int `json:"platformApiLevel,omitempty"`
+	// @DataMember
+	Platform *string `json:"platform,omitempty"`
+	// @DataMember
+	AppVersion *string `json:"appVersion,omitempty"`
+	// @DataMember
+	InstallationId *string `json:"installationId,omitempty"`
+	// @DataMember
+	Locale *string `json:"locale,omitempty"`
+	// @DataMember
+	TimeZone *string `json:"timeZone,omitempty"`
+	// @DataMember
+	UpdatedAtUtc *time.Time `json:"updatedAtUtc,omitempty"`
+}
+
+// @DataContract
+type TeamPushDeviceListProjection struct {
+	PushDeviceListProjection
+	// @DataMember
+	OwnerKind string `json:"ownerKind"`
+	// @DataMember
+	OwnerName *string `json:"ownerName,omitempty"`
+	// @DataMember
+	OwnerEmail *string `json:"ownerEmail,omitempty"`
+}
+
+type InAppNotificationDto struct {
+	Id           string     `json:"id"`
+	ProjectId    string     `json:"projectId"`
+	UserId       string     `json:"userId"`
+	Channel      string     `json:"channel"`
+	EventName    string     `json:"eventName"`
+	PayloadJson  *string    `json:"payloadJson,omitempty"`
+	IsRead       bool       `json:"isRead,omitempty"`
+	SeenAtUtc    *time.Time `json:"seenAtUtc,omitempty"`
+	ReadAtUtc    *time.Time `json:"readAtUtc,omitempty"`
+	CreatedAtUtc time.Time  `json:"createdAtUtc,omitempty"`
+}
+
+type PaymentsWebhookLogEntry struct {
+	RunId           *string   `json:"runId,omitempty"`
+	IntegrationId   string    `json:"integrationId"`
+	Source          string    `json:"source"`
+	Env             *string   `json:"env,omitempty"`
+	EventName       *string   `json:"eventName,omitempty"`
+	ProviderEventId *string   `json:"providerEventId,omitempty"`
+	StatusCode      int       `json:"statusCode,omitempty"`
+	Description     string    `json:"description"`
+	ReceivedOn      time.Time `json:"receivedOn,omitempty"`
+}
+
+type PaymentsWebhookRunOrderDto struct {
+	OrderId *string `json:"orderId,omitempty"`
+	Kind    string  `json:"kind"`
+	From    *string `json:"from,omitempty"`
+	To      *string `json:"to,omitempty"`
+	Reason  string  `json:"reason"`
+}
+
+type PaymentsWebhookRunActionDto struct {
+	TriggerId   string    `json:"triggerId"`
+	TriggerName *string   `json:"triggerName,omitempty"`
+	Action      *string   `json:"action,omitempty"`
+	Status      string    `json:"status"`
+	Reason      *string   `json:"reason,omitempty"`
+	Queue       *string   `json:"queue,omitempty"`
+	MessageId   *string   `json:"messageId,omitempty"`
+	Deliveries  *int      `json:"deliveries,omitempty"`
+	NorbixEvent string    `json:"norbixEvent"`
+	At          time.Time `json:"at,omitempty"`
+}
+
+type PaymentsWebhookRunDto struct {
+	Id              string                        `json:"id"`
+	CallId          string                        `json:"callId"`
+	Env             string                        `json:"env"`
+	IntegrationId   string                        `json:"integrationId"`
+	Source          string                        `json:"source"`
+	ReceivedOn      time.Time                     `json:"receivedOn,omitempty"`
+	StatusCode      int                           `json:"statusCode,omitempty"`
+	Outcome         string                        `json:"outcome"`
+	Reason          string                        `json:"reason"`
+	Description     string                        `json:"description"`
+	EventName       *string                       `json:"eventName,omitempty"`
+	ProviderEventId *string                       `json:"providerEventId,omitempty"`
+	CorrelationId   *string                       `json:"correlationId,omitempty"`
+	Fact            *PaymentEventDto              `json:"fact,omitempty"`
+	Order           *PaymentsWebhookRunOrderDto   `json:"order,omitempty"`
+	Actions         []PaymentsWebhookRunActionDto `json:"actions"`
+	Part            int                           `json:"part,omitempty"`
+	Parts           int                           `json:"parts,omitempty"`
+}
+
+type PaymentsWebhookRawCallDto struct {
+	CallId       string            `json:"callId"`
+	ReceivedOn   time.Time         `json:"receivedOn,omitempty"`
+	ContentType  *string           `json:"contentType,omitempty"`
+	Body         string            `json:"body"`
+	Truncated    bool              `json:"truncated,omitempty"`
+	MaskedFields int               `json:"maskedFields,omitempty"`
+	Headers      map[string]string `json:"headers"`
+	AnswerStatus int               `json:"answerStatus,omitempty"`
+	AnswerBody   *string           `json:"answerBody,omitempty"`
+	Parts        int               `json:"parts,omitempty"`
+}
+
+type PaymentsWebhookRunDetailsDto struct {
+	Run PaymentsWebhookRunDto      `json:"run"`
+	Raw *PaymentsWebhookRawCallDto `json:"raw,omitempty"`
+}
+
+// @DataContract
+type PaymentTriggerProjectionList struct {
+	TriggerProjectionList
+	// @DataMember
+	Type PaymentTriggerType `json:"type,omitempty"`
+	// @DataMember
+	Integrations []string `json:"integrations,omitempty"`
+	// @DataMember
+	Events []string `json:"events,omitempty"`
+}
+
+type PaymentsIntegrationListProjection struct {
+	IntegrationListProjection
+	// @DataMember
+	GatewayPlatform PaymentGatewayPlatform `json:"gatewayPlatform,omitempty"`
+}
+
+type LoggingIntegrationListProjection struct {
+	IntegrationListProjection
+	// @DataMember
+	Provider LoggingProvider `json:"provider,omitempty"`
+	// @DataMember
+	Env *string `json:"env,omitempty"`
+}
+
 type AgentOnboardingSnippet struct {
-	Client string `json:"client"`
-	Config string `json:"config"`
-	Auth   string `json:"auth"`
+	Client      string `json:"client"`
+	Config      string `json:"config"`
+	Auth        string `json:"auth"`
+	Kind        string `json:"kind"`
+	Recommended bool   `json:"recommended,omitempty"`
+}
+
+type AiProjectContextCallerWireDto struct {
+	Kind      string  `json:"kind"`
+	Name      *string `json:"name,omitempty"`
+	AccountId *string `json:"accountId,omitempty"`
+}
+
+type AiProjectContextIntegrationWireDto struct {
+	Id        string   `json:"id"`
+	Name      *string  `json:"name,omitempty"`
+	Kind      *string  `json:"kind,omitempty"`
+	Enabled   *bool    `json:"enabled,omitempty"`
+	DefaultIn []string `json:"defaultIn"`
+	Env       *string  `json:"env,omitempty"`
+}
+
+type AiProjectContextModuleWireDto struct {
+	Name                 string                               `json:"name"`
+	IntegrationsReadable *bool                                `json:"integrationsReadable,omitempty"`
+	Integrations         []AiProjectContextIntegrationWireDto `json:"integrations,omitempty"`
+}
+
+type AiProjectContextProjectWireDto struct {
+	Id                 string                          `json:"id"`
+	Name               string                          `json:"name"`
+	UniqueName         *string                         `json:"uniqueName,omitempty"`
+	Access             string                          `json:"access"`
+	Description        *string                         `json:"description,omitempty"`
+	DefaultLanguage    *string                         `json:"defaultLanguage,omitempty"`
+	Languages          []string                        `json:"languages"`
+	Environments       []string                        `json:"environments,omitempty"`
+	PrimaryRegion      *string                         `json:"primaryRegion,omitempty"`
+	AdditionalRegions  []string                        `json:"additionalRegions,omitempty"`
+	CorsOrigins        []string                        `json:"corsOrigins,omitempty"`
+	ApiHost            *string                         `json:"apiHost,omitempty"`
+	AdminUrl           *string                         `json:"adminUrl,omitempty"`
+	MarketingUrl       *string                         `json:"marketingUrl,omitempty"`
+	AdminPortalEnabled *bool                           `json:"adminPortalEnabled,omitempty"`
+	Modules            []AiProjectContextModuleWireDto `json:"modules,omitempty"`
+}
+
+type AiProjectContextWireDto struct {
+	Version  string                           `json:"version"`
+	Caller   AiProjectContextCallerWireDto    `json:"caller"`
+	Projects []AiProjectContextProjectWireDto `json:"projects"`
+	Hints    []string                         `json:"hints"`
 }
 
 type AiToolManifestParameter struct {
@@ -6375,7 +8971,51 @@ type SchedulerTaskListProjection struct {
 	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
 	// @DataMember
+	IsFailing bool `json:"isFailing,omitempty"`
+	// @DataMember
+	LastFailureReason *string `json:"lastFailureReason,omitempty"`
+	// @DataMember
+	LastFailedAtUnix *int64 `json:"lastFailedAtUnix,omitempty"`
+	// @DataMember
+	EndsAtUnix *int64 `json:"endsAtUnix,omitempty"`
+	// @DataMember
+	HasEnded bool `json:"hasEnded,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
 	ViewId string `json:"viewId"`
+}
+
+type SchedulerTaskRunOutcome string
+
+const (
+	SchedulerTaskRunOutcomeFired   SchedulerTaskRunOutcome = "Fired"
+	SchedulerTaskRunOutcomeFailed                          = "Failed"
+	SchedulerTaskRunOutcomeSkipped                         = "Skipped"
+)
+
+// @DataContract
+type SchedulerTaskRunDto struct {
+	// @DataMember
+	LogId string `json:"logId"`
+	// @DataMember
+	AtUtc time.Time `json:"atUtc,omitempty"`
+	// @DataMember
+	AtUnix int64 `json:"atUnix,omitempty"`
+	// @DataMember
+	Outcome SchedulerTaskRunOutcome `json:"outcome,omitempty"`
+	// @DataMember
+	Reason *string `json:"reason,omitempty"`
+	// @DataMember
+	Detail *string `json:"detail,omitempty"`
+	// @DataMember
+	CorrelationId *string `json:"correlationId,omitempty"`
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	ExecutionIdentityName *string `json:"executionIdentityName,omitempty"`
+	// @DataMember
+	ExecutionIdentityIsDefault bool `json:"executionIdentityIsDefault,omitempty"`
 }
 
 type ResolvedRefStatus string
@@ -6389,7 +9029,7 @@ const (
 )
 
 type ResolvedResourceEntry struct {
-	Ref        ResourceRefDto    `json:"ref"`
+	Ref        interface{}       `json:"ref"`
 	Status     ResolvedRefStatus `json:"status,omitempty"`
 	Resolved   *interface{}      `json:"resolved,omitempty"`
 	Diagnostic *string           `json:"diagnostic,omitempty"`
@@ -6401,6 +9041,12 @@ type ChannelSubscriptionStateDto struct {
 	Unsubscribed bool `json:"unsubscribed,omitempty"`
 	// @DataMember
 	BlockedTags map[string][]string `json:"blockedTags"`
+	// @DataMember
+	BounceState string `json:"bounceState"`
+	// @DataMember
+	LastBounceAt *time.Time `json:"lastBounceAt,omitempty"`
+	// @DataMember
+	SpamComplaint bool `json:"spamComplaint,omitempty"`
 }
 
 // @DataContract
@@ -6461,6 +9107,628 @@ type UserDto struct {
 	Auths []AuthDto `json:"auths,omitempty"`
 	// @DataMember
 	MarketingPreferences map[string]ChannelSubscriptionStateDto `json:"marketingPreferences,omitempty"`
+}
+
+// @DataContract
+type ContactRolesRepairDto struct {
+	// @DataMember(Name="dryRun")
+	DryRun bool `json:"dryRun,omitempty"`
+	// @DataMember(Name="contactsWithoutRoles")
+	ContactsWithoutRoles int `json:"contactsWithoutRoles,omitempty"`
+	// @DataMember(Name="contactsToRepair")
+	ContactsToRepair int `json:"contactsToRepair,omitempty"`
+	// @DataMember(Name="contactsRepaired")
+	ContactsRepaired int `json:"contactsRepaired,omitempty"`
+	// @DataMember(Name="contactsWithoutLoginRoleIds")
+	ContactsWithoutLoginRoleIds int `json:"contactsWithoutLoginRoleIds,omitempty"`
+	// @DataMember(Name="legacyRoleNamesIgnored")
+	LegacyRoleNamesIgnored int `json:"legacyRoleNamesIgnored,omitempty"`
+}
+
+// @DataContract
+type PublicFolderDto struct {
+	// @DataMember(Order=1)
+	Path string `json:"path"`
+	// @DataMember(Order=2)
+	PublicId string `json:"publicId"`
+	// @DataMember(Order=3)
+	PublicUrl *string `json:"publicUrl,omitempty"`
+	// @DataMember(Order=4)
+	Inherited bool `json:"inherited,omitempty"`
+}
+
+// @DataContract
+type SchemaRefDto struct {
+	// @DataMember(Order=1)
+	SchemaId string `json:"schemaId"`
+	// @DataMember(Order=2)
+	SchemaName string `json:"schemaName"`
+	// @DataMember(Order=3)
+	DatabaseIntegrationId string `json:"databaseIntegrationId"`
+}
+
+type CollectionImportDto struct {
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	Schema SchemaRefDto `json:"schema"`
+	// @DataMember
+	File FileResourceRefDto `json:"file"`
+	// @DataMember
+	ErrorFile *FileResourceRefDto `json:"errorFile,omitempty"`
+	// @DataMember
+	Delimiter string `json:"delimiter"`
+	// @DataMember
+	HasHeader bool `json:"hasHeader,omitempty"`
+	// @DataMember
+	Status string `json:"status"`
+	// @DataMember
+	TotalRows int64 `json:"totalRows,omitempty"`
+	// @DataMember
+	TotalImported int64 `json:"totalImported,omitempty"`
+	// @DataMember
+	TotalErrors int64 `json:"totalErrors,omitempty"`
+	// @DataMember
+	FailureReason *string `json:"failureReason,omitempty"`
+	// @DataMember
+	Mapping []ImportColumnMappingDto `json:"mapping,omitempty"`
+	// @DataMember
+	CreatedOn time.Time `json:"createdOn,omitempty"`
+	// @DataMember
+	StartedOn *time.Time `json:"startedOn,omitempty"`
+	// @DataMember
+	CompletedOn *time.Time `json:"completedOn,omitempty"`
+}
+
+type ImportUploadTargetDto struct {
+	// @DataMember
+	Url string `json:"url"`
+	// @DataMember
+	ContentType string `json:"contentType"`
+	// @DataMember
+	File FileResourceRefDto `json:"file"`
+}
+
+type ImportFileColumnDto struct {
+	// @DataMember
+	Index int `json:"index,omitempty"`
+	// @DataMember
+	Header string `json:"header"`
+	// @DataMember
+	Samples []string `json:"samples"`
+	// @DataMember
+	DetectedType string `json:"detectedType"`
+}
+
+type ImportFileAnalysisDto struct {
+	// @DataMember
+	File FileResourceRefDto `json:"file"`
+	// @DataMember
+	Columns []ImportFileColumnDto `json:"columns"`
+	// @DataMember
+	SampleRowCount int `json:"sampleRowCount,omitempty"`
+}
+
+type CampaignStatus string
+
+const (
+	CampaignStatusPending    CampaignStatus = "Pending"
+	CampaignStatusRegistered                = "Registered"
+	CampaignStatusScheduled                 = "Scheduled"
+	CampaignStatusStarted                   = "Started"
+	CampaignStatusStopped                   = "Stopped"
+	CampaignStatusProcessing                = "Processing"
+	CampaignStatusCompleted                 = "Completed"
+	CampaignStatusFailed                    = "Failed"
+)
+
+type CampaignStatusChangeEntryDto struct {
+	Time   time.Time      `json:"time,omitempty"`
+	Status CampaignStatus `json:"status,omitempty"`
+	Errors []ErrorDto     `json:"errors,omitempty"`
+}
+
+// @DataContract
+type CampaignOutcomeDto struct {
+	// @DataMember
+	Sent int `json:"sent,omitempty"`
+	// @DataMember
+	Failed int `json:"failed,omitempty"`
+	// @DataMember
+	Blocked int `json:"blocked,omitempty"`
+	// @DataMember
+	Cancelled int `json:"cancelled,omitempty"`
+	// @DataMember
+	RemovedRecipients int `json:"removedRecipients,omitempty"`
+	// @DataMember
+	BlockedReason *string `json:"blockedReason,omitempty"`
+}
+
+// @DataContract
+type CampaignDto struct {
+	// @DataMember
+	ViewId string `json:"viewId"`
+	// @DataMember
+	CreatedOn time.Time `json:"createdOn,omitempty"`
+	// @DataMember
+	Language string `json:"language"`
+	// @DataMember
+	ForceCampaignLanguage bool `json:"forceCampaignLanguage,omitempty"`
+	// @DataMember
+	CampaignProcessingIntegrationId *string `json:"campaignProcessingIntegrationId,omitempty"`
+	// @DataMember
+	StatusHistory []CampaignStatusChangeEntryDto `json:"statusHistory"`
+	// @DataMember
+	Status *CampaignStatusChangeEntryDto `json:"status,omitempty"`
+	// @DataMember
+	TokenMappingValues []TokenMappingDto `json:"tokenMappingValues,omitempty"`
+	// @DataMember
+	Notes *string `json:"notes,omitempty"`
+	// @DataMember
+	CreatedById *string `json:"createdById,omitempty"`
+	// @DataMember
+	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	TriggerId *string `json:"triggerId,omitempty"`
+	// @DataMember
+	TriggerType *TriggerType `json:"triggerType,omitempty"`
+	// @DataMember
+	Outcome *CampaignOutcomeDto `json:"outcome,omitempty"`
+	// @DataMember
+	Id *string `json:"id,omitempty"`
+}
+
+// @DataContract
+type EmailCampaignDto struct {
+	CampaignDto
+	// @DataMember
+	DeliverySettings EmailCampaignDeliverySettingsDto `json:"deliverySettings"`
+	// @DataMember
+	Template EmailTemplateDto `json:"template"`
+	// @DataMember
+	ValidationIntegrationId *string `json:"validationIntegrationId,omitempty"`
+	// @DataMember
+	TemplateIsSystem bool `json:"templateIsSystem,omitempty"`
+}
+
+// @DataContract
+type EmailCampaignListProjection struct {
+	// @DataMember
+	ViewId string `json:"viewId"`
+	// @DataMember
+	TemplateName string `json:"templateName"`
+	// @DataMember
+	TemplateId string `json:"templateId"`
+	// @DataMember
+	IntegrationId *string `json:"integrationId,omitempty"`
+	// @DataMember
+	Language string `json:"language"`
+	// @DataMember
+	Strategy string `json:"strategy"`
+	// @DataMember
+	LatestStatus *CampaignStatus `json:"latestStatus,omitempty"`
+	// @DataMember
+	CreatedOn time.Time `json:"createdOn,omitempty"`
+	// @DataMember
+	Outcome *CampaignOutcomeDto `json:"outcome,omitempty"`
+}
+
+type CampaignBatchStatus string
+
+const (
+	CampaignBatchStatusRegistered CampaignBatchStatus = "Registered"
+	CampaignBatchStatusProcessing                     = "Processing"
+	CampaignBatchStatusCompleted                      = "Completed"
+	CampaignBatchStatusFailed                         = "Failed"
+)
+
+type BatchStatusChangeEntryDto struct {
+	Time   time.Time           `json:"time,omitempty"`
+	Status CampaignBatchStatus `json:"status,omitempty"`
+	Errors []ErrorDto          `json:"errors,omitempty"`
+}
+
+// @DataContract
+type CampaignBatchDto struct {
+	// @DataMember
+	CampaignId string `json:"campaignId"`
+	// @DataMember
+	BatchId string `json:"batchId"`
+	// @DataMember
+	StartAfter *string `json:"startAfter,omitempty"`
+	// @DataMember
+	StatusHistory []BatchStatusChangeEntryDto `json:"statusHistory"`
+	// @DataMember
+	Id string `json:"id"`
+}
+
+// @DataContract
+type EmailRecipientDto struct {
+	// @DataMember
+	EmailAddress string `json:"emailAddress"`
+	// @DataMember
+	Language *string `json:"language,omitempty"`
+	// @DataMember
+	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	// @DataMember
+	UserTokenMappings []TokenMappingDto `json:"userTokenMappings,omitempty"`
+}
+
+// @DataContract
+type EmailRecipientsDto struct {
+	// @DataMember
+	To []EmailRecipientDto `json:"to,omitempty"`
+	// @DataMember
+	Cc []EmailRecipientDto `json:"cc,omitempty"`
+	// @DataMember
+	Bcc []EmailRecipientDto `json:"bcc,omitempty"`
+	// @DataMember
+	StartingAfter *string `json:"startingAfter,omitempty"`
+	// @DataMember
+	HasMore bool `json:"hasMore,omitempty"`
+}
+
+// @DataContract
+type EmailCampaignBatchDto struct {
+	CampaignBatchDto
+	// @DataMember
+	Recipients *EmailRecipientsDto `json:"recipients,omitempty"`
+}
+
+type CampaignNotificationStatus string
+
+const (
+	CampaignNotificationStatusCompleted                         CampaignNotificationStatus = "Completed"
+	CampaignNotificationStatusBlockedByUserPreferenceBlockAll                              = "BlockedByUserPreferenceBlockAll"
+	CampaignNotificationStatusBlockedByUserPreferenceBlockByTag                            = "BlockedByUserPreferenceBlockByTag"
+	CampaignNotificationStatusFailed                                                       = "Failed"
+	CampaignNotificationStatusViewed                                                       = "Viewed"
+	CampaignNotificationStatusClicked                                                      = "Clicked"
+	CampaignNotificationStatusBlockedByValidation                                          = "BlockedByValidation"
+)
+
+type NotificationStatusChangeEntryDto struct {
+	Time       time.Time                  `json:"time,omitempty"`
+	Status     CampaignNotificationStatus `json:"status,omitempty"`
+	SourceId   *string                    `json:"sourceId,omitempty"`
+	Errors     []ErrorDto                 `json:"errors,omitempty"`
+	Tags       []string                   `json:"tags,omitempty"`
+	Flag       *string                    `json:"flag,omitempty"`
+	FlagReason *string                    `json:"flagReason,omitempty"`
+}
+
+type NotificationDeliveryState string
+
+const (
+	NotificationDeliveryStatePending   NotificationDeliveryState = "Pending"
+	NotificationDeliveryStateSending                             = "Sending"
+	NotificationDeliveryStateRetrying                            = "Retrying"
+	NotificationDeliveryStateAccepted                            = "Accepted"
+	NotificationDeliveryStateFailed                              = "Failed"
+	NotificationDeliveryStateBlocked                             = "Blocked"
+	NotificationDeliveryStateCancelled                           = "Cancelled"
+)
+
+type NotificationAttemptOutcome string
+
+const (
+	NotificationAttemptOutcomeAccepted NotificationAttemptOutcome = "Accepted"
+	NotificationAttemptOutcomeFailed                              = "Failed"
+	NotificationAttemptOutcomeBlocked                             = "Blocked"
+)
+
+type SendErrorCategory string
+
+const (
+	SendErrorCategoryUnknown   SendErrorCategory = "Unknown"
+	SendErrorCategoryTransient                   = "Transient"
+	SendErrorCategoryPermanent                   = "Permanent"
+	SendErrorCategoryAmbiguous                   = "Ambiguous"
+)
+
+type NotificationAttemptTrigger string
+
+const (
+	NotificationAttemptTriggerInitial     NotificationAttemptTrigger = "Initial"
+	NotificationAttemptTriggerAutoRetry                              = "AutoRetry"
+	NotificationAttemptTriggerManualRetry                            = "ManualRetry"
+)
+
+// @DataContract
+type NotificationAttemptDto struct {
+	// @DataMember
+	AttemptId string `json:"attemptId"`
+	// @DataMember
+	Number int `json:"number,omitempty"`
+	// @DataMember
+	StartedAt time.Time `json:"startedAt,omitempty"`
+	// @DataMember
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+	// @DataMember
+	Outcome NotificationAttemptOutcome `json:"outcome,omitempty"`
+	// @DataMember
+	Category *SendErrorCategory `json:"category,omitempty"`
+	// @DataMember
+	StatusCode *int `json:"statusCode,omitempty"`
+	// @DataMember
+	ErrorCode *string `json:"errorCode,omitempty"`
+	// @DataMember
+	Message *string `json:"message,omitempty"`
+	// @DataMember
+	ProviderRef *string `json:"providerRef,omitempty"`
+	// @DataMember
+	RetryAfterSeconds *int `json:"retryAfterSeconds,omitempty"`
+	// @DataMember
+	Exhausted *bool `json:"exhausted,omitempty"`
+	// @DataMember
+	NextRetryAt *time.Time `json:"nextRetryAt,omitempty"`
+	// @DataMember
+	CorrelationId *string `json:"correlationId,omitempty"`
+	// @DataMember
+	Trigger NotificationAttemptTrigger `json:"trigger,omitempty"`
+	// @DataMember
+	RetryRequestId *string `json:"retryRequestId,omitempty"`
+}
+
+type DeliveryEventOutcome string
+
+const (
+	DeliveryEventOutcomeDelivered  DeliveryEventOutcome = "Delivered"
+	DeliveryEventOutcomeBounced                         = "Bounced"
+	DeliveryEventOutcomeComplained                      = "Complained"
+	DeliveryEventOutcomeRejected                        = "Rejected"
+	DeliveryEventOutcomeDeferred                        = "Deferred"
+)
+
+// @DataContract
+type NotificationDeliveryEventDto struct {
+	// @DataMember
+	EventId *string `json:"eventId,omitempty"`
+	// @DataMember
+	Outcome DeliveryEventOutcome `json:"outcome,omitempty"`
+	// @DataMember
+	At time.Time `json:"at,omitempty"`
+	// @DataMember
+	Provider string `json:"provider"`
+	// @DataMember
+	ProviderRef *string `json:"providerRef,omitempty"`
+	// @DataMember
+	Reason *string `json:"reason,omitempty"`
+}
+
+// @DataContract
+type CampaignBatchNotificationDto struct {
+	// @DataMember
+	CampaignId string `json:"campaignId"`
+	// @DataMember
+	BatchId string `json:"batchId"`
+	// @DataMember
+	NotificationId string `json:"notificationId"`
+	// @DataMember
+	RefNotificationId *string `json:"refNotificationId,omitempty"`
+	// @DataMember
+	Body *string `json:"body,omitempty"`
+	// @DataMember
+	Model map[string]string `json:"model,omitempty"`
+	// @DataMember
+	StatusHistory []NotificationStatusChangeEntryDto `json:"statusHistory"`
+	// @DataMember
+	State *NotificationDeliveryState `json:"state,omitempty"`
+	// @DataMember
+	StateChangedAt *time.Time `json:"stateChangedAt,omitempty"`
+	// @DataMember
+	Attempts []NotificationAttemptDto `json:"attempts,omitempty"`
+	// @DataMember
+	DeliveryEvents []NotificationDeliveryEventDto `json:"deliveryEvents,omitempty"`
+	// @DataMember
+	DeliveryOutcome *DeliveryEventOutcome `json:"deliveryOutcome,omitempty"`
+	// @DataMember
+	DeliveryOutcomeRank *int `json:"deliveryOutcomeRank,omitempty"`
+	// @DataMember
+	Id string `json:"id"`
+}
+
+type EmailRecipientField string
+
+const (
+	EmailRecipientFieldNotSet EmailRecipientField = "NotSet"
+	EmailRecipientFieldTo                         = "To"
+	EmailRecipientFieldCc                         = "Cc"
+	EmailRecipientFieldBcc                        = "Bcc"
+)
+
+type RecipientRemovalReason string
+
+const (
+	RecipientRemovalReasonNotSet        RecipientRemovalReason = "NotSet"
+	RecipientRemovalReasonOptedOut                             = "OptedOut"
+	RecipientRemovalReasonCompliance                           = "Compliance"
+	RecipientRemovalReasonUndeliverable                        = "Undeliverable"
+)
+
+// @DataContract
+type RemovedRecipientDto struct {
+	// @DataMember
+	Address string `json:"address"`
+	// @DataMember
+	Field EmailRecipientField `json:"field,omitempty"`
+	// @DataMember
+	Reason RecipientRemovalReason `json:"reason,omitempty"`
+	// @DataMember
+	Tag *string `json:"tag,omitempty"`
+}
+
+// @DataContract
+type EmailCampaignBatchNotificationDto struct {
+	CampaignBatchNotificationDto
+	// @DataMember
+	Subject *string `json:"subject,omitempty"`
+	// @DataMember
+	Recipients EmailRecipientsDto `json:"recipients"`
+	// @DataMember
+	RemovedRecipients []RemovedRecipientDto `json:"removedRecipients,omitempty"`
+	// @DataMember
+	Content *EmailMessageContentDto `json:"content,omitempty"`
+	// @DataMember
+	TransactionalKind *string `json:"transactionalKind,omitempty"`
+}
+
+// @DataContract
+type CampaignStatsDto struct {
+	// @DataMember
+	Batches int `json:"batches,omitempty"`
+	// @DataMember
+	Sent int `json:"sent,omitempty"`
+	// @DataMember
+	Failed int `json:"failed,omitempty"`
+	// @DataMember
+	FailedRetryable int `json:"failedRetryable,omitempty"`
+	// @DataMember
+	Cancelled int `json:"cancelled,omitempty"`
+	// @DataMember
+	Blocked int `json:"blocked,omitempty"`
+	// @DataMember
+	InProgress int `json:"inProgress,omitempty"`
+	// @DataMember
+	RemovedRecipients int `json:"removedRecipients,omitempty"`
+	// @DataMember
+	Delivered int `json:"delivered,omitempty"`
+	// @DataMember
+	Bounced int `json:"bounced,omitempty"`
+	// @DataMember
+	Complained int `json:"complained,omitempty"`
+	// @DataMember
+	Rejected int `json:"rejected,omitempty"`
+	// @DataMember
+	SuccessRate float64 `json:"successRate,omitempty"`
+}
+
+// @DataContract
+type SmsCampaignDto struct {
+	CampaignDto
+	// @DataMember
+	Recipients SmsCampaignDeliverySettingsDto `json:"recipients"`
+	// @DataMember
+	Template SmsTemplateDto `json:"template"`
+}
+
+// @DataContract
+type SmsRecipientDto struct {
+	// @DataMember
+	PhoneNumber string `json:"phoneNumber"`
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	Language *string `json:"language,omitempty"`
+	// @DataMember
+	UserTokenMappings []TokenMappingDto `json:"userTokenMappings,omitempty"`
+	// @DataMember
+	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	// @DataMember
+	Record *string `json:"record,omitempty"`
+}
+
+// @DataContract
+type SmsRecipientsDto struct {
+	// @DataMember
+	To []SmsRecipientDto `json:"to,omitempty"`
+	// @DataMember
+	StartingAfter *string `json:"startingAfter,omitempty"`
+	// @DataMember
+	HasMore bool `json:"hasMore,omitempty"`
+}
+
+// @DataContract
+type SmsCampaignBatchDto struct {
+	CampaignBatchDto
+	// @DataMember
+	Recipients SmsRecipientsDto `json:"recipients"`
+}
+
+// @DataContract
+type SmsCampaignBatchNotificationDto struct {
+	CampaignBatchNotificationDto
+	// @DataMember
+	Recipients SmsRecipientsDto `json:"recipients"`
+	// @DataMember
+	Content *SmsMessageContentDto `json:"content,omitempty"`
+}
+
+// @DataContract
+type PushAudienceCountDto struct {
+	// @DataMember
+	Devices int `json:"devices,omitempty"`
+	// @DataMember
+	Recipients int `json:"recipients,omitempty"`
+	// @DataMember
+	SkippedUserIds int `json:"skippedUserIds,omitempty"`
+	// @DataMember
+	IsCapped bool `json:"isCapped,omitempty"`
+}
+
+// @DataContract
+type PushCampaignDto struct {
+	CampaignDto
+	// @DataMember
+	Recipients PushCampaignDeliverySettingsDto `json:"recipients"`
+	// @DataMember
+	Template PushTemplateDto `json:"template"`
+}
+
+// @DataContract
+type PushRecipientDto struct {
+	// @DataMember
+	DeviceTokens []PushDeviceDeliveryTokenDto `json:"deviceTokens"`
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	Language *string `json:"language,omitempty"`
+	// @DataMember
+	UserTokenMappings []TokenMappingDto `json:"userTokenMappings,omitempty"`
+	// @DataMember
+	TimeZoneId *string `json:"timeZoneId,omitempty"`
+	// @DataMember
+	Record *string `json:"record,omitempty"`
+}
+
+// @DataContract
+type PushRecipientsDto struct {
+	// @DataMember
+	To []PushRecipientDto `json:"to,omitempty"`
+	// @DataMember
+	StartingAfter *string `json:"startingAfter,omitempty"`
+	// @DataMember
+	HasMore bool `json:"hasMore,omitempty"`
+}
+
+// @DataContract
+type PushCampaignBatchDto struct {
+	CampaignBatchDto
+	// @DataMember
+	Recipients PushRecipientsDto `json:"recipients"`
+}
+
+// @DataContract
+type NotificationReadMarkDto struct {
+	// @DataMember
+	UserId string `json:"userId"`
+	// @DataMember
+	ReadAtUtc time.Time `json:"readAtUtc,omitempty"`
+}
+
+// @DataContract
+type PushCampaignBatchNotificationDto struct {
+	CampaignBatchNotificationDto
+	// @DataMember
+	Subject *string `json:"subject,omitempty"`
+	// @DataMember
+	Recipients PushRecipientsDto `json:"recipients"`
+	// @DataMember
+	Content *PushMessageContentDto `json:"content,omitempty"`
+	// @DataMember
+	ReadBy []NotificationReadMarkDto `json:"readBy,omitempty"`
 }
 
 type ConsentPurposeDto struct {
@@ -6616,6 +9884,8 @@ type SupportCaseDto struct {
 	Resolution *string `json:"resolution,omitempty"`
 	// @DataMember
 	MessageCount int `json:"messageCount,omitempty"`
+	// @DataMember
+	CountedMessageIds []string `json:"countedMessageIds,omitempty"`
 	// @DataMember
 	LastMessageOn *int64 `json:"lastMessageOn,omitempty"`
 }
@@ -6829,213 +10099,23 @@ type DiagnosticHealthCheckDto struct {
 	Detail *string `json:"detail,omitempty"`
 }
 
-type StringFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Format *string `json:"format,omitempty"`
-	// @DataMember
-	Pattern *string `json:"pattern,omitempty"`
-	// @DataMember
-	MinLength *int `json:"minLength,omitempty"`
-	// @DataMember
-	MaxLength *int `json:"maxLength,omitempty"`
-	// @DataMember
-	TranslateOptions *IReadOnlyDictionary[string, string] `json:"translateOptions,omitempty"`
-	// @DataMember
-	Default *string `json:"default,omitempty"`
-	// @DataMember
-	Unique *bool `json:"unique,omitempty"`
-}
-
-type DecimalFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Minimum *float64 `json:"minimum,omitempty"`
-	// @DataMember
-	Maximum *float64 `json:"maximum,omitempty"`
-	// @DataMember
-	MultipleOf *float64 `json:"multipleOf,omitempty"`
-	// @DataMember
-	Default *float64 `json:"default,omitempty"`
-	// @DataMember
-	Unique *bool `json:"unique,omitempty"`
-}
-
-type CurrencyDefaultDto struct {
-	// @DataMember
-	Value float64 `json:"value,omitempty"`
-	// @DataMember
-	Currency string `json:"currency"`
-}
-
-type CurrencyFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	AllowedCurrencies *IReadOnlyList[string] `json:"allowedCurrencies,omitempty"`
-	// @DataMember
-	MultipleOf *float64 `json:"multipleOf,omitempty"`
-	// @DataMember
-	Minimum *float64 `json:"minimum,omitempty"`
-	// @DataMember
-	Maximum *float64 `json:"maximum,omitempty"`
-	// @DataMember
-	Default *CurrencyDefaultDto `json:"default,omitempty"`
-}
-
-type BooleanFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Default *bool `json:"default,omitempty"`
-}
-
-type DateFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Minimum *int64 `json:"minimum,omitempty"`
-	// @DataMember
-	Maximum *int64 `json:"maximum,omitempty"`
-	// @DataMember
-	Default *int64 `json:"default,omitempty"`
-}
-
-type IntegerFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Minimum *int64 `json:"minimum,omitempty"`
-	// @DataMember
-	Maximum *int64 `json:"maximum,omitempty"`
-	// @DataMember
-	Default *int64 `json:"default,omitempty"`
-	// @DataMember
-	Unique *bool `json:"unique,omitempty"`
-}
-
-type GeolocationFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	AllowedTypes *IReadOnlyList[string] `json:"allowedTypes,omitempty"`
-}
-
-type TagsFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	MinItems *int `json:"minItems,omitempty"`
-	// @DataMember
-	MaxItems *int `json:"maxItems,omitempty"`
-	// @DataMember
-	Default *IReadOnlyList[string] `json:"default,omitempty"`
-}
-
-type FileFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Storages *IReadOnlyList[string] `json:"storages,omitempty"`
-	// @DataMember
-	MinItems *int `json:"minItems,omitempty"`
-	// @DataMember
-	MaxItems *int `json:"maxItems,omitempty"`
-	// @DataMember
-	AllowedFileType *string `json:"allowedFileType,omitempty"`
-	// @DataMember
-	MaxSizeMb *float64 `json:"maxSizeMb,omitempty"`
-}
-
-type TaxonomySelectionFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	TaxonomyId *string `json:"taxonomyId,omitempty"`
-	// @DataMember
-	Multiple bool `json:"multiple,omitempty"`
-	// @DataMember
-	DisplayField *string `json:"displayField,omitempty"`
-}
-
-type CollectionSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	CollectionId *string `json:"collectionId,omitempty"`
-	// @DataMember
-	DisplayField *string `json:"displayField,omitempty"`
-	// @DataMember
-	Multiple bool `json:"multiple,omitempty"`
-}
-
-type UserSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Multiple bool `json:"multiple,omitempty"`
-	// @DataMember
-	DisplayField *string `json:"displayField,omitempty"`
-}
-
-type RoleSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Multiple bool `json:"multiple,omitempty"`
-	// @DataMember
-	DisplayField *string `json:"displayField,omitempty"`
-}
-
-type EnumSelectionFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Values *IReadOnlyList[string] `json:"values,omitempty"`
-	// @DataMember
-	Multiple bool `json:"multiple,omitempty"`
-	// @DataMember
-	Default *IReadOnlyList[string] `json:"default,omitempty"`
-}
-
-type ObjectFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Properties IReadOnlyList[interface{}] `json:"properties"`
-	// @DataMember
-	Required *IReadOnlyList[string] `json:"required,omitempty"`
-}
-
-type ArrayFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	Items interface{} `json:"items"`
-	// @DataMember
-	MinItems *int `json:"minItems,omitempty"`
-	// @DataMember
-	MaxItems *int `json:"maxItems,omitempty"`
-	// @DataMember
-	UniqueItems *bool `json:"uniqueItems,omitempty"`
-}
-
-type JsonFieldDto struct {
-	JsonSchemaFieldDto
-	// @DataMember
-	MaxBytes *int `json:"maxBytes,omitempty"`
-}
-
 type EchoResponse struct {
-	ContainerName                *string         `json:"containerName,omitempty"`
-	Ip                           string          `json:"ip"`
-	Release                      CodeMashRelease `json:"release,omitempty"`
-	Runtime                      CodeMashRuntime `json:"runtime,omitempty"`
-	ManagedServiceHubUrl         string          `json:"managedServiceHubUrl"`
-	ManagedServiceApiUrl         string          `json:"managedServiceApiUrl"`
-	HubUrl                       string          `json:"hubUrl"`
-	ApiUrl                       string          `json:"apiUrl"`
-	ApiVersion                   string          `json:"apiVersion"`
-	HubVersion                   string          `json:"hubVersion"`
-	MjmlUrl                      string          `json:"mjmlUrl"`
-	AdminUrlTemplate             *string         `json:"adminUrlTemplate,omitempty"`
-	License                      *EchoLicenseDto `json:"license,omitempty"`
-	AskForEnterpriseLicenseEmail *string         `json:"askForEnterpriseLicenseEmail,omitempty"`
-	EmailServiceConfigured       bool            `json:"emailServiceConfigured,omitempty"`
-	RootBootstrapPasswordSource  *string         `json:"rootBootstrapPasswordSource,omitempty"`
-	Regions                      []EchoRegionDto `json:"regions,omitempty"`
-	IsProductionInstallation     bool            `json:"isProductionInstallation,omitempty"`
-	LicensingMode                string          `json:"licensingMode"`
-	GraceDaysLeft                *int            `json:"graceDaysLeft,omitempty"`
-	InstallationDomain           *string         `json:"installationDomain,omitempty"`
-	LicensingDocsUrl             *string         `json:"licensingDocsUrl,omitempty"`
-	Agent                        *EchoAgentDto   `json:"agent,omitempty"`
+	Release                     CodeMashRelease         `json:"release,omitempty"`
+	Runtime                     CodeMashRuntime         `json:"runtime,omitempty"`
+	ManagedServiceHubUrl        string                  `json:"managedServiceHubUrl"`
+	ManagedServiceApiUrl        string                  `json:"managedServiceApiUrl"`
+	HubUrl                      string                  `json:"hubUrl"`
+	ApiUrl                      string                  `json:"apiUrl"`
+	ApiVersion                  string                  `json:"apiVersion"`
+	HubVersion                  string                  `json:"hubVersion"`
+	AdminUrlTemplate            *string                 `json:"adminUrlTemplate,omitempty"`
+	EmailServiceConfigured      bool                    `json:"emailServiceConfigured,omitempty"`
+	RootBootstrapPasswordSource *string                 `json:"rootBootstrapPasswordSource,omitempty"`
+	Regions                     []EchoRegionDto         `json:"regions,omitempty"`
+	Agent                       *EchoAgentDto           `json:"agent,omitempty"`
+	HostingPlatform             *EchoHostingPlatformDto `json:"hostingPlatform,omitempty"`
+	Connect                     *EchoConnectDto         `json:"connect,omitempty"`
+	Keyless                     *EchoKeylessDto         `json:"keyless,omitempty"`
 }
 
 type PublicProjectConfigDto struct {
@@ -7054,19 +10134,75 @@ type PublicLegalDocumentDto struct {
 }
 
 // @DataContract
+type CheckTriggerExecutionIdentityResponse struct {
+	ResponseBase
+	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
+	IsDefault bool `json:"isDefault,omitempty"`
+	// @DataMember
+	CanAssign bool `json:"canAssign,omitempty"`
+	// @DataMember
+	MissingPermissions []string `json:"missingPermissions"`
+	// @DataMember
+	CallerMissingPermissions []string `json:"callerMissingPermissions"`
+	// @DataMember
+	Refusals []ExecutionIdentityRefusalDto `json:"refusals"`
+}
+
+// @DataContract
+type GetTriggerDefinitionResponse struct {
+	ResponseBase
+	// @DataMember
+	Trigger *interface{} `json:"trigger,omitempty"`
+}
+
+// @DataContract
 type GetTriggersNeedingAttentionResponse struct {
 	ResponseBase
 	// @DataMember
 	Items []TriggerAttentionDto `json:"items"`
 }
 
-type GetAccountProfileResponse struct {
+type GetTriggerRunsResponse struct {
 	ResponseBase
-	Item *AccountOwnerDto `json:"item,omitempty"`
+	List *PaginatedResponse[TriggerRunListProjection] `json:"list,omitempty"`
+}
+
+type GetTriggerRunResponse struct {
+	ResponseBase
+	Item *TriggerRunDto `json:"item,omitempty"`
+}
+
+// @DataContract
+type TestTriggerPreExecuteCodeResponse struct {
+	ResponseBase
+	// @DataMember
+	Outcome string `json:"outcome"`
+	// @DataMember
+	TriggerRuns bool `json:"triggerRuns,omitempty"`
+	// @DataMember
+	Problems []TriggerActivationTestProblem `json:"problems"`
+}
+
+// @DataContract
+type GetFlexClustersResponse struct {
+	ResponseBase
+	// @DataMember
+	Clusters *IReadOnlyList[FlexClusterDto] `json:"clusters,omitempty"`
+	// @DataMember
+	CanCreateNew bool `json:"canCreateNew,omitempty"`
+	// @DataMember
+	CannotCreateReason *string `json:"cannotCreateReason,omitempty"`
 }
 
 type EmptyResponse struct {
 	ResponseBase
+}
+
+type GetAccountProfileResponse struct {
+	ResponseBase
+	Item *AccountOwnerDto `json:"item,omitempty"`
 }
 
 type GetAccountStatusResponse struct {
@@ -7077,11 +10213,22 @@ type GetAccountStatusResponse struct {
 // @DataContract
 type CreateStripeCheckoutSessionResponse struct {
 	IdResponse
+	// @DataMember
+	TrialIncluded bool `json:"trialIncluded,omitempty"`
+	// @DataMember
+	NoTrialReason *string `json:"noTrialReason,omitempty"`
 }
 
 // @DataContract
 type GetStripeBillingPortalUrlResponse struct {
 	IdResponse
+}
+
+// @DataContract
+type GetManagedServiceBundlesResponse struct {
+	ResponseBase
+	// @DataMember
+	Bundles *IReadOnlyList[ManagedServiceBundleDto] `json:"bundles,omitempty"`
 }
 
 // @DataContract
@@ -7101,9 +10248,19 @@ type PromoteEnvironmentResponse struct {
 	Item *PromotionResultDto `json:"item,omitempty"`
 }
 
+type RepairEnvironmentBuiltInsResponse struct {
+	ResponseBase
+	Items []BuiltInRepairDto `json:"items"`
+}
+
 type GetProjectEnvironmentsResponse struct {
 	ResponseBase
 	Item *ProjectEnvironmentsDto `json:"item,omitempty"`
+}
+
+type GetEnvironmentAdminUrlResponse struct {
+	ResponseBase
+	Item *EnvironmentAdminUrlDto `json:"item,omitempty"`
 }
 
 type GetProjectResponse struct {
@@ -7119,6 +10276,13 @@ type GetProjectsResponse struct {
 type GetAccountRegionsResponse struct {
 	ResponseBase
 	Items []ProjectRegionDto `json:"items,omitempty"`
+}
+
+// @DataContract
+type GetProjectHealthResponse struct {
+	ResponseBase
+	// @DataMember
+	Item *ProjectHealthDto `json:"item,omitempty"`
 }
 
 type WaitForProjectActiveResponse struct {
@@ -7205,6 +10369,11 @@ type GetAccountTeamRolesResponse struct {
 	Roles []AccountTeamRoleDto `json:"roles,omitempty"`
 }
 
+type GetAccountTeamInvitationsResponse struct {
+	ResponseBase
+	Items []TeamInvitationDto `json:"items"`
+}
+
 type AccountPasskeyOkResponse struct {
 	ResponseBase
 }
@@ -7243,36 +10412,6 @@ type GetMyAccountUserProfileResponse struct {
 	Item *AuthDto `json:"item,omitempty"`
 }
 
-type GetLicenseDomainDnsStatusResponse struct {
-	ResponseBase
-	Status *LicenseDomainDnsStatusDto `json:"status,omitempty"`
-}
-
-type StartLicenseDomainVerificationResponse struct {
-	ResponseBase
-	Challenge *LicenseDomainVerificationChallengeDto `json:"challenge,omitempty"`
-}
-
-type GetLicenseDomainVerificationStatusResponse struct {
-	ResponseBase
-	Status *LicenseDomainVerificationStatusDto `json:"status,omitempty"`
-}
-
-type GetLicensesResponse struct {
-	ResponseBase
-	List []LicenseDto `json:"list,omitempty"`
-}
-
-type PostLicenseHeartbeatResponse struct {
-	ResponseBase
-	Verdict *LicenseHeartbeatVerdictDto `json:"verdict,omitempty"`
-}
-
-type GetInstallationLicenseStatusResponse struct {
-	ResponseBase
-	Status *InstallationLicenseStatusDto `json:"status,omitempty"`
-}
-
 // @DataContract
 type CreateAiServiceUserResponse struct {
 	ResponseBase
@@ -7300,14 +10439,27 @@ type RotateAiServiceUserKeyResponse struct {
 	Key string `json:"key"`
 }
 
+type ImportUsersResponse struct {
+	ResponseBase
+	Result *UsersImportDto `json:"result,omitempty"`
+}
+
+type RepairLoginProjectIdsResponse struct {
+	ResponseBase
+	Result *LoginProjectRepairDto `json:"result,omitempty"`
+}
+
 type IssueServiceUserApiKeyResponse struct {
-	Id   int    `json:"id,omitempty"`
-	Name string `json:"name"`
-	Key  string `json:"key"`
+	Id             int                     `json:"id,omitempty"`
+	Name           string                  `json:"name"`
+	Key            string                  `json:"key"`
+	Environment    *string                 `json:"environment,omitempty"`
+	ResponseStatus *CodeMashResponseStatus `json:"responseStatus,omitempty"`
 }
 
 type ListServiceUserApiKeysResponse struct {
-	Keys []ServiceUserApiKeyDto `json:"keys"`
+	Keys           []ServiceUserApiKeyDto  `json:"keys"`
+	ResponseStatus *CodeMashResponseStatus `json:"responseStatus,omitempty"`
 }
 
 type GetMembershipTriggerResponse struct {
@@ -7355,6 +10507,11 @@ type GetMembershipIntegrationResponse struct {
 type GetMembershipIntegrationsResponse struct {
 	ResponseBase
 	List *PaginatedResponse[MembershipIntegrationListProjection] `json:"list,omitempty"`
+}
+
+type GetExecutionIdentitiesResponse struct {
+	ResponseBase
+	Identities []ExecutionIdentityDto `json:"identities"`
 }
 
 type GetAuthorizationSettingsResponse struct {
@@ -7427,6 +10584,11 @@ type ApplyDatabaseSchemaBundleResponse struct {
 	Errors []string `json:"errors"`
 }
 
+type EndUserOwnRecordsReportResponse struct {
+	ResponseBase
+	Result *EndUserOwnRecordsReportDto `json:"result,omitempty"`
+}
+
 type GetDatabaseSchemaResponse struct {
 	ResponseBase
 	Item *SchemaDto `json:"item,omitempty"`
@@ -7440,6 +10602,11 @@ type GetDatabaseSchemasResponse struct {
 type GetDatabaseSchemaDraftResponse struct {
 	ResponseBase
 	Item *SchemaDraftDto `json:"item,omitempty"`
+}
+
+type GetDatabaseSchemaIndexStatusResponse struct {
+	ResponseBase
+	Status *SchemaIndexStatusDto `json:"status,omitempty"`
 }
 
 type GetDatabaseSchemaListSettingsResponse struct {
@@ -7515,36 +10682,11 @@ type GetAllowedFlexTiersResponse struct {
 	Tiers []FlexTierDto `json:"tiers,omitempty"`
 }
 
-type RevealManagedFlexConnectionStringResponse struct {
-	ResponseBase
-	ConnectionString *string `json:"connectionString,omitempty"`
-}
-
 // @DataContract
 type TestDatabaseIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
 	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
-}
-
-type GetCollectionImportResponse struct {
-	ResponseBase
-	Result *CollectionImportDto `json:"result,omitempty"`
-}
-
-type GetCollectionImportsResponse struct {
-	ResponseBase
-	Result *PaginatedResponse[CollectionImportDto] `json:"result,omitempty"`
-}
-
-type RequestImportUploadUrlResponse struct {
-	ResponseBase
-	Result *ImportUploadTargetDto `json:"result,omitempty"`
-}
-
-type AnalyzeImportFileResponse struct {
-	ResponseBase
-	Result *ImportFileAnalysisDto `json:"result,omitempty"`
 }
 
 type GetDatabaseAggregateResponse struct {
@@ -7584,6 +10726,21 @@ type GetFilesIntegrationsResponse struct {
 	AvailableProviders   []FileProvider                                     `json:"availableProviders"`
 }
 
+type GetKeylessIntegrationSetupResponse struct {
+	ResponseBase
+	IntegrationId     *string                           `json:"integrationId,omitempty"`
+	Env               *string                           `json:"env,omitempty"`
+	Module            *string                           `json:"module,omitempty"`
+	Cloud             *string                           `json:"cloud,omitempty"`
+	Issuer            *string                           `json:"issuer,omitempty"`
+	Available         bool                              `json:"available,omitempty"`
+	UnavailableReason *string                           `json:"unavailableReason,omitempty"`
+	Subject           *string                           `json:"subject,omitempty"`
+	Audience          *string                           `json:"audience,omitempty"`
+	Script            *string                           `json:"script,omitempty"`
+	Templates         []KeylessIntegrationSetupTemplate `json:"templates,omitempty"`
+}
+
 // @DataContract
 type TestFilesIntegrationResponse struct {
 	ResponseBase
@@ -7591,25 +10748,11 @@ type TestFilesIntegrationResponse struct {
 	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
-type GetFileResponse struct {
-	ResponseBase
-	File      *FileResourceRefDto `json:"file,omitempty"`
-	IsPublic  *bool               `json:"isPublic,omitempty"`
-	PublicUrl *string             `json:"publicUrl,omitempty"`
-}
-
 type GetFileByIdResponse struct {
 	ResponseBase
 	File      *FileResourceRefDto `json:"file,omitempty"`
 	IsPublic  *bool               `json:"isPublic,omitempty"`
 	PublicUrl *string             `json:"publicUrl,omitempty"`
-}
-
-type GetFolderFilesResponse struct {
-	ResponseBase
-	List          *PaginatedResponse[FileResourceRefDto] `json:"list,omitempty"`
-	Folders       *IList[string]                         `json:"folders,omitempty"`
-	PublicFolders *IList[PublicFolderDto]                `json:"publicFolders,omitempty"`
 }
 
 type GetNotificationModuleDisableDependenciesResponse struct {
@@ -7713,46 +10856,19 @@ type GetEmailPreferencesByLinkResponse struct {
 	Item *EmailLinkPreferencesDto `json:"item,omitempty"`
 }
 
-type GetEmailCampaignResponse struct {
+// @DataContract
+type RecordEmailClicksResponse struct {
 	ResponseBase
-	Item *EmailCampaignDto `json:"item,omitempty"`
-}
-
-type GetEmailCampaignsResponse struct {
-	ResponseBase
-	List *PaginatedResponse[EmailCampaignListProjection] `json:"list,omitempty"`
-}
-
-type GetEmailCampaignBatchesResponse struct {
-	ResponseBase
-	List *PaginatedResponse[EmailCampaignBatchDto] `json:"list,omitempty"`
-}
-
-type GetEmailCampaignBatchNotificationResponse struct {
-	ResponseBase
-	CampaignNotification *EmailCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
-}
-
-type GetEmailCampaignBatchNotificationsResponse struct {
-	ResponseBase
-	BatchStatusHistory []BatchStatusChangeEntryDto                           `json:"batchStatusHistory,omitempty"`
-	List               *PaginatedResponse[EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
-}
-
-type GetEmailCampaignStatisticsResponse struct {
-	ResponseBase
-	Stats *CampaignStatsDto `json:"stats,omitempty"`
-}
-
-type PreviewEmailNotificationResponse struct {
-	ResponseBase
-	Subject *string `json:"subject,omitempty"`
-	Body    *string `json:"body,omitempty"`
-}
-
-type GetEmailCampaignMessagesResponse struct {
-	ResponseBase
-	List *PaginatedResponse[EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
+	// @DataMember
+	Recorded int `json:"recorded,omitempty"`
+	// @DataMember
+	Duplicates int `json:"duplicates,omitempty"`
+	// @DataMember
+	Flagged int `json:"flagged,omitempty"`
+	// @DataMember
+	Rejected int `json:"rejected,omitempty"`
+	// @DataMember
+	Clicks []EmailClickResultDto `json:"clicks,omitempty"`
 }
 
 type GetSmsTemplateResponse struct {
@@ -7799,45 +10915,50 @@ type TestSmsIntegrationResponse struct {
 	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
-type GetSmsCampaignResponse struct {
+// @DataContract
+type WorkflowResponse struct {
 	ResponseBase
-	SmsCampaign *SmsCampaignDto `json:"smsCampaign,omitempty"`
+	// @DataMember
+	Workflow *WorkflowDto `json:"workflow,omitempty"`
 }
 
-type GetSmsCampaignsResponse struct {
+// @DataContract
+type WorkflowVersionsResponse struct {
 	ResponseBase
-	List *PaginatedResponse[SmsCampaignDto] `json:"list,omitempty"`
+	// @DataMember
+	Items []WorkflowVersionSummaryDto `json:"items,omitempty"`
 }
 
-type GetSmsCampaignBatchesResponse struct {
+// @DataContract
+type WorkflowVersionDiffResponse struct {
 	ResponseBase
-	List *PaginatedResponse[SmsCampaignBatchDto] `json:"list,omitempty"`
+	// @DataMember
+	Diff *WorkflowVersionDiffDto `json:"diff,omitempty"`
 }
 
-type GetSmsCampaignBatchNotificationResponse struct {
+// @DataContract
+type ValidateCodeWorkflowResponse struct {
 	ResponseBase
-	CampaignNotification *SmsCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+	// @DataMember
+	IsValid bool `json:"isValid,omitempty"`
+	// @DataMember
+	Errors []WorkflowValidationIssueDto `json:"errors"`
+	// @DataMember
+	Warnings []WorkflowValidationIssueDto `json:"warnings"`
 }
 
-type GetSmsCampaignBatchNotificationsResponse struct {
+// @DataContract
+type WorkflowsResponse struct {
 	ResponseBase
-	BatchStatusHistory []BatchStatusChangeEntryDto                         `json:"batchStatusHistory,omitempty"`
-	List               *PaginatedResponse[SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
+	// @DataMember
+	List *PaginatedResponse[WorkflowListProjection] `json:"list,omitempty"`
 }
 
-type GetSmsCampaignStatisticsResponse struct {
+// @DataContract
+type WorkflowSchemaResponse struct {
 	ResponseBase
-	Stats *CampaignStatsDto `json:"stats,omitempty"`
-}
-
-type PreviewSmsNotificationResponse struct {
-	ResponseBase
-	Body *string `json:"body,omitempty"`
-}
-
-type GetSmsCampaignMessagesResponse struct {
-	ResponseBase
-	List *PaginatedResponse[SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
+	// @DataMember
+	Schema *WorkflowSchemaDto `json:"schema,omitempty"`
 }
 
 type GetMarketplaceListingResponse struct {
@@ -7855,6 +10976,32 @@ type GetMarketplaceListingsResponse struct {
 	List *PaginatedResponse[MarketplaceListingProjection] `json:"list,omitempty"`
 }
 
+// @DataContract
+type GetMarketplaceIntegrationAccessResponse struct {
+	ResponseBase
+	// @DataMember
+	Roles IReadOnlyList[MarketplaceAccessRoleDto] `json:"roles"`
+	// @DataMember
+	Packages IReadOnlyList[MarketplaceAccessPackageDto] `json:"packages"`
+	// @DataMember
+	Tools IReadOnlyList[MarketplaceAccessToolDto] `json:"tools"`
+	// @DataMember
+	Functions IReadOnlyList[MarketplaceAccessFunctionDto] `json:"functions"`
+	// @DataMember
+	CanManage bool `json:"canManage,omitempty"`
+}
+
+// @DataContract
+type SaveMarketplaceIntegrationCustomAccessResponse struct {
+	ResponseBase
+	// @DataMember
+	PolicyId *string `json:"policyId,omitempty"`
+	// @DataMember
+	Created bool `json:"created,omitempty"`
+	// @DataMember
+	UsedByRoles int `json:"usedByRoles,omitempty"`
+}
+
 type GetMarketplaceIntegrationResponse struct {
 	ResponseBase
 	Integration *MarketplaceIntegrationDto `json:"integration,omitempty"`
@@ -7863,6 +11010,27 @@ type GetMarketplaceIntegrationResponse struct {
 type GetMarketplaceIntegrationsResponse struct {
 	ResponseBase
 	List *PaginatedResponse[MarketplaceIntegrationListProjection] `json:"list,omitempty"`
+}
+
+type GetMarketplaceIntegrationToolsResponse struct {
+	ResponseBase
+	Tools       IReadOnlyList[MarketplaceMcpToolDto] `json:"tools"`
+	ListedAt    *time.Time                           `json:"listedAt,omitempty"`
+	CatalogHash *string                              `json:"catalogHash,omitempty"`
+	Truncated   bool                                 `json:"truncated,omitempty"`
+}
+
+type StartMarketplaceIntegrationSignInResponse struct {
+	ResponseBase
+	AuthorizeUrl *string    `json:"authorizeUrl,omitempty"`
+	RedirectUrl  *string    `json:"redirectUrl,omitempty"`
+	ExpiresAt    *time.Time `json:"expiresAt,omitempty"`
+}
+
+type SignOutMarketplaceIntegrationResponse struct {
+	ResponseBase
+	WasSignedIn bool    `json:"wasSignedIn,omitempty"`
+	Revoke      *string `json:"revoke,omitempty"`
 }
 
 type EmptyMarketplaceSecretsResponse struct {
@@ -7879,6 +11047,10 @@ type TestMarketplaceIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
 	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
+	// @DataMember
+	Steps *IReadOnlyList[MarketplaceValidationStepResultDto] `json:"steps,omitempty"`
+	// @DataMember
+	AccessChanges *MarketplaceAccessChangesDto `json:"accessChanges,omitempty"`
 }
 
 type SetMarketplaceIntegrationTokenMappingsResponse struct {
@@ -7900,11 +11072,9 @@ type GetMarketplaceFunctionCatalogResponse struct {
 	Functions IReadOnlyList[MarketplaceFunctionDefinitionDto] `json:"functions"`
 }
 
-type InvokeMarketplaceFunctionResponse struct {
+type GetMarketplaceFunctionRunsResponse struct {
 	ResponseBase
-	IsSuccess       bool         `json:"isSuccess,omitempty"`
-	Output          *interface{} `json:"output,omitempty"`
-	VendorRequestId *string      `json:"vendorRequestId,omitempty"`
+	Runs []MarketplaceFunctionRunDto `json:"runs"`
 }
 
 type GetCodeIntegrationResponse struct {
@@ -7922,6 +11092,105 @@ type TestCodeIntegrationResponse struct {
 	ResponseBase
 	// @DataMember
 	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
+}
+
+type GetCodeFunctionsResponse struct {
+	ResponseBase
+	List *PaginatedResponse[CodeFunctionDescriptorDto] `json:"list,omitempty"`
+}
+
+type GetCodeFunctionEventSampleResponse struct {
+	ResponseBase
+	Sample *CodeFunctionEventDto `json:"sample,omitempty"`
+}
+
+type GetCodeFunctionQualifiersResponse struct {
+	ResponseBase
+	Qualifiers *IReadOnlyList[CodeFunctionQualifierDto] `json:"qualifiers,omitempty"`
+}
+
+type GetCodeFunctionRunsResponse struct {
+	ResponseBase
+	Runs []CodeFunctionRunDto `json:"runs"`
+}
+
+type InvokeCodeFunctionResponse struct {
+	ResponseBase
+	StatusCode int          `json:"statusCode,omitempty"`
+	Output     *interface{} `json:"output,omitempty"`
+	DurationMs int64        `json:"durationMs,omitempty"`
+	RequestId  *string      `json:"requestId,omitempty"`
+	Logs       *string      `json:"logs,omitempty"`
+}
+
+type InvokeMarketplaceFunctionResponse struct {
+	ResponseBase
+	IsSuccess       bool         `json:"isSuccess,omitempty"`
+	Output          *interface{} `json:"output,omitempty"`
+	VendorRequestId *string      `json:"vendorRequestId,omitempty"`
+}
+
+// @DataContract
+type InvokeCodeWorkflowResponse struct {
+	ResponseBase
+	// @DataMember
+	RunId *string `json:"runId,omitempty"`
+	// @DataMember
+	Status *string `json:"status,omitempty"`
+	// @DataMember
+	Output *interface{} `json:"output,omitempty"`
+	// @DataMember
+	DurationMs *int64 `json:"durationMs,omitempty"`
+	// @DataMember
+	Error *WorkflowRunErrorDto `json:"error,omitempty"`
+	// @DataMember
+	Run *WorkflowRunDto `json:"run,omitempty"`
+}
+
+// @DataContract
+type WorkflowRunsResponse struct {
+	ResponseBase
+	// @DataMember
+	List *PaginatedResponse[WorkflowRunListProjection] `json:"list,omitempty"`
+}
+
+// @DataContract
+type WorkflowRunResponse struct {
+	ResponseBase
+	// @DataMember
+	Run *WorkflowRunDto `json:"run,omitempty"`
+}
+
+// @DataContract
+type CodeWorkflowResumeLinkResponse struct {
+	ResponseBase
+	// @DataMember
+	RunId *string `json:"runId,omitempty"`
+	// @DataMember
+	WorkflowId *string `json:"workflowId,omitempty"`
+	// @DataMember
+	WorkflowName *string `json:"workflowName,omitempty"`
+	// @DataMember
+	StepId *string `json:"stepId,omitempty"`
+	// @DataMember
+	StepName *string `json:"stepName,omitempty"`
+	// @DataMember
+	Mode *string `json:"mode,omitempty"`
+	// @DataMember
+	Decision *string `json:"decision,omitempty"`
+	// @DataMember
+	Key *string `json:"key,omitempty"`
+	// @DataMember
+	AssigneeUserId *string `json:"assigneeUserId,omitempty"`
+	// @DataMember
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+}
+
+// @DataContract
+type WorkflowRunLogsResponse struct {
+	ResponseBase
+	// @DataMember
+	List *PaginatedResponse[TenantLogEntryDto] `json:"list,omitempty"`
 }
 
 type GetPushTemplateResponse struct {
@@ -7971,60 +11240,41 @@ type GetPushDeviceResponse struct {
 
 type GetPushDevicesResponse struct {
 	ResponseBase
-	List *PaginatedResponse[PushDeviceListProjection] `json:"list,omitempty"`
+	List        *PaginatedResponse[PushDeviceListProjection] `json:"list,omitempty"`
+	TeamDevices []TeamPushDeviceListProjection               `json:"teamDevices"`
 }
 
-type GetPushCampaignAudienceCountResponse struct {
+type GetNotificationInboxResponse struct {
 	ResponseBase
-	Result *PushAudienceCountDto `json:"result,omitempty"`
+	List *PaginatedResponse[InAppNotificationDto] `json:"list,omitempty"`
 }
 
-type GetPushCampaignResponse struct {
+type GetUnreadCountResponse struct {
 	ResponseBase
-	Item *PushCampaignDto `json:"item,omitempty"`
+	Count int64 `json:"count,omitempty"`
 }
 
-type GetPushCampaignsResponse struct {
+type MarkNotificationReadResponse struct {
 	ResponseBase
-	List *PaginatedResponse[PushCampaignDto] `json:"list,omitempty"`
 }
 
-type GetPushCampaignBatchesResponse struct {
+type MarkAllNotificationsReadResponse struct {
 	ResponseBase
-	List *PaginatedResponse[PushCampaignBatchDto] `json:"list,omitempty"`
-}
-
-type GetPushCampaignBatchNotificationResponse struct {
-	ResponseBase
-	CampaignNotification *PushCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
-}
-
-type GetPushCampaignBatchNotificationsResponse struct {
-	ResponseBase
-	BatchStatusHistory []BatchStatusChangeEntryDto                          `json:"batchStatusHistory,omitempty"`
-	List               *PaginatedResponse[PushCampaignBatchNotificationDto] `json:"list,omitempty"`
-}
-
-type GetPushCampaignStatisticsResponse struct {
-	ResponseBase
-	Stats *CampaignStatsDto `json:"stats,omitempty"`
-}
-
-type PreviewPushNotificationResponse struct {
-	ResponseBase
-	Title    *string `json:"title,omitempty"`
-	Body     *string `json:"body,omitempty"`
-	Subtitle *string `json:"subtitle,omitempty"`
-}
-
-type GetPushCampaignMessagesResponse struct {
-	ResponseBase
-	List *PaginatedResponse[PushCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetPaymentsWebhookLogResponse struct {
 	ResponseBase
 	List *IReadOnlyList[PaymentsWebhookLogEntry] `json:"list,omitempty"`
+}
+
+type GetPaymentsWebhookRunsResponse struct {
+	ResponseBase
+	List *PaginatedResponse[PaymentsWebhookRunDto] `json:"list,omitempty"`
+}
+
+type GetPaymentsWebhookRunResponse struct {
+	ResponseBase
+	Item *PaymentsWebhookRunDetailsDto `json:"item,omitempty"`
 }
 
 type GetPaymentsTriggerResponse struct {
@@ -8054,6 +11304,35 @@ type TestPaymentsIntegrationResponse struct {
 	Items *IReadOnlyList[IntegrationTestResultItemDto] `json:"items,omitempty"`
 }
 
+type GetQuickConnectProvidersResponse struct {
+	ResponseBase
+	Providers []QuickConnectProviderDto `json:"providers"`
+}
+
+type StartIntegrationConnectResponse struct {
+	ResponseBase
+	AuthorizeUrl *string    `json:"authorizeUrl,omitempty"`
+	ConnectId    *string    `json:"connectId,omitempty"`
+	RedirectUrl  *string    `json:"redirectUrl,omitempty"`
+	ExpiresAt    *time.Time `json:"expiresAt,omitempty"`
+}
+
+type GetIntegrationConnectTargetsResponse struct {
+	ResponseBase
+	ConnectId       *string                 `json:"connectId,omitempty"`
+	Module          *string                 `json:"module,omitempty"`
+	Provider        *string                 `json:"provider,omitempty"`
+	IntegrationName *string                 `json:"integrationName,omitempty"`
+	AccountName     *string                 `json:"accountName,omitempty"`
+	Targets         []QuickConnectTargetDto `json:"targets"`
+}
+
+type DisconnectPaymentsIntegrationConnectResponse struct {
+	ResponseBase
+	WasConnected     bool `json:"wasConnected,omitempty"`
+	ProviderAnswered bool `json:"providerAnswered,omitempty"`
+}
+
 type GetLoggingIntegrationResponse struct {
 	ResponseBase
 	Item *LoggingIntegrationDto `json:"item,omitempty"`
@@ -8080,6 +11359,11 @@ type GetLogsByCorrelationIdResponse struct {
 	Items *IReadOnlyList[TenantLogEntryDto] `json:"items,omitempty"`
 }
 
+type GetLogResponse struct {
+	ResponseBase
+	Item *TenantLogEntryDto `json:"item,omitempty"`
+}
+
 type GetLogsResponse struct {
 	ResponseBase
 	List *PaginatedResponse[TenantLogEntryDto] `json:"list,omitempty"`
@@ -8087,10 +11371,14 @@ type GetLogsResponse struct {
 
 type GetLogSettingsResponse struct {
 	ResponseBase
-	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs,omitempty"`
-	SkipHttpBodyMeta       bool `json:"skipHttpBodyMeta,omitempty"`
-	AiChatLoggingEnabled   bool `json:"aiChatLoggingEnabled,omitempty"`
-	HasNorbixLogging       bool `json:"hasNorbixLogging,omitempty"`
+	SkipCloudDashboardLogs bool       `json:"skipCloudDashboardLogs,omitempty"`
+	SkipHttpBodyMeta       bool       `json:"skipHttpBodyMeta,omitempty"`
+	AiChatLoggingEnabled   bool       `json:"aiChatLoggingEnabled,omitempty"`
+	HasNorbixLogging       bool       `json:"hasNorbixLogging,omitempty"`
+	Env                    string     `json:"env"`
+	LastEntryAtUtc         *time.Time `json:"lastEntryAtUtc,omitempty"`
+	LastStoredAtUtc        *time.Time `json:"lastStoredAtUtc,omitempty"`
+	StorageWarning         *string    `json:"storageWarning,omitempty"`
 }
 
 type SaveLogSettingsResponse struct {
@@ -8106,6 +11394,14 @@ type GetAgentOnboardingResponse struct {
 	DocsUrl          *string                  `json:"docsUrl,omitempty"`
 	InstallationType *string                  `json:"installationType,omitempty"`
 	Snippets         []AgentOnboardingSnippet `json:"snippets,omitempty"`
+}
+
+type GetAiContextResponse struct {
+	ResponseBase
+	Version   *string                  `json:"version,omitempty"`
+	Unchanged bool                     `json:"unchanged,omitempty"`
+	Context   *AiProjectContextWireDto `json:"context,omitempty"`
+	Markdown  *string                  `json:"markdown,omitempty"`
 }
 
 type GetAiToolsResponse struct {
@@ -8177,6 +11473,7 @@ type ValidateSchemaResponse struct {
 	Valid       bool            `json:"valid,omitempty"`
 	Issues      []ScaffoldIssue `json:"issues,omitempty"`
 	Collections []string        `json:"collections,omitempty"`
+	Warnings    []ScaffoldIssue `json:"warnings,omitempty"`
 }
 
 type RenderTemplatePreviewResponse struct {
@@ -8219,6 +11516,63 @@ type GetAiTriggersResponse struct {
 type GetAiTriggerResponse struct {
 	GetTriggerResponse
 	Trigger *AiTriggerDto `json:"trigger,omitempty"`
+}
+
+type AuthDeviceStartResponse struct {
+	ResponseBase
+	DeviceCode              *string `json:"deviceCode,omitempty"`
+	UserCode                *string `json:"userCode,omitempty"`
+	VerificationUri         *string `json:"verificationUri,omitempty"`
+	VerificationUriComplete *string `json:"verificationUriComplete,omitempty"`
+	ExpiresIn               int     `json:"expiresIn,omitempty"`
+	Interval                int     `json:"interval,omitempty"`
+}
+
+type AuthDeviceTokenResponse struct {
+	ResponseBase
+	Error            *string `json:"error,omitempty"`
+	ErrorDescription *string `json:"errorDescription,omitempty"`
+	ErrorCode        *string `json:"errorCode,omitempty"`
+	Reason           *string `json:"reason,omitempty"`
+	BearerToken      *string `json:"bearerToken,omitempty"`
+	RefreshToken     *string `json:"refreshToken,omitempty"`
+	ExpiresIn        *int    `json:"expiresIn,omitempty"`
+	ClientId         *string `json:"clientId,omitempty"`
+	UserId           *string `json:"userId,omitempty"`
+	UserName         *string `json:"userName,omitempty"`
+	DisplayName      *string `json:"displayName,omitempty"`
+	AccountId        *string `json:"accountId,omitempty"`
+	ProjectId        *string `json:"projectId,omitempty"`
+}
+
+type AuthDeviceConsentResponse struct {
+	ResponseBase
+	ClientName   string              `json:"clientName"`
+	DeviceName   string              `json:"deviceName"`
+	UserCode     string              `json:"userCode"`
+	ProjectId    *string             `json:"projectId,omitempty"`
+	AccountRoles []AiRoleDto         `json:"accountRoles"`
+	Projects     []AiProjectRolesDto `json:"projects"`
+}
+
+type AuthDeviceConsentDecisionResponse struct {
+	ResponseBase
+}
+
+type OAuthConsentResponse struct {
+	ResponseBase
+	ClientName         string              `json:"clientName"`
+	RedirectHost       string              `json:"redirectHost"`
+	ClientHost         string              `json:"clientHost"`
+	RedirectIsLoopback bool                `json:"redirectIsLoopback,omitempty"`
+	ConsentTicket      string              `json:"consentTicket"`
+	AccountRoles       []AiRoleDto         `json:"accountRoles"`
+	Projects           []AiProjectRolesDto `json:"projects"`
+}
+
+type OAuthConsentDecisionResponse struct {
+	ResponseBase
+	RedirectUrl *string `json:"redirectUrl,omitempty"`
 }
 
 type GetEmbeddingIntegrationResponse struct {
@@ -8330,6 +11684,12 @@ type GetSchedulerTasksResponse struct {
 	List *PaginatedResponse[SchedulerTaskListProjection] `json:"list,omitempty"`
 }
 
+type GetSchedulerTaskRunsResponse struct {
+	ResponseBase
+	LogsEnabled bool                  `json:"logsEnabled,omitempty"`
+	Runs        []SchedulerTaskRunDto `json:"runs"`
+}
+
 type ResolveResourcesResponse struct {
 	ResponseBase
 	Resolved IReadOnlyList[ResolvedResourceEntry] `json:"resolved"`
@@ -8344,6 +11704,221 @@ type GetAllContactsResponse struct {
 	ResponseBase
 	Items      *IReadOnlyList[UserDto] `json:"items,omitempty"`
 	NextCursor *string                 `json:"nextCursor,omitempty"`
+}
+
+type RepairContactRolesResponse struct {
+	ResponseBase
+	Result *ContactRolesRepairDto `json:"result,omitempty"`
+}
+
+type GetFileResponse struct {
+	ResponseBase
+	File      *FileResourceRefDto `json:"file,omitempty"`
+	IsPublic  *bool               `json:"isPublic,omitempty"`
+	PublicUrl *string             `json:"publicUrl,omitempty"`
+}
+
+type GetFolderFilesResponse struct {
+	ResponseBase
+	List          *PaginatedResponse[FileResourceRefDto] `json:"list,omitempty"`
+	Folders       *IList[string]                         `json:"folders,omitempty"`
+	PublicFolders *IList[PublicFolderDto]                `json:"publicFolders,omitempty"`
+}
+
+type GetCollectionImportResponse struct {
+	ResponseBase
+	Result *CollectionImportDto `json:"result,omitempty"`
+}
+
+type GetCollectionImportsResponse struct {
+	ResponseBase
+	Result *PaginatedResponse[CollectionImportDto] `json:"result,omitempty"`
+}
+
+type RequestImportUploadUrlResponse struct {
+	ResponseBase
+	Result *ImportUploadTargetDto `json:"result,omitempty"`
+}
+
+type AnalyzeImportFileResponse struct {
+	ResponseBase
+	Result *ImportFileAnalysisDto `json:"result,omitempty"`
+}
+
+type GetEmailCampaignResponse struct {
+	ResponseBase
+	Item *EmailCampaignDto `json:"item,omitempty"`
+}
+
+type GetEmailCampaignsResponse struct {
+	ResponseBase
+	List *PaginatedResponse[EmailCampaignListProjection] `json:"list,omitempty"`
+}
+
+type GetEmailCampaignBatchesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[EmailCampaignBatchDto] `json:"list,omitempty"`
+}
+
+type GetEmailCampaignBatchNotificationResponse struct {
+	ResponseBase
+	CampaignNotification *EmailCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+}
+
+type GetEmailCampaignBatchNotificationsResponse struct {
+	ResponseBase
+	BatchStatusHistory []BatchStatusChangeEntryDto                           `json:"batchStatusHistory,omitempty"`
+	List               *PaginatedResponse[EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+type GetEmailCampaignStatisticsResponse struct {
+	ResponseBase
+	Stats *CampaignStatsDto `json:"stats,omitempty"`
+}
+
+type PreviewEmailNotificationResponse struct {
+	ResponseBase
+	Subject *string `json:"subject,omitempty"`
+	Body    *string `json:"body,omitempty"`
+}
+
+// @DataContract
+type RetryFailedEmailNotificationsResponse struct {
+	ResponseBase
+	// @DataMember
+	RetryRequestId *string `json:"retryRequestId,omitempty"`
+	// @DataMember
+	Selected int `json:"selected,omitempty"`
+	// @DataMember
+	Skipped map[string]int `json:"skipped,omitempty"`
+	// @DataMember
+	Replayed bool `json:"replayed,omitempty"`
+	// @DataMember
+	Warning *string `json:"warning,omitempty"`
+}
+
+type GetEmailCampaignMessagesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[EmailCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+type GetSmsCampaignResponse struct {
+	ResponseBase
+	SmsCampaign *SmsCampaignDto `json:"smsCampaign,omitempty"`
+}
+
+type GetSmsCampaignsResponse struct {
+	ResponseBase
+	List *PaginatedResponse[SmsCampaignDto] `json:"list,omitempty"`
+}
+
+type GetSmsCampaignBatchesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[SmsCampaignBatchDto] `json:"list,omitempty"`
+}
+
+type GetSmsCampaignBatchNotificationResponse struct {
+	ResponseBase
+	CampaignNotification *SmsCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+}
+
+type GetSmsCampaignBatchNotificationsResponse struct {
+	ResponseBase
+	BatchStatusHistory []BatchStatusChangeEntryDto                         `json:"batchStatusHistory,omitempty"`
+	List               *PaginatedResponse[SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+type GetSmsCampaignStatisticsResponse struct {
+	ResponseBase
+	Stats *CampaignStatsDto `json:"stats,omitempty"`
+}
+
+type PreviewSmsNotificationResponse struct {
+	ResponseBase
+	Body *string `json:"body,omitempty"`
+}
+
+// @DataContract
+type RetryFailedSmsNotificationsResponse struct {
+	ResponseBase
+	// @DataMember
+	RetryRequestId *string `json:"retryRequestId,omitempty"`
+	// @DataMember
+	Selected int `json:"selected,omitempty"`
+	// @DataMember
+	Skipped map[string]int `json:"skipped,omitempty"`
+	// @DataMember
+	Replayed bool `json:"replayed,omitempty"`
+	// @DataMember
+	Warning *string `json:"warning,omitempty"`
+}
+
+type GetSmsCampaignMessagesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[SmsCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+type GetPushCampaignAudienceCountResponse struct {
+	ResponseBase
+	Result *PushAudienceCountDto `json:"result,omitempty"`
+}
+
+type GetPushCampaignResponse struct {
+	ResponseBase
+	Item *PushCampaignDto `json:"item,omitempty"`
+}
+
+type GetPushCampaignsResponse struct {
+	ResponseBase
+	List *PaginatedResponse[PushCampaignDto] `json:"list,omitempty"`
+}
+
+type GetPushCampaignBatchesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[PushCampaignBatchDto] `json:"list,omitempty"`
+}
+
+type GetPushCampaignBatchNotificationResponse struct {
+	ResponseBase
+	CampaignNotification *PushCampaignBatchNotificationDto `json:"campaignNotification,omitempty"`
+}
+
+type GetPushCampaignBatchNotificationsResponse struct {
+	ResponseBase
+	BatchStatusHistory []BatchStatusChangeEntryDto                          `json:"batchStatusHistory,omitempty"`
+	List               *PaginatedResponse[PushCampaignBatchNotificationDto] `json:"list,omitempty"`
+}
+
+type GetPushCampaignStatisticsResponse struct {
+	ResponseBase
+	Stats *CampaignStatsDto `json:"stats,omitempty"`
+}
+
+type PreviewPushNotificationResponse struct {
+	ResponseBase
+	Title    *string `json:"title,omitempty"`
+	Body     *string `json:"body,omitempty"`
+	Subtitle *string `json:"subtitle,omitempty"`
+}
+
+// @DataContract
+type RetryFailedPushNotificationsResponse struct {
+	ResponseBase
+	// @DataMember
+	RetryRequestId *string `json:"retryRequestId,omitempty"`
+	// @DataMember
+	Selected int `json:"selected,omitempty"`
+	// @DataMember
+	Skipped map[string]int `json:"skipped,omitempty"`
+	// @DataMember
+	Replayed bool `json:"replayed,omitempty"`
+	// @DataMember
+	Warning *string `json:"warning,omitempty"`
+}
+
+type GetPushCampaignMessagesResponse struct {
+	ResponseBase
+	List *PaginatedResponse[PushCampaignBatchNotificationDto] `json:"list,omitempty"`
 }
 
 type GetComplianceSettingsResponse struct {
@@ -8486,17 +12061,6 @@ type ConfirmCodeIntegrationHumanDeliveryRequest struct {
 func (ConfirmCodeIntegrationHumanDeliveryRequest) CreateResponse() (r EmptyResponse) { return }
 func (ConfirmCodeIntegrationHumanDeliveryRequest) HttpMethod() string                { return "POST" }
 
-// @Route("/{version}/code/integrations/{Id}/default", "PUT")
-type SetCodeIntegrationAsDefault struct {
-	CodeMashRequestBase
-	/** @description Integration id, from get_code_integrations. */
-	// @ApiMember(Description="Integration id, from get_code_integrations.", IsRequired=true)
-	Id string `json:"id"`
-}
-
-func (SetCodeIntegrationAsDefault) CreateResponse() (r EmptyResponse) { return }
-func (SetCodeIntegrationAsDefault) HttpMethod() string                { return "PUT" }
-
 // @Route("/{version}/code/integrations/{Id}", "DELETE")
 type DeleteCodeIntegrationRequest struct {
 	CodeMashRequestBase
@@ -8548,6 +12112,9 @@ type GetMarketplaceListings struct {
 	/** @description Filter by curated tag slugs (e.g. ai-llm, messaging, crm). Matches listings carrying any of the given tags. */
 	// @ApiMember(Description="Filter by curated tag slugs (e.g. ai-llm, messaging, crm). Matches listings carrying any of the given tags.")
 	Tags []string `json:"tags,omitempty"`
+	/** @description Connector (the default) or Workflow: a curated workflow to install as a draft with install_marketplace_workflow. */
+	// @ApiMember(Description="Connector (the default) or Workflow: a curated workflow to install as a draft with install_marketplace_workflow.")
+	Kind *MarketplaceListingKind `json:"kind,omitempty"`
 }
 
 func (GetMarketplaceListings) CreateResponse() (r GetMarketplaceListingsResponse) { return }
@@ -8769,12 +12336,83 @@ type TestMarketplaceIntegration struct {
 func (TestMarketplaceIntegration) CreateResponse() (r TestMarketplaceIntegrationResponse) { return }
 func (TestMarketplaceIntegration) HttpMethod() string                                     { return "POST" }
 
+// @Route("/{version}/integrations/connect/providers", "GET")
+type GetQuickConnectProviders struct {
+	RequestBase
+	Module *string `json:"module,omitempty"`
+}
+
+func (GetQuickConnectProviders) CreateResponse() (r GetQuickConnectProvidersResponse) { return }
+func (GetQuickConnectProviders) HttpMethod() string                                   { return "GET" }
+
+// @Route("/{version}/payments/integrations/connect/start", "POST")
+type StartPaymentsIntegrationConnect struct {
+	CodeMashRequestBase
+	/** @description Provider key from get_quick_connect_providers, e.g. woocommerce. */
+	// @ApiMember(Description="Provider key from get_quick_connect_providers, e.g. woocommerce.", IsRequired=true)
+	Provider string `json:"provider"`
+	/** @description The name the new integration gets. */
+	// @ApiMember(Description="The name the new integration gets.", IsRequired=true)
+	IntegrationName string `json:"integrationName"`
+	/** @description The provider's mode (test or live) when the provider has modes. */
+	// @ApiMember(Description="The provider's mode (test or live) when the provider has modes.")
+	Mode *string `json:"mode,omitempty"`
+	/** @description The inputs the provider needs before its page opens, e.g. { "storeUrl": "https://shop.example.com" }. */
+	// @ApiMember(Description="The inputs the provider needs before its page opens, e.g. { \"storeUrl\": \"https://shop.example.com\" }.")
+	Input map[string]string `json:"input,omitempty"`
+	/** @description Reconnect: the integration view id the new connection replaces. */
+	// @ApiMember(Description="Reconnect: the integration view id the new connection replaces.")
+	IntegrationId *string `json:"integrationId,omitempty"`
+}
+
+func (StartPaymentsIntegrationConnect) CreateResponse() (r StartIntegrationConnectResponse) { return }
+func (StartPaymentsIntegrationConnect) HttpMethod() string                                  { return "POST" }
+
+// @Route("/{version}/integrations/connect/{ConnectId}/targets", "GET")
+type GetIntegrationConnectTargets struct {
+	CodeMashRequestBase
+	ConnectId string `json:"connectId"`
+}
+
+func (GetIntegrationConnectTargets) CreateResponse() (r GetIntegrationConnectTargetsResponse) { return }
+func (GetIntegrationConnectTargets) HttpMethod() string                                       { return "GET" }
+
+// @Route("/{version}/payments/integrations/connect/{ConnectId}/complete", "POST")
+type CompletePaymentsIntegrationConnect struct {
+	CodeMashRequestBase
+	ConnectId string `json:"connectId"`
+	/** @description The id of the account (profile, shop) from the targets list. */
+	// @ApiMember(Description="The id of the account (profile, shop) from the targets list.", IsRequired=true)
+	TargetId string `json:"targetId"`
+	/** @description Enable the integration right away. */
+	// @ApiMember(Description="Enable the integration right away.")
+	IsEnabled bool `json:"isEnabled,omitempty"`
+}
+
+func (CompletePaymentsIntegrationConnect) CreateResponse() (r IdResponse) { return }
+func (CompletePaymentsIntegrationConnect) HttpMethod() string             { return "POST" }
+
+// @Route("/{version}/payments/integrations/{Id}/connect/disconnect", "POST")
+type DisconnectPaymentsIntegrationConnect struct {
+	CodeMashRequestBase
+	/** @description Integration view id. */
+	// @ApiMember(Description="Integration view id.", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (DisconnectPaymentsIntegrationConnect) CreateResponse() (r DisconnectPaymentsIntegrationConnectResponse) {
+	return
+}
+func (DisconnectPaymentsIntegrationConnect) HttpMethod() string { return "POST" }
+
 // @Route("/internal/_typegen", "GET")
 type InternalsTypeGen struct {
 	Typegen0SmtpEmailIntegrationRequest                        *SmtpEmailIntegrationRequest                       `json:"typegen_0_SmtpEmailIntegrationRequest,omitempty"`
 	Typegen1AwsSesEmailIntegrationRequest                      *AwsSesEmailIntegrationRequest                     `json:"typegen_1_AwsSesEmailIntegrationRequest,omitempty"`
 	Typegen2SendGridEmailIntegrationRequest                    *SendGridEmailIntegrationRequest                   `json:"typegen_2_SendGridEmailIntegrationRequest,omitempty"`
 	Typegen3MailGunEmailIntegrationRequest                     *MailGunEmailIntegrationRequest                    `json:"typegen_3_MailGunEmailIntegrationRequest,omitempty"`
+	Typegen3aAzureCommunicationEmailIntegrationRequest         *AzureCommunicationEmailIntegrationRequest         `json:"typegen_3a_AzureCommunicationEmailIntegrationRequest,omitempty"`
+	Typegen297FakeEmailIntegrationRequest                      *FakeEmailIntegrationRequest                       `json:"typegen_297_FakeEmailIntegrationRequest,omitempty"`
 	Typegen4EmailToAllUsersDeliverySettingsRequest             *EmailToAllUsersDeliverySettingsRequest            `json:"typegen_4_EmailToAllUsersDeliverySettingsRequest,omitempty"`
 	Typegen5EmailToAccountUsersDeliverySettingsRequest         *EmailToAccountUsersDeliverySettingsRequest        `json:"typegen_5_EmailToAccountUsersDeliverySettingsRequest,omitempty"`
 	Typegen6EmailToCollectionRecordsDeliverySettingsRequest    *EmailToCollectionRecordsDeliverySettingsRequest   `json:"typegen_6_EmailToCollectionRecordsDeliverySettingsRequest,omitempty"`
@@ -8823,6 +12461,15 @@ type InternalsTypeGen struct {
 	Typegen53StripePaymentIntegrationRequest                   *StripePaymentIntegrationRequest                   `json:"typegen_53_StripePaymentIntegrationRequest,omitempty"`
 	Typegen54AppleInAppPaymentIntegrationRequest               *AppleInAppPaymentIntegrationRequest               `json:"typegen_54_AppleInAppPaymentIntegrationRequest,omitempty"`
 	Typegen55GoogleInAppPaymentIntegrationRequest              *GoogleInAppPaymentIntegrationRequest              `json:"typegen_55_GoogleInAppPaymentIntegrationRequest,omitempty"`
+	Typegen285MontonioPaymentIntegrationRequest                *MontonioPaymentIntegrationRequest                 `json:"typegen_285_MontonioPaymentIntegrationRequest,omitempty"`
+	Typegen295NeopayPaymentIntegrationRequest                  *NeopayPaymentIntegrationRequest                   `json:"typegen_295_NeopayPaymentIntegrationRequest,omitempty"`
+	Typegen287ShopifyPaymentIntegrationRequest                 *ShopifyPaymentIntegrationRequest                  `json:"typegen_287_ShopifyPaymentIntegrationRequest,omitempty"`
+	Typegen288WooCommercePaymentIntegrationRequest             *WooCommercePaymentIntegrationRequest              `json:"typegen_288_WooCommercePaymentIntegrationRequest,omitempty"`
+	Typegen289MagentoPaymentIntegrationRequest                 *MagentoPaymentIntegrationRequest                  `json:"typegen_289_MagentoPaymentIntegrationRequest,omitempty"`
+	Typegen290BraintreePaymentIntegrationRequest               *BraintreePaymentIntegrationRequest                `json:"typegen_290_BraintreePaymentIntegrationRequest,omitempty"`
+	Typegen291AuthorizeNetPaymentIntegrationRequest            *AuthorizeNetPaymentIntegrationRequest             `json:"typegen_291_AuthorizeNetPaymentIntegrationRequest,omitempty"`
+	Typegen292CheckOutComPaymentIntegrationRequest             *CheckOutComPaymentIntegrationRequest              `json:"typegen_292_CheckOutComPaymentIntegrationRequest,omitempty"`
+	Typegen293WorldpayPaymentIntegrationRequest                *WorldpayPaymentIntegrationRequest                 `json:"typegen_293_WorldpayPaymentIntegrationRequest,omitempty"`
 	Typegen56EdgeWebPushIntegrationRequest                     *EdgeWebPushIntegrationRequest                     `json:"typegen_56_EdgeWebPushIntegrationRequest,omitempty"`
 	Typegen57ChromePluginPushIntegrationRequest                *ChromePluginPushIntegrationRequest                `json:"typegen_57_ChromePluginPushIntegrationRequest,omitempty"`
 	Typegen58SafariPushIntegrationRequest                      *SafariPushIntegrationRequest                      `json:"typegen_58_SafariPushIntegrationRequest,omitempty"`
@@ -8830,6 +12477,15 @@ type InternalsTypeGen struct {
 	Typegen60FirefoxWebPushIntegrationRequest                  *FirefoxWebPushIntegrationRequest                  `json:"typegen_60_FirefoxWebPushIntegrationRequest,omitempty"`
 	Typegen61AndroidFirebasePushIntegrationRequest             *AndroidFirebasePushIntegrationRequest             `json:"typegen_61_AndroidFirebasePushIntegrationRequest,omitempty"`
 	Typegen62AppleApnsPushIntegrationRequest                   *AppleApnsPushIntegrationRequest                   `json:"typegen_62_AppleApnsPushIntegrationRequest,omitempty"`
+	Typegen298FakePushIntegrationRequest                       *FakePushIntegrationRequest                        `json:"typegen_298_FakePushIntegrationRequest,omitempty"`
+	Typegen299BirdSmsIntegrationRequest                        *BirdSmsIntegrationRequest                         `json:"typegen_299_BirdSmsIntegrationRequest,omitempty"`
+	Typegen300PlivoSmsIntegrationRequest                       *PlivoSmsIntegrationRequest                        `json:"typegen_300_PlivoSmsIntegrationRequest,omitempty"`
+	Typegen301SinchSmsIntegrationRequest                       *SinchSmsIntegrationRequest                        `json:"typegen_301_SinchSmsIntegrationRequest,omitempty"`
+	Typegen302TelesignSmsIntegrationRequest                    *TelesignSmsIntegrationRequest                     `json:"typegen_302_TelesignSmsIntegrationRequest,omitempty"`
+	Typegen303TelnyxSmsIntegrationRequest                      *TelnyxSmsIntegrationRequest                       `json:"typegen_303_TelnyxSmsIntegrationRequest,omitempty"`
+	Typegen304TwilioSmsIntegrationRequest                      *TwilioSmsIntegrationRequest                       `json:"typegen_304_TwilioSmsIntegrationRequest,omitempty"`
+	Typegen305VonageSmsIntegrationRequest                      *VonageSmsIntegrationRequest                       `json:"typegen_305_VonageSmsIntegrationRequest,omitempty"`
+	Typegen306FakeSmsIntegrationRequest                        *FakeSmsIntegrationRequest                         `json:"typegen_306_FakeSmsIntegrationRequest,omitempty"`
 	Typegen65AwsLambdaCodeIntegrationRequest                   *AwsLambdaCodeIntegrationRequest                   `json:"typegen_65_AwsLambdaCodeIntegrationRequest,omitempty"`
 	Typegen66AzureFunctionsCodeIntegrationRequest              *AzureFunctionsCodeIntegrationRequest              `json:"typegen_66_AzureFunctionsCodeIntegrationRequest,omitempty"`
 	Typegen67GoogleCloudFunctionsCodeIntegrationRequest        *GoogleCloudFunctionsCodeIntegrationRequest        `json:"typegen_67_GoogleCloudFunctionsCodeIntegrationRequest,omitempty"`
@@ -8858,6 +12514,7 @@ type InternalsTypeGen struct {
 	Typegen236TriggerActionSmsDto                              *TriggerActionSmsDto                               `json:"typegen_236_TriggerActionSmsDto,omitempty"`
 	Typegen237TriggerActionSseDto                              *TriggerActionSseDto                               `json:"typegen_237_TriggerActionSseDto,omitempty"`
 	Typegen238TriggerActionMarketplaceDto                      *TriggerActionMarketplaceDto                       `json:"typegen_238_TriggerActionMarketplaceDto,omitempty"`
+	Typegen308TriggerActionWorkflowDto                         *TriggerActionWorkflowDto                          `json:"typegen_308_TriggerActionWorkflowDto,omitempty"`
 	Typegen239SseDeliverySettingsDto                           *SseDeliverySettingsDto                            `json:"typegen_239_SseDeliverySettingsDto,omitempty"`
 	Typegen240GetTriggers                                      *GetTriggers                                       `json:"typegen_240_GetTriggers,omitempty"`
 	Typegen241GetTriggersResponse                              *GetTriggersResponse                               `json:"typegen_241_GetTriggersResponse,omitempty"`
@@ -8876,6 +12533,9 @@ type InternalsTypeGen struct {
 	Typegen249SmsToAccountUsersDeliverySettingsDto             *SmsToAccountUsersDeliverySettingsDto              `json:"typegen_249_SmsToAccountUsersDeliverySettingsDto,omitempty"`
 	Typegen101SmsToCollectionRecordsDeliverySettingsDto        *SmsToCollectionRecordsDeliverySettingsDto         `json:"typegen_101_SmsToCollectionRecordsDeliverySettingsDto,omitempty"`
 	Typegen102SmsToPhoneNumbersDeliverySettingsDto             *SmsToPhoneNumbersDeliverySettingsDto              `json:"typegen_102_SmsToPhoneNumbersDeliverySettingsDto,omitempty"`
+	Typegen318EmailToTriggerSubjectDeliverySettingsDto         *EmailToTriggerSubjectDeliverySettingsDto          `json:"typegen_318_EmailToTriggerSubjectDeliverySettingsDto,omitempty"`
+	Typegen319PushToTriggerSubjectDeliverySettingsDto          *PushToTriggerSubjectDeliverySettingsDto           `json:"typegen_319_PushToTriggerSubjectDeliverySettingsDto,omitempty"`
+	Typegen320SmsToTriggerSubjectDeliverySettingsDto           *SmsToTriggerSubjectDeliverySettingsDto            `json:"typegen_320_SmsToTriggerSubjectDeliverySettingsDto,omitempty"`
 	Typegen103OpenAiLlmIntegrationDto                          *OpenAiLlmIntegrationDto                           `json:"typegen_103_OpenAiLlmIntegrationDto,omitempty"`
 	Typegen104AnthropicLlmIntegrationDto                       *AnthropicLlmIntegrationDto                        `json:"typegen_104_AnthropicLlmIntegrationDto,omitempty"`
 	Typegen105OllamaLlmIntegrationDto                          *OllamaLlmIntegrationDto                           `json:"typegen_105_OllamaLlmIntegrationDto,omitempty"`
@@ -8887,7 +12547,8 @@ type InternalsTypeGen struct {
 	Typegen111DockerMcpIntegrationDto                          *DockerMcpIntegrationDto                           `json:"typegen_111_DockerMcpIntegrationDto,omitempty"`
 	Typegen112GoogleCalendarMcpIntegrationDto                  *GoogleCalendarMcpIntegrationDto                   `json:"typegen_112_GoogleCalendarMcpIntegrationDto,omitempty"`
 	Typegen113ObsidianMcpIntegrationDto                        *ObsidianMcpIntegrationDto                         `json:"typegen_113_ObsidianMcpIntegrationDto,omitempty"`
-	Typegen114AwsLambdaCrossAccountRoleCodeIntegrationDto      *AwsLambdaCrossAccountRoleCodeIntegrationDto       `json:"typegen_114_AwsLambdaCrossAccountRoleCodeIntegrationDto,omitempty"`
+	Typegen114AwsLambdaKeylessCodeIntegrationDto               *AwsLambdaKeylessCodeIntegrationDto                `json:"typegen_114_AwsLambdaKeylessCodeIntegrationDto,omitempty"`
+	Typegen321AwsLambdaCrossAccountRoleCodeIntegrationDto      *AwsLambdaCrossAccountRoleCodeIntegrationDto       `json:"typegen_321_AwsLambdaCrossAccountRoleCodeIntegrationDto,omitempty"`
 	Typegen115AwsLambdaIamCodeIntegrationDto                   *AwsLambdaIamCodeIntegrationDto                    `json:"typegen_115_AwsLambdaIamCodeIntegrationDto,omitempty"`
 	Typegen116AzureFunctionsCodeIntegrationDto                 *AzureFunctionsCodeIntegrationDto                  `json:"typegen_116_AzureFunctionsCodeIntegrationDto,omitempty"`
 	Typegen118GoogleCloudFunctionsCodeIntegrationDto           *GoogleCloudFunctionsCodeIntegrationDto            `json:"typegen_118_GoogleCloudFunctionsCodeIntegrationDto,omitempty"`
@@ -8906,6 +12567,9 @@ type InternalsTypeGen struct {
 	Typegen188AuthorizeNetPaymentIntegrationDto                *AuthorizeNetPaymentIntegrationDto                 `json:"typegen_188_AuthorizeNetPaymentIntegrationDto,omitempty"`
 	Typegen189CheckOutComPaymentIntegrationDto                 *CheckOutComPaymentIntegrationDto                  `json:"typegen_189_CheckOutComPaymentIntegrationDto,omitempty"`
 	Typegen190WorldpayPaymentIntegrationDto                    *WorldpayPaymentIntegrationDto                     `json:"typegen_190_WorldpayPaymentIntegrationDto,omitempty"`
+	Typegen286MontonioPaymentIntegrationDto                    *MontonioPaymentIntegrationDto                     `json:"typegen_286_MontonioPaymentIntegrationDto,omitempty"`
+	Typegen296NeopayPaymentIntegrationDto                      *NeopayPaymentIntegrationDto                       `json:"typegen_296_NeopayPaymentIntegrationDto,omitempty"`
+	Typegen294PaymentOrderEventDto                             *PaymentOrderEventDto                              `json:"typegen_294_PaymentOrderEventDto,omitempty"`
 	Typegen128AppleSignInMembershipIntegrationDto              *AppleSignInMembershipIntegrationDto               `json:"typegen_128_AppleSignInMembershipIntegrationDto,omitempty"`
 	Typegen129GitHubMembershipIntegrationDto                   *GitHubMembershipIntegrationDto                    `json:"typegen_129_GitHubMembershipIntegrationDto,omitempty"`
 	Typegen130GoogleMembershipIntegrationDto                   *GoogleMembershipIntegrationDto                    `json:"typegen_130_GoogleMembershipIntegrationDto,omitempty"`
@@ -8929,7 +12593,8 @@ type InternalsTypeGen struct {
 	Typegen149PrometheusLoggingIntegrationDto                  *PrometheusLoggingIntegrationDto                   `json:"typegen_149_PrometheusLoggingIntegrationDto,omitempty"`
 	Typegen150SplunkLoggingIntegrationDto                      *SplunkLoggingIntegrationDto                       `json:"typegen_150_SplunkLoggingIntegrationDto,omitempty"`
 	Typegen153AppleICloudFilesIntegrationDto                   *AppleICloudFilesIntegrationDto                    `json:"typegen_153_AppleICloudFilesIntegrationDto,omitempty"`
-	Typegen154AwsS3CrossAccountRoleFilesIntegrationDto         *AwsS3CrossAccountRoleFilesIntegrationDto          `json:"typegen_154_AwsS3CrossAccountRoleFilesIntegrationDto,omitempty"`
+	Typegen154AwsS3KeylessFilesIntegrationDto                  *AwsS3KeylessFilesIntegrationDto                   `json:"typegen_154_AwsS3KeylessFilesIntegrationDto,omitempty"`
+	Typegen322AwsS3CrossAccountRoleFilesIntegrationDto         *AwsS3CrossAccountRoleFilesIntegrationDto          `json:"typegen_322_AwsS3CrossAccountRoleFilesIntegrationDto,omitempty"`
 	Typegen155AwsS3IamFilesIntegrationDto                      *AwsS3IamFilesIntegrationDto                       `json:"typegen_155_AwsS3IamFilesIntegrationDto,omitempty"`
 	Typegen156AzureBlobFilesIntegrationDto                     *AzureBlobFilesIntegrationDto                      `json:"typegen_156_AzureBlobFilesIntegrationDto,omitempty"`
 	Typegen157DropBoxFilesIntegrationDto                       *DropBoxFilesIntegrationDto                        `json:"typegen_157_DropBoxFilesIntegrationDto,omitempty"`
@@ -8955,11 +12620,13 @@ type InternalsTypeGen struct {
 	Typegen177FirefoxWebPushIntegrationDto                     *FirefoxWebPushIntegrationDto                      `json:"typegen_177_FirefoxWebPushIntegrationDto,omitempty"`
 	Typegen178SafariPushIntegrationDto                         *SafariPushIntegrationDto                          `json:"typegen_178_SafariPushIntegrationDto,omitempty"`
 	Typegen247FakePushIntegrationDto                           *FakePushIntegrationDto                            `json:"typegen_247_FakePushIntegrationDto,omitempty"`
-	Typegen179AwsCrossAccountRoleEmailIntegrationDto           *AwsCrossAccountRoleEmailIntegrationDto            `json:"typegen_179_AwsCrossAccountRoleEmailIntegrationDto,omitempty"`
+	Typegen179AwsKeylessEmailIntegrationDto                    *AwsKeylessEmailIntegrationDto                     `json:"typegen_179_AwsKeylessEmailIntegrationDto,omitempty"`
+	Typegen323AwsCrossAccountRoleEmailIntegrationDto           *AwsCrossAccountRoleEmailIntegrationDto            `json:"typegen_323_AwsCrossAccountRoleEmailIntegrationDto,omitempty"`
 	Typegen180AwsIamEmailIntegrationDto                        *AwsIamEmailIntegrationDto                         `json:"typegen_180_AwsIamEmailIntegrationDto,omitempty"`
 	Typegen181MailGunEmailIntegrationDto                       *MailGunEmailIntegrationDto                        `json:"typegen_181_MailGunEmailIntegrationDto,omitempty"`
 	Typegen182SendGridEmailIntegrationDto                      *SendGridEmailIntegrationDto                       `json:"typegen_182_SendGridEmailIntegrationDto,omitempty"`
 	Typegen183SmtpEmailIntegrationDto                          *SmtpEmailIntegrationDto                           `json:"typegen_183_SmtpEmailIntegrationDto,omitempty"`
+	Typegen307AzureCommunicationEmailIntegrationDto            *AzureCommunicationEmailIntegrationDto             `json:"typegen_307_AzureCommunicationEmailIntegrationDto,omitempty"`
 	Typegen248FakeEmailIntegrationDto                          *FakeEmailIntegrationDto                           `json:"typegen_248_FakeEmailIntegrationDto,omitempty"`
 	Typegen192WebhookIntegrationDto                            *WebhookIntegrationDto                             `json:"typegen_192_WebhookIntegrationDto,omitempty"`
 	Typegen193WebhookDestinationDto                            *WebhookDestinationDto                             `json:"typegen_193_WebhookDestinationDto,omitempty"`
@@ -8980,7 +12647,6 @@ type InternalsTypeGen struct {
 	Typegen205SaveCodeIntegration                              *SaveCodeIntegration                               `json:"typegen_205_SaveCodeIntegration,omitempty"`
 	Typegen206TestCodeIntegration                              *TestCodeIntegration                               `json:"typegen_206_TestCodeIntegration,omitempty"`
 	Typegen207ConfirmCodeIntegrationHumanDeliveryRequest       *ConfirmCodeIntegrationHumanDeliveryRequest        `json:"typegen_207_ConfirmCodeIntegrationHumanDeliveryRequest,omitempty"`
-	Typegen208SetCodeIntegrationAsDefault                      *SetCodeIntegrationAsDefault                       `json:"typegen_208_SetCodeIntegrationAsDefault,omitempty"`
 	Typegen209DeleteCodeIntegrationRequest                     *DeleteCodeIntegrationRequest                      `json:"typegen_209_DeleteCodeIntegrationRequest,omitempty"`
 	Typegen210EnableCodeIntegrationRequest                     *EnableCodeIntegrationRequest                      `json:"typegen_210_EnableCodeIntegrationRequest,omitempty"`
 	Typegen211DisableCodeIntegrationRequest                    *DisableCodeIntegrationRequest                     `json:"typegen_211_DisableCodeIntegrationRequest,omitempty"`
@@ -9016,10 +12682,62 @@ type InternalsTypeGen struct {
 	Typegen243ActionPendingEntryWireDto                        *ActionPendingEntryWireDto                         `json:"typegen_243_ActionPendingEntryWireDto,omitempty"`
 	Typegen244NoticeEntryWireDto                               *NoticeEntryWireDto                                `json:"typegen_244_NoticeEntryWireDto,omitempty"`
 	Typegen245ConversationSnapshotEntryWireDto                 *ConversationSnapshotEntryWireDto                  `json:"typegen_245_ConversationSnapshotEntryWireDto,omitempty"`
+	Typegen269FunctionRefDto                                   *FunctionRefDto                                    `json:"typegen_269_FunctionRefDto,omitempty"`
+	Typegen270CodeFunctionEventDto                             *CodeFunctionEventDto                              `json:"typegen_270_CodeFunctionEventDto,omitempty"`
+	Typegen271CodeFunctionContextDto                           *CodeFunctionContextDto                            `json:"typegen_271_CodeFunctionContextDto,omitempty"`
+	Typegen272CodeFunctionCallerDto                            *CodeFunctionCallerDto                             `json:"typegen_272_CodeFunctionCallerDto,omitempty"`
+	Typegen273CodeFunctionRunAsDto                             *CodeFunctionRunAsDto                              `json:"typegen_273_CodeFunctionRunAsDto,omitempty"`
+	Typegen274CodeFunctionDataDto                              *CodeFunctionDataDto                               `json:"typegen_274_CodeFunctionDataDto,omitempty"`
+	Typegen275DatabaseRecordChangeDto                          *DatabaseRecordChangeDto                           `json:"typegen_275_DatabaseRecordChangeDto,omitempty"`
+	Typegen276UserChangeDto                                    *UserChangeDto                                     `json:"typegen_276_UserChangeDto,omitempty"`
+	Typegen277FileChangeDto                                    *FileChangeDto                                     `json:"typegen_277_FileChangeDto,omitempty"`
+	Typegen278PaymentFactDto                                   *PaymentFactDto                                    `json:"typegen_278_PaymentFactDto,omitempty"`
+	Typegen279AiUsageEventDto                                  *AiUsageEventDto                                   `json:"typegen_279_AiUsageEventDto,omitempty"`
+	Typegen280ScheduledTaskInfoDto                             *ScheduledTaskInfoDto                              `json:"typegen_280_ScheduledTaskInfoDto,omitempty"`
+	Typegen281FakeCodeIntegrationDto                           *FakeCodeIntegrationDto                            `json:"typegen_281_FakeCodeIntegrationDto,omitempty"`
+	Typegen282FakeCodeIntegrationRequest                       *FakeCodeIntegrationRequest                        `json:"typegen_282_FakeCodeIntegrationRequest,omitempty"`
+	Typegen283CodeFunctionSchedulerTaskRequest                 *CodeFunctionSchedulerTaskRequest                  `json:"typegen_283_CodeFunctionSchedulerTaskRequest,omitempty"`
+	Typegen284MarketplaceFunctionSchedulerTaskRequest          *MarketplaceFunctionSchedulerTaskRequest           `json:"typegen_284_MarketplaceFunctionSchedulerTaskRequest,omitempty"`
+	Typegen309WorkflowSchedulerTaskRequest                     *WorkflowSchedulerTaskRequest                      `json:"typegen_309_WorkflowSchedulerTaskRequest,omitempty"`
+	Typegen285AwsCloudWatchLoggingIntegrationRequest           *AwsCloudWatchLoggingIntegrationRequest            `json:"typegen_285_AwsCloudWatchLoggingIntegrationRequest,omitempty"`
+	Typegen286AwsCloudWatchLoggingIntegrationDto               *AwsCloudWatchLoggingIntegrationDto                `json:"typegen_286_AwsCloudWatchLoggingIntegrationDto,omitempty"`
+	Typegen324AzureMonitorLogsLoggingIntegrationRequest        *AzureMonitorLogsLoggingIntegrationRequest         `json:"typegen_324_AzureMonitorLogsLoggingIntegrationRequest,omitempty"`
+	Typegen325AzureMonitorLogsLoggingIntegrationDto            *AzureMonitorLogsLoggingIntegrationDto             `json:"typegen_325_AzureMonitorLogsLoggingIntegrationDto,omitempty"`
+	Typegen310GetQuickConnectProviders                         *GetQuickConnectProviders                          `json:"typegen_310_GetQuickConnectProviders,omitempty"`
+	Typegen311StartPaymentsIntegrationConnect                  *StartPaymentsIntegrationConnect                   `json:"typegen_311_StartPaymentsIntegrationConnect,omitempty"`
+	Typegen312GetIntegrationConnectTargets                     *GetIntegrationConnectTargets                      `json:"typegen_312_GetIntegrationConnectTargets,omitempty"`
+	Typegen313CompletePaymentsIntegrationConnect               *CompletePaymentsIntegrationConnect                `json:"typegen_313_CompletePaymentsIntegrationConnect,omitempty"`
+	Typegen314QuickConnectProviderDto                          *QuickConnectProviderDto                           `json:"typegen_314_QuickConnectProviderDto,omitempty"`
+	Typegen315QuickConnectTargetDto                            *QuickConnectTargetDto                             `json:"typegen_315_QuickConnectTargetDto,omitempty"`
+	Typegen316DisconnectPaymentsIntegrationConnect             *DisconnectPaymentsIntegrationConnect              `json:"typegen_316_DisconnectPaymentsIntegrationConnect,omitempty"`
+	Typegen317PaymentsIntegrationConnectionDto                 *PaymentsIntegrationConnectionDto                  `json:"typegen_317_PaymentsIntegrationConnectionDto,omitempty"`
 }
 
 func (InternalsTypeGen) CreateResponseVoid() {}
 func (InternalsTypeGen) HttpMethod() string  { return "GET" }
+
+type SharedTypeGen struct {
+	TypegenStringFieldDto              *StringFieldDto              `json:"typegen_StringFieldDto,omitempty"`
+	TypegenDecimalFieldDto             *DecimalFieldDto             `json:"typegen_DecimalFieldDto,omitempty"`
+	TypegenCurrencyFieldDto            *CurrencyFieldDto            `json:"typegen_CurrencyFieldDto,omitempty"`
+	TypegenBooleanFieldDto             *BooleanFieldDto             `json:"typegen_BooleanFieldDto,omitempty"`
+	TypegenDateFieldDto                *DateFieldDto                `json:"typegen_DateFieldDto,omitempty"`
+	TypegenIntegerFieldDto             *IntegerFieldDto             `json:"typegen_IntegerFieldDto,omitempty"`
+	TypegenGeolocationFieldDto         *GeolocationFieldDto         `json:"typegen_GeolocationFieldDto,omitempty"`
+	TypegenTagsFieldDto                *TagsFieldDto                `json:"typegen_TagsFieldDto,omitempty"`
+	TypegenFileFieldDto                *FileFieldDto                `json:"typegen_FileFieldDto,omitempty"`
+	TypegenTaxonomySelectionFieldDto   *TaxonomySelectionFieldDto   `json:"typegen_TaxonomySelectionFieldDto,omitempty"`
+	TypegenCollectionSelectionFieldDto *CollectionSelectionFieldDto `json:"typegen_CollectionSelectionFieldDto,omitempty"`
+	TypegenUserSelectionFieldDto       *UserSelectionFieldDto       `json:"typegen_UserSelectionFieldDto,omitempty"`
+	TypegenRoleSelectionFieldDto       *RoleSelectionFieldDto       `json:"typegen_RoleSelectionFieldDto,omitempty"`
+	TypegenEnumSelectionFieldDto       *EnumSelectionFieldDto       `json:"typegen_EnumSelectionFieldDto,omitempty"`
+	TypegenObjectFieldDto              *ObjectFieldDto              `json:"typegen_ObjectFieldDto,omitempty"`
+	TypegenArrayFieldDto               *ArrayFieldDto               `json:"typegen_ArrayFieldDto,omitempty"`
+	TypegenJsonFieldDto                *JsonFieldDto                `json:"typegen_JsonFieldDto,omitempty"`
+}
+
+func (SharedTypeGen) CreateResponseVoid() {}
+func (SharedTypeGen) HttpMethod() string  { return "POST" }
 
 // @Route("/{version}/echo", "GET")
 type Echo struct {
@@ -9044,6 +12762,7 @@ func (GetPublicProjectBrandAsset) HttpMethod() string         { return "GET" }
 type GetPublicProjectConfig struct {
 	RequestBase
 	ProjectId *string `json:"projectId,omitempty"`
+	Env       *string `json:"env,omitempty"`
 }
 
 func (GetPublicProjectConfig) CreateResponse() (r PublicProjectConfigDto) { return }
@@ -9059,6 +12778,54 @@ type GetPublicProjectLegal struct {
 func (GetPublicProjectLegal) CreateResponse() (r PublicLegalDocumentDto) { return }
 func (GetPublicProjectLegal) HttpMethod() string                         { return "GET" }
 
+/** @description Check a trigger action's execution identity */
+// @Route("/{version}/triggers/execution-identity/check", "POST")
+// @Api(Description="Check a trigger action's execution identity")
+// @DataContract
+type CheckTriggerExecutionIdentityRequest struct {
+	CodeMashRequestBase
+	/** @description Which kind of trigger: Schema, Membership, Files, Payments or Ai. */
+	// @DataMember
+	// @ApiMember(Description="Which kind of trigger: Schema, Membership, Files, Payments or Ai.", IsRequired=true)
+	TriggerType TriggerType `json:"triggerType"`
+	/** @description The service user id (usr_…) to run as. Empty or 'default' = the env's default identity. */
+	// @DataMember
+	// @ApiMember(Description="The service user id (usr_…) to run as. Empty or 'default' = the env's default identity.")
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	/** @description The trigger action, as on the trigger save. */
+	// @DataMember
+	// @ApiMember(Description="The trigger action, as on the trigger save.", IsRequired=true)
+	Action interface{} `json:"action"`
+}
+
+func (CheckTriggerExecutionIdentityRequest) CreateResponse() (r CheckTriggerExecutionIdentityResponse) {
+	return
+}
+func (CheckTriggerExecutionIdentityRequest) HttpMethod() string { return "POST" }
+
+/** @description Get one trigger in the shape its save takes (read → change → save) */
+// @Route("/{version}/triggers/{id}/definition", "GET")
+// @Api(Description="Get one trigger in the shape its save takes (read → change → save)")
+// @DataContract
+type GetTriggerDefinition struct {
+	CodeMashRequestBase
+	/** @description The trigger id (trg_…). */
+	// @DataMember
+	// @ApiMember(Description="The trigger id (trg_…).", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Which module the trigger belongs to: Schema, Membership, Files, Payments or Ai. */
+	// @DataMember
+	// @ApiMember(Description="Which module the trigger belongs to: Schema, Membership, Files, Payments or Ai.", IsRequired=true)
+	TriggerType TriggerType `json:"triggerType"`
+	/** @description The collection (schema) id the trigger watches. Required for Schema triggers. */
+	// @DataMember
+	// @ApiMember(Description="The collection (schema) id the trigger watches. Required for Schema triggers.")
+	SchemaId *string `json:"schemaId,omitempty"`
+}
+
+func (GetTriggerDefinition) CreateResponse() (r GetTriggerDefinitionResponse) { return }
+func (GetTriggerDefinition) HttpMethod() string                               { return "GET" }
+
 /** @description Get triggers that need attention */
 // @Route("/{version}/triggers/attention", "GET")
 // @Api(Description="Get triggers that need attention")
@@ -9073,6 +12840,98 @@ type GetTriggersNeedingAttention struct {
 
 func (GetTriggersNeedingAttention) CreateResponse() (r GetTriggersNeedingAttentionResponse) { return }
 func (GetTriggersNeedingAttention) HttpMethod() string                                      { return "GET" }
+
+/** @description Lists one trigger's runs, newest first */
+// @Route("/{version}/triggers/runs", "GET")
+// @Api(Description="Lists one trigger's runs, newest first")
+type GetTriggerRuns struct {
+	CodeMashListPaginationRequestBase
+	/** @description Which kind of trigger: Membership, Schema, Files, Payments or Ai. */
+	// @ApiMember(Description="Which kind of trigger: Membership, Schema, Files, Payments or Ai.", IsRequired=true)
+	TriggerType TriggerType `json:"triggerType"`
+	/** @description The trigger (trg_…). */
+	// @ApiMember(Description="The trigger (trg_…).", IsRequired=true)
+	TriggerId string `json:"triggerId"`
+	/** @description Only runs in this state: queued, running, succeeded, failed or skipped. */
+	// @ApiMember(Description="Only runs in this state: queued, running, succeeded, failed or skipped.")
+	Status *string `json:"status,omitempty"`
+}
+
+func (GetTriggerRuns) CreateResponse() (r GetTriggerRunsResponse) { return }
+func (GetTriggerRuns) HttpMethod() string                         { return "GET" }
+
+/** @description Reads one trigger run */
+// @Route("/{version}/triggers/runs/{Id}", "GET")
+// @Api(Description="Reads one trigger run")
+type GetTriggerRun struct {
+	CodeMashRequestBase
+	/** @description The run id (trr_…). */
+	// @ApiMember(Description="The run id (trr_…).", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Which kind of trigger: Membership, Schema, Files, Payments or Ai. */
+	// @ApiMember(Description="Which kind of trigger: Membership, Schema, Files, Payments or Ai.", IsRequired=true)
+	TriggerType TriggerType `json:"triggerType"`
+}
+
+func (GetTriggerRun) CreateResponse() (r GetTriggerRunResponse) { return }
+func (GetTriggerRun) HttpMethod() string                        { return "GET" }
+
+/** @description Test a trigger's pre-action code against a sample record */
+// @Route("/{version}/triggers/pre-execute-code/test", "POST")
+// @Api(Description="Test a trigger's pre-action code against a sample record")
+// @DataContract
+type TestTriggerPreExecuteCode struct {
+	CodeMashRequestBase
+	/** @description The code to test, as saved in preExecuteCode: C# statements ending in 'return true;' or 'return false;', e.g. 'return New.status == "published";'. */
+	// @DataMember
+	// @ApiMember(Description="The code to test, as saved in preExecuteCode: C# statements ending in 'return true;' or 'return false;', e.g. 'return New.status == \"published\";'.", IsRequired=true)
+	Code string `json:"code"`
+	/** @description Which kind of trigger the code is for: Schema, Membership, Files, Payments or Ai. */
+	// @DataMember
+	// @ApiMember(Description="Which kind of trigger the code is for: Schema, Membership, Files, Payments or Ai.", IsRequired=true)
+	TriggerType TriggerType `json:"triggerType"`
+	/** @description The sample record AFTER the change (the code's New), as a JSON object. Omit = empty (a delete). */
+	// @DataMember
+	// @ApiMember(Description="The sample record AFTER the change (the code's New), as a JSON object. Omit = empty (a delete).")
+	NewRecord *string `json:"newRecord,omitempty"`
+	/** @description The sample record BEFORE the change (the code's Old), as a JSON object. Omit = empty (an insert). */
+	// @DataMember
+	// @ApiMember(Description="The sample record BEFORE the change (the code's Old), as a JSON object. Omit = empty (an insert).")
+	OldRecord *string `json:"oldRecord,omitempty"`
+	/** @description What the code sees as Event.Kind: Inserted, Updated, Deleted or Other. Omit = Updated when both records are given, Inserted when only newRecord, Deleted when only oldRecord. */
+	// @DataMember
+	// @ApiMember(Description="What the code sees as Event.Kind: Inserted, Updated, Deleted or Other. Omit = Updated when both records are given, Inserted when only newRecord, Deleted when only oldRecord.")
+	EventKind *string `json:"eventKind,omitempty"`
+	/** @description What the code sees as Event.Name, e.g. database.record.updated. Optional. */
+	// @DataMember
+	// @ApiMember(Description="What the code sees as Event.Name, e.g. database.record.updated. Optional.")
+	EventName *string `json:"eventName,omitempty"`
+}
+
+func (TestTriggerPreExecuteCode) CreateResponse() (r TestTriggerPreExecuteCodeResponse) { return }
+func (TestTriggerPreExecuteCode) HttpMethod() string                                    { return "POST" }
+
+// @Route("/{version}/account/flex-clusters", "GET")
+// @DataContract
+type GetFlexClusters struct {
+	RequestBase
+}
+
+func (GetFlexClusters) CreateResponse() (r GetFlexClustersResponse) { return }
+func (GetFlexClusters) HttpMethod() string                          { return "GET" }
+
+// @Route("/{version}/account/flex-clusters/{flexClusterId}/upgrade", "POST")
+// @DataContract
+type UpgradeFlexCluster struct {
+	RequestBase
+	// @DataMember
+	FlexClusterId *string `json:"flexClusterId,omitempty"`
+	// @DataMember
+	TierCode *string `json:"tierCode,omitempty"`
+}
+
+func (UpgradeFlexCluster) CreateResponse() (r EmptyResponse) { return }
+func (UpgradeFlexCluster) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/account/profile", "GET")
 type GetAccountProfile struct {
@@ -9107,13 +12966,13 @@ type UpdateAccountProfile struct {
 func (UpdateAccountProfile) CreateResponse() (r EmptyResponse) { return }
 func (UpdateAccountProfile) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/account/verify/resend", "GET")
+// @Route("/{version}/account/verify/resend", "POST")
 type ResendAccountVerificationToken struct {
 	RequestBase
 }
 
 func (ResendAccountVerificationToken) CreateResponse() (r EmptyResponse) { return }
-func (ResendAccountVerificationToken) HttpMethod() string                { return "GET" }
+func (ResendAccountVerificationToken) HttpMethod() string                { return "POST" }
 
 /** @description Get Account Status. */
 // @Route("/{version}/account/status", "GET")
@@ -9125,6 +12984,19 @@ type GetAccountStatus struct {
 func (GetAccountStatus) CreateResponse() (r GetAccountStatusResponse) { return }
 func (GetAccountStatus) HttpMethod() string                           { return "GET" }
 
+// @Route("/{version}/account/stripe/change-bundle", "POST")
+// @DataContract
+type ChangeManagedServiceBundle struct {
+	RequestBase
+	// @DataMember
+	Bundle *ManagedServiceBundle `json:"bundle,omitempty"`
+	// @DataMember
+	BillingPeriod *SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+}
+
+func (ChangeManagedServiceBundle) CreateResponse() (r EmptyResponse) { return }
+func (ChangeManagedServiceBundle) HttpMethod() string                { return "POST" }
+
 // @Route("/{version}/account/stripe/create-checkout-session", "POST")
 // @DataContract
 type CreateStripeCheckoutSession struct {
@@ -9132,9 +13004,11 @@ type CreateStripeCheckoutSession struct {
 	// @DataMember
 	SubscriptionType SubscriptionType `json:"subscriptionType,omitempty"`
 	// @DataMember
-	Domain *string `json:"domain,omitempty"`
+	Bundle *ManagedServiceBundle `json:"bundle,omitempty"`
 	// @DataMember
-	ProjectCap int `json:"projectCap,omitempty"`
+	BillingPeriod *SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+	// @DataMember
+	Domain *string `json:"domain,omitempty"`
 	// @DataMember
 	NewProjectSessionId *string `json:"newProjectSessionId,omitempty"`
 	// @DataMember
@@ -9160,6 +13034,15 @@ type GetStripeBillingPortalUrl struct {
 
 func (GetStripeBillingPortalUrl) CreateResponse() (r GetStripeBillingPortalUrlResponse) { return }
 func (GetStripeBillingPortalUrl) HttpMethod() string                                    { return "POST" }
+
+// @Route("/{version}/account/stripe/bundles", "GET")
+// @DataContract
+type GetManagedServiceBundles struct {
+	RequestBase
+}
+
+func (GetManagedServiceBundles) CreateResponse() (r GetManagedServiceBundlesResponse) { return }
+func (GetManagedServiceBundles) HttpMethod() string                                   { return "GET" }
 
 // @Route("/{version}/account/team/member", "POST")
 type CreateTeamMemberFromInvitation struct {
@@ -9190,7 +13073,7 @@ type GetAccountUsageBilling struct {
 func (GetAccountUsageBilling) CreateResponse() (r GetAccountUsageBillingResponse) { return }
 func (GetAccountUsageBilling) HttpMethod() string                                 { return "GET" }
 
-// @Route("/{version}/account/verify", "GET")
+// @Route("/{version}/account/verify", "POST")
 type VerifyAccount struct {
 	RequestBase
 	Token     string `json:"token"`
@@ -9198,7 +13081,7 @@ type VerifyAccount struct {
 }
 
 func (VerifyAccount) CreateResponse() (r EmptyResponse) { return }
-func (VerifyAccount) HttpMethod() string                { return "GET" }
+func (VerifyAccount) HttpMethod() string                { return "POST" }
 
 // @Route("/{version}/account/projects/{projectId}/notifications/settings/group", "DELETE")
 type DeleteNotificationsGroup struct {
@@ -9366,6 +13249,14 @@ type PromoteEnvironmentRequest struct {
 	// @DataMember
 	// @ApiMember(Description="When true, only returns the promotion plan (including deletions) without applying it or copying secrets. Use this to preview before a real run.")
 	DryRun bool `json:"dryRun,omitempty"`
+	/** @description Must be true for a real run that deletes a collection holding records in the target (the preview lists each with recordCount). Without it the run refuses and changes nothing. */
+	// @DataMember
+	// @ApiMember(Description="Must be true for a real run that deletes a collection holding records in the target (the preview lists each with recordCount). Without it the run refuses and changes nothing.")
+	ConfirmRecordLoss bool `json:"confirmRecordLoss,omitempty"`
+	/** @description Per source integration id: action 'seed' (copy it with its secret into the target), 'skip' (leave it out) or 'map' (mapToId: a target integration of the same module the promoted content should use). Missing ids use the default: Fake providers 'seed' (unless the target already has its own Fake of that module), everything else 'skip'. */
+	// @DataMember
+	// @ApiMember(Description="Per source integration id: action 'seed' (copy it with its secret into the target), 'skip' (leave it out) or 'map' (mapToId: a target integration of the same module the promoted content should use). Missing ids use the default: Fake providers 'seed' (unless the target already has its own Fake of that module), everything else 'skip'.")
+	IntegrationChoices []PromotionIntegrationChoiceDto `json:"integrationChoices,omitempty"`
 }
 
 func (PromoteEnvironmentRequest) CreateResponse() (r PromoteEnvironmentResponse) { return }
@@ -9383,10 +13274,37 @@ type RollbackPromotionRequest struct {
 	// @DataMember
 	// @ApiMember(Description="The fromVersion anchor returned by the promote_environment call being rolled back.", IsRequired=true)
 	FromVersion int64 `json:"fromVersion"`
+	/** @description When true, only returns the rollback plan without applying it. */
+	// @DataMember
+	// @ApiMember(Description="When true, only returns the rollback plan without applying it.")
+	DryRun bool `json:"dryRun,omitempty"`
+	/** @description Must be true when the rollback deletes a collection holding records in the target. */
+	// @DataMember
+	// @ApiMember(Description="Must be true when the rollback deletes a collection holding records in the target.")
+	ConfirmRecordLoss bool `json:"confirmRecordLoss,omitempty"`
 }
 
 func (RollbackPromotionRequest) CreateResponse() (r PromoteEnvironmentResponse) { return }
 func (RollbackPromotionRequest) HttpMethod() string                             { return "POST" }
+
+// @Route("/{version}/account/projects/environments/built-ins/repair", "POST")
+// @DataContract
+type RepairEnvironmentBuiltInsRequest struct {
+	CodeMashRequestBase
+	/** @description The environment to repair. Empty = every environment except PROD. */
+	// @DataMember
+	// @ApiMember(Description="The environment to repair. Empty = every environment except PROD.")
+	EnvironmentName *string `json:"environmentName,omitempty"`
+	/** @description When true, only returns what would be done. */
+	// @DataMember
+	// @ApiMember(Description="When true, only returns what would be done.")
+	DryRun bool `json:"dryRun,omitempty"`
+}
+
+func (RepairEnvironmentBuiltInsRequest) CreateResponse() (r RepairEnvironmentBuiltInsResponse) {
+	return
+}
+func (RepairEnvironmentBuiltInsRequest) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/account/projects/environments", "GET")
 // @DataContract
@@ -9396,6 +13314,36 @@ type GetProjectEnvironments struct {
 
 func (GetProjectEnvironments) CreateResponse() (r GetProjectEnvironmentsResponse) { return }
 func (GetProjectEnvironments) HttpMethod() string                                 { return "GET" }
+
+// @Route("/{version}/account/projects/environments/{environmentName}/admin-url", "PATCH")
+// @DataContract
+type UpdateEnvironmentAdminUrl struct {
+	CodeMashRequestBase
+	/** @description Name of the environment (from get_project_environments), e.g. 'TEST' or 'PROD'. */
+	// @DataMember
+	// @ApiMember(Description="Name of the environment (from get_project_environments), e.g. 'TEST' or 'PROD'.", IsRequired=true)
+	EnvironmentName string `json:"environmentName"`
+	/** @description The environment's admin portal address, e.g. https://test-admin.example.com. https, host and optional path, no query. Empty clears it (the project admin URL is used). */
+	// @DataMember
+	// @ApiMember(Description="The environment's admin portal address, e.g. https://test-admin.example.com. https, host and optional path, no query. Empty clears it (the project admin URL is used).")
+	Url *string `json:"url,omitempty"`
+}
+
+func (UpdateEnvironmentAdminUrl) CreateResponse() (r EmptyResponse) { return }
+func (UpdateEnvironmentAdminUrl) HttpMethod() string                { return "PATCH" }
+
+// @Route("/{version}/account/projects/environments/{environmentName}/admin-url", "GET")
+// @DataContract
+type GetEnvironmentAdminUrl struct {
+	CodeMashRequestBase
+	/** @description Name of the environment (from get_project_environments), e.g. 'TEST'. */
+	// @DataMember
+	// @ApiMember(Description="Name of the environment (from get_project_environments), e.g. 'TEST'.", IsRequired=true)
+	EnvironmentName string `json:"environmentName"`
+}
+
+func (GetEnvironmentAdminUrl) CreateResponse() (r GetEnvironmentAdminUrlResponse) { return }
+func (GetEnvironmentAdminUrl) HttpMethod() string                                 { return "GET" }
 
 /** @description Gets project info. */
 // @Route("/{version}/account/projects/{projectId}", "GET")
@@ -9426,6 +13374,21 @@ type GetAccountRegions struct {
 
 func (GetAccountRegions) CreateResponse() (r GetAccountRegionsResponse) { return }
 func (GetAccountRegions) HttpMethod() string                            { return "GET" }
+
+/** @description Gets the project health: problems with fix links, and home screen stats. */
+// @Route("/{version}/account/projects/{projectId}/health", "GET")
+// @Api(Description="Gets the project health: problems with fix links, and home screen stats.")
+// @DataContract
+type GetProjectHealth struct {
+	CodeMashRequestBase
+	/** @description Compute the health now instead of reading the last result (at most every 6 hours old). */
+	// @DataMember
+	// @ApiMember(Description="Compute the health now instead of reading the last result (at most every 6 hours old).")
+	Refresh bool `json:"refresh,omitempty"`
+}
+
+func (GetProjectHealth) CreateResponse() (r GetProjectHealthResponse) { return }
+func (GetProjectHealth) HttpMethod() string                           { return "GET" }
 
 /** @description Waits (bounded, server-side) for a project to finish provisioning and become active. */
 // @Route("/{version}/account/projects/{projectId}/wait-active", "GET")
@@ -9522,8 +13485,8 @@ func (GetAdminPortalStructure) HttpMethod() string                          { re
 // @Api(Description="Updates the project's admin-portal URL override")
 type UpdateProjectAdminUrl struct {
 	CodeMashRequestBase
-	/** @description Custom admin-portal URL to use instead of the canonical address. Null/empty restores the canonical pr_{id}.admin.{host} address. */
-	// @ApiMember(Description="Custom admin-portal URL to use instead of the canonical address. Null/empty restores the canonical pr_{id}.admin.{host} address.")
+	/** @description Custom admin-portal URL to use instead of the canonical address. Null/empty restores the canonical pr-{project hex}.admin.{host} address. */
+	// @ApiMember(Description="Custom admin-portal URL to use instead of the canonical address. Null/empty restores the canonical pr-{project hex}.admin.{host} address.")
 	Url *string `json:"url,omitempty"`
 }
 
@@ -9744,8 +13707,8 @@ type UpdateProjectAllowedOrigins struct {
 	/** @description The complete new list of allowed origin URLs, e.g. ["https://app.example.com", "https://example.com"]. An entry with no scheme (e.g. "example.com") defaults to https. Whatever is not in this list stops being allowed. */
 	// @ApiMember(Description="The complete new list of allowed origin URLs, e.g. [\"https://app.example.com\", \"https://example.com\"]. An entry with no scheme (e.g. \"example.com\") defaults to https. Whatever is not in this list stops being allowed.")
 	Origins []string `json:"origins,omitempty"`
-	/** @description Optional. true removes the project's own Admin Portal origin (pr_{projectId}.{admin host}) on purpose. Without it, a list that drops that origin is rejected with CM-ERRORS-PROJECTS-037, because the Norbix-generated end-user portal could no longer call the project's API. */
-	// @ApiMember(Description="Optional. true removes the project's own Admin Portal origin (pr_{projectId}.{admin host}) on purpose. Without it, a list that drops that origin is rejected with CM-ERRORS-PROJECTS-037, because the Norbix-generated end-user portal could no longer call the project's API.")
+	/** @description Optional. true removes the project's own Admin Portal origin (pr-{project hex}.{admin host}) on purpose. Without it, a list that drops that origin is rejected with CM-ERRORS-PROJECTS-037, because the Norbix-generated end-user portal could no longer call the project's API. */
+	// @ApiMember(Description="Optional. true removes the project's own Admin Portal origin (pr-{project hex}.{admin host}) on purpose. Without it, a list that drops that origin is rejected with CM-ERRORS-PROJECTS-037, because the Norbix-generated end-user portal could no longer call the project's API.")
 	RemoveAdminPortalOrigin *bool `json:"removeAdminPortalOrigin,omitempty"`
 }
 
@@ -9877,8 +13840,8 @@ func (UpdateProjectUrl) HttpMethod() string                { return "PATCH" }
 // @Api(Description="Updates project name")
 type UpdateProjectName struct {
 	CodeMashRequestBase
-	/** @description The new project name, unique per account. */
-	// @ApiMember(Description="The new project name, unique per account.", IsRequired=true)
+	/** @description The new project name, unique per account. The short name (slug) in Cloud addresses is made from it; the project id does not change. */
+	// @ApiMember(Description="The new project name, unique per account. The short name (slug) in Cloud addresses is made from it; the project id does not change.", IsRequired=true)
 	Name string `json:"name"`
 }
 
@@ -9934,11 +13897,12 @@ func (ChangeTeamMemberPassword) HttpMethod() string             { return "POST" 
 // @Route("/{version}/account/team/member/create", "POST")
 type CreateTeamMember struct {
 	RequestBase
-	Email          string   `json:"email"`
-	DisplayName    *string  `json:"displayName,omitempty"`
-	Password       *string  `json:"password,omitempty"`
-	Roles          []string `json:"roles,omitempty"`
-	SendInvitation bool     `json:"sendInvitation,omitempty"`
+	Email          string              `json:"email"`
+	DisplayName    *string             `json:"displayName,omitempty"`
+	Password       *string             `json:"password,omitempty"`
+	Roles          []string            `json:"roles,omitempty"`
+	RoleProjects   map[string][]string `json:"roleProjects,omitempty"`
+	SendInvitation bool                `json:"sendInvitation,omitempty"`
 }
 
 func (CreateTeamMember) CreateResponse() (r IdResponse) { return }
@@ -10050,6 +14014,53 @@ type GetAccountTeamPolicies struct {
 func (GetAccountTeamPolicies) CreateResponse() (r GetAccountTeamPoliciesResponse) { return }
 func (GetAccountTeamPolicies) HttpMethod() string                                 { return "GET" }
 
+/** @description Removes a team member from the account */
+// @Route("/{version}/account/team/member/{MemberId}", "DELETE")
+// @Api(Description="Removes a team member from the account")
+type RemoveTeamMember struct {
+	RequestBase
+	/** @description The team member's id (usr_…), as get_account_collaborators lists it. */
+	// @ApiMember(Description="The team member's id (usr_…), as get_account_collaborators lists it.", IsRequired=true, ParameterType="path")
+	MemberId string `json:"memberId"`
+}
+
+func (RemoveTeamMember) CreateResponse() (r IdResponse) { return }
+func (RemoveTeamMember) HttpMethod() string             { return "DELETE" }
+
+// @Route("/{version}/account/team/member/role-environments", "PUT")
+type SetTeamMemberRoleEnvironmentsRequest struct {
+	RequestBase
+	/** @description The team member's id (usr_…), as GET /account/collaborators lists it. */
+	// @ApiMember(Description="The team member's id (usr_…), as GET /account/collaborators lists it.", IsRequired=true)
+	MemberId string `json:"memberId"`
+	/** @description The account role the member holds: its id (acc_…_nr_…) or its template id (GUID, as GetAccountTeamRoles lists it). */
+	// @ApiMember(Description="The account role the member holds: its id (acc_…_nr_…) or its template id (GUID, as GetAccountTeamRoles lists it).", IsRequired=true)
+	RoleId string `json:"roleId"`
+	/** @description Environment names, e.g. ["TEST"]. Empty = every environment. */
+	// @ApiMember(Description="Environment names, e.g. [\"TEST\"]. Empty = every environment.")
+	Environments []string `json:"environments,omitempty"`
+}
+
+func (SetTeamMemberRoleEnvironmentsRequest) CreateResponse() (r IdResponse) { return }
+func (SetTeamMemberRoleEnvironmentsRequest) HttpMethod() string             { return "PUT" }
+
+// @Route("/{version}/account/team/member/role-projects", "PUT")
+type SetTeamMemberRoleProjectsRequest struct {
+	RequestBase
+	/** @description The team member's id (usr_…), as GET /account/collaborators lists it. */
+	// @ApiMember(Description="The team member's id (usr_…), as GET /account/collaborators lists it.", IsRequired=true)
+	MemberId string `json:"memberId"`
+	/** @description The account role the member holds: its id (acc_…_nr_…) or its template id (GUID, as GetAccountTeamRoles lists it). */
+	// @ApiMember(Description="The account role the member holds: its id (acc_…_nr_…) or its template id (GUID, as GetAccountTeamRoles lists it).", IsRequired=true)
+	RoleId string `json:"roleId"`
+	/** @description Project ids (pr_…) of this account. Empty = every project. */
+	// @ApiMember(Description="Project ids (pr_…) of this account. Empty = every project.")
+	Projects []string `json:"projects,omitempty"`
+}
+
+func (SetTeamMemberRoleProjectsRequest) CreateResponse() (r IdResponse) { return }
+func (SetTeamMemberRoleProjectsRequest) HttpMethod() string             { return "PUT" }
+
 // @Route("/{version}/account/team/roles", "GET")
 type GetAccountTeamRoles struct {
 	RequestBase
@@ -10069,10 +14080,55 @@ type SendInviteToTeamMember struct {
 	/** @description Account role ids (GUIDs from get_account_team_roles) the member gets on accepting. Omit for the default member role. */
 	// @ApiMember(Description="Account role ids (GUIDs from get_account_team_roles) the member gets on accepting. Omit for the default member role.")
 	Roles []string `json:"roles,omitempty"`
+	/** @description Optional, per role: the projects (pr_… ids) the role applies to, keyed by the role id (GUID from get_account_team_roles, or acc_…_nr_…). Each key must also be in `roles`. A role with no entry (or an empty list) applies to every project. The Account Administrator role can not be limited. */
+	// @ApiMember(Description="Optional, per role: the projects (pr_… ids) the role applies to, keyed by the role id (GUID from get_account_team_roles, or acc_…_nr_…). Each key must also be in `roles`. A role with no entry (or an empty list) applies to every project. The Account Administrator role can not be limited.")
+	RoleProjects map[string][]string `json:"roleProjects,omitempty"`
 }
 
 func (SendInviteToTeamMember) CreateResponse() (r EmptyResponse) { return }
 func (SendInviteToTeamMember) HttpMethod() string                { return "POST" }
+
+/** @description Lists the account's pending team invitations */
+// @Route("/{version}/account/team/invitations", "GET")
+// @Api(Description="Lists the account's pending team invitations")
+type GetAccountTeamInvitations struct {
+	RequestBase
+}
+
+func (GetAccountTeamInvitations) CreateResponse() (r GetAccountTeamInvitationsResponse) { return }
+func (GetAccountTeamInvitations) HttpMethod() string                                    { return "GET" }
+
+/** @description Cancels a pending team invitation */
+// @Route("/{version}/account/team/invitations/{InvitationId}", "DELETE")
+// @Api(Description="Cancels a pending team invitation")
+type CancelTeamInvitation struct {
+	RequestBase
+	/** @description The invitation id, as get_account_team_invitations lists it. */
+	// @ApiMember(Description="The invitation id, as get_account_team_invitations lists it.", IsRequired=true, ParameterType="path")
+	InvitationId string `json:"invitationId"`
+}
+
+func (CancelTeamInvitation) CreateResponse() (r IdResponse) { return }
+func (CancelTeamInvitation) HttpMethod() string             { return "DELETE" }
+
+/** @description Updates a team member's display name and/or account roles */
+// @Route("/{version}/account/team/member", "PUT")
+// @Api(Description="Updates a team member's display name and/or account roles")
+type UpdateTeamMember struct {
+	RequestBase
+	/** @description The team member's id (usr_…), as get_account_collaborators lists it. */
+	// @ApiMember(Description="The team member's id (usr_…), as get_account_collaborators lists it.", IsRequired=true)
+	MemberId string `json:"memberId"`
+	/** @description New display name. Omit to keep the current one. */
+	// @ApiMember(Description="New display name. Omit to keep the current one.")
+	DisplayName *string `json:"displayName,omitempty"`
+	/** @description The member's account roles after the change — REPLACES the current ones. Omit to keep the roles; an empty list removes every account role (the member stays on the team). */
+	// @ApiMember(Description="The member's account roles after the change — REPLACES the current ones. Omit to keep the roles; an empty list removes every account role (the member stays on the team).")
+	Roles []TeamMemberRoleInput `json:"roles,omitempty"`
+}
+
+func (UpdateTeamMember) CreateResponse() (r IdResponse) { return }
+func (UpdateTeamMember) HttpMethod() string             { return "PUT" }
 
 // @Route("/{version}/account/team/policies", "PUT")
 type UpdateAccountPolicy struct {
@@ -10293,77 +14349,21 @@ type UpdateMyAccountUserPhone struct {
 func (UpdateMyAccountUserPhone) CreateResponse() (r EmptyResponse) { return }
 func (UpdateMyAccountUserPhone) HttpMethod() string                { return "PUT" }
 
-// @Route("/{version}/account/licensing/dns-status", "GET")
-type GetLicenseDomainDnsStatus struct {
-	RequestBase
-	Domain *string `json:"domain,omitempty"`
-}
-
-func (GetLicenseDomainDnsStatus) CreateResponse() (r GetLicenseDomainDnsStatusResponse) { return }
-func (GetLicenseDomainDnsStatus) HttpMethod() string                                    { return "GET" }
-
-// @Route("/{version}/licensing/domain-verification/start", "POST")
-type StartLicenseDomainVerificationRequest struct {
-	RequestBase
-	Domain *string `json:"domain,omitempty"`
-}
-
-func (StartLicenseDomainVerificationRequest) CreateResponse() (r StartLicenseDomainVerificationResponse) {
-	return
-}
-func (StartLicenseDomainVerificationRequest) HttpMethod() string { return "POST" }
-
-// @Route("/{version}/licensing/domain-verification/status", "GET")
-type GetLicenseDomainVerificationStatus struct {
-	RequestBase
-	Domain *string `json:"domain,omitempty"`
-}
-
-func (GetLicenseDomainVerificationStatus) CreateResponse() (r GetLicenseDomainVerificationStatusResponse) {
-	return
-}
-func (GetLicenseDomainVerificationStatus) HttpMethod() string { return "GET" }
-
-// @Route("/{version}/account/licenses", "GET")
-type GetLicenses struct {
-	RequestBase
-}
-
-func (GetLicenses) CreateResponse() (r GetLicensesResponse) { return }
-func (GetLicenses) HttpMethod() string                      { return "GET" }
-
-// @Route("/{version}/licensing/heartbeat", "POST")
-type PostLicenseHeartbeat struct {
-	RequestBase
-	License          *string `json:"license,omitempty"`
-	LicenseAccountId *string `json:"licenseAccountId,omitempty"`
-	InstallationId   *string `json:"installationId,omitempty"`
-	Domain           *string `json:"domain,omitempty"`
-	HostKind         *string `json:"hostKind,omitempty"`
-	Release          *string `json:"release,omitempty"`
-	InstanceVersion  *string `json:"instanceVersion,omitempty"`
-}
-
-func (PostLicenseHeartbeat) CreateResponse() (r PostLicenseHeartbeatResponse) { return }
-func (PostLicenseHeartbeat) HttpMethod() string                               { return "POST" }
-
-// @Route("/{version}/account/licensing/status", "GET")
-type GetInstallationLicenseStatus struct {
-	RequestBase
-}
-
-func (GetInstallationLicenseStatus) CreateResponse() (r GetInstallationLicenseStatusResponse) { return }
-func (GetInstallationLicenseStatus) HttpMethod() string                                       { return "GET" }
-
 // @Route("/{version}/account/ai/service-users", "POST")
 type CreateAiServiceUserRequest struct {
 	RequestBase
 	/** @description A name people recognise, e.g. "Claude Code on my laptop". */
 	// @ApiMember(Description="A name people recognise, e.g. \"Claude Code on my laptop\".", IsRequired=true)
 	Name string `json:"name"`
-	/** @description Reach (account | project + projectId), rights (read | admin), envs (["TEST"] or ["TEST","PROD"]). */
-	// @ApiMember(Description="Reach (account | project + projectId), rights (read | admin), envs ([\"TEST\"] or [\"TEST\",\"PROD\"]).", IsRequired=true)
-	Scope AiScopeDto `json:"scope"`
+	/** @description Account role ids (acc_…_nr_…) to give, built-in or custom. At least one role in total (account or project). */
+	// @ApiMember(Description="Account role ids (acc_…_nr_…) to give, built-in or custom. At least one role in total (account or project).")
+	AccountRoleIds []string `json:"accountRoleIds,omitempty"`
+	/** @description Project roles to give: [{ projectId, roleIds: [pr_…_nr_…] }]. Without an account role the service user is pinned to these projects. */
+	// @ApiMember(Description="Project roles to give: [{ projectId, roleIds: [pr_…_nr_…] }]. Without an account role the service user is pinned to these projects.")
+	ProjectRoles []AiProjectRoleIdsDto `json:"projectRoles,omitempty"`
+	/** @description Optional "Applies in" per role (N41): [{ roleId, environments: ["TEST"] }]. A role given here applies only in those environments (requests in another environment get 403 CM-ERRORS-MEMBERSHIP-041). No entry or an empty list = every environment. */
+	// @ApiMember(Description="Optional \"Applies in\" per role (N41): [{ roleId, environments: [\"TEST\"] }]. A role given here applies only in those environments (requests in another environment get 403 CM-ERRORS-MEMBERSHIP-041). No entry or an empty list = every environment.")
+	RoleEnvironments []RoleEnvironmentsDto `json:"roleEnvironments,omitempty"`
 }
 
 func (CreateAiServiceUserRequest) CreateResponse() (r CreateAiServiceUserResponse) { return }
@@ -10405,6 +14405,20 @@ type RevokeAiServiceUserKeyRequest struct {
 func (RevokeAiServiceUserKeyRequest) CreateResponse() (r EmptyResponse) { return }
 func (RevokeAiServiceUserKeyRequest) HttpMethod() string                { return "DELETE" }
 
+// @Route("/{version}/account/ai/service-users/{Id}", "PUT")
+type UpdateAiServiceUserRequest struct {
+	RequestBase
+	/** @description The service user id (aisu_…). */
+	// @ApiMember(Description="The service user id (aisu_…).", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The new name, unique in the account, e.g. "Claude Code on my laptop". */
+	// @ApiMember(Description="The new name, unique in the account, e.g. \"Claude Code on my laptop\".", IsRequired=true)
+	Name string `json:"name"`
+}
+
+func (UpdateAiServiceUserRequest) CreateResponse() (r EmptyResponse) { return }
+func (UpdateAiServiceUserRequest) HttpMethod() string                { return "PUT" }
+
 // @Route("/{version}/account/ai/service-users/{Id}", "DELETE")
 type DeleteAiServiceUserRequest struct {
 	RequestBase
@@ -10416,21 +14430,37 @@ type DeleteAiServiceUserRequest struct {
 func (DeleteAiServiceUserRequest) CreateResponse() (r EmptyResponse) { return }
 func (DeleteAiServiceUserRequest) HttpMethod() string                { return "DELETE" }
 
-// @Route("/{version}/membership/disable", "PUT")
-type DisableMembership struct {
+/** @description Import users with their existing password hashes */
+// @Route("/{version}/membership/users/import", "POST")
+// @Api(Description="Import users with their existing password hashes")
+type ImportUsersRequest struct {
 	CodeMashRequestBase
+	/** @description True = check every row and write nothing. False = write. Empty = true (check only, write nothing). */
+	// @ApiMember(Description="True = check every row and write nothing. False = write. Empty = true (check only, write nothing).")
+	DryRun *bool `json:"dryRun,omitempty"`
+	/** @description True = do not add the project's default roles (as 'ignoreUserRegistersAsRole' on registration). */
+	// @ApiMember(Description="True = do not add the project's default roles (as 'ignoreUserRegistersAsRole' on registration).")
+	IgnoreDefaultRoles bool `json:"ignoreDefaultRoles,omitempty"`
+	/** @description The users to import, 1 to 1000 per request. */
+	// @ApiMember(Description="The users to import, 1 to 1000 per request.", IsRequired=true)
+	Users []ImportUserRowDto `json:"users"`
 }
 
-func (DisableMembership) CreateResponse() (r EmptyResponse) { return }
-func (DisableMembership) HttpMethod() string                { return "PUT" }
+func (ImportUsersRequest) CreateResponse() (r ImportUsersResponse) { return }
+func (ImportUsersRequest) HttpMethod() string                      { return "POST" }
 
-// @Route("/{version}/membership/enable", "PUT")
-type EnableMembership struct {
+/** @description Repair project logins stored without a project id */
+// @Route("/{version}/membership/users/repair-logins", "POST")
+// @Api(Description="Repair project logins stored without a project id")
+type RepairLoginProjectIdsRequest struct {
 	CodeMashRequestBase
+	/** @description True = only count what would change. False = write. Empty = true (only count). */
+	// @ApiMember(Description="True = only count what would change. False = write. Empty = true (only count).")
+	DryRun *bool `json:"dryRun,omitempty"`
 }
 
-func (EnableMembership) CreateResponse() (r EmptyResponse) { return }
-func (EnableMembership) HttpMethod() string                { return "PUT" }
+func (RepairLoginProjectIdsRequest) CreateResponse() (r RepairLoginProjectIdsResponse) { return }
+func (RepairLoginProjectIdsRequest) HttpMethod() string                                { return "POST" }
 
 /** @description Membership */
 // @Route("/{version}/membership/users/{Id}/api-keys", "POST")
@@ -10722,9 +14752,9 @@ type SavePasskeySettings struct {
 	/** @description Number of recovery codes generated at signup. Allowed range: 5-20. */
 	// @ApiMember(Description="Number of recovery codes generated at signup. Allowed range: 5-20.")
 	RecoveryCodeCount int `json:"recoveryCodeCount,omitempty"`
-	/** @description Whether recovery codes are generated automatically at signup. */
-	// @ApiMember(Description="Whether recovery codes are generated automatically at signup.")
-	GenerateRecoveryCodesAtSignup bool `json:"generateRecoveryCodesAtSignup,omitempty"`
+	/** @description Whether recovery codes are generated automatically at signup. Empty = true (generated). */
+	// @ApiMember(Description="Whether recovery codes are generated automatically at signup. Empty = true (generated).")
+	GenerateRecoveryCodesAtSignup *bool `json:"generateRecoveryCodesAtSignup,omitempty"`
 	/** @description Accepted authenticator types: 'Any', 'Platform', or 'CrossPlatform'. */
 	// @ApiMember(Description="Accepted authenticator types: 'Any', 'Platform', or 'CrossPlatform'.")
 	AuthenticatorAttachment string `json:"authenticatorAttachment"`
@@ -10805,16 +14835,31 @@ type SaveMembershipIntegration struct {
 func (SaveMembershipIntegration) CreateResponse() (r IdResponse) { return }
 func (SaveMembershipIntegration) HttpMethod() string             { return "POST" }
 
-// @Route("/{version}/membership/integrations/{Id}/default", "PUT")
-type SetMembershipIntegrationAsDefaultRequest struct {
+/** @description Lists the execution identities (project service users) of an environment. */
+// @Route("/{version}/membership/execution-identities", "GET")
+// @Api(Description="Lists the execution identities (project service users) of an environment.")
+type GetExecutionIdentitiesRequest struct {
 	CodeMashRequestBase
-	/** @description Integration id, from get_membership_integrations. */
-	// @ApiMember(Description="Integration id, from get_membership_integrations.", IsRequired=true)
-	Id string `json:"id"`
 }
 
-func (SetMembershipIntegrationAsDefaultRequest) CreateResponse() (r EmptyResponse) { return }
-func (SetMembershipIntegrationAsDefaultRequest) HttpMethod() string                { return "PUT" }
+func (GetExecutionIdentitiesRequest) CreateResponse() (r GetExecutionIdentitiesResponse) { return }
+func (GetExecutionIdentitiesRequest) HttpMethod() string                                 { return "GET" }
+
+/** @description Creates an execution identity: a project service user with roles, in one call. */
+// @Route("/{version}/membership/execution-identities", "POST")
+// @Api(Description="Creates an execution identity: a project service user with roles, in one call.")
+type CreateExecutionIdentityRequest struct {
+	CodeMashRequestBase
+	/** @description Display name of the identity, e.g. 'Orders bot'. */
+	// @ApiMember(Description="Display name of the identity, e.g. 'Orders bot'.", IsRequired=true)
+	Name string `json:"name"`
+	/** @description Roles to give: role ids (pr_…_nr_…) or role names from GET membership/roles. */
+	// @ApiMember(Description="Roles to give: role ids (pr_…_nr_…) or role names from GET membership/roles.")
+	RoleIds []string `json:"roleIds"`
+}
+
+func (CreateExecutionIdentityRequest) CreateResponse() (r IdResponse) { return }
+func (CreateExecutionIdentityRequest) HttpMethod() string             { return "POST" }
 
 /** @description Gets the project's membership authorization (role-assignment) settings. */
 // @Route("/{version}/membership/authorization", "GET")
@@ -10831,10 +14876,20 @@ func (GetAuthorizationSettings) HttpMethod() string                             
 // @Api(Description="Updates the project's membership authorization settings.")
 type UpdateAuthorizationSettings struct {
 	CodeMashRequestBase
-	Setting                     *string  `json:"setting,omitempty"`
-	DefaultRoles                []string `json:"defaultRoles,omitempty"`
-	AllowedRegistrationRoles    []string `json:"allowedRegistrationRoles,omitempty"`
-	AllowGuestUsers             bool     `json:"allowGuestUsers,omitempty"`
+	/** @description Single-setting change (dashboard tabs), e.g. 'DefaultRegisterRole' with userRegistersAsRole, or 'PasswordComplexity'. Unknown values are refused. Leave empty to change defaultRoles / allowedRegistrationRoles / allowGuestUsers / guestCleanupPeriodDays — only the fields you send change. */
+	// @ApiMember(Description="Single-setting change (dashboard tabs), e.g. 'DefaultRegisterRole' with userRegistersAsRole, or 'PasswordComplexity'. Unknown values are refused. Leave empty to change defaultRoles / allowedRegistrationRoles / allowGuestUsers / guestCleanupPeriodDays — only the fields you send change.")
+	Setting *string `json:"setting,omitempty"`
+	/** @description Role names given to a user who registers without naming roles. Omit = keep; [] = none. */
+	// @ApiMember(Description="Role names given to a user who registers without naming roles. Omit = keep; [] = none.")
+	DefaultRoles []string `json:"defaultRoles,omitempty"`
+	/** @description Role names a user may pick when registering. Omit = keep; [] = none. */
+	// @ApiMember(Description="Role names a user may pick when registering. Omit = keep; [] = none.")
+	AllowedRegistrationRoles []string `json:"allowedRegistrationRoles,omitempty"`
+	/** @description Whether guest (anonymous) users may be created. Omit = keep. When sent, guestCleanupPeriodDays is taken with it (null = never clean up). */
+	// @ApiMember(Description="Whether guest (anonymous) users may be created. Omit = keep. When sent, guestCleanupPeriodDays is taken with it (null = never clean up).")
+	AllowGuestUsers *bool `json:"allowGuestUsers,omitempty"`
+	/** @description Days after which inactive guests are removed; null or 0 = never. Omit both guest fields = keep. */
+	// @ApiMember(Description="Days after which inactive guests are removed; null or 0 = never. Omit both guest fields = keep.")
 	GuestCleanupPeriodDays      *int     `json:"guestCleanupPeriodDays,omitempty"`
 	UserRegistersAsRole         *string  `json:"userRegistersAsRole,omitempty"`
 	GuestRegistersAsRole        *string  `json:"guestRegistersAsRole,omitempty"`
@@ -10849,17 +14904,38 @@ type UpdateAuthorizationSettings struct {
 	EmailVerificationExpiration *int     `json:"emailVerificationExpiration,omitempty"`
 	DeactivationExpiration      *int     `json:"deactivationExpiration,omitempty"`
 	DefaultSubscribeToNews      bool     `json:"defaultSubscribeToNews,omitempty"`
-	MinLength                   int      `json:"minLength,omitempty"`
-	MaxLength                   *int     `json:"maxLength,omitempty"`
-	MinNumbers                  *int     `json:"minNumbers,omitempty"`
-	MaxNumbers                  *int     `json:"maxNumbers,omitempty"`
-	MinUpper                    *int     `json:"minUpper,omitempty"`
-	MaxUpper                    *int     `json:"maxUpper,omitempty"`
-	MinLower                    *int     `json:"minLower,omitempty"`
-	MaxLower                    *int     `json:"maxLower,omitempty"`
-	MinSpecial                  *int     `json:"minSpecial,omitempty"`
-	MaxSpecial                  *int     `json:"maxSpecial,omitempty"`
-	AllowedSpecial              *string  `json:"allowedSpecial,omitempty"`
+	/** @description "Email registration": the public register/email route accepts sign-ups. Omit = keep. */
+	// @ApiMember(Description="\"Email registration\": the public register/email route accepts sign-ups. Omit = keep.")
+	AllowEmailRegistration *bool `json:"allowEmailRegistration,omitempty"`
+	/** @description "Invite-only": public sign-up (email and username) is refused; only invitations create users. Omit = keep. */
+	// @ApiMember(Description="\"Invite-only\": public sign-up (email and username) is refused; only invitations create users. Omit = keep.")
+	InviteOnly *bool `json:"inviteOnly,omitempty"`
+	/** @description "Allow anyone to sign up": grants (true) / revokes (false) membership:register on the project's Guest role. Omit = keep. */
+	// @ApiMember(Description="\"Allow anyone to sign up\": grants (true) / revokes (false) membership:register on the project's Guest role. Omit = keep.")
+	AllowAnyoneToSignUp *bool `json:"allowAnyoneToSignUp,omitempty"`
+	/** @description Setting = 'AllowPasswordReset': true = a reset request sends the e-mail, false = it sends nothing (the answer stays the same). */
+	// @ApiMember(Description="Setting = 'AllowPasswordReset': true = a reset request sends the e-mail, false = it sends nothing (the answer stays the same).")
+	AllowResetPassword *bool `json:"allowResetPassword,omitempty"`
+	/** @description Setting = 'PasswordResetTemplate': the project's e-mail template id (tmpl_…); empty = the built-in "Password reset" template. */
+	// @ApiMember(Description="Setting = 'PasswordResetTemplate': the project's e-mail template id (tmpl_…); empty = the built-in \"Password reset\" template.")
+	ResetPasswordEmailTemplate *string `json:"resetPasswordEmailTemplate,omitempty"`
+	/** @description Setting = 'PasswordResetExpiration': how many minutes the reset link works (5–1440); empty = 30. */
+	// @ApiMember(Description="Setting = 'PasswordResetExpiration': how many minutes the reset link works (5–1440); empty = 30.")
+	ResetPasswordTokenExpiration *int `json:"resetPasswordTokenExpiration,omitempty"`
+	/** @description Setting = 'PasswordResetCallback': your own "choose a new password" page (https://…, http only for localhost); the link is it + #token=…. Empty = the portal page. */
+	// @ApiMember(Description="Setting = 'PasswordResetCallback': your own \"choose a new password\" page (https://…, http only for localhost); the link is it + #token=…. Empty = the portal page.")
+	ResetPasswordCallback *string `json:"resetPasswordCallback,omitempty"`
+	MinLength             int     `json:"minLength,omitempty"`
+	MaxLength             *int    `json:"maxLength,omitempty"`
+	MinNumbers            *int    `json:"minNumbers,omitempty"`
+	MaxNumbers            *int    `json:"maxNumbers,omitempty"`
+	MinUpper              *int    `json:"minUpper,omitempty"`
+	MaxUpper              *int    `json:"maxUpper,omitempty"`
+	MinLower              *int    `json:"minLower,omitempty"`
+	MaxLower              *int    `json:"maxLower,omitempty"`
+	MinSpecial            *int    `json:"minSpecial,omitempty"`
+	MaxSpecial            *int    `json:"maxSpecial,omitempty"`
+	AllowedSpecial        *string `json:"allowedSpecial,omitempty"`
 }
 
 func (UpdateAuthorizationSettings) CreateResponse() (r EmptyResponse) { return }
@@ -10870,8 +14946,8 @@ func (UpdateAuthorizationSettings) HttpMethod() string                { return "
 // @Api(Description="Updates the project's membership password complexity policy.")
 type UpdatePasswordComplexity struct {
 	CodeMashRequestBase
-	/** @description Minimum password length. */
-	// @ApiMember(Description="Minimum password length.")
+	/** @description Minimum password length. Default 6 — the rule a project uses when it stores none. */
+	// @ApiMember(Description="Minimum password length. Default 6 — the rule a project uses when it stores none.")
 	MinLength int `json:"minLength,omitempty"`
 	/** @description Maximum password length, if capped. */
 	// @ApiMember(Description="Maximum password length, if capped.")
@@ -10923,37 +14999,13 @@ func (GetAuthenticationSettings) HttpMethod() string                            
 // @Api(Description="Updates the project's membership authentication preferences.")
 type UpdateAuthenticationSettings struct {
 	CodeMashRequestBase
-	/** @description Default URL to redirect end users to after logout. */
-	// @ApiMember(Description="Default URL to redirect end users to after logout.")
-	LogoutUrl *string `json:"logoutUrl,omitempty"`
 	/** @description Whether end users may sign in with a username in addition to email. */
 	// @ApiMember(Description="Whether end users may sign in with a username in addition to email.")
 	AllowUsernames bool `json:"allowUsernames,omitempty"`
-	/** @description Per-authentication-mode logout URL overrides. */
-	// @ApiMember(Description="Per-authentication-mode logout URL overrides.")
-	Modes []CredentialsSettingsModeDto `json:"modes,omitempty"`
 }
 
 func (UpdateAuthenticationSettings) CreateResponse() (r EmptyResponse) { return }
 func (UpdateAuthenticationSettings) HttpMethod() string                { return "PUT" }
-
-/** @description Disable database service */
-// @Route("/{version}/database/disable", "PUT")
-// @Api(Description="Disable database service")
-type DisableDatabase struct {
-	CodeMashRequestBase
-}
-
-func (DisableDatabase) CreateResponse() (r EmptyResponse) { return }
-func (DisableDatabase) HttpMethod() string                { return "PUT" }
-
-// @Route("/{version}/database/enable", "PUT")
-type EnableDatabase struct {
-	CodeMashRequestBase
-}
-
-func (EnableDatabase) CreateResponse() (r EmptyResponse) { return }
-func (EnableDatabase) HttpMethod() string                { return "PUT" }
 
 /** @description Delete database trigger */
 // @Route("/{version}/database/schemas/triggers/{triggerId}", "DELETE")
@@ -11060,6 +15112,10 @@ func (GetDatabaseTaxonomies) HttpMethod() string                                
 // @DataContract
 type GetDatabaseTaxonomyTreeRequest struct {
 	CodeMashRequestBase
+	/** @description Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions. */
+	// @DataMember
+	// @ApiMember(Description="Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions.")
+	AllLanguages bool `json:"allLanguages,omitempty"`
 	/** @description When true, each taxonomy node also carries its own term tree (heavier response). */
 	// @DataMember
 	// @ApiMember(Description="When true, each taxonomy node also carries its own term tree (heavier response).")
@@ -11118,9 +15174,9 @@ func (SaveDatabaseTaxonomyRequest) HttpMethod() string             { return "POS
 // @DataContract
 type DeleteDatabaseTaxonomyTermRequest struct {
 	CodeMashRequestBase
-	/** @description Taxonomy id that owns the term, from get_database_taxonomies. */
+	/** @description Taxonomy id that owns the term, from get_database_taxonomies — or the taxonomy name (slug or title). */
 	// @DataMember
-	// @ApiMember(Description="Taxonomy id that owns the term, from get_database_taxonomies.", IsRequired=true)
+	// @ApiMember(Description="Taxonomy id that owns the term, from get_database_taxonomies — or the taxonomy name (slug or title).", IsRequired=true)
 	TaxonomyId string `json:"taxonomyId"`
 	/** @description Term id to delete, from get_database_taxonomy_term_tree. */
 	// @DataMember
@@ -11141,9 +15197,9 @@ func (DeleteDatabaseTaxonomyTermRequest) HttpMethod() string                { re
 // @DataContract
 type DeleteManyDatabaseTaxonomyTermsRequest struct {
 	CodeMashRequestBase
-	/** @description Taxonomy id whose terms to delete, from get_database_taxonomies. */
+	/** @description Taxonomy id whose terms to delete, from get_database_taxonomies — or the taxonomy name (slug or title). */
 	// @DataMember
-	// @ApiMember(Description="Taxonomy id whose terms to delete, from get_database_taxonomies.", IsRequired=true)
+	// @ApiMember(Description="Taxonomy id whose terms to delete, from get_database_taxonomies — or the taxonomy name (slug or title).", IsRequired=true)
 	TaxonomyId string `json:"taxonomyId"`
 	/** @description Optional database integration id. When omitted, the project's default database integration is used. */
 	// @DataMember
@@ -11164,9 +15220,13 @@ func (DeleteManyDatabaseTaxonomyTermsRequest) HttpMethod() string               
 // @DataContract
 type GetDatabaseTaxonomyTermRequest struct {
 	CodeMashRequestBase
-	/** @description Taxonomy id from get_database_taxonomies. */
+	/** @description Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions. */
 	// @DataMember
-	// @ApiMember(Description="Taxonomy id from get_database_taxonomies.", IsRequired=true)
+	// @ApiMember(Description="Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions.")
+	AllLanguages bool `json:"allLanguages,omitempty"`
+	/** @description Taxonomy id from get_database_taxonomies — or the taxonomy name (slug or title). */
+	// @DataMember
+	// @ApiMember(Description="Taxonomy id from get_database_taxonomies — or the taxonomy name (slug or title).", IsRequired=true)
 	TaxonomyId string `json:"taxonomyId"`
 	/** @description Term id from get_database_taxonomy_term_tree. */
 	// @DataMember
@@ -11187,9 +15247,13 @@ func (GetDatabaseTaxonomyTermRequest) HttpMethod() string                       
 // @DataContract
 type GetDatabaseMergedTermTreeRequest struct {
 	CodeMashRequestBase
-	/** @description Root taxonomy slug/name (from get_database_taxonomies). Its terms are the roots; child-taxonomy terms nest under them. */
+	/** @description Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions. */
 	// @DataMember
-	// @ApiMember(Description="Root taxonomy slug/name (from get_database_taxonomies). Its terms are the roots; child-taxonomy terms nest under them.", IsRequired=true)
+	// @ApiMember(Description="Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions.")
+	AllLanguages bool `json:"allLanguages,omitempty"`
+	/** @description Root taxonomy slug/name or id, txn_… (from get_database_taxonomies). Its terms are the roots; child-taxonomy terms nest under them. */
+	// @DataMember
+	// @ApiMember(Description="Root taxonomy slug/name or id, txn_… (from get_database_taxonomies). Its terms are the roots; child-taxonomy terms nest under them.", IsRequired=true)
 	TaxonomyName string `json:"taxonomyName"`
 	/** @description Optional database integration id. When omitted, the project's default database integration is used. */
 	// @DataMember
@@ -11208,9 +15272,13 @@ func (GetDatabaseMergedTermTreeRequest) HttpMethod() string { return "GET" }
 // @DataContract
 type GetDatabaseTaxonomyTermTreeRequest struct {
 	CodeMashRequestBase
-	/** @description Taxonomy slug/name to fetch the term tree for, from get_database_taxonomies. */
+	/** @description Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions. */
 	// @DataMember
-	// @ApiMember(Description="Taxonomy slug/name to fetch the term tree for, from get_database_taxonomies.", IsRequired=true)
+	// @ApiMember(Description="Set true to keep name / description as stored even when Accept-Language is sent (editors). The full translations are always in names / descriptions.")
+	AllLanguages bool `json:"allLanguages,omitempty"`
+	/** @description Taxonomy slug/name (or its id, txn_…) to fetch the term tree for, from get_database_taxonomies. */
+	// @DataMember
+	// @ApiMember(Description="Taxonomy slug/name (or its id, txn_…) to fetch the term tree for, from get_database_taxonomies.", IsRequired=true)
 	TaxonomyName string `json:"taxonomyName"`
 	/** @description Optional term id to root the returned tree at a sub-tree instead of the whole taxonomy. */
 	// @DataMember
@@ -11237,9 +15305,9 @@ func (GetDatabaseTaxonomyTermTreeRequest) HttpMethod() string { return "GET" }
 // @DataContract
 type SaveDatabaseTaxonomyTermRequest struct {
 	CodeMashRequestBase
-	/** @description Taxonomy id to insert the term into, from get_database_taxonomies. */
+	/** @description Taxonomy id to insert the term into, from get_database_taxonomies — or the taxonomy name (slug or title). */
 	// @DataMember
-	// @ApiMember(Description="Taxonomy id to insert the term into, from get_database_taxonomies.", IsRequired=true)
+	// @ApiMember(Description="Taxonomy id to insert the term into, from get_database_taxonomies — or the taxonomy name (slug or title).", IsRequired=true)
 	TaxonomyId string `json:"taxonomyId"`
 	/** @description Optional database integration id. When omitted, the project's default database integration is used. */
 	// @DataMember
@@ -11260,9 +15328,9 @@ func (SaveDatabaseTaxonomyTermRequest) HttpMethod() string             { return 
 // @DataContract
 type UpdateDatabaseTaxonomyTermRequest struct {
 	CodeMashRequestBase
-	/** @description Taxonomy id that owns the term, from get_database_taxonomies. */
+	/** @description Taxonomy id that owns the term, from get_database_taxonomies — or the taxonomy name (slug or title). */
 	// @DataMember
-	// @ApiMember(Description="Taxonomy id that owns the term, from get_database_taxonomies.", IsRequired=true)
+	// @ApiMember(Description="Taxonomy id that owns the term, from get_database_taxonomies — or the taxonomy name (slug or title).", IsRequired=true)
 	TaxonomyId string `json:"taxonomyId"`
 	/** @description Term id to update, from get_database_taxonomy_term_tree. */
 	// @DataMember
@@ -11303,10 +15371,10 @@ type ApplyDatabaseSchemaBundleRequest struct {
 	// @DataMember
 	// @ApiMember(Description="true = mark free-text fields (title, body, excerpt …) translatable for multilingual content. Default false.")
 	Translatable bool `json:"translatable,omitempty"`
-	/** @description false = leave every collection as a draft instead of publishing v1. Default true. */
+	/** @description false = leave every collection as a draft instead of publishing v1. Empty = true (publish v1). */
 	// @DataMember
-	// @ApiMember(Description="false = leave every collection as a draft instead of publishing v1. Default true.")
-	Publish bool `json:"publish,omitempty"`
+	// @ApiMember(Description="false = leave every collection as a draft instead of publishing v1. Empty = true (publish v1).")
+	Publish *bool `json:"publish,omitempty"`
 }
 
 func (ApplyDatabaseSchemaBundleRequest) CreateResponse() (r ApplyDatabaseSchemaBundleResponse) {
@@ -11341,6 +15409,22 @@ type DiscardDatabaseSchemaDraftRequest struct {
 
 func (DiscardDatabaseSchemaDraftRequest) CreateResponse() (r EmptyResponse) { return }
 func (DiscardDatabaseSchemaDraftRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description List the endUserOwnRecords switch of every schema (and turn it on for named schemas) */
+// @Route("/{version}/database/schemas/end-user-own-records", "POST")
+// @Api(Description="List the endUserOwnRecords switch of every schema (and turn it on for named schemas)")
+type EndUserOwnRecordsReportRequest struct {
+	CodeMashRequestBase
+	/** @description True = only list. False = turn the switch on for the schemas in 'enable'. Empty = true (only list). */
+	// @ApiMember(Description="True = only list. False = turn the switch on for the schemas in 'enable'. Empty = true (only list).")
+	DryRun *bool `json:"dryRun,omitempty"`
+	/** @description Schema names to turn the switch ON for (only with dryRun:false). Empty = change nothing. */
+	// @ApiMember(Description="Schema names to turn the switch ON for (only with dryRun:false). Empty = change nothing.")
+	Enable []string `json:"enable"`
+}
+
+func (EndUserOwnRecordsReportRequest) CreateResponse() (r EndUserOwnRecordsReportResponse) { return }
+func (EndUserOwnRecordsReportRequest) HttpMethod() string                                  { return "POST" }
 
 /** @description Gets database schema by id */
 // @Route("/{version}/database/schemas/{id}", "GET")
@@ -11386,6 +15470,21 @@ type GetDatabaseSchemaDraft struct {
 
 func (GetDatabaseSchemaDraft) CreateResponse() (r GetDatabaseSchemaDraftResponse) { return }
 func (GetDatabaseSchemaDraft) HttpMethod() string                                 { return "GET" }
+
+/** @description Gets the Norbix index status of a database schema */
+// @Route("/{version}/database/schemas/{Id}/index-status", "GET")
+// @Api(Description="Gets the Norbix index status of a database schema")
+// @DataContract
+type GetDatabaseSchemaIndexStatus struct {
+	CodeMashRequestBase
+	/** @description Schema id from get_database_schemas. */
+	// @DataMember
+	// @ApiMember(Description="Schema id from get_database_schemas.", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (GetDatabaseSchemaIndexStatus) CreateResponse() (r GetDatabaseSchemaIndexStatusResponse) { return }
+func (GetDatabaseSchemaIndexStatus) HttpMethod() string                                       { return "GET" }
 
 /** @description Gets database schema records-list display settings */
 // @Route("/{version}/database/schemas/{Id}/list-settings", "GET")
@@ -11738,6 +15837,7 @@ type FindRecords struct {
 	/** @description Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids. */
 	// @ApiMember(Description="Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids.")
 	ExpandReferences bool `json:"expandReferences,omitempty"`
+	AllLanguages     bool `json:"allLanguages,omitempty"`
 }
 
 func (FindRecords) CreateResponse() (r FindRecordsResponse) { return }
@@ -11758,6 +15858,7 @@ type FindOneRecord struct {
 	/** @description Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids. */
 	// @ApiMember(Description="Set true to get every reference value as { id, display } (display = the target's displayField per the schema; null when the target is gone). Needs read permission on every source the schema links to (users, roles, taxonomy, collection, files) — otherwise the read is refused with CM-ERRORS-DATABASE-056 naming the source. Default false returns the stored ids.")
 	ExpandReferences bool `json:"expandReferences,omitempty"`
+	AllLanguages     bool `json:"allLanguages,omitempty"`
 }
 
 func (FindOneRecord) CreateResponse() (r FindOneRecordResponse) { return }
@@ -11973,17 +16074,6 @@ type GetAllowedFlexTiers struct {
 func (GetAllowedFlexTiers) CreateResponse() (r GetAllowedFlexTiersResponse) { return }
 func (GetAllowedFlexTiers) HttpMethod() string                              { return "GET" }
 
-// @Route("/{version}/database/integrations/{Id}/connection-string", "GET")
-type RevealManagedFlexConnectionString struct {
-	CodeMashRequestBase
-	Id string `json:"id"`
-}
-
-func (RevealManagedFlexConnectionString) CreateResponse() (r RevealManagedFlexConnectionStringResponse) {
-	return
-}
-func (RevealManagedFlexConnectionString) HttpMethod() string { return "GET" }
-
 /** @description Saves database integration */
 // @Route("/{version}/database/integrations", "POST")
 // @Api(Description="Saves database integration")
@@ -12022,105 +16112,6 @@ type TestDatabaseIntegration struct {
 
 func (TestDatabaseIntegration) CreateResponse() (r TestDatabaseIntegrationResponse) { return }
 func (TestDatabaseIntegration) HttpMethod() string                                  { return "POST" }
-
-/** @description Database */
-// @Route("/{version}/database/imports", "POST")
-// @Api(Description="Database")
-type CreateCollectionImport struct {
-	CodeMashRequestBase
-	/** @description The uploaded CSV's file ref, from the upload call. */
-	// @ApiMember(Description="The uploaded CSV's file ref, from the upload call.", IsRequired=true)
-	File FileResourceRefDto `json:"file"`
-	/** @description The target schema id. */
-	// @ApiMember(Description="The target schema id.", IsRequired=true)
-	SchemaId string `json:"schemaId"`
-	/** @description The target collection (schema) name. */
-	// @ApiMember(Description="The target collection (schema) name.", IsRequired=true)
-	CollectionName        string  `json:"collectionName"`
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description The CSV delimiter used at upload time. */
-	// @ApiMember(Description="The CSV delimiter used at upload time.", IsRequired=true)
-	Delimiter string `json:"delimiter"`
-	HasHeader bool   `json:"hasHeader,omitempty"`
-	/** @description Column → property mapping, frozen for this import. */
-	// @ApiMember(Description="Column → property mapping, frozen for this import.", IsRequired=true)
-	Mapping []ImportColumnMappingDto `json:"mapping"`
-}
-
-func (CreateCollectionImport) CreateResponse() (r IdResponse) { return }
-func (CreateCollectionImport) HttpMethod() string             { return "POST" }
-
-/** @description Database */
-// @Route("/{version}/database/imports/{Id}", "DELETE")
-// @Api(Description="Database")
-type DeleteCollectionImportRequest struct {
-	CodeMashRequestBase
-	/** @description The import id (imp_…). */
-	// @ApiMember(Description="The import id (imp_…).", IsRequired=true)
-	Id                    string  `json:"id"`
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (DeleteCollectionImportRequest) CreateResponse() (r EmptyResponse) { return }
-func (DeleteCollectionImportRequest) HttpMethod() string                { return "DELETE" }
-
-/** @description Database */
-// @Route("/{version}/database/imports/{Id}", "GET")
-// @Api(Description="Database")
-type GetCollectionImport struct {
-	CodeMashRequestBase
-	/** @description The import id (imp_…). */
-	// @ApiMember(Description="The import id (imp_…).", IsRequired=true)
-	Id                    string  `json:"id"`
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetCollectionImport) CreateResponse() (r GetCollectionImportResponse) { return }
-func (GetCollectionImport) HttpMethod() string                              { return "GET" }
-
-/** @description Database */
-// @Route("/{version}/database/imports", "GET")
-// @Api(Description="Database")
-type GetCollectionImports struct {
-	CodeMashListPaginationRequestBase
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetCollectionImports) CreateResponse() (r GetCollectionImportsResponse) { return }
-func (GetCollectionImports) HttpMethod() string                               { return "GET" }
-
-/** @description Database */
-// @Route("/{version}/database/imports/upload-url", "POST")
-// @Api(Description="Database")
-type RequestImportUploadUrlRequest struct {
-	CodeMashRequestBase
-	FileAccountId *string `json:"fileAccountId,omitempty"`
-	/** @description The original CSV file name, e.g. people.csv. */
-	// @ApiMember(Description="The original CSV file name, e.g. people.csv.", IsRequired=true)
-	FileName string `json:"fileName"`
-}
-
-func (RequestImportUploadUrlRequest) CreateResponse() (r RequestImportUploadUrlResponse) { return }
-func (RequestImportUploadUrlRequest) HttpMethod() string                                 { return "POST" }
-
-/** @description Database */
-// @Route("/{version}/database/imports/analyze", "POST")
-// @Api(Description="Database")
-type AnalyzeImportFileRequest struct {
-	CodeMashRequestBase
-	/** @description The uploaded CSV's file ref, from the upload-url call. */
-	// @ApiMember(Description="The uploaded CSV's file ref, from the upload-url call.", IsRequired=true)
-	File FileResourceRefDto `json:"file"`
-	/** @description The CSV delimiter, e.g. "," or ";". */
-	// @ApiMember(Description="The CSV delimiter, e.g. \",\" or \";\".", IsRequired=true)
-	Delimiter string `json:"delimiter"`
-	/** @description Whether the first row is a header row. */
-	// @ApiMember(Description="Whether the first row is a header row.")
-	HasHeader bool `json:"hasHeader,omitempty"`
-}
-
-func (AnalyzeImportFileRequest) CreateResponse() (r AnalyzeImportFileResponse) { return }
-func (AnalyzeImportFileRequest) HttpMethod() string                            { return "POST" }
 
 /** @description Delete saved Mongo aggregation */
 // @Route("/{version}/database/aggregates/{Id}", "DELETE")
@@ -12301,62 +16292,6 @@ type SaveFilesTrigger struct {
 func (SaveFilesTrigger) CreateResponse() (r IdResponse) { return }
 func (SaveFilesTrigger) HttpMethod() string             { return "POST" }
 
-// @Route("/{version}/files/item/private", "POST")
-type MakeFilePrivateRequest struct {
-	CodeMashRequestBase
-	/** @description The files integration the file lives on. */
-	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
-	FilesIntegrationId string `json:"filesIntegrationId"`
-	/** @description Path of the file, relative to the integration. */
-	// @ApiMember(Description="Path of the file, relative to the integration.", IsRequired=true)
-	Path string `json:"path"`
-}
-
-func (MakeFilePrivateRequest) CreateResponse() (r EmptyResponse) { return }
-func (MakeFilePrivateRequest) HttpMethod() string                { return "POST" }
-
-// @Route("/{version}/files/item/public", "POST")
-type MakeFilePublicRequest struct {
-	CodeMashRequestBase
-	/** @description The files integration the file lives on. */
-	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
-	FilesIntegrationId string `json:"filesIntegrationId"`
-	/** @description Path of the file to publish, relative to the integration. */
-	// @ApiMember(Description="Path of the file to publish, relative to the integration.", IsRequired=true)
-	Path string `json:"path"`
-}
-
-func (MakeFilePublicRequest) CreateResponse() (r IdResponse) { return }
-func (MakeFilePublicRequest) HttpMethod() string             { return "POST" }
-
-// @Route("/{version}/files/folder/private", "POST")
-type MakeFolderPrivateRequest struct {
-	CodeMashRequestBase
-	/** @description The files integration the folder lives on. */
-	// @ApiMember(Description="The files integration the folder lives on.", IsRequired=true)
-	FilesIntegrationId string `json:"filesIntegrationId"`
-	/** @description Folder prefix, relative to the integration. */
-	// @ApiMember(Description="Folder prefix, relative to the integration.", IsRequired=true)
-	Path string `json:"path"`
-}
-
-func (MakeFolderPrivateRequest) CreateResponse() (r EmptyResponse) { return }
-func (MakeFolderPrivateRequest) HttpMethod() string                { return "POST" }
-
-// @Route("/{version}/files/folder/public", "POST")
-type MakeFolderPublicRequest struct {
-	CodeMashRequestBase
-	/** @description The files integration the folder lives on. */
-	// @ApiMember(Description="The files integration the folder lives on.", IsRequired=true)
-	FilesIntegrationId string `json:"filesIntegrationId"`
-	/** @description Folder prefix to publish, relative to the integration. */
-	// @ApiMember(Description="Folder prefix to publish, relative to the integration.", IsRequired=true)
-	Path string `json:"path"`
-}
-
-func (MakeFolderPublicRequest) CreateResponse() (r IdResponse) { return }
-func (MakeFolderPublicRequest) HttpMethod() string             { return "POST" }
-
 // @Route("/{version}/files/integrations/{Id}", "DELETE")
 type DeleteFilesIntegrationRequest struct {
 	CodeMashRequestBase
@@ -12413,6 +16348,23 @@ type GetFilesIntegrations struct {
 func (GetFilesIntegrations) CreateResponse() (r GetFilesIntegrationsResponse) { return }
 func (GetFilesIntegrations) HttpMethod() string                               { return "GET" }
 
+// @Route("/{version}/integrations/keyless/setup", "GET")
+type GetKeylessIntegrationSetup struct {
+	CodeMashRequestBase
+	/** @description files, email, code, logs, push, payments or database (logs: aws or azure; push and payments: google; database: atlas). */
+	// @ApiMember(Description="files, email, code, logs, push, payments or database (logs: aws or azure; push and payments: google; database: atlas).", IsRequired=true)
+	Module string `json:"module"`
+	/** @description azure, aws, google or atlas (MongoDB Atlas M10+, module database). */
+	// @ApiMember(Description="azure, aws, google or atlas (MongoDB Atlas M10+, module database).", IsRequired=true)
+	Cloud string `json:"cloud"`
+	/** @description The integration view id; empty = a new one is made for the save. */
+	// @ApiMember(Description="The integration view id; empty = a new one is made for the save.")
+	IntegrationId *string `json:"integrationId,omitempty"`
+}
+
+func (GetKeylessIntegrationSetup) CreateResponse() (r GetKeylessIntegrationSetupResponse) { return }
+func (GetKeylessIntegrationSetup) HttpMethod() string                                     { return "GET" }
+
 // @Route("/{version}/files/integrations", "POST")
 // @DataContract
 type SaveFilesIntegration struct {
@@ -12446,20 +16398,6 @@ type TestFilesIntegration struct {
 func (TestFilesIntegration) CreateResponse() (r TestFilesIntegrationResponse) { return }
 func (TestFilesIntegration) HttpMethod() string                               { return "POST" }
 
-// @Route("/{version}/files/item", "GET")
-type GetFile struct {
-	CodeMashRequestBase
-	/** @description The files integration id to read from, from get_files_integrations. */
-	// @ApiMember(Description="The files integration id to read from, from get_files_integrations.", IsRequired=true)
-	FilesIntegrationId string `json:"filesIntegrationId"`
-	/** @description The path of the file to fetch metadata for. */
-	// @ApiMember(Description="The path of the file to fetch metadata for.", IsRequired=true)
-	Path string `json:"path"`
-}
-
-func (GetFile) CreateResponse() (r GetFileResponse) { return }
-func (GetFile) HttpMethod() string                  { return "GET" }
-
 // @Route("/{version}/files/item/by-id", "GET")
 type GetFileById struct {
 	CodeMashRequestBase
@@ -12474,19 +16412,19 @@ type GetFileById struct {
 func (GetFileById) CreateResponse() (r GetFileByIdResponse) { return }
 func (GetFileById) HttpMethod() string                      { return "GET" }
 
-// @Route("/{version}/files/folder", "GET")
-type GetFolderFiles struct {
-	CodeMashListPaginationRequestBase
-	/** @description The files integration id to list from, from get_files_integrations. */
-	// @ApiMember(Description="The files integration id to list from, from get_files_integrations.", IsRequired=true)
+// @Route("/{version}/files/item/use", "POST")
+type UseFileRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the file lives on. */
+	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
 	FilesIntegrationId string `json:"filesIntegrationId"`
-	/** @description Path prefix to list. Empty / null lists the root. */
-	// @ApiMember(Description="Path prefix to list. Empty / null lists the root.")
-	Path *string `json:"path,omitempty"`
+	/** @description Path of the file, relative to the integration. */
+	// @ApiMember(Description="Path of the file, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
 }
 
-func (GetFolderFiles) CreateResponse() (r GetFolderFilesResponse) { return }
-func (GetFolderFiles) HttpMethod() string                         { return "GET" }
+func (UseFileRequest) CreateResponse() (r IdResponse) { return }
+func (UseFileRequest) HttpMethod() string             { return "POST" }
 
 /** @description Disable email service */
 // @Route("/{version}/notifications/email/disable", "PUT")
@@ -12692,8 +16630,8 @@ type UpdateEmailTemplateRequest struct {
 	ViewId string `json:"viewId"`
 }
 
-func (UpdateEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
-func (UpdateEmailTemplateRequest) HttpMethod() string                { return "PUT" }
+func (UpdateEmailTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (UpdateEmailTemplateRequest) HttpMethod() string             { return "PUT" }
 
 /** @description Delete an email signature */
 // @Route("/{version}/notifications/email/signatures/{id}", "DELETE")
@@ -12749,6 +16687,19 @@ type SaveEmailSignatureRequest struct {
 
 func (SaveEmailSignatureRequest) CreateResponse() (r IdResponse) { return }
 func (SaveEmailSignatureRequest) HttpMethod() string             { return "POST" }
+
+/** @description Switches email click ids on or off. When on, every web link in the project's marketing emails gets ?nblid=<click id>. Clicks come back only from sites you own: your pages, server logs or analytics hand the nblid back with POST /notifications/email/clicks. */
+// @Route("/{version}/notifications/email/settings/click-tracking", "PATCH")
+// @Api(Description="Switches email click ids on or off. When on, every web link in the project's marketing emails gets ?nblid=<click id>. Clicks come back only from sites you own: your pages, server logs or analytics hand the nblid back with POST /notifications/email/clicks.")
+type UpdateEmailClickTracking struct {
+	CodeMashRequestBase
+	/** @description true: links of marketing emails get ?nblid=<click id>. false: links are sent as written. */
+	// @ApiMember(Description="true: links of marketing emails get ?nblid=<click id>. false: links are sent as written.", IsRequired=true)
+	Enabled bool `json:"enabled"`
+}
+
+func (UpdateEmailClickTracking) CreateResponse() (r EmptyResponse) { return }
+func (UpdateEmailClickTracking) HttpMethod() string                { return "PATCH" }
 
 /** @description Get email settings */
 // @Route("/{version}/notifications/email/settings", "GET")
@@ -12920,8 +16871,8 @@ type CloneEmailTemplateRequest struct {
 	Id string `json:"id"`
 }
 
-func (CloneEmailTemplateRequest) CreateResponse() (r EmptyResponse) { return }
-func (CloneEmailTemplateRequest) HttpMethod() string                { return "POST" }
+func (CloneEmailTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (CloneEmailTemplateRequest) HttpMethod() string             { return "POST" }
 
 /** @description Un-archive an email template */
 // @Route("/{version}/notifications/email/templates/{Id}/unarchive", "PUT")
@@ -13023,223 +16974,20 @@ func (GetEmailPreferencesByLinkRequest) CreateResponse() (r GetEmailPreferencesB
 }
 func (GetEmailPreferencesByLinkRequest) HttpMethod() string { return "GET" }
 
-/** @description Create email campaign */
-// @Route("/{version}/notifications/email/campaigns", "POST")
-// @Api(Description="Create email campaign")
+/** @description Records email clicks handed back with their click ids (nblid). */
+// @Route("/{version}/notifications/email/clicks", "POST")
+// @Api(Description="Records email clicks handed back with their click ids (nblid).")
 // @DataContract
-type CreateEmailCampaignRequest struct {
+type RecordEmailClicksRequest struct {
 	CodeMashRequestBase
+	/** @description 1 to 500 clicks. */
 	// @DataMember
-	Campaign interface{} `json:"campaign"`
-	// @DataMember
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now. */
-	// @DataMember
-	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now.")
-	SendNow *bool `json:"sendNow,omitempty"`
+	// @ApiMember(Description="1 to 500 clicks.", IsRequired=true)
+	Clicks []EmailClickDto `json:"clicks"`
 }
 
-func (CreateEmailCampaignRequest) CreateResponse() (r IdResponse) { return }
-func (CreateEmailCampaignRequest) HttpMethod() string             { return "POST" }
-
-/** @description Deletes emails campaign from queue */
-// @Route("/{version}/notifications/email/campaigns/{Id}", "DELETE")
-// @Api(Description="Deletes emails campaign from queue")
-// @DataContract
-type DeleteEmailCampaignRequest struct {
-	CodeMashRequestBase
-	// @DataMember
-	Id string `json:"id"`
-	// @DataMember
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (DeleteEmailCampaignRequest) CreateResponse() (r EmptyResponse) { return }
-func (DeleteEmailCampaignRequest) HttpMethod() string                { return "DELETE" }
-
-/** @description Gets email campaign by id */
-// @Route("/{version}/notifications/email/campaigns/{id}", "GET")
-// @Api(Description="Gets email campaign by id")
-type GetEmailCampaign struct {
-	CodeMashRequestBase
-	/** @description The campaign id. */
-	// @ApiMember(Description="The campaign id.")
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetEmailCampaign) CreateResponse() (r GetEmailCampaignResponse) { return }
-func (GetEmailCampaign) HttpMethod() string                           { return "GET" }
-
-/** @description Gets email campaigns */
-// @Route("/{version}/notifications/email/campaigns", "GET")
-// @Api(Description="Gets email campaigns")
-type GetEmailCampaigns struct {
-	CodeMashListPaginationRequestBase
-	/** @description Optional. When omitted, the project's default database integration is used (resolved server-side from the project state). */
-	// @ApiMember(Description="Optional. When omitted, the project's default database integration is used (resolved server-side from the project state).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional: return only the campaign with this id. */
-	// @ApiMember(Description="Optional: return only the campaign with this id.")
-	CampaignId *string `json:"campaignId,omitempty"`
-	/** @description Optional: only campaigns that targeted this email address. */
-	// @ApiMember(Description="Optional: only campaigns that targeted this email address.")
-	EmailAddress *string `json:"emailAddress,omitempty"`
-	/** @description Optional: only campaigns built on this email template id. */
-	// @ApiMember(Description="Optional: only campaigns built on this email template id.")
-	TemplateId *string `json:"templateId,omitempty"`
-	/** @description Optional lower bound for the campaign time, unix timestamp in seconds (UTC). */
-	// @ApiMember(Description="Optional lower bound for the campaign time, unix timestamp in seconds (UTC).")
-	From *int64 `json:"from,omitempty"`
-	/** @description Optional upper bound for the campaign time, unix timestamp in seconds (UTC). */
-	// @ApiMember(Description="Optional upper bound for the campaign time, unix timestamp in seconds (UTC).")
-	To *int64 `json:"to,omitempty"`
-}
-
-func (GetEmailCampaigns) CreateResponse() (r GetEmailCampaignsResponse) { return }
-func (GetEmailCampaigns) HttpMethod() string                            { return "GET" }
-
-/** @description Get email campaign batches */
-// @Route("/{version}/notifications/email/campaigns/{id}/batches", "GET")
-// @Api(Description="Get email campaign batches")
-type GetEmailCampaignBatches struct {
-	CodeMashListPaginationRequestBase
-	/** @description The email campaign id to list batches for. Get it from get_email_campaigns. */
-	// @ApiMember(Description="The email campaign id to list batches for. Get it from get_email_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional batch id to filter to a single batch. Get it from a prior call to this tool. */
-	// @ApiMember(Description="Optional batch id to filter to a single batch. Get it from a prior call to this tool.")
-	BatchId *string `json:"batchId,omitempty"`
-	/** @description Optional recipient email address to filter batches by. */
-	// @ApiMember(Description="Optional recipient email address to filter batches by.")
-	EmailAddress *string `json:"emailAddress,omitempty"`
-}
-
-func (GetEmailCampaignBatches) CreateResponse() (r GetEmailCampaignBatchesResponse) { return }
-func (GetEmailCampaignBatches) HttpMethod() string                                  { return "GET" }
-
-/** @description Get an email campaign batch notification */
-// @Route("/{version}/notifications/email/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
-// @Api(Description="Get an email campaign batch notification")
-type GetEmailCampaignBatchNotification struct {
-	CodeMashListPaginationRequestBase
-	/** @description The email campaign id. Get it from get_email_campaigns. */
-	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description The campaign batch id. Get it from get_email_campaign_batches. */
-	// @ApiMember(Description="The campaign batch id. Get it from get_email_campaign_batches.", IsRequired=true)
-	BatchId string `json:"batchId"`
-	/** @description The notification id within the batch. Get it from get_email_campaign_batch_notifications. */
-	// @ApiMember(Description="The notification id within the batch. Get it from get_email_campaign_batch_notifications.", IsRequired=true)
-	NotificationId string `json:"notificationId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetEmailCampaignBatchNotification) CreateResponse() (r GetEmailCampaignBatchNotificationResponse) {
-	return
-}
-func (GetEmailCampaignBatchNotification) HttpMethod() string { return "GET" }
-
-/** @description Get email campaign batch notifications */
-// @Route("/{version}/notifications/email/campaigns/{id}/batches/{batchId}", "GET")
-// @Api(Description="Get email campaign batch notifications")
-type GetEmailCampaignBatchNotifications struct {
-	CodeMashListPaginationRequestBase
-	/** @description The email campaign id. Get it from get_email_campaigns. */
-	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description The campaign batch id to list notifications for. Get it from get_email_campaign_batches. */
-	// @ApiMember(Description="The campaign batch id to list notifications for. Get it from get_email_campaign_batches.", IsRequired=true)
-	BatchId string `json:"batchId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetEmailCampaignBatchNotifications) CreateResponse() (r GetEmailCampaignBatchNotificationsResponse) {
-	return
-}
-func (GetEmailCampaignBatchNotifications) HttpMethod() string { return "GET" }
-
-/** @description Get email campaign statistics */
-// @Route("/{version}/notifications/email/campaigns/{id}/stats", "GET")
-// @Api(Description="Get email campaign statistics")
-type GetEmailCampaignStatistics struct {
-	CodeMashRequestBase
-	/** @description The email campaign id to get statistics for. Get it from get_email_campaigns. */
-	// @ApiMember(Description="The email campaign id to get statistics for. Get it from get_email_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetEmailCampaignStatistics) CreateResponse() (r GetEmailCampaignStatisticsResponse) { return }
-func (GetEmailCampaignStatistics) HttpMethod() string                                     { return "GET" }
-
-/** @description Preview an email notification */
-// @Route("/{version}/notifications/email/preview", "GET")
-// @Api(Description="Preview an email notification")
-type PreviewEmailNotification struct {
-	RequestBase
-	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
-	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
-	Hash string `json:"hash"`
-	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
-	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
-	ProjectId *string `json:"projectId,omitempty"`
-	/** @description Signed-in preview by id: the notification id (needs email:read). With a hash it must match the hash. */
-	// @ApiMember(Description="Signed-in preview by id: the notification id (needs email:read). With a hash it must match the hash.")
-	NotificationId *string `json:"notificationId,omitempty"`
-}
-
-func (PreviewEmailNotification) CreateResponse() (r PreviewEmailNotificationResponse) { return }
-func (PreviewEmailNotification) HttpMethod() string                                   { return "GET" }
-
-/** @description Stops a running email campaign */
-// @Route("/{version}/notifications/email/campaigns/{Id}/stop", "POST")
-// @Api(Description="Stops a running email campaign")
-// @DataContract
-type StopEmailCampaignRequest struct {
-	CodeMashRequestBase
-	/** @description The campaign id to stop. */
-	// @DataMember
-	// @ApiMember(Description="The campaign id to stop.")
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @DataMember
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (StopEmailCampaignRequest) CreateResponse() (r EmptyResponse) { return }
-func (StopEmailCampaignRequest) HttpMethod() string                { return "POST" }
-
-/** @description Get email campaign messages */
-// @Route("/{version}/notifications/emails/campaigns/{campaignId}/messages", "GET")
-// @Api(Description="Get email campaign messages")
-type GetEmailCampaignMessagesRequest struct {
-	CodeMashListPaginationRequestBase
-	/** @description The email campaign id. Get it from get_email_campaigns. */
-	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
-	CampaignId string `json:"campaignId"`
-	/** @description The campaign batch id to list messages for. Get it from get_email_campaign_batches. */
-	// @ApiMember(Description="The campaign batch id to list messages for. Get it from get_email_campaign_batches.", IsRequired=true)
-	CampaignBatchId string `json:"campaignBatchId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetEmailCampaignMessagesRequest) CreateResponse() (r GetEmailCampaignMessagesResponse) { return }
-func (GetEmailCampaignMessagesRequest) HttpMethod() string                                   { return "GET" }
+func (RecordEmailClicksRequest) CreateResponse() (r RecordEmailClicksResponse) { return }
+func (RecordEmailClicksRequest) HttpMethod() string                            { return "POST" }
 
 /** @description Disable SMS service */
 // @Route("/{version}/notifications/sms/disable", "PUT")
@@ -13296,8 +17044,8 @@ type CloneSmsTemplateRequest struct {
 	Id string `json:"id"`
 }
 
-func (CloneSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
-func (CloneSmsTemplateRequest) HttpMethod() string                { return "POST" }
+func (CloneSmsTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (CloneSmsTemplateRequest) HttpMethod() string             { return "POST" }
 
 /** @description Create SMS template */
 // @Route("/{version}/notifications/sms/templates", "POST")
@@ -13406,8 +17154,8 @@ type UpdateSmsTemplateRequest struct {
 	ViewId string `json:"viewId"`
 }
 
-func (UpdateSmsTemplateRequest) CreateResponse() (r EmptyResponse) { return }
-func (UpdateSmsTemplateRequest) HttpMethod() string                { return "PUT" }
+func (UpdateSmsTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (UpdateSmsTemplateRequest) HttpMethod() string             { return "PUT" }
 
 /** @description Gets SMS settings */
 // @Route("/{version}/notifications/sms/settings", "GET")
@@ -13504,7 +17252,7 @@ func (GetSmsIntegrations) HttpMethod() string                             { retu
 type SaveSmsIntegration struct {
 	CodeMashRequestBase
 	// @DataMember(Name="integration")
-	Integration SmsIntegrationRequest `json:"integration"`
+	Integration interface{} `json:"integration"`
 }
 
 func (SaveSmsIntegration) CreateResponse() (r IdResponse) { return }
@@ -13539,193 +17287,340 @@ type TestSmsIntegration struct {
 func (TestSmsIntegration) CreateResponse() (r TestSmsIntegrationResponse) { return }
 func (TestSmsIntegration) HttpMethod() string                             { return "POST" }
 
-/** @description Deletes sms campaign from queue */
-// @Route("/{version}/notifications/sms/campaigns/{id}", "DELETE")
-// @Api(Description="Deletes sms campaign from queue")
-type DeleteSmsCampaign struct {
+// @Route("/{version}/code/workflows", "PUT")
+// @DataContract
+type SaveCodeWorkflow struct {
 	CodeMashRequestBase
-	/** @description The campaign id to delete. Get it from get_sms_campaigns. */
-	// @ApiMember(Description="The campaign id to delete. Get it from get_sms_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description The definition (JSON Schema v1 from GET /code/workflows/schema). */
+	// @DataMember
+	// @ApiMember(Description="The definition (JSON Schema v1 from GET /code/workflows/schema).", IsRequired=true)
+	Definition WorkflowDefinitionDto `json:"definition"`
 }
 
-func (DeleteSmsCampaign) CreateResponse() (r EmptyResponse) { return }
-func (DeleteSmsCampaign) HttpMethod() string                { return "DELETE" }
+func (SaveCodeWorkflow) CreateResponse() (r WorkflowResponse) { return }
+func (SaveCodeWorkflow) HttpMethod() string                   { return "PUT" }
 
-/** @description Get sms campaign by id */
-// @Route("/{version}/notifications/sms/campaigns/{id}", "GET")
-// @Api(Description="Get sms campaign by id")
-type GetSmsCampaign struct {
+// @Route("/{version}/code/workflows/{Id}/publish", "POST")
+// @DataContract
+type PublishCodeWorkflow struct {
 	CodeMashRequestBase
-	/** @description The campaign id. */
-	// @ApiMember(Description="The campaign id.")
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
 	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-func (GetSmsCampaign) CreateResponse() (r GetSmsCampaignResponse) { return }
-func (GetSmsCampaign) HttpMethod() string                         { return "GET" }
+func (PublishCodeWorkflow) CreateResponse() (r WorkflowResponse) { return }
+func (PublishCodeWorkflow) HttpMethod() string                   { return "POST" }
 
-/** @description Gets sms campaigns */
-// @Route("/{version}/notifications/sms/campaigns", "GET")
-// @Api(Description="Gets sms campaigns")
-type GetSmsCampaigns struct {
-	CodeMashListPaginationRequestBase
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional: return only the campaign with this id. */
-	// @ApiMember(Description="Optional: return only the campaign with this id.")
-	CampaignId *string `json:"campaignId,omitempty"`
-	/** @description Optional: only campaigns built on this SMS template id. */
-	// @ApiMember(Description="Optional: only campaigns built on this SMS template id.")
-	TemplateId *string `json:"templateId,omitempty"`
-	/** @description Optional lower bound for the campaign time, unix timestamp in seconds (UTC). */
-	// @ApiMember(Description="Optional lower bound for the campaign time, unix timestamp in seconds (UTC).")
-	From *int64 `json:"from,omitempty"`
-	/** @description Optional upper bound for the campaign time, unix timestamp in seconds (UTC). */
-	// @ApiMember(Description="Optional upper bound for the campaign time, unix timestamp in seconds (UTC).")
-	To *int64 `json:"to,omitempty"`
-}
-
-func (GetSmsCampaigns) CreateResponse() (r GetSmsCampaignsResponse) { return }
-func (GetSmsCampaigns) HttpMethod() string                          { return "GET" }
-
-/** @description Gets sms campaign batches */
-// @Route("/{version}/notifications/sms/campaigns/{id}/batches", "GET")
-// @Api(Description="Gets sms campaign batches")
-type GetSmsCampaignBatches struct {
-	CodeMashListPaginationRequestBase
-	/** @description The campaign id. Get it from get_sms_campaigns. */
-	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.")
-	Id *string `json:"id,omitempty"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetSmsCampaignBatches) CreateResponse() (r GetSmsCampaignBatchesResponse) { return }
-func (GetSmsCampaignBatches) HttpMethod() string                                { return "GET" }
-
-/** @description Gets sms campaign batch notification */
-// @Route("/{version}/notifications/sms/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
-// @Api(Description="Gets sms campaign batch notification")
-type GetSmsCampaignBatchNotification struct {
-	CodeMashListPaginationRequestBase
-	/** @description The campaign id. Get it from get_sms_campaigns. */
-	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
+// @Route("/{version}/code/workflows/{Id}/draft", "GET")
+// @DataContract
+type GetCodeWorkflowDraft struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
 	Id string `json:"id"`
-	/** @description The campaign batch id. Get it from get_sms_campaign_batches. */
-	// @ApiMember(Description="The campaign batch id. Get it from get_sms_campaign_batches.", IsRequired=true)
-	BatchId string `json:"batchId"`
-	/** @description The notification id. Get it from get_sms_campaign_batch_notifications. */
-	// @ApiMember(Description="The notification id. Get it from get_sms_campaign_batch_notifications.", IsRequired=true)
-	NotificationId string `json:"notificationId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-func (GetSmsCampaignBatchNotification) CreateResponse() (r GetSmsCampaignBatchNotificationResponse) {
+func (GetCodeWorkflowDraft) CreateResponse() (r WorkflowResponse) { return }
+func (GetCodeWorkflowDraft) HttpMethod() string                   { return "GET" }
+
+// @Route("/{version}/code/workflows/{Id}/draft", "DELETE")
+// @DataContract
+type DiscardCodeWorkflowDraft struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (DiscardCodeWorkflowDraft) CreateResponse() (r EmptyResponse) { return }
+func (DiscardCodeWorkflowDraft) HttpMethod() string                { return "DELETE" }
+
+// @Route("/{version}/code/workflows/{Id}/versions", "GET")
+// @DataContract
+type GetCodeWorkflowVersions struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (GetCodeWorkflowVersions) CreateResponse() (r WorkflowVersionsResponse) { return }
+func (GetCodeWorkflowVersions) HttpMethod() string                           { return "GET" }
+
+// @Route("/{version}/code/workflows/{Id}/versions/diff", "GET")
+// @DataContract
+type GetCodeWorkflowVersionDiff struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The earlier version. */
+	// @DataMember
+	// @ApiMember(DataType="integer", Description="The earlier version.", IsRequired=true)
+	FromVersion int `json:"fromVersion"`
+	/** @description The later version. */
+	// @DataMember
+	// @ApiMember(DataType="integer", Description="The later version.", IsRequired=true)
+	ToVersion int `json:"toVersion"`
+}
+
+func (GetCodeWorkflowVersionDiff) CreateResponse() (r WorkflowVersionDiffResponse) { return }
+func (GetCodeWorkflowVersionDiff) HttpMethod() string                              { return "GET" }
+
+// @Route("/{version}/code/workflows/validate", "POST")
+// @DataContract
+type ValidateCodeWorkflow struct {
+	CodeMashRequestBase
+	// @DataMember
+	// @ApiMember(IsRequired=true)
+	Definition WorkflowDefinitionDto `json:"definition"`
+}
+
+func (ValidateCodeWorkflow) CreateResponse() (r ValidateCodeWorkflowResponse) { return }
+func (ValidateCodeWorkflow) HttpMethod() string                               { return "POST" }
+
+// @Route("/{version}/code/workflows", "GET")
+// @DataContract
+type GetCodeWorkflows struct {
+	CodeMashListPaginationRequestBase
+	/** @description Only enabled (true) or only disabled (false) workflows. */
+	// @DataMember
+	// @ApiMember(Description="Only enabled (true) or only disabled (false) workflows.")
+	IsEnabled *bool `json:"isEnabled,omitempty"`
+}
+
+func (GetCodeWorkflows) CreateResponse() (r WorkflowsResponse) { return }
+func (GetCodeWorkflows) HttpMethod() string                    { return "GET" }
+
+// @Route("/{version}/code/workflows/{Id}", "GET")
+// @DataContract
+type GetCodeWorkflow struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+	/** @description A pinned published version; absent = the latest. */
+	// @DataMember
+	// @ApiMember(DataType="integer", Description="A pinned published version; absent = the latest.")
+	PinnedVersion *int `json:"pinnedVersion,omitempty"`
+}
+
+func (GetCodeWorkflow) CreateResponse() (r WorkflowResponse) { return }
+func (GetCodeWorkflow) HttpMethod() string                   { return "GET" }
+
+// @Route("/{version}/code/workflows/{Id}", "DELETE")
+// @DataContract
+type DeleteCodeWorkflow struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (DeleteCodeWorkflow) CreateResponse() (r EmptyResponse) { return }
+func (DeleteCodeWorkflow) HttpMethod() string                { return "DELETE" }
+
+// @Route("/{version}/code/workflows/{Id}/enable", "PUT")
+// @DataContract
+type EnableCodeWorkflow struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (EnableCodeWorkflow) CreateResponse() (r WorkflowResponse) { return }
+func (EnableCodeWorkflow) HttpMethod() string                   { return "PUT" }
+
+// @Route("/{version}/code/workflows/{Id}/disable", "PUT")
+// @DataContract
+type DisableCodeWorkflow struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (DisableCodeWorkflow) CreateResponse() (r WorkflowResponse) { return }
+func (DisableCodeWorkflow) HttpMethod() string                   { return "PUT" }
+
+// @Route("/{version}/code/workflows/schema", "GET")
+// @DataContract
+type GetCodeWorkflowSchema struct {
+	CodeMashRequestBase
+}
+
+func (GetCodeWorkflowSchema) CreateResponse() (r WorkflowSchemaResponse) { return }
+func (GetCodeWorkflowSchema) HttpMethod() string                         { return "GET" }
+
+// @Route("/{version}/code/workflows/enable", "PUT")
+// @DataContract
+type EnableCodeWorkflows struct {
+	CodeMashRequestBase
+}
+
+func (EnableCodeWorkflows) CreateResponse() (r EmptyResponse) { return }
+func (EnableCodeWorkflows) HttpMethod() string                { return "PUT" }
+
+// @Route("/{version}/code/workflows/disable", "PUT")
+// @DataContract
+type DisableCodeWorkflows struct {
+	CodeMashRequestBase
+}
+
+func (DisableCodeWorkflows) CreateResponse() (r EmptyResponse) { return }
+func (DisableCodeWorkflows) HttpMethod() string                { return "PUT" }
+
+// @Route("/{version}/code/marketplace/listings/{ListingViewId}/install-workflow", "POST")
+// @DataContract
+type InstallMarketplaceWorkflow struct {
+	CodeMashRequestBase
+	/** @description ml_… a listing of kind Workflow. */
+	// @DataMember
+	// @ApiMember(Description="ml_… a listing of kind Workflow.", IsRequired=true)
+	ListingViewId string `json:"listingViewId"`
+	/** @description The new workflow's name; absent = the listing's. */
+	// @DataMember
+	// @ApiMember(Description="The new workflow's name; absent = the listing's.")
+	Name *string `json:"name,omitempty"`
+	/** @description usr_… the execution identity; absent = the env's default. */
+	// @DataMember
+	// @ApiMember(Description="usr_… the execution identity; absent = the env's default.")
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	/** @description A value for every reference the listing declares, by key: a collection name, a template id, an integration id. */
+	// @DataMember
+	// @ApiMember(Description="A value for every reference the listing declares, by key: a collection name, a template id, an integration id.", IsRequired=true)
+	References map[string]string `json:"references"`
+}
+
+func (InstallMarketplaceWorkflow) CreateResponse() (r WorkflowResponse) { return }
+func (InstallMarketplaceWorkflow) HttpMethod() string                   { return "POST" }
+
+// @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/access", "GET")
+type GetMarketplaceIntegrationAccess struct {
+	CodeMashRequestBase
+	/** @description Integration view id, from get_marketplace_integrations. */
+	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
+	IntegrationViewId string `json:"integrationViewId"`
+}
+
+func (GetMarketplaceIntegrationAccess) CreateResponse() (r GetMarketplaceIntegrationAccessResponse) {
 	return
 }
-func (GetSmsCampaignBatchNotification) HttpMethod() string { return "GET" }
+func (GetMarketplaceIntegrationAccess) HttpMethod() string { return "GET" }
 
-/** @description Gets sms campaign batch notifications */
-// @Route("/{version}/notifications/sms/campaigns/{id}/batches/{batchId}", "GET")
-// @Api(Description="Gets sms campaign batch notifications")
-type GetSmsCampaignBatchNotifications struct {
-	CodeMashListPaginationRequestBase
-	/** @description The campaign id. Get it from get_sms_campaigns. */
-	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description The campaign batch id. Get it from get_sms_campaign_batches. */
-	// @ApiMember(Description="The campaign batch id. Get it from get_sms_campaign_batches.", IsRequired=true)
-	BatchId string `json:"batchId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+// @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/access/roles", "PUT")
+// @DataContract
+type SetMarketplaceIntegrationRoleAccess struct {
+	CodeMashRequestBase
+	/** @description Integration view id, from get_marketplace_integrations. */
+	// @DataMember
+	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
+	IntegrationViewId string `json:"integrationViewId"`
+	/** @description The role's composite id: acc_…_nr_… (account / team role) or pr_…_nr_… (project role). */
+	// @DataMember
+	// @ApiMember(Description="The role's composite id: acc_…_nr_… (account / team role) or pr_…_nr_… (project role).", IsRequired=true)
+	RoleId string `json:"roleId"`
+	/** @description None, Viewer, FunctionsOnly, ReadOnly or FullAccess. */
+	// @DataMember
+	// @ApiMember(Description="None, Viewer, FunctionsOnly, ReadOnly or FullAccess.")
+	Package MarketplaceAccessLevel `json:"package,omitempty"`
+	/** @description True to also give the Manage package (edit the connection, its secrets, validation and functions). */
+	// @DataMember
+	// @ApiMember(Description="True to also give the Manage package (edit the connection, its secrets, validation and functions).")
+	Manage bool `json:"manage,omitempty"`
 }
 
-func (GetSmsCampaignBatchNotifications) CreateResponse() (r GetSmsCampaignBatchNotificationsResponse) {
+func (SetMarketplaceIntegrationRoleAccess) CreateResponse() (r IdResponse) { return }
+func (SetMarketplaceIntegrationRoleAccess) HttpMethod() string             { return "PUT" }
+
+// @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/access/roles/custom", "POST")
+// @DataContract
+type SaveMarketplaceIntegrationCustomAccess struct {
+	CodeMashRequestBase
+	/** @description Integration view id, from get_marketplace_integrations. */
+	// @DataMember
+	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
+	IntegrationViewId string `json:"integrationViewId"`
+	/** @description The role's composite id: acc_…_nr_… or pr_…_nr_…. */
+	// @DataMember
+	// @ApiMember(Description="The role's composite id: acc_…_nr_… or pr_…_nr_….", IsRequired=true)
+	RoleId string `json:"roleId"`
+	/** @description The package to start from: None, Viewer, FunctionsOnly, ReadOnly or FullAccess. */
+	// @DataMember
+	// @ApiMember(Description="The package to start from: None, Viewer, FunctionsOnly, ReadOnly or FullAccess.")
+	BasePackage MarketplaceAccessLevel `json:"basePackage,omitempty"`
+	/** @description Tool names the role may run (from the connection's tools). */
+	// @DataMember
+	// @ApiMember(Description="Tool names the role may run (from the connection's tools).")
+	Tools []string `json:"tools"`
+	/** @description Function ids (func_…) of this connection the role may run. */
+	// @DataMember
+	// @ApiMember(Description="Function ids (func_…) of this connection the role may run.")
+	Functions []string `json:"functions"`
+	/** @description True to include the Manage rights (edit the connection, its secrets, validation and functions). */
+	// @DataMember
+	// @ApiMember(Description="True to include the Manage rights (edit the connection, its secrets, validation and functions).")
+	Manage bool `json:"manage,omitempty"`
+	/** @description True to write a new policy for this role only when its current custom policy is shared with other roles. */
+	// @DataMember
+	// @ApiMember(Description="True to write a new policy for this role only when its current custom policy is shared with other roles.")
+	NewPolicyForThisRoleOnly bool `json:"newPolicyForThisRoleOnly,omitempty"`
+}
+
+func (SaveMarketplaceIntegrationCustomAccess) CreateResponse() (r SaveMarketplaceIntegrationCustomAccessResponse) {
 	return
 }
-func (GetSmsCampaignBatchNotifications) HttpMethod() string { return "GET" }
+func (SaveMarketplaceIntegrationCustomAccess) HttpMethod() string { return "POST" }
 
-/** @description Get sms campaign statistics */
-// @Route("/{version}/notifications/sms/campaigns/{id}/stats", "GET")
-// @Api(Description="Get sms campaign statistics")
-type GetSmsCampaignStatistics struct {
+// @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/tools", "GET")
+type GetMarketplaceIntegrationTools struct {
 	CodeMashRequestBase
-	/** @description The campaign id. Get it from get_sms_campaigns. */
-	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Integration view id, from get_marketplace_integrations. */
+	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
+	IntegrationViewId string `json:"integrationViewId"`
 }
 
-func (GetSmsCampaignStatistics) CreateResponse() (r GetSmsCampaignStatisticsResponse) { return }
-func (GetSmsCampaignStatistics) HttpMethod() string                                   { return "GET" }
-
-/** @description Returns SMS preview notification body */
-// @Route("/{version}/notifications/sms/preview", "GET")
-// @Api(Description="Returns SMS preview notification body")
-type PreviewSmsNotification struct {
-	RequestBase
-	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
-	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
-	Hash string `json:"hash"`
-	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
-	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
-	ProjectId *string `json:"projectId,omitempty"`
-	/** @description Signed-in preview by id: the notification id (needs sms:read). With a hash it must match the hash. */
-	// @ApiMember(Description="Signed-in preview by id: the notification id (needs sms:read). With a hash it must match the hash.")
-	NotificationId *string `json:"notificationId,omitempty"`
+func (GetMarketplaceIntegrationTools) CreateResponse() (r GetMarketplaceIntegrationToolsResponse) {
+	return
 }
+func (GetMarketplaceIntegrationTools) HttpMethod() string { return "GET" }
 
-func (PreviewSmsNotification) CreateResponse() (r PreviewSmsNotificationResponse) { return }
-func (PreviewSmsNotification) HttpMethod() string                                 { return "GET" }
-
-/** @description Stops a running SMS campaign */
-// @Route("/{version}/notifications/sms/campaigns/{Id}/stop", "POST")
-// @Api(Description="Stops a running SMS campaign")
-type StopSmsCampaignRequest struct {
+// @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/oauth/start", "POST")
+type StartMarketplaceIntegrationSignIn struct {
 	CodeMashRequestBase
-	/** @description The campaign id to stop. */
-	// @ApiMember(Description="The campaign id to stop.")
-	Id string `json:"id"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Integration view id, from get_marketplace_integrations. */
+	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
+	IntegrationViewId string `json:"integrationViewId"`
 }
 
-func (StopSmsCampaignRequest) CreateResponse() (r EmptyResponse) { return }
-func (StopSmsCampaignRequest) HttpMethod() string                { return "POST" }
+func (StartMarketplaceIntegrationSignIn) CreateResponse() (r StartMarketplaceIntegrationSignInResponse) {
+	return
+}
+func (StartMarketplaceIntegrationSignIn) HttpMethod() string { return "POST" }
 
-/** @description Gets the sms notifications */
-// @Route("/{version}/notifications/sms/campaigns/{campaignId}/messages", "GET")
-// @Api(Description="Gets the sms notifications")
-type GetSmsCampaignMessagesRequest struct {
-	CodeMashListPaginationRequestBase
-	/** @description The campaign id. Get it from get_sms_campaigns. */
-	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
-	CampaignId string `json:"campaignId"`
-	/** @description The campaign batch id. Get it from get_sms_campaign_batches. */
-	// @ApiMember(Description="The campaign batch id. Get it from get_sms_campaign_batches.", IsRequired=true)
-	CampaignBatchId string `json:"campaignBatchId"`
-	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
-	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+// @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/oauth/sign-out", "POST")
+type SignOutMarketplaceIntegration struct {
+	CodeMashRequestBase
+	/** @description Integration view id, from get_marketplace_integrations. */
+	// @ApiMember(Description="Integration view id, from get_marketplace_integrations.", IsRequired=true)
+	IntegrationViewId string `json:"integrationViewId"`
 }
 
-func (GetSmsCampaignMessagesRequest) CreateResponse() (r GetSmsCampaignMessagesResponse) { return }
-func (GetSmsCampaignMessagesRequest) HttpMethod() string                                 { return "GET" }
+func (SignOutMarketplaceIntegration) CreateResponse() (r SignOutMarketplaceIntegrationResponse) {
+	return
+}
+func (SignOutMarketplaceIntegration) HttpMethod() string { return "POST" }
 
 // @Route("/{version}/code/marketplace/integrations/{IntegrationViewId}/secrets", "PUT")
 // @DataContract
@@ -13768,7 +17663,7 @@ type SetMarketplaceIntegrationTokenMappingsRequest struct {
 	// @ApiMember(Description="Integration view id (int_…).", IsRequired=true)
 	IntegrationViewId string `json:"integrationViewId"`
 	// @DataMember
-	TokenMappings []MarketplaceTokenMappingDto `json:"tokenMappings"`
+	TokenMappings []TokenMappingDto `json:"tokenMappings"`
 }
 
 func (SetMarketplaceIntegrationTokenMappingsRequest) CreateResponse() (r SetMarketplaceIntegrationTokenMappingsResponse) {
@@ -13788,6 +17683,346 @@ func (GetMarketplaceFunctionCatalog) CreateResponse() (r GetMarketplaceFunctionC
 	return
 }
 func (GetMarketplaceFunctionCatalog) HttpMethod() string { return "GET" }
+
+// @Route("/{version}/code/marketplace/functions/runs", "GET")
+type GetMarketplaceFunctionRuns struct {
+	CodeMashRequestBase
+	/** @description The marketplace function whose runs to list, from every source (func_…). One of functionId / triggerId / taskId. */
+	// @ApiMember(Description="The marketplace function whose runs to list, from every source (func_…). One of functionId / triggerId / taskId.")
+	FunctionId *string `json:"functionId,omitempty"`
+	/** @description The trigger whose marketplace function runs to list (trg_…). One of functionId / triggerId / taskId. */
+	// @ApiMember(Description="The trigger whose marketplace function runs to list (trg_…). One of functionId / triggerId / taskId.")
+	TriggerId *string `json:"triggerId,omitempty"`
+	/** @description The scheduler task whose marketplace function runs to list (tsk_…). One of functionId / triggerId / taskId. */
+	// @ApiMember(Description="The scheduler task whose marketplace function runs to list (tsk_…). One of functionId / triggerId / taskId.")
+	TaskId *string `json:"taskId,omitempty"`
+	/** @description The MCP connection whose tool runs to list — the calls an AI chat made to one of its tools without a saved function (int_…). One of functionId / triggerId / taskId / integrationId. */
+	// @ApiMember(Description="The MCP connection whose tool runs to list — the calls an AI chat made to one of its tools without a saved function (int_…). One of functionId / triggerId / taskId / integrationId.")
+	IntegrationId *string `json:"integrationId,omitempty"`
+	/** @description How many runs, newest first: 1-50. Default 20. */
+	// @ApiMember(DataType="integer", Description="How many runs, newest first: 1-50. Default 20.")
+	Limit *int `json:"limit,omitempty"`
+}
+
+func (GetMarketplaceFunctionRuns) CreateResponse() (r GetMarketplaceFunctionRunsResponse) { return }
+func (GetMarketplaceFunctionRuns) HttpMethod() string                                     { return "GET" }
+
+// @Route("/{version}/code/functions", "GET")
+type GetCodeFunctions struct {
+	CodeMashListPaginationRequestBase
+	/** @description Code integration id (int_…), from get_code_integrations. */
+	// @ApiMember(Description="Code integration id (int_…), from get_code_integrations.", IsRequired=true)
+	IntegrationId string `json:"integrationId"`
+	/** @description Only functions whose id starts with this. */
+	// @ApiMember(Description="Only functions whose id starts with this.")
+	Prefix *string `json:"prefix,omitempty"`
+	/** @description Only functions carrying this tag: "key" or "key=value". */
+	// @ApiMember(Description="Only functions carrying this tag: \"key\" or \"key=value\".")
+	Tag *string `json:"tag,omitempty"`
+}
+
+func (GetCodeFunctions) CreateResponse() (r GetCodeFunctionsResponse) { return }
+func (GetCodeFunctions) HttpMethod() string                           { return "GET" }
+
+// @Route("/{version}/code/functions/event-sample", "GET")
+type GetCodeFunctionEventSample struct {
+	CodeMashRequestBase
+	/** @description Database | Membership | Files | Payments | Ai | Scheduler | Manual. */
+	// @ApiMember(Description="Database | Membership | Files | Payments | Ai | Scheduler | Manual.", IsRequired=true)
+	Source CodeFunctionSource `json:"source"`
+	/** @description The event name, e.g. database.record.inserted; omitted = the source's usual one. */
+	// @ApiMember(Description="The event name, e.g. database.record.inserted; omitted = the source's usual one.")
+	Event *string `json:"event,omitempty"`
+	/** @description The schema id to put into data.database.schemaId (Database source). */
+	// @ApiMember(Description="The schema id to put into data.database.schemaId (Database source).")
+	SchemaId *string `json:"schemaId,omitempty"`
+}
+
+func (GetCodeFunctionEventSample) CreateResponse() (r GetCodeFunctionEventSampleResponse) { return }
+func (GetCodeFunctionEventSample) HttpMethod() string                                     { return "GET" }
+
+// @Route("/{version}/code/functions/qualifiers", "GET")
+type GetCodeFunctionQualifiers struct {
+	CodeMashRequestBase
+	/** @description Code integration id (int_…), from get_code_integrations. */
+	// @ApiMember(Description="Code integration id (int_…), from get_code_integrations.", IsRequired=true)
+	IntegrationId string `json:"integrationId"`
+	/** @description Provider-native function id, from get_code_functions. */
+	// @ApiMember(Description="Provider-native function id, from get_code_functions.", IsRequired=true)
+	FunctionId string `json:"functionId"`
+}
+
+func (GetCodeFunctionQualifiers) CreateResponse() (r GetCodeFunctionQualifiersResponse) { return }
+func (GetCodeFunctionQualifiers) HttpMethod() string                                    { return "GET" }
+
+// @Route("/{version}/code/functions/runs", "GET")
+type GetCodeFunctionRuns struct {
+	CodeMashRequestBase
+	/** @description The trigger whose function runs to list (trg_…). One of triggerId / taskId. */
+	// @ApiMember(Description="The trigger whose function runs to list (trg_…). One of triggerId / taskId.")
+	TriggerId *string `json:"triggerId,omitempty"`
+	/** @description The scheduler task whose function runs to list (tsk_…). One of triggerId / taskId. */
+	// @ApiMember(Description="The scheduler task whose function runs to list (tsk_…). One of triggerId / taskId.")
+	TaskId *string `json:"taskId,omitempty"`
+	/** @description The Code integration of the function (int_…). With functionId: every call of that function. */
+	// @ApiMember(Description="The Code integration of the function (int_…). With functionId: every call of that function.")
+	IntegrationId *string `json:"integrationId,omitempty"`
+	/** @description The provider's function id (name or ARN), as GET /code/functions lists it. Needs integrationId. */
+	// @ApiMember(Description="The provider's function id (name or ARN), as GET /code/functions lists it. Needs integrationId.")
+	FunctionId *string `json:"functionId,omitempty"`
+	/** @description How many runs, newest first: 1-50. Default 20. */
+	// @ApiMember(DataType="integer", Description="How many runs, newest first: 1-50. Default 20.")
+	Limit *int `json:"limit,omitempty"`
+}
+
+func (GetCodeFunctionRuns) CreateResponse() (r GetCodeFunctionRunsResponse) { return }
+func (GetCodeFunctionRuns) HttpMethod() string                              { return "GET" }
+
+// @Route("/{version}/code/functions/invoke", "POST")
+// @DataContract
+type InvokeCodeFunction struct {
+	CodeMashRequestBase
+	/** @description Which function: { integrationId, functionId, qualifier? }. */
+	// @DataMember
+	// @ApiMember(Description="Which function: { integrationId, functionId, qualifier? }.", IsRequired=true)
+	FunctionRef FunctionRefDto `json:"functionRef"`
+	// @DataMember
+	Payload map[string]interface{} `json:"payload,omitempty"`
+	/** @description Sync (wait for the result, default) or Async (fire and forget). */
+	// @DataMember
+	// @ApiMember(Description="Sync (wait for the result, default) or Async (fire and forget).")
+	InvocationType CodeInvocationType `json:"invocationType,omitempty"`
+	/** @description The service user the function acts as (usr_…); omitted = you. */
+	// @DataMember
+	// @ApiMember(Description="The service user the function acts as (usr_…); omitted = you.")
+	RunAsUserId *string `json:"runAsUserId,omitempty"`
+	/** @description A JSON object → envelope config. No bindings: a manual call has nothing to bind them with. */
+	// @DataMember
+	// @ApiMember(Description="A JSON object → envelope config. No bindings: a manual call has nothing to bind them with.")
+	Config *string `json:"config,omitempty"`
+}
+
+func (InvokeCodeFunction) CreateResponse() (r InvokeCodeFunctionResponse) { return }
+func (InvokeCodeFunction) HttpMethod() string                             { return "POST" }
+
+// @Route("/{version}/code/workflows/{Id}/invoke", "POST")
+// @DataContract
+type InvokeCodeWorkflow struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The @Model.Request object; checked against the definition's inputs when it has one. */
+	// @DataMember
+	// @ApiMember(Description="The @Model.Request object; checked against the definition's inputs when it has one.")
+	Payload map[string]interface{} `json:"payload,omitempty"`
+	/** @description 0–30 seconds to wait for the run; default 10; 0 answers 202 at once. */
+	// @DataMember
+	// @ApiMember(DataType="integer", Description="0–30 seconds to wait for the run; default 10; 0 answers 202 at once.")
+	WaitSeconds *int `json:"waitSeconds,omitempty"`
+	/** @description "draft" to test the draft, a version number to pin one; absent = the latest published. */
+	// @DataMember
+	// @ApiMember(Description="\"draft\" to test the draft, a version number to pin one; absent = the latest published.")
+	RunVersion *string `json:"runVersion,omitempty"`
+}
+
+func (InvokeCodeWorkflow) CreateResponse() (r InvokeCodeWorkflowResponse) { return }
+func (InvokeCodeWorkflow) HttpMethod() string                             { return "POST" }
+
+// @Route("/{version}/code/workflows/runs", "GET")
+// @DataContract
+type GetCodeWorkflowWaitingRuns struct {
+	CodeMashListPaginationRequestBase
+	/** @description running | waiting (default) | succeeded | failed | cancelled */
+	// @DataMember
+	// @ApiMember(Description="running | waiting (default) | succeeded | failed | cancelled")
+	Status *string `json:"status,omitempty"`
+	/** @description approval | event | delay | child */
+	// @DataMember
+	// @ApiMember(Description="approval | event | delay | child")
+	WaitingKind *string `json:"waitingKind,omitempty"`
+	/** @description "me" or a usr_… id: only approvals assigned to that user. Without code:read only "me" (the default then). */
+	// @DataMember
+	// @ApiMember(Description="\"me\" or a usr_… id: only approvals assigned to that user. Without code:read only \"me\" (the default then).")
+	Assignee *string `json:"assignee,omitempty"`
+	/** @description Only runs of this workflow (wf_…). */
+	// @DataMember
+	// @ApiMember(Description="Only runs of this workflow (wf_…).")
+	WorkflowId *string `json:"workflowId,omitempty"`
+	/** @description The wait's rendered key, exact match. */
+	// @DataMember
+	// @ApiMember(Description="The wait's rendered key, exact match.")
+	Key *string `json:"key,omitempty"`
+}
+
+func (GetCodeWorkflowWaitingRuns) CreateResponse() (r WorkflowRunsResponse) { return }
+func (GetCodeWorkflowWaitingRuns) HttpMethod() string                       { return "GET" }
+
+// @Route("/{version}/code/workflows/runs/{RunId}/resume", "POST")
+// @DataContract
+type ResumeCodeWorkflowRun struct {
+	CodeMashRequestBase
+	/** @description wfr_… */
+	// @DataMember
+	// @ApiMember(Description="wfr_…", IsRequired=true)
+	RunId string `json:"runId"`
+	/** @description Required when several steps wait. */
+	// @DataMember
+	// @ApiMember(Description="Required when several steps wait.")
+	StepId *string `json:"stepId,omitempty"`
+	/** @description approved | rejected — required for an approval wait. */
+	// @DataMember
+	// @ApiMember(Description="approved | rejected — required for an approval wait.")
+	Decision *string `json:"decision,omitempty"`
+	// @DataMember
+	Payload map[string]interface{} `json:"payload,omitempty"`
+}
+
+func (ResumeCodeWorkflowRun) CreateResponse() (r WorkflowRunResponse) { return }
+func (ResumeCodeWorkflowRun) HttpMethod() string                      { return "POST" }
+
+/** @description Beta: what a workflow's one-click link will do — no sign-in, nothing changes. POST the same URL to answer. */
+// @Route("/{version}/code/workflows/resume/{Token}", "GET")
+// @Api(Description="Beta: what a workflow's one-click link will do — no sign-in, nothing changes. POST the same URL to answer.")
+// @DataContract
+type OpenCodeWorkflowResumeLink struct {
+	RequestBase
+	/** @description The signed link token from the wait's notification (@Model.Wait.ApproveUrl / RejectUrl / ResumeUrl). */
+	// @DataMember
+	// @ApiMember(Description="The signed link token from the wait's notification (@Model.Wait.ApproveUrl / RejectUrl / ResumeUrl).", IsRequired=true)
+	Token string `json:"token"`
+}
+
+func (OpenCodeWorkflowResumeLink) CreateResponse() (r CodeWorkflowResumeLinkResponse) { return }
+func (OpenCodeWorkflowResumeLink) HttpMethod() string                                 { return "GET" }
+
+/** @description Beta: answers a workflow's waiting step with a one-click link — no sign-in; the run goes on as the workflow's execution identity. */
+// @Route("/{version}/code/workflows/resume/{Token}", "POST")
+// @Api(Description="Beta: answers a workflow's waiting step with a one-click link — no sign-in; the run goes on as the workflow's execution identity.")
+// @DataContract
+type UseCodeWorkflowResumeLink struct {
+	RequestBase
+	/** @description The signed link token. */
+	// @DataMember
+	// @ApiMember(Description="The signed link token.", IsRequired=true)
+	Token string `json:"token"`
+}
+
+func (UseCodeWorkflowResumeLink) CreateResponse() (r WorkflowRunResponse) { return }
+func (UseCodeWorkflowResumeLink) HttpMethod() string                      { return "POST" }
+
+// @Route("/{version}/code/workflows/{Id}/runs", "GET")
+// @DataContract
+type GetCodeWorkflowRuns struct {
+	CodeMashListPaginationRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+	/** @description running | waiting | succeeded | failed | cancelled */
+	// @DataMember
+	// @ApiMember(Description="running | waiting | succeeded | failed | cancelled")
+	Status *string `json:"status,omitempty"`
+	// @DataMember
+	From *time.Time `json:"from,omitempty"`
+	// @DataMember
+	To *time.Time `json:"to,omitempty"`
+}
+
+func (GetCodeWorkflowRuns) CreateResponse() (r WorkflowRunsResponse) { return }
+func (GetCodeWorkflowRuns) HttpMethod() string                       { return "GET" }
+
+// @Route("/{version}/code/workflows/runs/{RunId}", "GET")
+// @DataContract
+type GetCodeWorkflowRun struct {
+	CodeMashRequestBase
+	/** @description wfr_… */
+	// @DataMember
+	// @ApiMember(Description="wfr_…", IsRequired=true)
+	RunId string `json:"runId"`
+}
+
+func (GetCodeWorkflowRun) CreateResponse() (r WorkflowRunResponse) { return }
+func (GetCodeWorkflowRun) HttpMethod() string                      { return "GET" }
+
+// @Route("/{version}/code/workflows/runs/{RunId}/logs", "GET")
+// @DataContract
+type GetCodeWorkflowRunLogs struct {
+	CodeMashListPaginationRequestBase
+	/** @description wfr_… */
+	// @DataMember
+	// @ApiMember(Description="wfr_…", IsRequired=true)
+	RunId string `json:"runId"`
+	/** @description Only this step's lines. */
+	// @DataMember
+	// @ApiMember(Description="Only this step's lines.")
+	StepId *string `json:"stepId,omitempty"`
+	/** @description Information | Warning | Error */
+	// @DataMember
+	// @ApiMember(Description="Information | Warning | Error")
+	Level *string `json:"level,omitempty"`
+}
+
+func (GetCodeWorkflowRunLogs) CreateResponse() (r WorkflowRunLogsResponse) { return }
+func (GetCodeWorkflowRunLogs) HttpMethod() string                          { return "GET" }
+
+// @Route("/{version}/code/workflows/{Id}/resume", "POST")
+// @DataContract
+type ResumeCodeWorkflowRunByKey struct {
+	CodeMashRequestBase
+	/** @description wf_… */
+	// @DataMember
+	// @ApiMember(Description="wf_…", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The wait's rendered key. */
+	// @DataMember
+	// @ApiMember(Description="The wait's rendered key.", IsRequired=true)
+	Key string `json:"key"`
+	// @DataMember
+	StepId *string `json:"stepId,omitempty"`
+	/** @description approved | rejected — required for an approval wait. */
+	// @DataMember
+	// @ApiMember(Description="approved | rejected — required for an approval wait.")
+	Decision *string `json:"decision,omitempty"`
+	// @DataMember
+	Payload map[string]interface{} `json:"payload,omitempty"`
+}
+
+func (ResumeCodeWorkflowRunByKey) CreateResponse() (r WorkflowRunResponse) { return }
+func (ResumeCodeWorkflowRunByKey) HttpMethod() string                      { return "POST" }
+
+// @Route("/{version}/code/workflows/runs/{RunId}/retry", "POST")
+// @DataContract
+type RetryCodeWorkflowRunStep struct {
+	CodeMashRequestBase
+	/** @description wfr_… */
+	// @DataMember
+	// @ApiMember(Description="wfr_…", IsRequired=true)
+	RunId string `json:"runId"`
+	/** @description The failed step; default = the step named in the run's error. */
+	// @DataMember
+	// @ApiMember(Description="The failed step; default = the step named in the run's error.")
+	StepId *string `json:"stepId,omitempty"`
+}
+
+func (RetryCodeWorkflowRunStep) CreateResponse() (r WorkflowRunResponse) { return }
+func (RetryCodeWorkflowRunStep) HttpMethod() string                      { return "POST" }
+
+// @Route("/{version}/code/workflows/runs/{RunId}/cancel", "POST")
+// @DataContract
+type CancelCodeWorkflowRun struct {
+	CodeMashRequestBase
+	/** @description wfr_… */
+	// @DataMember
+	// @ApiMember(Description="wfr_…", IsRequired=true)
+	RunId string `json:"runId"`
+	// @DataMember
+	Reason *string `json:"reason,omitempty"`
+}
+
+func (CancelCodeWorkflowRun) CreateResponse() (r WorkflowRunResponse) { return }
+func (CancelCodeWorkflowRun) HttpMethod() string                      { return "POST" }
 
 /** @description Disable push service */
 // @Route("/{version}/notifications/push/disable", "PUT")
@@ -13844,8 +18079,8 @@ type ClonePushTemplateRequest struct {
 	Id string `json:"id"`
 }
 
-func (ClonePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
-func (ClonePushTemplateRequest) HttpMethod() string                { return "POST" }
+func (ClonePushTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (ClonePushTemplateRequest) HttpMethod() string             { return "POST" }
 
 /** @description Create push template */
 // @Route("/{version}/notifications/push/templates", "POST")
@@ -13954,8 +18189,8 @@ type UpdatePushTemplateRequest struct {
 	ViewId string `json:"viewId"`
 }
 
-func (UpdatePushTemplateRequest) CreateResponse() (r EmptyResponse) { return }
-func (UpdatePushTemplateRequest) HttpMethod() string                { return "PUT" }
+func (UpdatePushTemplateRequest) CreateResponse() (r IdResponse) { return }
+func (UpdatePushTemplateRequest) HttpMethod() string             { return "PUT" }
 
 /** @description Gets push settings */
 // @Route("/{version}/notifications/push/settings", "GET")
@@ -14080,13 +18315,13 @@ type TestPushIntegration struct {
 	// @DataMember
 	// @ApiMember(Description="The push integration id to test. Get it from get_push_integrations.", IsRequired=true)
 	IntegrationId string `json:"integrationId"`
-	/** @description Optional device token to send the test notification to. Requires DeliveryFamily when set. */
+	/** @description The device token the test is sent to — a device registered for the person receiving the test (get it from get_push_devices). Required for every real provider, except that Firebase without one checks the connection and sends nothing (the Sandbox integration also tests without one). For a web device it is the browser subscription JSON. Requires DeliveryFamily. */
 	// @DataMember
-	// @ApiMember(Description="Optional device token to send the test notification to. Requires DeliveryFamily when set.")
+	// @ApiMember(Description="The device token the test is sent to — a device registered for the person receiving the test (get it from get_push_devices). Required for every real provider, except that Firebase without one checks the connection and sends nothing (the Sandbox integration also tests without one). For a web device it is the browser subscription JSON. Requires DeliveryFamily.")
 	TestToken *string `json:"testToken,omitempty"`
-	/** @description Optional delivery family for the test token (ios, android, chrome or safari). Requires TestToken when set. */
+	/** @description The delivery family of TestToken: ios, android, chrome (any browser web push) or safari. Requires TestToken. */
 	// @DataMember
-	// @ApiMember(Description="Optional delivery family for the test token (ios, android, chrome or safari). Requires TestToken when set.")
+	// @ApiMember(Description="The delivery family of TestToken: ios, android, chrome (any browser web push) or safari. Requires TestToken.")
 	DeliveryFamily *string `json:"deliveryFamily,omitempty"`
 }
 
@@ -14121,6 +18356,22 @@ type RegisterDevice struct {
 
 func (RegisterDevice) CreateResponse() (r IdResponse) { return }
 func (RegisterDevice) HttpMethod() string             { return "POST" }
+
+/** @description Deletes a registered push device */
+// @Route("/{version}/notifications/push/devices/{Id}", "DELETE")
+// @Api(Description="Deletes a registered push device")
+type DeletePushDevice struct {
+	CodeMashRequestBase
+	/** @description The device id (pnd_…) to delete. Get it from get_push_devices. */
+	// @ApiMember(Description="The device id (pnd_…) to delete. Get it from get_push_devices.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default for the environment. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default for the environment.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (DeletePushDevice) CreateResponse() (r EmptyResponse) { return }
+func (DeletePushDevice) HttpMethod() string                { return "DELETE" }
 
 /** @description Gets a registered push device */
 // @Route("/{version}/notifications/push/devices/{id}", "GET")
@@ -14160,239 +18411,40 @@ type GetPushDevices struct {
 func (GetPushDevices) CreateResponse() (r GetPushDevicesResponse) { return }
 func (GetPushDevices) HttpMethod() string                         { return "GET" }
 
-/** @description Count the devices a push campaign audience would reach */
-// @Route("/{version}/notifications/push/campaigns/audience-count", "POST")
-// @Api(Description="Count the devices a push campaign audience would reach")
-// @DataContract
-type GetPushCampaignAudienceCountRequest struct {
-	CodeMashRequestBase
-	/** @description The audience, in the same shape as CreatePushCampaignRequest.campaign. Template and send options are ignored. */
-	// @DataMember
-	// @ApiMember(Description="The audience, in the same shape as CreatePushCampaignRequest.campaign. Template and send options are ignored.")
-	Campaign PushCampaignRequest `json:"campaign"`
-	/** @description Optional. When omitted, the default database integration for the request's environment is used. */
-	// @DataMember
-	// @ApiMember(Description="Optional. When omitted, the default database integration for the request's environment is used.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetPushCampaignAudienceCountRequest) CreateResponse() (r GetPushCampaignAudienceCountResponse) {
-	return
-}
-func (GetPushCampaignAudienceCountRequest) HttpMethod() string { return "POST" }
-
-/** @description Create push campaign */
-// @Route("/{version}/notifications/push/campaigns", "POST")
-// @Api(Description="Create push campaign")
-// @DataContract
-type CreatePushCampaignRequest struct {
-	CodeMashRequestBase
-	// @DataMember
-	Campaign PushCampaignRequest `json:"campaign"`
-	// @DataMember
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now. */
-	// @DataMember
-	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now.")
-	SendNow *bool `json:"sendNow,omitempty"`
-}
-
-func (CreatePushCampaignRequest) CreateResponse() (r IdResponse) { return }
-func (CreatePushCampaignRequest) HttpMethod() string             { return "POST" }
-
-/** @description Deletes push campaign from queue */
-// @Route("/{version}/notifications/push/campaigns/{Id}", "DELETE")
-// @Api(Description="Deletes push campaign from queue")
-// @DataContract
-type DeletePushCampaignRequest struct {
-	CodeMashRequestBase
-	/** @description The push campaign id to delete. Get it from get_push_campaigns. */
-	// @DataMember
-	// @ApiMember(Description="The push campaign id to delete. Get it from get_push_campaigns.", IsRequired=true)
-	Id string `json:"id"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @DataMember
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (DeletePushCampaignRequest) CreateResponse() (r EmptyResponse) { return }
-func (DeletePushCampaignRequest) HttpMethod() string                { return "DELETE" }
-
-/** @description Gets push campaign by id */
-// @Route("/{version}/notifications/push/campaigns/{id}", "GET")
-// @Api(Description="Gets push campaign by id")
-type GetPushCampaign struct {
-	CodeMashRequestBase
-	/** @description The campaign id. */
-	// @ApiMember(Description="The campaign id.")
-	Id string `json:"id"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetPushCampaign) CreateResponse() (r GetPushCampaignResponse) { return }
-func (GetPushCampaign) HttpMethod() string                          { return "GET" }
-
-/** @description Gets push campaigns */
-// @Route("/{version}/notifications/push/campaigns", "GET")
-// @Api(Description="Gets push campaigns")
-type GetPushCampaigns struct {
+// @Route("/{version}/notifications/inbox", "GET")
+type GetNotificationInboxRequest struct {
 	CodeMashListPaginationRequestBase
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional: only campaigns built on this push template id. */
-	// @ApiMember(Description="Optional: only campaigns built on this push template id.")
-	TemplateId *string `json:"templateId,omitempty"`
-	/** @description Optional lower bound for the campaign time, unix timestamp in seconds (UTC). */
-	// @ApiMember(Description="Optional lower bound for the campaign time, unix timestamp in seconds (UTC).")
-	From *int64 `json:"from,omitempty"`
-	/** @description Optional upper bound for the campaign time, unix timestamp in seconds (UTC). */
-	// @ApiMember(Description="Optional upper bound for the campaign time, unix timestamp in seconds (UTC).")
-	To *int64 `json:"to,omitempty"`
+	UnreadOnly bool    `json:"unreadOnly,omitempty"`
+	Channel    *string `json:"channel,omitempty"`
 }
 
-func (GetPushCampaigns) CreateResponse() (r GetPushCampaignsResponse) { return }
-func (GetPushCampaigns) HttpMethod() string                           { return "GET" }
+func (GetNotificationInboxRequest) CreateResponse() (r GetNotificationInboxResponse) { return }
+func (GetNotificationInboxRequest) HttpMethod() string                               { return "GET" }
 
-/** @description Gets push campaign batches */
-// @Route("/{version}/notifications/push/campaigns/{id}/batches", "GET")
-// @Api(Description="Gets push campaign batches")
-type GetPushCampaignBatches struct {
-	CodeMashListPaginationRequestBase
-	/** @description The push campaign id to list batches for. Get it from get_push_campaigns. */
-	// @ApiMember(Description="The push campaign id to list batches for. Get it from get_push_campaigns.")
-	Id string `json:"id"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-	/** @description Optional: only return the batch with this id. */
-	// @ApiMember(Description="Optional: only return the batch with this id.")
-	BatchId *string `json:"batchId,omitempty"`
+// @Route("/{version}/notifications/inbox/unread-count", "GET")
+type GetUnreadCountRequest struct {
+	CodeMashRequestBase
 }
 
-func (GetPushCampaignBatches) CreateResponse() (r GetPushCampaignBatchesResponse) { return }
-func (GetPushCampaignBatches) HttpMethod() string                                 { return "GET" }
+func (GetUnreadCountRequest) CreateResponse() (r GetUnreadCountResponse) { return }
+func (GetUnreadCountRequest) HttpMethod() string                         { return "GET" }
 
-/** @description Gets a push campaign batch notification */
-// @Route("/{version}/notifications/push/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
-// @Api(Description="Gets a push campaign batch notification")
-type GetPushCampaignBatchNotification struct {
-	CodeMashListPaginationRequestBase
-	/** @description The push campaign id. Get it from get_push_campaigns. */
-	// @ApiMember(Description="The push campaign id. Get it from get_push_campaigns.")
-	Id string `json:"id"`
-	/** @description The batch id. Get it from get_push_campaign_batches. */
-	// @ApiMember(Description="The batch id. Get it from get_push_campaign_batches.")
-	BatchId string `json:"batchId"`
-	/** @description The notification id within the batch. */
-	// @ApiMember(Description="The notification id within the batch.")
+// @Route("/{version}/notifications/inbox/{notificationId}/read", "POST")
+type MarkNotificationReadRequest struct {
+	CodeMashRequestBase
 	NotificationId string `json:"notificationId"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-func (GetPushCampaignBatchNotification) CreateResponse() (r GetPushCampaignBatchNotificationResponse) {
-	return
-}
-func (GetPushCampaignBatchNotification) HttpMethod() string { return "GET" }
+func (MarkNotificationReadRequest) CreateResponse() (r MarkNotificationReadResponse) { return }
+func (MarkNotificationReadRequest) HttpMethod() string                               { return "POST" }
 
-/** @description Gets push campaign batch notifications */
-// @Route("/{version}/notifications/push/campaigns/{id}/batches/{batchId}", "GET")
-// @Api(Description="Gets push campaign batch notifications")
-type GetPushCampaignBatchNotifications struct {
-	CodeMashListPaginationRequestBase
-	/** @description The push campaign id. Get it from get_push_campaigns. */
-	// @ApiMember(Description="The push campaign id. Get it from get_push_campaigns.")
-	Id string `json:"id"`
-	/** @description The batch id to list notifications for. Get it from get_push_campaign_batches. */
-	// @ApiMember(Description="The batch id to list notifications for. Get it from get_push_campaign_batches.")
-	BatchId string `json:"batchId"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetPushCampaignBatchNotifications) CreateResponse() (r GetPushCampaignBatchNotificationsResponse) {
-	return
-}
-func (GetPushCampaignBatchNotifications) HttpMethod() string { return "GET" }
-
-/** @description Get push campaign statistics */
-// @Route("/{version}/notifications/push/campaigns/{id}/stats", "GET")
-// @Api(Description="Get push campaign statistics")
-type GetPushCampaignStatistics struct {
+// @Route("/{version}/notifications/inbox/read-all", "POST")
+type MarkAllNotificationsReadRequest struct {
 	CodeMashRequestBase
-	/** @description The push campaign id to get statistics for. Get it from get_push_campaigns. */
-	// @ApiMember(Description="The push campaign id to get statistics for. Get it from get_push_campaigns.")
-	Id string `json:"id"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
 }
 
-func (GetPushCampaignStatistics) CreateResponse() (r GetPushCampaignStatisticsResponse) { return }
-func (GetPushCampaignStatistics) HttpMethod() string                                    { return "GET" }
-
-/** @description Returns push preview notification */
-// @Route("/{version}/notifications/push/preview", "GET")
-// @Api(Description="Returns push preview notification")
-type PreviewPushNotification struct {
-	RequestBase
-	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
-	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
-	Hash string `json:"hash"`
-	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
-	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
-	ProjectId *string `json:"projectId,omitempty"`
-	/** @description Signed-in preview by id: the notification id (needs push:read). With a hash it must match the hash. */
-	// @ApiMember(Description="Signed-in preview by id: the notification id (needs push:read). With a hash it must match the hash.")
-	NotificationId *string `json:"notificationId,omitempty"`
-}
-
-func (PreviewPushNotification) CreateResponse() (r PreviewPushNotificationResponse) { return }
-func (PreviewPushNotification) HttpMethod() string                                  { return "GET" }
-
-/** @description Stops a running push campaign */
-// @Route("/{version}/notifications/push/campaigns/{Id}/stop", "POST")
-// @Api(Description="Stops a running push campaign")
-// @DataContract
-type StopPushCampaignRequest struct {
-	CodeMashRequestBase
-	/** @description The campaign id to stop. */
-	// @DataMember
-	// @ApiMember(Description="The campaign id to stop.")
-	Id string `json:"id"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @DataMember
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (StopPushCampaignRequest) CreateResponse() (r EmptyResponse) { return }
-func (StopPushCampaignRequest) HttpMethod() string                { return "POST" }
-
-/** @description Gets push campaign messages */
-// @Route("/{version}/notifications/push/campaigns/{campaignId}/messages", "GET")
-// @Api(Description="Gets push campaign messages")
-type GetPushCampaignMessagesRequest struct {
-	CodeMashListPaginationRequestBase
-	/** @description The push campaign id. Get it from get_push_campaigns. */
-	// @ApiMember(Description="The push campaign id. Get it from get_push_campaigns.")
-	CampaignId string `json:"campaignId"`
-	/** @description Optional: restrict results to this batch id. Get it from get_push_campaign_batches. */
-	// @ApiMember(Description="Optional: restrict results to this batch id. Get it from get_push_campaign_batches.")
-	CampaignBatchId string `json:"campaignBatchId"`
-	/** @description Optional database integration id; omit to use the project's default. */
-	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
-	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
-}
-
-func (GetPushCampaignMessagesRequest) CreateResponse() (r GetPushCampaignMessagesResponse) { return }
-func (GetPushCampaignMessagesRequest) HttpMethod() string                                  { return "GET" }
+func (MarkAllNotificationsReadRequest) CreateResponse() (r MarkAllNotificationsReadResponse) { return }
+func (MarkAllNotificationsReadRequest) HttpMethod() string                                   { return "POST" }
 
 /** @description Disable payments service */
 // @Route("/{version}/payments/disable", "PUT")
@@ -14429,6 +18481,47 @@ type GetPaymentsWebhookLog struct {
 
 func (GetPaymentsWebhookLog) CreateResponse() (r GetPaymentsWebhookLogResponse) { return }
 func (GetPaymentsWebhookLog) HttpMethod() string                                { return "GET" }
+
+/** @description Lists the received payment webhooks of the request's environment, newest first */
+// @Route("/{version}/payments/webhooks/runs", "GET")
+// @Api(Description="Lists the received payment webhooks of the request's environment, newest first")
+type GetPaymentsWebhookRuns struct {
+	CodeMashListPaginationRequestBase
+	/** @description Only events posted to this payments integration (int_…). */
+	// @ApiMember(Description="Only events posted to this payments integration (int_…).")
+	IntegrationId *string `json:"integrationId,omitempty"`
+	/** @description Only this provider event name (e.g. payment_intent.succeeded, payment.success). */
+	// @ApiMember(Description="Only this provider event name (e.g. payment_intent.succeeded, payment.success).")
+	EventName *string `json:"eventName,omitempty"`
+	/** @description Only events that reached this trigger (trg_…). */
+	// @ApiMember(Description="Only events that reached this trigger (trg_…).")
+	TriggerId *string `json:"triggerId,omitempty"`
+	/** @description applied (processed) · ignored (200, e.g. duplicate) · refused (4xx) · failed (5xx) · all (default). */
+	// @ApiMember(Description="applied (processed) · ignored (200, e.g. duplicate) · refused (4xx) · failed (5xx) · all (default).")
+	Outcome *string `json:"outcome,omitempty"`
+	/** @description Received at or after this UTC time. */
+	// @ApiMember(DataType="string", Description="Received at or after this UTC time.", Format="date-time")
+	FromUtc *time.Time `json:"fromUtc,omitempty"`
+	/** @description Received at or before this UTC time. */
+	// @ApiMember(DataType="string", Description="Received at or before this UTC time.", Format="date-time")
+	ToUtc *time.Time `json:"toUtc,omitempty"`
+}
+
+func (GetPaymentsWebhookRuns) CreateResponse() (r GetPaymentsWebhookRunsResponse) { return }
+func (GetPaymentsWebhookRuns) HttpMethod() string                                 { return "GET" }
+
+/** @description Reads one received payment webhook with its masked raw call */
+// @Route("/{version}/payments/webhooks/runs/{Id}", "GET")
+// @Api(Description="Reads one received payment webhook with its masked raw call")
+type GetPaymentsWebhookRun struct {
+	CodeMashRequestBase
+	/** @description The run id (pwr_…). */
+	// @ApiMember(Description="The run id (pwr_…).", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (GetPaymentsWebhookRun) CreateResponse() (r GetPaymentsWebhookRunResponse) { return }
+func (GetPaymentsWebhookRun) HttpMethod() string                                { return "GET" }
 
 /** @description Delete payments trigger */
 // @Route("/{version}/payments/triggers/{triggerId}", "DELETE")
@@ -14730,6 +18823,19 @@ type GetLogsByCorrelationId struct {
 func (GetLogsByCorrelationId) CreateResponse() (r GetLogsByCorrelationIdResponse) { return }
 func (GetLogsByCorrelationId) HttpMethod() string                                 { return "GET" }
 
+/** @description Fetch one tenant log entry by id */
+// @Route("/{version}/logs/{Id}", "GET")
+// @Api(Description="Fetch one tenant log entry by id")
+type GetLog struct {
+	CodeMashRequestBase
+	/** @description The log entry id (24 hex characters), from a get_logs row. */
+	// @ApiMember(Description="The log entry id (24 hex characters), from a get_logs row.", IsRequired=true)
+	Id string `json:"id"`
+}
+
+func (GetLog) CreateResponse() (r GetLogResponse) { return }
+func (GetLog) HttpMethod() string                 { return "GET" }
+
 /** @description Fetch a filtered, cursor-paged list of tenant log entries */
 // @Route("/{version}/logs", "GET")
 // @Api(Description="Fetch a filtered, cursor-paged list of tenant log entries")
@@ -14750,6 +18856,12 @@ type GetLogs struct {
 	/** @description Free-text search over title and message. */
 	// @ApiMember(DataType="string", Description="Free-text search over title and message.", Name="search", ParameterType="query")
 	Search *string `json:"search,omitempty"`
+	/** @description Meta key to filter on (e.g. taskId). Letters, digits and _ only. Must come with metaValue. */
+	// @ApiMember(DataType="string", Description="Meta key to filter on (e.g. taskId). Letters, digits and _ only. Must come with metaValue.", Name="metaKey", ParameterType="query")
+	MetaKey *string `json:"metaKey,omitempty"`
+	/** @description Exact Meta value for metaKey (e.g. a task id tsk_...). Must come with metaKey. */
+	// @ApiMember(DataType="string", Description="Exact Meta value for metaKey (e.g. a task id tsk_...). Must come with metaKey.", Name="metaValue", ParameterType="query")
+	MetaValue *string `json:"metaValue,omitempty"`
 	/** @description Start of the timestamp range (inclusive, UTC). Optional. */
 	// @ApiMember(Description="Start of the timestamp range (inclusive, UTC). Optional.")
 	FromUtc *time.Time `json:"fromUtc,omitempty"`
@@ -14776,15 +18888,15 @@ func (GetLogSettings) HttpMethod() string                         { return "GET"
 // @Api(Description="Update the per-project log settings (flags)")
 type SaveLogSettings struct {
 	CodeMashRequestBase
-	/** @description Drop log entries from requests originating from the Norbix studio (cloud dashboard). */
-	// @ApiMember(Description="Drop log entries from requests originating from the Norbix studio (cloud dashboard).")
-	SkipCloudDashboardLogs bool `json:"skipCloudDashboardLogs,omitempty"`
-	/** @description Strip request/response body meta off http:request / http:response log entries. */
-	// @ApiMember(Description="Strip request/response body meta off http:request / http:response log entries.")
-	SkipHttpBodyMeta bool `json:"skipHttpBodyMeta,omitempty"`
-	/** @description Turn on tenant-visible log entries for AI chat turns. Default false. */
-	// @ApiMember(Description="Turn on tenant-visible log entries for AI chat turns. Default false.")
-	AiChatLoggingEnabled bool `json:"aiChatLoggingEnabled,omitempty"`
+	/** @description Drop log entries from requests originating from the Norbix studio (cloud dashboard). Not sent = unchanged. */
+	// @ApiMember(Description="Drop log entries from requests originating from the Norbix studio (cloud dashboard). Not sent = unchanged.")
+	SkipCloudDashboardLogs *bool `json:"skipCloudDashboardLogs,omitempty"`
+	/** @description Strip request/response body meta off http:request / http:response log entries. Not sent = unchanged. */
+	// @ApiMember(Description="Strip request/response body meta off http:request / http:response log entries. Not sent = unchanged.")
+	SkipHttpBodyMeta *bool `json:"skipHttpBodyMeta,omitempty"`
+	/** @description Turn on tenant-visible log entries for AI chat turns. Default false. Not sent = unchanged. */
+	// @ApiMember(Description="Turn on tenant-visible log entries for AI chat turns. Default false. Not sent = unchanged.")
+	AiChatLoggingEnabled *bool `json:"aiChatLoggingEnabled,omitempty"`
 }
 
 func (SaveLogSettings) CreateResponse() (r SaveLogSettingsResponse) { return }
@@ -14795,10 +18907,24 @@ func (SaveLogSettings) HttpMethod() string                          { return "PO
 // @Api(Description="Paste-ready prompt and client snippets to connect an AI tool to this installation.")
 type GetAgentOnboardingRequest struct {
 	RequestBase
+	ProjectId *string `json:"projectId,omitempty"`
 }
 
 func (GetAgentOnboardingRequest) CreateResponse() (r GetAgentOnboardingResponse) { return }
 func (GetAgentOnboardingRequest) HttpMethod() string                             { return "GET" }
+
+/** @description The AI project-context summary: the projects the caller may work on, with their settings — never a secret. */
+// @Route("/{version}/account/ai/context", "GET")
+// @Api(Description="The AI project-context summary: the projects the caller may work on, with their settings — never a secret.")
+type GetAiContextRequest struct {
+	RequestBase
+	ProjectId    *string `json:"projectId,omitempty"`
+	Format       *string `json:"format,omitempty"`
+	KnownVersion *string `json:"knownVersion,omitempty"`
+}
+
+func (GetAiContextRequest) CreateResponse() (r GetAiContextResponse) { return }
+func (GetAiContextRequest) HttpMethod() string                       { return "GET" }
 
 /** @description Lists the AI tools this host exposes (external-agent bridge). */
 // @Route("/{version}/account/ai/tools", "GET")
@@ -15217,6 +19343,75 @@ type DeleteAiProjectTrigger struct {
 func (DeleteAiProjectTrigger) CreateResponse() (r EmptyResponse) { return }
 func (DeleteAiProjectTrigger) HttpMethod() string                { return "DELETE" }
 
+/** @description Starts a browser sign-in for the Norbix CLI (OAuth device authorization, RFC 8628): a device code for polling and a user code the person confirms on the dashboard. */
+// @Route("/{version}/auth/device/start", "POST")
+// @Api(Description="Starts a browser sign-in for the Norbix CLI (OAuth device authorization, RFC 8628): a device code for polling and a user code the person confirms on the dashboard.")
+type AuthDeviceStartRequest struct {
+	RequestBase
+	/** @description Who asks, shown on the dashboard, e.g. "norbix-cli". 1–80 printable characters. */
+	// @ApiMember(Description="Who asks, shown on the dashboard, e.g. \"norbix-cli\". 1–80 printable characters.", IsRequired=true)
+	ClientName string `json:"clientName"`
+	/** @description The computer name, shown on the dashboard and part of the AI service user's name (cleaned, at most 40 characters). */
+	// @ApiMember(Description="The computer name, shown on the dashboard and part of the AI service user's name (cleaned, at most 40 characters).")
+	DeviceName *string `json:"deviceName,omitempty"`
+	/** @description The project the CLI wants to work in. It must be a project of the account of the person who allows the sign-in. */
+	// @ApiMember(Description="The project the CLI wants to work in. It must be a project of the account of the person who allows the sign-in.")
+	ProjectId *string `json:"projectId,omitempty"`
+}
+
+func (AuthDeviceStartRequest) CreateResponse() (r AuthDeviceStartResponse) { return }
+func (AuthDeviceStartRequest) HttpMethod() string                          { return "POST" }
+
+/** @description Polls a CLI browser sign-in (RFC 8628). Always HTTP 200: an error name (authorization_pending, slow_down, access_denied, expired_token, invalid_grant, invalid_request) or the tokens, once. */
+// @Route("/{version}/auth/device/token", "POST")
+// @Api(Description="Polls a CLI browser sign-in (RFC 8628). Always HTTP 200: an error name (authorization_pending, slow_down, access_denied, expired_token, invalid_grant, invalid_request) or the tokens, once.")
+type AuthDeviceTokenRequest struct {
+	RequestBase
+	/** @description The deviceCode from POST /auth/device/start. */
+	// @ApiMember(Description="The deviceCode from POST /auth/device/start.", IsRequired=true)
+	DeviceCode string `json:"deviceCode"`
+}
+
+func (AuthDeviceTokenRequest) CreateResponse() (r AuthDeviceTokenResponse) { return }
+func (AuthDeviceTokenRequest) HttpMethod() string                          { return "POST" }
+
+/** @description The dashboard screen for a CLI browser sign-in: the client and computer that asked, and the roles the signed-in person may give. */
+// @Route("/{version}/auth/device/consent", "GET")
+// @Api(Description="The dashboard screen for a CLI browser sign-in: the client and computer that asked, and the roles the signed-in person may give.")
+type AuthDeviceConsentRequest struct {
+	RequestBase
+	/** @description The code the terminal shows, XXXX-XXXX (case, spaces and the dash do not matter). */
+	// @ApiMember(Description="The code the terminal shows, XXXX-XXXX (case, spaces and the dash do not matter).", IsRequired=true)
+	UserCode string `json:"userCode"`
+}
+
+func (AuthDeviceConsentRequest) CreateResponse() (r AuthDeviceConsentResponse) { return }
+func (AuthDeviceConsentRequest) HttpMethod() string                            { return "GET" }
+
+/** @description The signed-in person's decision on a CLI browser sign-in: allow with Membership roles, or deny. */
+// @Route("/{version}/auth/device/consent", "POST")
+// @Api(Description="The signed-in person's decision on a CLI browser sign-in: allow with Membership roles, or deny.")
+type AuthDeviceConsentDecisionRequest struct {
+	RequestBase
+	/** @description The code the terminal shows, XXXX-XXXX. */
+	// @ApiMember(Description="The code the terminal shows, XXXX-XXXX.", IsRequired=true)
+	UserCode string `json:"userCode"`
+	/** @description allow | deny. */
+	// @ApiMember(Description="allow | deny.", IsRequired=true)
+	Decision string `json:"decision"`
+	/** @description For allow: account role ids (acc_…_nr_…) to give. */
+	// @ApiMember(Description="For allow: account role ids (acc_…_nr_…) to give.")
+	AccountRoleIds []string `json:"accountRoleIds,omitempty"`
+	/** @description For allow: project roles to give, [{ projectId, roleIds: [pr_…_nr_…] }]. */
+	// @ApiMember(Description="For allow: project roles to give, [{ projectId, roleIds: [pr_…_nr_…] }].")
+	ProjectRoles []AiProjectRoleIdsDto `json:"projectRoles,omitempty"`
+}
+
+func (AuthDeviceConsentDecisionRequest) CreateResponse() (r AuthDeviceConsentDecisionResponse) {
+	return
+}
+func (AuthDeviceConsentDecisionRequest) HttpMethod() string { return "POST" }
+
 /** @description OAuth protected-resource metadata (RFC 9728) for the Hub MCP endpoint. */
 // @Route("/.well-known/oauth-protected-resource", "GET")
 // @Route("/.well-known/oauth-protected-resource/{Path*}", "GET")
@@ -15250,9 +19445,9 @@ type OAuthRegisterRequest struct {
 func (OAuthRegisterRequest) CreateResponse() (r string) { return }
 func (OAuthRegisterRequest) HttpMethod() string         { return "POST" }
 
-/** @description OAuth authorization endpoint: sign-in hint or the consent page (HTML). */
+/** @description OAuth authorization endpoint: checks the request and redirects to the dashboard consent screen. */
 // @Route("/{version}/oauth/authorize", "GET")
-// @Api(Description="OAuth authorization endpoint: sign-in hint or the consent page (HTML).")
+// @Api(Description="OAuth authorization endpoint: checks the request and redirects to the dashboard consent screen.")
 type OAuthAuthorizeRequest struct {
 	Version *string `json:"version,omitempty"`
 }
@@ -15260,15 +19455,85 @@ type OAuthAuthorizeRequest struct {
 func (OAuthAuthorizeRequest) CreateResponse() (r string) { return }
 func (OAuthAuthorizeRequest) HttpMethod() string         { return "GET" }
 
-/** @description OAuth authorization endpoint: the person's decision from the consent page. */
-// @Route("/{version}/oauth/authorize", "POST")
-// @Api(Description="OAuth authorization endpoint: the person's decision from the consent page.")
-type OAuthAuthorizeDecisionRequest struct {
-	Version *string `json:"version,omitempty"`
+/** @description The dashboard consent screen for an AI tool: the client, where it returns to, and the roles the signed-in person may give. */
+// @Route("/{version}/oauth/consent", "GET")
+// @Api(Description="The dashboard consent screen for an AI tool: the client, where it returns to, and the roles the signed-in person may give.")
+type OAuthConsentRequest struct {
+	RequestBase
+	/** @description OAuth response_type from the authorize request (must be "code"). */
+	// @ApiMember(Description="OAuth response_type from the authorize request (must be \"code\").")
+	ResponseType *string `json:"responseType,omitempty"`
+	/** @description OAuth client_id from the authorize request. */
+	// @ApiMember(Description="OAuth client_id from the authorize request.")
+	ClientId *string `json:"clientId,omitempty"`
+	/** @description OAuth redirect_uri from the authorize request. */
+	// @ApiMember(Description="OAuth redirect_uri from the authorize request.")
+	RedirectUri *string `json:"redirectUri,omitempty"`
+	/** @description PKCE code_challenge from the authorize request. */
+	// @ApiMember(Description="PKCE code_challenge from the authorize request.")
+	CodeChallenge *string `json:"codeChallenge,omitempty"`
+	/** @description PKCE code_challenge_method from the authorize request (must be "S256"). */
+	// @ApiMember(Description="PKCE code_challenge_method from the authorize request (must be \"S256\").")
+	CodeChallengeMethod *string `json:"codeChallengeMethod,omitempty"`
+	/** @description OAuth state from the authorize request; returned to the client unchanged. */
+	// @ApiMember(Description="OAuth state from the authorize request; returned to the client unchanged.")
+	State *string `json:"state,omitempty"`
+	/** @description OAuth resource (RFC 8707) from the authorize request. */
+	// @ApiMember(Description="OAuth resource (RFC 8707) from the authorize request.")
+	Resource *string `json:"resource,omitempty"`
+	/** @description OAuth scope from the authorize request. */
+	// @ApiMember(Description="OAuth scope from the authorize request.")
+	Scope *string `json:"scope,omitempty"`
 }
 
-func (OAuthAuthorizeDecisionRequest) CreateResponse() (r string) { return }
-func (OAuthAuthorizeDecisionRequest) HttpMethod() string         { return "POST" }
+func (OAuthConsentRequest) CreateResponse() (r OAuthConsentResponse) { return }
+func (OAuthConsentRequest) HttpMethod() string                       { return "GET" }
+
+/** @description The signed-in person's decision on the consent screen: allow with roles, or deny. Returns the address to send the browser to. */
+// @Route("/{version}/oauth/consent", "POST")
+// @Api(Description="The signed-in person's decision on the consent screen: allow with roles, or deny. Returns the address to send the browser to.")
+type OAuthConsentDecisionRequest struct {
+	RequestBase
+	/** @description OAuth response_type from the authorize request (must be "code"). */
+	// @ApiMember(Description="OAuth response_type from the authorize request (must be \"code\").")
+	ResponseType *string `json:"responseType,omitempty"`
+	/** @description OAuth client_id from the authorize request. */
+	// @ApiMember(Description="OAuth client_id from the authorize request.")
+	ClientId *string `json:"clientId,omitempty"`
+	/** @description OAuth redirect_uri from the authorize request. */
+	// @ApiMember(Description="OAuth redirect_uri from the authorize request.")
+	RedirectUri *string `json:"redirectUri,omitempty"`
+	/** @description PKCE code_challenge from the authorize request. */
+	// @ApiMember(Description="PKCE code_challenge from the authorize request.")
+	CodeChallenge *string `json:"codeChallenge,omitempty"`
+	/** @description PKCE code_challenge_method from the authorize request (must be "S256"). */
+	// @ApiMember(Description="PKCE code_challenge_method from the authorize request (must be \"S256\").")
+	CodeChallengeMethod *string `json:"codeChallengeMethod,omitempty"`
+	/** @description OAuth state from the authorize request; returned to the client unchanged. */
+	// @ApiMember(Description="OAuth state from the authorize request; returned to the client unchanged.")
+	State *string `json:"state,omitempty"`
+	/** @description OAuth resource (RFC 8707) from the authorize request. */
+	// @ApiMember(Description="OAuth resource (RFC 8707) from the authorize request.")
+	Resource *string `json:"resource,omitempty"`
+	/** @description OAuth scope from the authorize request. */
+	// @ApiMember(Description="OAuth scope from the authorize request.")
+	Scope *string `json:"scope,omitempty"`
+	/** @description The consentTicket from GET /oauth/consent. */
+	// @ApiMember(Description="The consentTicket from GET /oauth/consent.", IsRequired=true)
+	ConsentTicket string `json:"consentTicket"`
+	/** @description allow | deny. */
+	// @ApiMember(Description="allow | deny.", IsRequired=true)
+	Decision string `json:"decision"`
+	/** @description For allow: account role ids (acc_…_nr_…) to give. */
+	// @ApiMember(Description="For allow: account role ids (acc_…_nr_…) to give.")
+	AccountRoleIds []string `json:"accountRoleIds,omitempty"`
+	/** @description For allow: project roles to give, [{ projectId, roleIds: [pr_…_nr_…] }]. */
+	// @ApiMember(Description="For allow: project roles to give, [{ projectId, roleIds: [pr_…_nr_…] }].")
+	ProjectRoles []AiProjectRoleIdsDto `json:"projectRoles,omitempty"`
+}
+
+func (OAuthConsentDecisionRequest) CreateResponse() (r OAuthConsentDecisionResponse) { return }
+func (OAuthConsentDecisionRequest) HttpMethod() string                               { return "POST" }
 
 /** @description OAuth token endpoint: authorization code (PKCE S256) or refresh token → access token. */
 // @Route("/{version}/oauth/token", "POST")
@@ -15544,9 +19809,10 @@ func (UpdateWebhookIntegrationExtraHeadersRequest) HttpMethod() string          
 
 // @Route("/{version}/webhooks/{source}/{integrationInstanceId}", "POST")
 type ReceiveWebhook struct {
-	Source                string `json:"source"`
-	IntegrationInstanceId string `json:"integrationInstanceId"`
-	RequestStream         []byte `json:"requestStream"`
+	Version               *string `json:"version,omitempty"`
+	Source                string  `json:"source"`
+	IntegrationInstanceId string  `json:"integrationInstanceId"`
+	RequestStream         []byte  `json:"requestStream"`
 }
 
 func (ReceiveWebhook) CreateResponseVoid() {}
@@ -15603,9 +19869,9 @@ type SaveWebhookDestinationRequest struct {
 	/** @description Destination-specific static headers sent with every delivery to this destination. These win over the integration-wide extra headers on duplicate keys. */
 	// @ApiMember(Description="Destination-specific static headers sent with every delivery to this destination. These win over the integration-wide extra headers on duplicate keys.")
 	ExtraHeaders map[string]string `json:"extraHeaders,omitempty"`
-	/** @description Whether this destination is enabled for delivery. Defaults to true. */
-	// @ApiMember(Description="Whether this destination is enabled for delivery. Defaults to true.")
-	IsEnabled bool `json:"isEnabled,omitempty"`
+	/** @description Whether this destination is enabled for delivery. Empty = true (enabled). */
+	// @ApiMember(Description="Whether this destination is enabled for delivery. Empty = true (enabled).")
+	IsEnabled *bool `json:"isEnabled,omitempty"`
 }
 
 func (SaveWebhookDestinationRequest) CreateResponse() (r SaveWebhookDestinationResponse) { return }
@@ -15681,6 +19947,20 @@ type GetSchedulerTasks struct {
 func (GetSchedulerTasks) CreateResponse() (r GetSchedulerTasksResponse) { return }
 func (GetSchedulerTasks) HttpMethod() string                            { return "GET" }
 
+/** @description Gets the latest runs of a scheduled task */
+// @Route("/{version}/scheduler/tasks/{id}/runs", "GET")
+// @Api(Description="Gets the latest runs of a scheduled task")
+type GetSchedulerTaskRuns struct {
+	CodeMashRequestBase
+	Id string `json:"id"`
+	/** @description How many runs to return, newest first: 1-50. Default 10. */
+	// @ApiMember(DataType="integer", Description="How many runs to return, newest first: 1-50. Default 10.", Name="take", ParameterType="query")
+	Take *int `json:"take,omitempty"`
+}
+
+func (GetSchedulerTaskRuns) CreateResponse() (r GetSchedulerTaskRunsResponse) { return }
+func (GetSchedulerTaskRuns) HttpMethod() string                               { return "GET" }
+
 /** @description Save scheduled task */
 // @Route("/{version}/scheduler/tasks", "POST")
 // @Api(Description="Save scheduled task")
@@ -15698,9 +19978,13 @@ type SaveSchedulerTaskRequest struct {
 	// @DataMember
 	InitiatorUserId string `json:"initiatorUserId"`
 	// @DataMember
+	ExecutionIdentityId *string `json:"executionIdentityId,omitempty"`
+	// @DataMember
 	IsEnabled bool `json:"isEnabled,omitempty"`
 	// @DataMember
 	StopOnError bool `json:"stopOnError,omitempty"`
+	// @DataMember
+	EndsAtUnix *int64 `json:"endsAtUnix,omitempty"`
 	// @DataMember
 	Task interface{} `json:"task"`
 }
@@ -15711,7 +19995,7 @@ func (SaveSchedulerTaskRequest) HttpMethod() string             { return "POST" 
 // @Route("/{version}/resources/resolve", "POST")
 type ResolveResources struct {
 	CodeMashRequestBase
-	Refs IReadOnlyList[ResourceRefDto] `json:"refs"`
+	Refs IReadOnlyList[interface{}] `json:"refs"`
 }
 
 func (ResolveResources) CreateResponse() (r ResolveResourcesResponse) { return }
@@ -15736,6 +20020,22 @@ type SetUserAiPlan struct {
 func (SetUserAiPlan) CreateResponse() (r EmptyResponse) { return }
 func (SetUserAiPlan) HttpMethod() string                { return "PUT" }
 
+/** @description Clear a contact's hard bounce */
+// @Route("/{version}/membership/users/{contactId}/marketing-state/{channel}/clear-bounce", "POST")
+// @Api(Description="Clear a contact's hard bounce")
+type ClearContactBounceRequest struct {
+	CodeMashRequestBase
+	/** @description The contact id (ct_…) whose hard bounce is cleared. */
+	// @ApiMember(Description="The contact id (ct_…) whose hard bounce is cleared.", IsRequired=true)
+	ContactId string `json:"contactId"`
+	/** @description Delivery channel: Email, Sms, or Push. */
+	// @ApiMember(Description="Delivery channel: Email, Sms, or Push.", IsRequired=true)
+	Channel string `json:"channel"`
+}
+
+func (ClearContactBounceRequest) CreateResponse() (r EmptyResponse) { return }
+func (ClearContactBounceRequest) HttpMethod() string                { return "POST" }
+
 /** @description Create a contact */
 // @Route("/{version}/membership/users", "POST")
 // @Api(Description="Create a contact")
@@ -15756,6 +20056,9 @@ type CreateContactRequest struct {
 	/** @description Contact's last name (optional). */
 	// @ApiMember(Description="Contact's last name (optional).")
 	LastName *string `json:"lastName,omitempty"`
+	/** @description Tags to put on the new contact — free labels campaigns and segments select by, normalised like any tag. */
+	// @ApiMember(Description="Tags to put on the new contact — free labels campaigns and segments select by, normalised like any tag.")
+	Tags []string `json:"tags,omitempty"`
 }
 
 func (CreateContactRequest) CreateResponse() (r EmptyResponse) { return }
@@ -15779,8 +20082,8 @@ func (DeleteContact) HttpMethod() string                { return "DELETE" }
 // @Api(Description="Get a contact")
 type GetContact struct {
 	CodeMashRequestBase
-	/** @description The contact id (ct_…) to fetch. Get it from get_all_contacts. */
-	// @ApiMember(Description="The contact id (ct_…) to fetch. Get it from get_all_contacts.", IsRequired=true)
+	/** @description The contact id (ct_…) to fetch, or a login id (usr_…) — then the contact that owns that login is returned. Get it from get_all_contacts. */
+	// @ApiMember(Description="The contact id (ct_…) to fetch, or a login id (usr_…) — then the contact that owns that login is returned. Get it from get_all_contacts.", IsRequired=true)
 	ContactId string `json:"contactId"`
 }
 
@@ -15798,6 +20101,27 @@ type GetAllContacts struct {
 	/** @description How many contacts to return per page (default 50). */
 	// @ApiMember(Description="How many contacts to return per page (default 50).")
 	PageSize *int `json:"pageSize,omitempty"`
+	/** @description Free text, case-insensitive: matches the email, phone, display / first / last / full name, or any login's user name or email; an exact contact id (ct_…) or login id (usr_…) finds that contact. */
+	// @ApiMember(Description="Free text, case-insensitive: matches the email, phone, display / first / last / full name, or any login's user name or email; an exact contact id (ct_…) or login id (usr_…) finds that contact.")
+	Search *string `json:"search,omitempty"`
+	/** @description Case-insensitive part of the email (primary email or any login's email). */
+	// @ApiMember(Description="Case-insensitive part of the email (primary email or any login's email).")
+	Email *string `json:"email,omitempty"`
+	/** @description Case-insensitive part of any login's user name. */
+	// @ApiMember(Description="Case-insensitive part of any login's user name.")
+	UserName *string `json:"userName,omitempty"`
+	/** @description Login status names, any of: Registered, PendingValidation, Active, Unregistered, Suspended, InActive, Blocked. */
+	// @ApiMember(Description="Login status names, any of: Registered, PendingValidation, Active, Unregistered, Suspended, InActive, Blocked.")
+	Statuses []string `json:"statuses,omitempty"`
+	/** @description Login type names, any of: Service, Email, UserName, Phone, Guest, Social. */
+	// @ApiMember(Description="Login type names, any of: Service, Email, UserName, Phone, Guest, Social.")
+	Types []string `json:"types,omitempty"`
+	/** @description Composite project-role ids (pr_{project}_nr_{role}); the contact holds any of them. */
+	// @ApiMember(Description="Composite project-role ids (pr_{project}_nr_{role}); the contact holds any of them.")
+	RoleNames []string `json:"roleNames,omitempty"`
+	/** @description Contact tags; the contact carries any of them. */
+	// @ApiMember(Description="Contact tags; the contact carries any of them.")
+	Tags []string `json:"tags,omitempty"`
 }
 
 func (GetAllContacts) CreateResponse() (r GetAllContactsResponse) { return }
@@ -15818,6 +20142,19 @@ type MergeContactsRequest struct {
 
 func (MergeContactsRequest) CreateResponse() (r EmptyResponse) { return }
 func (MergeContactsRequest) HttpMethod() string                { return "POST" }
+
+/** @description Repair contact roles from their logins */
+// @Route("/{version}/membership/users/repair-roles", "POST")
+// @Api(Description="Repair contact roles from their logins")
+type RepairContactRolesRequest struct {
+	CodeMashRequestBase
+	/** @description True = only count what would change. False = write. Empty = true (only count). */
+	// @ApiMember(Description="True = only count what would change. False = write. Empty = true (only count).")
+	DryRun *bool `json:"dryRun,omitempty"`
+}
+
+func (RepairContactRolesRequest) CreateResponse() (r RepairContactRolesResponse) { return }
+func (RepairContactRolesRequest) HttpMethod() string                             { return "POST" }
 
 /** @description Update a contact */
 // @Route("/{version}/membership/users/{contactId}", "PATCH")
@@ -15927,6 +20264,940 @@ type RemoveContactIdentityRequest struct {
 
 func (RemoveContactIdentityRequest) CreateResponse() (r EmptyResponse) { return }
 func (RemoveContactIdentityRequest) HttpMethod() string                { return "DELETE" }
+
+// @Route("/{version}/files/item/private", "POST")
+type MakeFilePrivateRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the file lives on. */
+	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Path of the file, relative to the integration. */
+	// @ApiMember(Description="Path of the file, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFilePrivateRequest) CreateResponse() (r EmptyResponse) { return }
+func (MakeFilePrivateRequest) HttpMethod() string                { return "POST" }
+
+// @Route("/{version}/files/item/public", "POST")
+type MakeFilePublicRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the file lives on. */
+	// @ApiMember(Description="The files integration the file lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Path of the file to publish, relative to the integration. */
+	// @ApiMember(Description="Path of the file to publish, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFilePublicRequest) CreateResponse() (r IdResponse) { return }
+func (MakeFilePublicRequest) HttpMethod() string             { return "POST" }
+
+// @Route("/{version}/files/folder/private", "POST")
+type MakeFolderPrivateRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the folder lives on. */
+	// @ApiMember(Description="The files integration the folder lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Folder prefix, relative to the integration. */
+	// @ApiMember(Description="Folder prefix, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFolderPrivateRequest) CreateResponse() (r EmptyResponse) { return }
+func (MakeFolderPrivateRequest) HttpMethod() string                { return "POST" }
+
+// @Route("/{version}/files/folder/public", "POST")
+type MakeFolderPublicRequest struct {
+	CodeMashRequestBase
+	/** @description The files integration the folder lives on. */
+	// @ApiMember(Description="The files integration the folder lives on.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Folder prefix to publish, relative to the integration. */
+	// @ApiMember(Description="Folder prefix to publish, relative to the integration.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (MakeFolderPublicRequest) CreateResponse() (r IdResponse) { return }
+func (MakeFolderPublicRequest) HttpMethod() string             { return "POST" }
+
+// @Route("/{version}/files/item", "GET")
+type GetFile struct {
+	CodeMashRequestBase
+	/** @description The files integration id to read from, from get_files_integrations. */
+	// @ApiMember(Description="The files integration id to read from, from get_files_integrations.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description The path of the file to fetch metadata for. */
+	// @ApiMember(Description="The path of the file to fetch metadata for.", IsRequired=true)
+	Path string `json:"path"`
+}
+
+func (GetFile) CreateResponse() (r GetFileResponse) { return }
+func (GetFile) HttpMethod() string                  { return "GET" }
+
+// @Route("/{version}/files/folder", "GET")
+type GetFolderFiles struct {
+	CodeMashListPaginationRequestBase
+	/** @description The files integration id to list from, from get_files_integrations. */
+	// @ApiMember(Description="The files integration id to list from, from get_files_integrations.", IsRequired=true)
+	FilesIntegrationId string `json:"filesIntegrationId"`
+	/** @description Path prefix to list. Empty / null lists the root. */
+	// @ApiMember(Description="Path prefix to list. Empty / null lists the root.")
+	Path *string `json:"path,omitempty"`
+}
+
+func (GetFolderFiles) CreateResponse() (r GetFolderFilesResponse) { return }
+func (GetFolderFiles) HttpMethod() string                         { return "GET" }
+
+/** @description Database */
+// @Route("/{version}/database/imports", "POST")
+// @Api(Description="Database")
+type CreateCollectionImport struct {
+	CodeMashRequestBase
+	/** @description The uploaded CSV's file ref, from the upload call. */
+	// @ApiMember(Description="The uploaded CSV's file ref, from the upload call.", IsRequired=true)
+	File FileResourceRefDto `json:"file"`
+	/** @description The target schema id. */
+	// @ApiMember(Description="The target schema id.", IsRequired=true)
+	SchemaId string `json:"schemaId"`
+	/** @description The target collection (schema) name. */
+	// @ApiMember(Description="The target collection (schema) name.", IsRequired=true)
+	CollectionName        string  `json:"collectionName"`
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description The CSV delimiter used at upload time. */
+	// @ApiMember(Description="The CSV delimiter used at upload time.", IsRequired=true)
+	Delimiter string `json:"delimiter"`
+	HasHeader bool   `json:"hasHeader,omitempty"`
+	/** @description Column → property mapping, frozen for this import. */
+	// @ApiMember(Description="Column → property mapping, frozen for this import.", IsRequired=true)
+	Mapping []ImportColumnMappingDto `json:"mapping"`
+}
+
+func (CreateCollectionImport) CreateResponse() (r IdResponse) { return }
+func (CreateCollectionImport) HttpMethod() string             { return "POST" }
+
+/** @description Database */
+// @Route("/{version}/database/imports/{Id}", "DELETE")
+// @Api(Description="Database")
+type DeleteCollectionImportRequest struct {
+	CodeMashRequestBase
+	/** @description The import id (imp_…). */
+	// @ApiMember(Description="The import id (imp_…).", IsRequired=true)
+	Id                    string  `json:"id"`
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (DeleteCollectionImportRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteCollectionImportRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description Database */
+// @Route("/{version}/database/imports/{Id}", "GET")
+// @Api(Description="Database")
+type GetCollectionImport struct {
+	CodeMashRequestBase
+	/** @description The import id (imp_…). */
+	// @ApiMember(Description="The import id (imp_…).", IsRequired=true)
+	Id                    string  `json:"id"`
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetCollectionImport) CreateResponse() (r GetCollectionImportResponse) { return }
+func (GetCollectionImport) HttpMethod() string                              { return "GET" }
+
+/** @description Database */
+// @Route("/{version}/database/imports", "GET")
+// @Api(Description="Database")
+type GetCollectionImports struct {
+	CodeMashListPaginationRequestBase
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetCollectionImports) CreateResponse() (r GetCollectionImportsResponse) { return }
+func (GetCollectionImports) HttpMethod() string                               { return "GET" }
+
+/** @description Database */
+// @Route("/{version}/database/imports/upload-url", "POST")
+// @Api(Description="Database")
+type RequestImportUploadUrlRequest struct {
+	CodeMashRequestBase
+	FileAccountId *string `json:"fileAccountId,omitempty"`
+	/** @description The original CSV file name, e.g. people.csv. */
+	// @ApiMember(Description="The original CSV file name, e.g. people.csv.", IsRequired=true)
+	FileName string `json:"fileName"`
+}
+
+func (RequestImportUploadUrlRequest) CreateResponse() (r RequestImportUploadUrlResponse) { return }
+func (RequestImportUploadUrlRequest) HttpMethod() string                                 { return "POST" }
+
+/** @description Database */
+// @Route("/{version}/database/imports/analyze", "POST")
+// @Api(Description="Database")
+type AnalyzeImportFileRequest struct {
+	CodeMashRequestBase
+	/** @description The uploaded CSV's file ref, from the upload-url call. */
+	// @ApiMember(Description="The uploaded CSV's file ref, from the upload-url call.", IsRequired=true)
+	File FileResourceRefDto `json:"file"`
+	/** @description The CSV delimiter, e.g. "," or ";". */
+	// @ApiMember(Description="The CSV delimiter, e.g. \",\" or \";\".", IsRequired=true)
+	Delimiter string `json:"delimiter"`
+	/** @description Whether the first row is a header row. */
+	// @ApiMember(Description="Whether the first row is a header row.")
+	HasHeader bool `json:"hasHeader,omitempty"`
+}
+
+func (AnalyzeImportFileRequest) CreateResponse() (r AnalyzeImportFileResponse) { return }
+func (AnalyzeImportFileRequest) HttpMethod() string                            { return "POST" }
+
+/** @description Create email campaign */
+// @Route("/{version}/notifications/email/campaigns", "POST")
+// @Api(Description="Create email campaign")
+// @DataContract
+type CreateEmailCampaignRequest struct {
+	CodeMashRequestBase
+	// @DataMember
+	Campaign interface{} `json:"campaign"`
+	// @DataMember
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now. */
+	// @DataMember
+	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now.")
+	SendNow *bool `json:"sendNow,omitempty"`
+}
+
+func (CreateEmailCampaignRequest) CreateResponse() (r IdResponse) { return }
+func (CreateEmailCampaignRequest) HttpMethod() string             { return "POST" }
+
+/** @description Deletes emails campaign from queue */
+// @Route("/{version}/notifications/email/campaigns/{Id}", "DELETE")
+// @Api(Description="Deletes emails campaign from queue")
+// @DataContract
+type DeleteEmailCampaignRequest struct {
+	CodeMashRequestBase
+	// @DataMember
+	Id string `json:"id"`
+	// @DataMember
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (DeleteEmailCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeleteEmailCampaignRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description Gets email campaign by id */
+// @Route("/{version}/notifications/email/campaigns/{id}", "GET")
+// @Api(Description="Gets email campaign by id")
+type GetEmailCampaign struct {
+	CodeMashRequestBase
+	/** @description The campaign id. */
+	// @ApiMember(Description="The campaign id.")
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetEmailCampaign) CreateResponse() (r GetEmailCampaignResponse) { return }
+func (GetEmailCampaign) HttpMethod() string                           { return "GET" }
+
+/** @description Gets email campaigns */
+// @Route("/{version}/notifications/email/campaigns", "GET")
+// @Api(Description="Gets email campaigns")
+type GetEmailCampaigns struct {
+	CodeMashListPaginationRequestBase
+	/** @description Optional. When omitted, the project's default database integration is used (resolved server-side from the project state). */
+	// @ApiMember(Description="Optional. When omitted, the project's default database integration is used (resolved server-side from the project state).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional: return only the campaign with this id. */
+	// @ApiMember(Description="Optional: return only the campaign with this id.")
+	CampaignId *string `json:"campaignId,omitempty"`
+	/** @description Optional: only campaigns that targeted this email address. */
+	// @ApiMember(Description="Optional: only campaigns that targeted this email address.")
+	EmailAddress *string `json:"emailAddress,omitempty"`
+	/** @description Optional: only campaigns built on this email template id. */
+	// @ApiMember(Description="Optional: only campaigns built on this email template id.")
+	TemplateId *string `json:"templateId,omitempty"`
+	/** @description Optional lower bound for the campaign time, unix timestamp in seconds (UTC). */
+	// @ApiMember(Description="Optional lower bound for the campaign time, unix timestamp in seconds (UTC).")
+	From *int64 `json:"from,omitempty"`
+	/** @description Optional upper bound for the campaign time, unix timestamp in seconds (UTC). */
+	// @ApiMember(Description="Optional upper bound for the campaign time, unix timestamp in seconds (UTC).")
+	To *int64 `json:"to,omitempty"`
+}
+
+func (GetEmailCampaigns) CreateResponse() (r GetEmailCampaignsResponse) { return }
+func (GetEmailCampaigns) HttpMethod() string                            { return "GET" }
+
+/** @description Get email campaign batches */
+// @Route("/{version}/notifications/email/campaigns/{id}/batches", "GET")
+// @Api(Description="Get email campaign batches")
+type GetEmailCampaignBatches struct {
+	CodeMashListPaginationRequestBase
+	/** @description The email campaign id to list batches for. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id to list batches for. Get it from get_email_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional batch id to filter to a single batch. Get it from a prior call to this tool. */
+	// @ApiMember(Description="Optional batch id to filter to a single batch. Get it from a prior call to this tool.")
+	BatchId *string `json:"batchId,omitempty"`
+	/** @description Optional recipient email address to filter batches by. */
+	// @ApiMember(Description="Optional recipient email address to filter batches by.")
+	EmailAddress *string `json:"emailAddress,omitempty"`
+}
+
+func (GetEmailCampaignBatches) CreateResponse() (r GetEmailCampaignBatchesResponse) { return }
+func (GetEmailCampaignBatches) HttpMethod() string                                  { return "GET" }
+
+/** @description Get an email campaign batch notification */
+// @Route("/{version}/notifications/email/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
+// @Api(Description="Get an email campaign batch notification")
+type GetEmailCampaignBatchNotification struct {
+	CodeMashListPaginationRequestBase
+	/** @description The email campaign id. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The campaign batch id. Get it from get_email_campaign_batches. */
+	// @ApiMember(Description="The campaign batch id. Get it from get_email_campaign_batches.", IsRequired=true)
+	BatchId string `json:"batchId"`
+	/** @description The notification id within the batch. Get it from get_email_campaign_batch_notifications. */
+	// @ApiMember(Description="The notification id within the batch. Get it from get_email_campaign_batch_notifications.", IsRequired=true)
+	NotificationId string `json:"notificationId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetEmailCampaignBatchNotification) CreateResponse() (r GetEmailCampaignBatchNotificationResponse) {
+	return
+}
+func (GetEmailCampaignBatchNotification) HttpMethod() string { return "GET" }
+
+/** @description Get email campaign batch notifications */
+// @Route("/{version}/notifications/email/campaigns/{id}/batches/{batchId}", "GET")
+// @Api(Description="Get email campaign batch notifications")
+type GetEmailCampaignBatchNotifications struct {
+	CodeMashListPaginationRequestBase
+	/** @description The email campaign id. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The campaign batch id to list notifications for. Get it from get_email_campaign_batches. */
+	// @ApiMember(Description="The campaign batch id to list notifications for. Get it from get_email_campaign_batches.", IsRequired=true)
+	BatchId string `json:"batchId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetEmailCampaignBatchNotifications) CreateResponse() (r GetEmailCampaignBatchNotificationsResponse) {
+	return
+}
+func (GetEmailCampaignBatchNotifications) HttpMethod() string { return "GET" }
+
+/** @description Get email campaign statistics */
+// @Route("/{version}/notifications/email/campaigns/{id}/stats", "GET")
+// @Api(Description="Get email campaign statistics")
+type GetEmailCampaignStatistics struct {
+	CodeMashRequestBase
+	/** @description The email campaign id to get statistics for. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id to get statistics for. Get it from get_email_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetEmailCampaignStatistics) CreateResponse() (r GetEmailCampaignStatisticsResponse) { return }
+func (GetEmailCampaignStatistics) HttpMethod() string                                     { return "GET" }
+
+/** @description Preview an email notification */
+// @Route("/{version}/notifications/email/preview", "GET")
+// @Api(Description="Preview an email notification")
+type PreviewEmailNotification struct {
+	RequestBase
+	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
+	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
+	Hash string `json:"hash"`
+	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
+	ProjectId *string `json:"projectId,omitempty"`
+	/** @description Signed-in preview by id: the notification id (needs email:read). With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the notification id (needs email:read). With a hash it must match the hash.")
+	NotificationId *string `json:"notificationId,omitempty"`
+}
+
+func (PreviewEmailNotification) CreateResponse() (r PreviewEmailNotificationResponse) { return }
+func (PreviewEmailNotification) HttpMethod() string                                   { return "GET" }
+
+/** @description Retries the failed recipients of an email campaign */
+// @Route("/{version}/notifications/email/campaigns/{Id}/retry-failed", "POST")
+// @Api(Description="Retries the failed recipients of an email campaign")
+// @DataContract
+type RetryFailedEmailNotificationsRequest struct {
+	CodeMashRequestBase
+	/** @description The campaign id. Get it from get_email_campaigns. */
+	// @DataMember
+	// @ApiMember(Description="The campaign id. Get it from get_email_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Your key for this request, at most 64 characters. The same key again returns the first answer and sends nothing; the same key with another body is refused (409). */
+	// @DataMember
+	// @ApiMember(Description="Your key for this request, at most 64 characters. The same key again returns the first answer and sends nothing; the same key with another body is refused (409).", IsRequired=true)
+	IdempotencyKey string `json:"idempotencyKey"`
+	/** @description Optional. Only these notification ids. Default: every failed recipient of the campaign. */
+	// @DataMember
+	// @ApiMember(Description="Optional. Only these notification ids. Default: every failed recipient of the campaign.")
+	NotificationIds []string `json:"notificationIds,omitempty"`
+	/** @description Optional, default false. Also retry recipients whose failure is Ambiguous (a timeout after the request was sent) — this MAY SEND A DUPLICATE. */
+	// @DataMember
+	// @ApiMember(Description="Optional, default false. Also retry recipients whose failure is Ambiguous (a timeout after the request was sent) — this MAY SEND A DUPLICATE.")
+	IncludeAmbiguous *bool `json:"includeAmbiguous,omitempty"`
+	/** @description Optional. Only these failure classes: Transient, Permanent, Unknown. Default: all three (Ambiguous only through includeAmbiguous). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Only these failure classes: Transient, Permanent, Unknown. Default: all three (Ambiguous only through includeAmbiguous).")
+	Categories []string `json:"categories,omitempty"`
+}
+
+func (RetryFailedEmailNotificationsRequest) CreateResponse() (r RetryFailedEmailNotificationsResponse) {
+	return
+}
+func (RetryFailedEmailNotificationsRequest) HttpMethod() string { return "POST" }
+
+/** @description Stops a running email campaign */
+// @Route("/{version}/notifications/email/campaigns/{Id}/stop", "POST")
+// @Api(Description="Stops a running email campaign")
+// @DataContract
+type StopEmailCampaignRequest struct {
+	CodeMashRequestBase
+	/** @description The campaign id to stop. */
+	// @DataMember
+	// @ApiMember(Description="The campaign id to stop.")
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (StopEmailCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (StopEmailCampaignRequest) HttpMethod() string                { return "POST" }
+
+/** @description Get email campaign messages */
+// @Route("/{version}/notifications/emails/campaigns/{campaignId}/messages", "GET")
+// @Api(Description="Get email campaign messages")
+type GetEmailCampaignMessagesRequest struct {
+	CodeMashListPaginationRequestBase
+	/** @description The email campaign id. Get it from get_email_campaigns. */
+	// @ApiMember(Description="The email campaign id. Get it from get_email_campaigns.", IsRequired=true)
+	CampaignId string `json:"campaignId"`
+	/** @description The campaign batch id to list messages for. Get it from get_email_campaign_batches. */
+	// @ApiMember(Description="The campaign batch id to list messages for. Get it from get_email_campaign_batches.", IsRequired=true)
+	CampaignBatchId string `json:"campaignBatchId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetEmailCampaignMessagesRequest) CreateResponse() (r GetEmailCampaignMessagesResponse) { return }
+func (GetEmailCampaignMessagesRequest) HttpMethod() string                                   { return "GET" }
+
+/** @description Deletes sms campaign from queue */
+// @Route("/{version}/notifications/sms/campaigns/{id}", "DELETE")
+// @Api(Description="Deletes sms campaign from queue")
+type DeleteSmsCampaign struct {
+	CodeMashRequestBase
+	/** @description The campaign id to delete. Get it from get_sms_campaigns. */
+	// @ApiMember(Description="The campaign id to delete. Get it from get_sms_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (DeleteSmsCampaign) CreateResponse() (r EmptyResponse) { return }
+func (DeleteSmsCampaign) HttpMethod() string                { return "DELETE" }
+
+/** @description Get sms campaign by id */
+// @Route("/{version}/notifications/sms/campaigns/{id}", "GET")
+// @Api(Description="Get sms campaign by id")
+type GetSmsCampaign struct {
+	CodeMashRequestBase
+	/** @description The campaign id. */
+	// @ApiMember(Description="The campaign id.")
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetSmsCampaign) CreateResponse() (r GetSmsCampaignResponse) { return }
+func (GetSmsCampaign) HttpMethod() string                         { return "GET" }
+
+/** @description Gets sms campaigns */
+// @Route("/{version}/notifications/sms/campaigns", "GET")
+// @Api(Description="Gets sms campaigns")
+type GetSmsCampaigns struct {
+	CodeMashListPaginationRequestBase
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional: return only the campaign with this id. */
+	// @ApiMember(Description="Optional: return only the campaign with this id.")
+	CampaignId *string `json:"campaignId,omitempty"`
+	/** @description Optional: only campaigns built on this SMS template id. */
+	// @ApiMember(Description="Optional: only campaigns built on this SMS template id.")
+	TemplateId *string `json:"templateId,omitempty"`
+	/** @description Optional lower bound for the campaign time, unix timestamp in seconds (UTC). */
+	// @ApiMember(Description="Optional lower bound for the campaign time, unix timestamp in seconds (UTC).")
+	From *int64 `json:"from,omitempty"`
+	/** @description Optional upper bound for the campaign time, unix timestamp in seconds (UTC). */
+	// @ApiMember(Description="Optional upper bound for the campaign time, unix timestamp in seconds (UTC).")
+	To *int64 `json:"to,omitempty"`
+}
+
+func (GetSmsCampaigns) CreateResponse() (r GetSmsCampaignsResponse) { return }
+func (GetSmsCampaigns) HttpMethod() string                          { return "GET" }
+
+/** @description Gets sms campaign batches */
+// @Route("/{version}/notifications/sms/campaigns/{id}/batches", "GET")
+// @Api(Description="Gets sms campaign batches")
+type GetSmsCampaignBatches struct {
+	CodeMashListPaginationRequestBase
+	/** @description The campaign id. Get it from get_sms_campaigns. */
+	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.")
+	Id *string `json:"id,omitempty"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetSmsCampaignBatches) CreateResponse() (r GetSmsCampaignBatchesResponse) { return }
+func (GetSmsCampaignBatches) HttpMethod() string                                { return "GET" }
+
+/** @description Gets sms campaign batch notification */
+// @Route("/{version}/notifications/sms/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
+// @Api(Description="Gets sms campaign batch notification")
+type GetSmsCampaignBatchNotification struct {
+	CodeMashListPaginationRequestBase
+	/** @description The campaign id. Get it from get_sms_campaigns. */
+	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The campaign batch id. Get it from get_sms_campaign_batches. */
+	// @ApiMember(Description="The campaign batch id. Get it from get_sms_campaign_batches.", IsRequired=true)
+	BatchId string `json:"batchId"`
+	/** @description The notification id. Get it from get_sms_campaign_batch_notifications. */
+	// @ApiMember(Description="The notification id. Get it from get_sms_campaign_batch_notifications.", IsRequired=true)
+	NotificationId string `json:"notificationId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetSmsCampaignBatchNotification) CreateResponse() (r GetSmsCampaignBatchNotificationResponse) {
+	return
+}
+func (GetSmsCampaignBatchNotification) HttpMethod() string { return "GET" }
+
+/** @description Gets sms campaign batch notifications */
+// @Route("/{version}/notifications/sms/campaigns/{id}/batches/{batchId}", "GET")
+// @Api(Description="Gets sms campaign batch notifications")
+type GetSmsCampaignBatchNotifications struct {
+	CodeMashListPaginationRequestBase
+	/** @description The campaign id. Get it from get_sms_campaigns. */
+	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description The campaign batch id. Get it from get_sms_campaign_batches. */
+	// @ApiMember(Description="The campaign batch id. Get it from get_sms_campaign_batches.", IsRequired=true)
+	BatchId string `json:"batchId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetSmsCampaignBatchNotifications) CreateResponse() (r GetSmsCampaignBatchNotificationsResponse) {
+	return
+}
+func (GetSmsCampaignBatchNotifications) HttpMethod() string { return "GET" }
+
+/** @description Get sms campaign statistics */
+// @Route("/{version}/notifications/sms/campaigns/{id}/stats", "GET")
+// @Api(Description="Get sms campaign statistics")
+type GetSmsCampaignStatistics struct {
+	CodeMashRequestBase
+	/** @description The campaign id. Get it from get_sms_campaigns. */
+	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetSmsCampaignStatistics) CreateResponse() (r GetSmsCampaignStatisticsResponse) { return }
+func (GetSmsCampaignStatistics) HttpMethod() string                                   { return "GET" }
+
+/** @description Returns SMS preview notification body */
+// @Route("/{version}/notifications/sms/preview", "GET")
+// @Api(Description="Returns SMS preview notification body")
+type PreviewSmsNotification struct {
+	RequestBase
+	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
+	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
+	Hash string `json:"hash"`
+	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
+	ProjectId *string `json:"projectId,omitempty"`
+	/** @description Signed-in preview by id: the notification id (needs sms:read). With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the notification id (needs sms:read). With a hash it must match the hash.")
+	NotificationId *string `json:"notificationId,omitempty"`
+}
+
+func (PreviewSmsNotification) CreateResponse() (r PreviewSmsNotificationResponse) { return }
+func (PreviewSmsNotification) HttpMethod() string                                 { return "GET" }
+
+/** @description Retries the failed recipients of an SMS campaign */
+// @Route("/{version}/notifications/sms/campaigns/{Id}/retry-failed", "POST")
+// @Api(Description="Retries the failed recipients of an SMS campaign")
+// @DataContract
+type RetryFailedSmsNotificationsRequest struct {
+	CodeMashRequestBase
+	/** @description The campaign id. Get it from get_sms_campaigns. */
+	// @DataMember
+	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Your key for this request, at most 64 characters. The same key again returns the first answer and sends nothing; the same key with another body is refused (409). */
+	// @DataMember
+	// @ApiMember(Description="Your key for this request, at most 64 characters. The same key again returns the first answer and sends nothing; the same key with another body is refused (409).", IsRequired=true)
+	IdempotencyKey string `json:"idempotencyKey"`
+	/** @description Optional. Only these notification ids. Default: every failed recipient of the campaign. */
+	// @DataMember
+	// @ApiMember(Description="Optional. Only these notification ids. Default: every failed recipient of the campaign.")
+	NotificationIds []string `json:"notificationIds,omitempty"`
+	/** @description Optional, default false. Also retry recipients whose failure is Ambiguous (a timeout after the request was sent) — this MAY SEND A DUPLICATE. */
+	// @DataMember
+	// @ApiMember(Description="Optional, default false. Also retry recipients whose failure is Ambiguous (a timeout after the request was sent) — this MAY SEND A DUPLICATE.")
+	IncludeAmbiguous *bool `json:"includeAmbiguous,omitempty"`
+	/** @description Optional. Only these failure classes: Transient, Permanent, Unknown. Default: all three (Ambiguous only through includeAmbiguous). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Only these failure classes: Transient, Permanent, Unknown. Default: all three (Ambiguous only through includeAmbiguous).")
+	Categories []string `json:"categories,omitempty"`
+}
+
+func (RetryFailedSmsNotificationsRequest) CreateResponse() (r RetryFailedSmsNotificationsResponse) {
+	return
+}
+func (RetryFailedSmsNotificationsRequest) HttpMethod() string { return "POST" }
+
+/** @description Stops a running SMS campaign */
+// @Route("/{version}/notifications/sms/campaigns/{Id}/stop", "POST")
+// @Api(Description="Stops a running SMS campaign")
+type StopSmsCampaignRequest struct {
+	CodeMashRequestBase
+	/** @description The campaign id to stop. */
+	// @ApiMember(Description="The campaign id to stop.")
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (StopSmsCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (StopSmsCampaignRequest) HttpMethod() string                { return "POST" }
+
+/** @description Gets the sms notifications */
+// @Route("/{version}/notifications/sms/campaigns/{campaignId}/messages", "GET")
+// @Api(Description="Gets the sms notifications")
+type GetSmsCampaignMessagesRequest struct {
+	CodeMashListPaginationRequestBase
+	/** @description The campaign id. Get it from get_sms_campaigns. */
+	// @ApiMember(Description="The campaign id. Get it from get_sms_campaigns.", IsRequired=true)
+	CampaignId string `json:"campaignId"`
+	/** @description The campaign batch id. Get it from get_sms_campaign_batches. */
+	// @ApiMember(Description="The campaign batch id. Get it from get_sms_campaign_batches.", IsRequired=true)
+	CampaignBatchId string `json:"campaignBatchId"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetSmsCampaignMessagesRequest) CreateResponse() (r GetSmsCampaignMessagesResponse) { return }
+func (GetSmsCampaignMessagesRequest) HttpMethod() string                                 { return "GET" }
+
+/** @description Count the devices a push campaign audience would reach */
+// @Route("/{version}/notifications/push/campaigns/audience-count", "POST")
+// @Api(Description="Count the devices a push campaign audience would reach")
+// @DataContract
+type GetPushCampaignAudienceCountRequest struct {
+	CodeMashRequestBase
+	/** @description The audience, in the same shape as CreatePushCampaignRequest.campaign. Template and send options are ignored. */
+	// @DataMember
+	// @ApiMember(Description="The audience, in the same shape as CreatePushCampaignRequest.campaign. Template and send options are ignored.")
+	Campaign PushCampaignRequest `json:"campaign"`
+	/** @description Optional. When omitted, the default database integration for the request's environment is used. */
+	// @DataMember
+	// @ApiMember(Description="Optional. When omitted, the default database integration for the request's environment is used.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushCampaignAudienceCountRequest) CreateResponse() (r GetPushCampaignAudienceCountResponse) {
+	return
+}
+func (GetPushCampaignAudienceCountRequest) HttpMethod() string { return "POST" }
+
+/** @description Create push campaign */
+// @Route("/{version}/notifications/push/campaigns", "POST")
+// @Api(Description="Create push campaign")
+// @DataContract
+type CreatePushCampaignRequest struct {
+	CodeMashRequestBase
+	// @DataMember
+	Campaign PushCampaignRequest `json:"campaign"`
+	// @DataMember
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now. */
+	// @DataMember
+	// @ApiMember(Description="Optional. true sends the campaign now (or at a campaignTime sooner than the review window). Without it, a campaign created by an AI tool must be scheduled at least 24 hours ahead for role-based / all-users / collection audiences and at least 1 hour ahead for direct recipient lists, or it is rejected with CM-ERRORS-CAMPAIGNS-017. Set it only when the user explicitly asked to send now.")
+	SendNow *bool `json:"sendNow,omitempty"`
+}
+
+func (CreatePushCampaignRequest) CreateResponse() (r IdResponse) { return }
+func (CreatePushCampaignRequest) HttpMethod() string             { return "POST" }
+
+/** @description Deletes push campaign from queue */
+// @Route("/{version}/notifications/push/campaigns/{Id}", "DELETE")
+// @Api(Description="Deletes push campaign from queue")
+// @DataContract
+type DeletePushCampaignRequest struct {
+	CodeMashRequestBase
+	/** @description The push campaign id to delete. Get it from get_push_campaigns. */
+	// @DataMember
+	// @ApiMember(Description="The push campaign id to delete. Get it from get_push_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @DataMember
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (DeletePushCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (DeletePushCampaignRequest) HttpMethod() string                { return "DELETE" }
+
+/** @description Gets push campaign by id */
+// @Route("/{version}/notifications/push/campaigns/{id}", "GET")
+// @Api(Description="Gets push campaign by id")
+type GetPushCampaign struct {
+	CodeMashRequestBase
+	/** @description The campaign id. */
+	// @ApiMember(Description="The campaign id.")
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushCampaign) CreateResponse() (r GetPushCampaignResponse) { return }
+func (GetPushCampaign) HttpMethod() string                          { return "GET" }
+
+/** @description Gets push campaigns */
+// @Route("/{version}/notifications/push/campaigns", "GET")
+// @Api(Description="Gets push campaigns")
+type GetPushCampaigns struct {
+	CodeMashListPaginationRequestBase
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional: only campaigns built on this push template id. */
+	// @ApiMember(Description="Optional: only campaigns built on this push template id.")
+	TemplateId *string `json:"templateId,omitempty"`
+	/** @description Optional lower bound for the campaign time, unix timestamp in seconds (UTC). */
+	// @ApiMember(Description="Optional lower bound for the campaign time, unix timestamp in seconds (UTC).")
+	From *int64 `json:"from,omitempty"`
+	/** @description Optional upper bound for the campaign time, unix timestamp in seconds (UTC). */
+	// @ApiMember(Description="Optional upper bound for the campaign time, unix timestamp in seconds (UTC).")
+	To *int64 `json:"to,omitempty"`
+}
+
+func (GetPushCampaigns) CreateResponse() (r GetPushCampaignsResponse) { return }
+func (GetPushCampaigns) HttpMethod() string                           { return "GET" }
+
+/** @description Gets push campaign batches */
+// @Route("/{version}/notifications/push/campaigns/{id}/batches", "GET")
+// @Api(Description="Gets push campaign batches")
+type GetPushCampaignBatches struct {
+	CodeMashListPaginationRequestBase
+	/** @description The push campaign id to list batches for. Get it from get_push_campaigns. */
+	// @ApiMember(Description="The push campaign id to list batches for. Get it from get_push_campaigns.")
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Optional: only return the batch with this id. */
+	// @ApiMember(Description="Optional: only return the batch with this id.")
+	BatchId *string `json:"batchId,omitempty"`
+}
+
+func (GetPushCampaignBatches) CreateResponse() (r GetPushCampaignBatchesResponse) { return }
+func (GetPushCampaignBatches) HttpMethod() string                                 { return "GET" }
+
+/** @description Gets a push campaign batch notification */
+// @Route("/{version}/notifications/push/campaigns/{id}/batches/{batchId}/{notificationId}", "GET")
+// @Api(Description="Gets a push campaign batch notification")
+type GetPushCampaignBatchNotification struct {
+	CodeMashListPaginationRequestBase
+	/** @description The push campaign id. Get it from get_push_campaigns. */
+	// @ApiMember(Description="The push campaign id. Get it from get_push_campaigns.")
+	Id string `json:"id"`
+	/** @description The batch id. Get it from get_push_campaign_batches. */
+	// @ApiMember(Description="The batch id. Get it from get_push_campaign_batches.")
+	BatchId string `json:"batchId"`
+	/** @description The notification id within the batch. */
+	// @ApiMember(Description="The notification id within the batch.")
+	NotificationId string `json:"notificationId"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushCampaignBatchNotification) CreateResponse() (r GetPushCampaignBatchNotificationResponse) {
+	return
+}
+func (GetPushCampaignBatchNotification) HttpMethod() string { return "GET" }
+
+/** @description Gets push campaign batch notifications */
+// @Route("/{version}/notifications/push/campaigns/{id}/batches/{batchId}", "GET")
+// @Api(Description="Gets push campaign batch notifications")
+type GetPushCampaignBatchNotifications struct {
+	CodeMashListPaginationRequestBase
+	/** @description The push campaign id. Get it from get_push_campaigns. */
+	// @ApiMember(Description="The push campaign id. Get it from get_push_campaigns.")
+	Id string `json:"id"`
+	/** @description The batch id to list notifications for. Get it from get_push_campaign_batches. */
+	// @ApiMember(Description="The batch id to list notifications for. Get it from get_push_campaign_batches.")
+	BatchId string `json:"batchId"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushCampaignBatchNotifications) CreateResponse() (r GetPushCampaignBatchNotificationsResponse) {
+	return
+}
+func (GetPushCampaignBatchNotifications) HttpMethod() string { return "GET" }
+
+/** @description Get push campaign statistics */
+// @Route("/{version}/notifications/push/campaigns/{id}/stats", "GET")
+// @Api(Description="Get push campaign statistics")
+type GetPushCampaignStatistics struct {
+	CodeMashRequestBase
+	/** @description The push campaign id to get statistics for. Get it from get_push_campaigns. */
+	// @ApiMember(Description="The push campaign id to get statistics for. Get it from get_push_campaigns.")
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushCampaignStatistics) CreateResponse() (r GetPushCampaignStatisticsResponse) { return }
+func (GetPushCampaignStatistics) HttpMethod() string                                    { return "GET" }
+
+/** @description Returns push preview notification */
+// @Route("/{version}/notifications/push/preview", "GET")
+// @Api(Description="Returns push preview notification")
+type PreviewPushNotification struct {
+	RequestBase
+	/** @description The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending). */
+	// @ApiMember(Description="The signed preview link hash. With it the preview opens without sign-in: exactly one notification, until the link expires (30 days after sending).")
+	Hash string `json:"hash"`
+	/** @description Signed-in preview by id: the project id. With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the project id. With a hash it must match the hash.")
+	ProjectId *string `json:"projectId,omitempty"`
+	/** @description Signed-in preview by id: the notification id (needs push:read). With a hash it must match the hash. */
+	// @ApiMember(Description="Signed-in preview by id: the notification id (needs push:read). With a hash it must match the hash.")
+	NotificationId *string `json:"notificationId,omitempty"`
+}
+
+func (PreviewPushNotification) CreateResponse() (r PreviewPushNotificationResponse) { return }
+func (PreviewPushNotification) HttpMethod() string                                  { return "GET" }
+
+/** @description Retries the failed recipients of a push campaign */
+// @Route("/{version}/notifications/push/campaigns/{Id}/retry-failed", "POST")
+// @Api(Description="Retries the failed recipients of a push campaign")
+// @DataContract
+type RetryFailedPushNotificationsRequest struct {
+	CodeMashRequestBase
+	/** @description The campaign id. Get it from get_push_campaigns. */
+	// @DataMember
+	// @ApiMember(Description="The campaign id. Get it from get_push_campaigns.", IsRequired=true)
+	Id string `json:"id"`
+	/** @description Optional. Omit to use the project default database integration (resolved per environment). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Omit to use the project default database integration (resolved per environment).")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+	/** @description Your key for this request, at most 64 characters. The same key again returns the first answer and sends nothing; the same key with another body is refused (409). */
+	// @DataMember
+	// @ApiMember(Description="Your key for this request, at most 64 characters. The same key again returns the first answer and sends nothing; the same key with another body is refused (409).", IsRequired=true)
+	IdempotencyKey string `json:"idempotencyKey"`
+	/** @description Optional. Only these notification ids. Default: every failed recipient of the campaign. */
+	// @DataMember
+	// @ApiMember(Description="Optional. Only these notification ids. Default: every failed recipient of the campaign.")
+	NotificationIds []string `json:"notificationIds,omitempty"`
+	/** @description Optional, default false. Also retry recipients whose failure is Ambiguous (a timeout after the request was sent) — this MAY SEND A DUPLICATE. */
+	// @DataMember
+	// @ApiMember(Description="Optional, default false. Also retry recipients whose failure is Ambiguous (a timeout after the request was sent) — this MAY SEND A DUPLICATE.")
+	IncludeAmbiguous *bool `json:"includeAmbiguous,omitempty"`
+	/** @description Optional. Only these failure classes: Transient, Permanent, Unknown. Default: all three (Ambiguous only through includeAmbiguous). */
+	// @DataMember
+	// @ApiMember(Description="Optional. Only these failure classes: Transient, Permanent, Unknown. Default: all three (Ambiguous only through includeAmbiguous).")
+	Categories []string `json:"categories,omitempty"`
+}
+
+func (RetryFailedPushNotificationsRequest) CreateResponse() (r RetryFailedPushNotificationsResponse) {
+	return
+}
+func (RetryFailedPushNotificationsRequest) HttpMethod() string { return "POST" }
+
+/** @description Stops a running push campaign */
+// @Route("/{version}/notifications/push/campaigns/{Id}/stop", "POST")
+// @Api(Description="Stops a running push campaign")
+// @DataContract
+type StopPushCampaignRequest struct {
+	CodeMashRequestBase
+	/** @description The campaign id to stop. */
+	// @DataMember
+	// @ApiMember(Description="The campaign id to stop.")
+	Id string `json:"id"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @DataMember
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (StopPushCampaignRequest) CreateResponse() (r EmptyResponse) { return }
+func (StopPushCampaignRequest) HttpMethod() string                { return "POST" }
+
+/** @description Gets push campaign messages */
+// @Route("/{version}/notifications/push/campaigns/{campaignId}/messages", "GET")
+// @Api(Description="Gets push campaign messages")
+type GetPushCampaignMessagesRequest struct {
+	CodeMashListPaginationRequestBase
+	/** @description The push campaign id. Get it from get_push_campaigns. */
+	// @ApiMember(Description="The push campaign id. Get it from get_push_campaigns.")
+	CampaignId string `json:"campaignId"`
+	/** @description Optional: restrict results to this batch id. Get it from get_push_campaign_batches. */
+	// @ApiMember(Description="Optional: restrict results to this batch id. Get it from get_push_campaign_batches.")
+	CampaignBatchId string `json:"campaignBatchId"`
+	/** @description Optional database integration id; omit to use the project's default. */
+	// @ApiMember(Description="Optional database integration id; omit to use the project's default.")
+	DatabaseIntegrationId *string `json:"databaseIntegrationId,omitempty"`
+}
+
+func (GetPushCampaignMessagesRequest) CreateResponse() (r GetPushCampaignMessagesResponse) { return }
+func (GetPushCampaignMessagesRequest) HttpMethod() string                                  { return "GET" }
 
 // @Route("/{version}/compliance/settings", "GET")
 type GetComplianceSettings struct {

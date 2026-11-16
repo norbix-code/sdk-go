@@ -186,8 +186,6 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.SendInviteToTeamMember(ctx, body, nil)
 			}},
-		{"GetLicenses", http.MethodGet, "/v2/account/licenses",
-			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetLicenses(ctx, body, nil) }},
 		{"UpdateProjectAdminUrl", http.MethodPatch, "/v2/account/projects/projectId_1/settings/admin-url",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.UpdateProjectAdminUrl(ctx, "projectId_1", body, nil)
