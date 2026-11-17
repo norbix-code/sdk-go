@@ -47,6 +47,7 @@ func (a *auth) SetAPIKey(key string) { a.t.Cfg.APIKey = key }
 func (a *auth) Logout() { a.t.Cfg.BearerToken = "" }
 
 // SetScope switches the project (and optionally account) for subsequent requests.
+// On the default API URL the calls move to the new project's own host.
 func (a *auth) SetScope(projectID, accountID string) {
 	a.t.Cfg.ProjectID = projectID
 	a.t.Cfg.AccountID = accountID
@@ -65,7 +66,10 @@ func (a *auth) SetEnv(envName string) {
 func (a *auth) GetEnv() string { return a.t.Cfg.Env }
 
 // SetRegion switches the Norbix region (nb-region header). Pass "" to clear it.
-// SDK-default base URLs are recomposed; user-supplied base URLs are untouched.
+// The default Hub URL is recomposed with the region subdomain. API calls on the
+// default API URL stay on the project's own host, which has no region label;
+// the regional API host is used only for a project id that is not a Norbix
+// project id. User-supplied base URLs are untouched.
 func (a *auth) SetRegion(region string) {
 	a.t.Cfg.Region = region
 	if a.t.Cfg.BaseURLAPIIsDefault {
