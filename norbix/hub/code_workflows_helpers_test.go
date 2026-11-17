@@ -2,6 +2,7 @@ package hub
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -290,5 +291,62 @@ func TestResumeOfAGroupApprovalAnswersTheRunStillWaiting(t *testing.T) {
 	}
 	if single := out.Run.WaitingOn[1]; single.Require != nil || len(single.Answers) != 0 {
 		t.Errorf("a wait without require: got require=%v answers=%+v", single.Require, single.Answers)
+	}
+}
+
+// An AI agent among the approvers (Code.Workflows.md §3.3c): the typed resume
+// request carries Reason on the wire, and the answer decodes the agent's slot
+// (Agent) with the reason of its answer, on the slot and on the answer. A
+// person's slot has no Agent.
+func TestResumeCarriesAReasonAndTheRunNamesTheAgentSlot(t *testing.T) {
+	const withAgent = `{"run":{"runId":"` + testWorkflowRunID + `","status":"waiting","waitingOn":[` +
+		`{"stepId":"approve","kind":"approval","require":2,"slots":[{"label":"role:Accountant"},` +
+		`{"label":"agent:reviewer","userId":"usr_bot","agent":"reviewer","answeredBy":"usr_bot",` +
+		`"decision":"approved","reason":"The amount is within the limit."}],` +
+		`"answers":[{"userId":"usr_bot","kind":"agent","decision":"approved","at":"2026-11-17T10:15:00Z",` +
+		`"reason":"The amount is within the limit."}]}]}}`
+	var gotBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/v2/code/workflows/runs/"+testWorkflowRunID+"/resume" {
+			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		b, _ := io.ReadAll(r.Body)
+		gotBody = string(b)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, withAgent)
+	}))
+	defer srv.Close()
+
+	var out dtos.WorkflowRunResponse
+	err := newCodeTestModule(srv.URL).ResumeCodeWorkflowRun(context.Background(), testWorkflowRunID,
+		map[string]any{"decision": "rejected", "reason": "Over the monthly budget"}, &out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if want := `{"decision":"rejected","reason":"Over the monthly budget"}`; gotBody != want {
+		t.Errorf("body: got %s want %s", gotBody, want)
+	}
+	if out.Run == nil || len(out.Run.WaitingOn) != 1 || len(out.Run.WaitingOn[0].Slots) != 2 {
+		t.Fatalf("run: got %+v", out.Run)
+	}
+	wait := out.Run.WaitingOn[0]
+	if person := wait.Slots[0]; person.Agent != "" || person.Reason != "" {
+		t.Errorf("a person's slot: got agent=%q reason=%q", person.Agent, person.Reason)
+	}
+	if s := wait.Slots[1]; s.Agent != "reviewer" || s.Decision != "approved" || s.Reason != "The amount is within the limit." {
+		t.Errorf("agent slot: got %+v", s)
+	}
+	if len(wait.Answers) != 1 || wait.Answers[0].Kind != "agent" || wait.Answers[0].Reason != "The amount is within the limit." {
+		t.Errorf("answers: got %+v", wait.Answers)
+	}
+
+	// The typed requests write the same wire name.
+	byRun, _ := json.Marshal(dtos.ResumeCodeWorkflowRun{Decision: "rejected", Reason: "Over the monthly budget"})
+	if want := `{"decision":"rejected","reason":"Over the monthly budget"}`; string(byRun) != want {
+		t.Errorf("typed resume: got %s want %s", byRun, want)
+	}
+	byKey, _ := json.Marshal(dtos.ResumeCodeWorkflowRunByKey{Key: "order-o1", Decision: "approved", Reason: "Looks fine"})
+	if want := `{"key":"order-o1","decision":"approved","reason":"Looks fine"}`; string(byKey) != want {
+		t.Errorf("typed resume by key: got %s want %s", byKey, want)
 	}
 }

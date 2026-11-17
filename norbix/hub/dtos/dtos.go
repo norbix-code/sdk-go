@@ -6834,6 +6834,8 @@ type WorkflowWaitSlotDto struct {
 	Role       string `json:"role,omitempty"`
 	Tag        string `json:"tag,omitempty"`
 	TeamRole   *bool  `json:"teamRole,omitempty"`
+	Agent      string `json:"agent,omitempty"`
+	Reason     string `json:"reason,omitempty"`
 	AnsweredBy string `json:"answeredBy,omitempty"`
 	Decision   string `json:"decision,omitempty"`
 	At         string `json:"at,omitempty"`
@@ -6844,6 +6846,7 @@ type WorkflowWaitSlotDto struct {
 type WorkflowWaitAnswerDto struct {
 	UserId   string    `json:"userId,omitempty"`
 	Kind     string    `json:"kind,omitempty"`
+	Reason   string    `json:"reason,omitempty"`
 	Decision string    `json:"decision,omitempty"`
 	Slots    []float64 `json:"slots,omitempty"`
 	Override *bool     `json:"override,omitempty"`
@@ -11503,6 +11506,19 @@ type UpdateAccountRole struct {
 	Policies    []string `json:"policies,omitempty"`
 }
 
+// RequestAccountPasswordResetRequest DTO.
+type RequestAccountPasswordResetRequest struct {
+	RequestBase
+	Email string `json:"email,omitempty"`
+}
+
+// ConfirmAccountPasswordResetRequest DTO.
+type ConfirmAccountPasswordResetRequest struct {
+	RequestBase
+	Token       string `json:"token,omitempty"`
+	NewPassword string `json:"newPassword,omitempty"`
+}
+
 // AccountHasPasskeyRequest DTO.
 type AccountHasPasskeyRequest struct {
 	RequestBase
@@ -13151,6 +13167,7 @@ type ResumeCodeWorkflowRun struct {
 	StepId   string         `json:"stepId,omitempty"`
 	Decision string         `json:"decision,omitempty"`
 	Payload  map[string]any `json:"payload,omitempty"`
+	Reason   string         `json:"reason,omitempty"`
 }
 
 // OpenCodeWorkflowResumeLink DTO.
@@ -13196,6 +13213,7 @@ type ResumeCodeWorkflowRunByKey struct {
 	StepId   string         `json:"stepId,omitempty"`
 	Decision string         `json:"decision,omitempty"`
 	Payload  map[string]any `json:"payload,omitempty"`
+	Reason   string         `json:"reason,omitempty"`
 }
 
 // RetryCodeWorkflowRunStep DTO.
