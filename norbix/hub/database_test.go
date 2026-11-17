@@ -197,6 +197,10 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.GetAllowedFlexTiers(ctx, nil, nil)
 			}},
+		{"GetNetworkAddresses", http.MethodGet, "/v2/database/network-addresses", url.Values{"regionCode": {"nb-eu-germany"}}, nil,
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.GetNetworkAddresses(ctx, map[string]any{"regionCode": "nb-eu-germany"}, nil)
+			}},
 		{"TestDatabaseIntegration", http.MethodPost, "/v2/database/integrations/test", nil, map[string]any{"integrationId": "int_1"},
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.TestDatabaseIntegration(ctx, map[string]any{"integrationId": "int_1"}, nil)
@@ -379,12 +383,12 @@ func TestHubDatabaseEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The HUB database surface is 66 routes (imports excluded; Database is
+// The HUB database surface is 67 routes (imports excluded; Database is
 // always on, so there is no enable or disable route). If the gateway
 // grows one and a method is added, this count changes, so a new endpoint
 // cannot arrive untested.
 func TestHubDatabaseSurfaceSize(t *testing.T) {
-	const want = 66
+	const want = 67
 	if got := len(hubDatabaseCases()); got != want {
 		t.Errorf("database endpoint count: got %d want %d", got, want)
 	}

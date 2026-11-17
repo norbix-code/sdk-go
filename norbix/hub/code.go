@@ -728,7 +728,10 @@ func (m *CodeModule) EnableCodeWorkflows(ctx context.Context, req map[string]any
 }
 
 // Beta: DisableCodeWorkflows performs PUT /{version}/code/workflows/disable (scope: project).
-// Turns the workflows beta switch off for the environment. Answers dtos.EmptyResponse.
+//
+// Deprecated: refused by the gateway since 2026-11-17 (CM-ERRORS-WORKFLOWS-045) —
+// workflows are part of every project and cannot be switched off. Kept so existing
+// code compiles; use DisableCodeWorkflow to stop one workflow.
 func (m *CodeModule) DisableCodeWorkflows(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,

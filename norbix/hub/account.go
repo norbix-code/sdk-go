@@ -134,7 +134,9 @@ func (m *AccountModule) GetFlexClusters(ctx context.Context, req map[string]any,
 
 // UpgradeFlexCluster performs POST /{version}/account/flex-clusters/{flexClusterId}/upgrade (scope: project).
 //
-// It queues the upgrade of a cluster to a bigger tier. Send "tierCode": "M10".
+// It queues the upgrade of a cluster by one step on the ladder FLEX → M10 → M20 → M30 → M40,
+// within the plan (trial: FLEX only, Starter: up to M20, Growth: up to M30, Scale: up to M40).
+// Send the cluster's NextTierCode (from GetFlexClusters) as "tierCode".
 func (m *AccountModule) UpgradeFlexCluster(ctx context.Context, flexClusterId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"flexClusterId": flexClusterId,

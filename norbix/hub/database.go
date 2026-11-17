@@ -615,6 +615,23 @@ func (m *DatabaseModule) GetAllowedFlexTiers(ctx context.Context, req map[string
 	}, out)
 }
 
+// GetNetworkAddresses performs GET /{version}/database/network-addresses (scope: project).
+//
+// It lists the IP addresses Norbix connects to databases from, per region
+// (dtos.GetNetworkAddressesResponse). Add them to your MongoDB Atlas IP access list
+// when you connect your own database with a connection string. Send "regionCode"
+// (for example "nb-eu-germany") for one region; nil for every region.
+func (m *DatabaseModule) GetNetworkAddresses(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/network-addresses",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // TestDatabaseIntegration performs POST /{version}/database/integrations/test (scope: project).
 func (m *DatabaseModule) TestDatabaseIntegration(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
