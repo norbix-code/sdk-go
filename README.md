@@ -91,10 +91,32 @@ Every `Options` field falls back to an environment variable, then a default:
 | `BaseURLAPI` | `NORBIX_API_URL` | `https://api.norbix.ai` |
 | `BaseURLHub` | `NORBIX_HUB_URL` | `https://hub.norbix.ai` |
 
-Setting a `Region` on a default base URL composes it as a subdomain, e.g.
-`https://nb-eu-germany.api.norbix.ai`. A custom base URL is never rewritten.
+Setting a `Region` sends the `nb-region` header and, on the default Hub URL,
+composes the region as a subdomain: `https://nb-eu-germany.hub.norbix.ai`. API
+calls do not get the region label: on the default API URL they go to the
+project's own host (see [Project host](#project-host)). A custom base URL is
+never rewritten.
 Per-request env/region/token overrides and switching at runtime are available via
 `c.SetEnv`, `c.SetRegion`, `c.SetBearerToken`, `c.SetScope`.
+
+### Project host
+
+On the default API URL (`https://api.norbix.ai`) every API call of a project
+goes to the project's own host, `https://pr-<32 hex>.api.norbix.ai`. The label
+is built from the project id with no call
+(`norbix.ProjectHostLabel("pr_5XvmrTA6JVggZdmEE5bGdm")` →
+`pr-022c4aca9f9e4df787ab0a20c83c44b6`), and it follows `c.SetScope`.
+
+- The host has no region label, whatever `Region` is: the project's DNS record
+  already points at its region. `nb-region` is still sent when a region is set.
+- `norbix-project-id` is still sent on every call.
+- Hub calls stay on `hub.norbix.ai` (or `<region>.hub.norbix.ai`).
+- The social sign-in link (`SocialSignInURL`) stays on the shared API host.
+- A custom `BaseURLAPI` / `NORBIX_API_URL` is never rewritten.
+- A project id that is not a Norbix project id (a test id such as `p1`) keeps
+  the shared host, or `<region>.api.norbix.ai` with a region.
+
+If an outgoing firewall allows hosts by name, allow `*.api.norbix.ai`.
 
 ### Errors
 

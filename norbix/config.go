@@ -10,7 +10,7 @@ import (
 
 // Defaults applied when neither an explicit option nor an env var is set.
 const (
-	DefaultBaseURLAPI = "https://api.norbix.ai"
+	DefaultBaseURLAPI = transport.DefaultBaseURLAPI
 	DefaultBaseURLHub = "https://hub.norbix.ai"
 	DefaultVersion    = "v3"
 	DefaultTimeout    = 30 * time.Second
@@ -27,8 +27,11 @@ type Options struct {
 	// Env selects the project environment ("PROD" is the default and sends no
 	// header). Set e.g. "STAGING" to target a non-prod environment.
 	Env string
-	// Region targets a Norbix region (e.g. "nb-eu-germany"). When set on a
-	// default base URL the region is composed as a subdomain.
+	// Region targets a Norbix region (e.g. "nb-eu-germany") and is sent as the
+	// nb-region header. On the default Hub URL it is composed as a subdomain.
+	// API calls on the default API URL go to the project's own host instead
+	// (see ProjectHostLabel); the region subdomain is used for them only when
+	// the project id is not a Norbix project id.
 	Region string
 
 	BaseURLAPI string
@@ -49,6 +52,18 @@ func firstNonEmpty(vals ...string) string {
 		}
 	}
 	return ""
+}
+
+// ProjectHostLabel is the DNS label of a project's own API host:
+// "pr_5XvmrTA6JVggZdmEE5bGdm" -> "pr-022c4aca9f9e4df787ab0a20c83c44b6".
+//
+// On the default API URL (https://api.norbix.ai) every API call of a project
+// goes to https://<label>.api.norbix.ai, with no region label; Hub calls, the
+// social sign-in link and any custom base URL are not changed. ok is false for
+// anything that is not a Norbix project id (a test id, another prefix, a value
+// that is not a version-4 GUID) and the client then keeps the shared host.
+func ProjectHostLabel(projectID string) (label string, ok bool) {
+	return transport.ProjectHostLabel(projectID)
 }
 
 // composeRegionalURL prefixes the region code as a subdomain of an SDK-default
