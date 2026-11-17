@@ -83,6 +83,24 @@ func (m *MembershipModule) GetMembershipTriggers(ctx context.Context, req map[st
 	}, out)
 }
 
+// GetMembershipTriggerEventValues performs GET /{version}/membership/triggers/event-values (scope: project).
+//
+// Lists every membership trigger event (When: OnRegistered, OnInvited, OnVerified, OnUpdated,
+// OnDeleted, OnBlocked, OnReactivated, OnUserCreated) and the values it carries by name, e.g.
+// "Registered user → e-mail address" = key User.Email, resolver New
+// (dtos.GetMembershipTriggerEventValuesResponse). Bind a trigger action's template token to one
+// as {key: <template token>, value: <key>, resolver: <resolver>} — never resolver Custom.
+func (m *MembershipModule) GetMembershipTriggerEventValues(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/triggers/event-values",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // SaveMembershipTrigger performs POST /{version}/membership/triggers (scope: project).
 func (m *MembershipModule) SaveMembershipTrigger(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
@@ -546,6 +564,24 @@ func (m *MembershipModule) GetAuthorizationSettings(ctx context.Context, req map
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/membership/authorization",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetMembershipEmailBindings performs GET /{version}/membership/settings/email-bindings (scope: project).
+//
+// For one membership e-mail ("setting": Welcome, Verification, PasswordReset, Invitation,
+// Deactivation, LoginAlert; optional "templateId" = the template about to be chosen) lists every
+// token of its template as Auto, NeedsValue or NotAvailable (dtos.GetMembershipEmailBindingsResponse).
+// The values are saved with UpdateAuthorizationSettings ("bindings"); the save is refused with
+// CM-ERRORS-MEMBERSHIP-060 while a token has no value.
+func (m *MembershipModule) GetMembershipEmailBindings(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/membership/settings/email-bindings",
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,

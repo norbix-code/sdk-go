@@ -277,6 +277,17 @@ FunctionId}, InvocationType}`; a Workflow action is
 - Settings: `GetAuthenticationSettings`, `GetAuthorizationSettings` and
   `UpdateAuthorizationSettings` read and save the Membership settings tabs next
   to `UpdateAuthenticationSettings` and `UpdatePasswordComplexity`.
+- Membership e-mail tokens: `GetMembershipEmailBindings(ctx, map[string]any{"setting":
+  "Welcome", "templateId": "tmpl_…"}, &out)` lists each token of the template as
+  Auto / NeedsValue / NotAvailable; save the values with `UpdateAuthorizationSettings`
+  (`"setting": "RegistrationTemplate"`, `"welcomeEmailTemplate"`, `"bindings"`, or
+  `"setting": "EmailBindings"` with `"bindingsEvent"`). A token left without a value
+  refuses the save (CM-ERRORS-MEMBERSHIP-060).
+- Membership trigger event values: `GetMembershipTriggerEventValues` lists, per
+  trigger event, the values it carries by name (`User.Email` with resolver `New` …)
+  for a trigger action's token bindings. `Notifications.GetMjml` takes
+  `triggerSubjectUserId` / `triggerSubjectBeforeUserId` to preview such an e-mail for
+  a simulated user.
 - A service user's API keys: `ListServiceUserApiKeys(ctx, userId, …)`,
   `IssueServiceUserApiKey(ctx, userId, map[string]any{"name": "ci", "scopes":
   []string{"database:read"}}, &out)` (the key text is in the answer once) and

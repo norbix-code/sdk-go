@@ -145,6 +145,11 @@ func membershipRouteCases() []membershipRouteCase {
 			}},
 		{"GetAuthorizationSettings", http.MethodGet, "/v2/membership/authorization", nil, nil,
 			func(ctx context.Context, m *MembershipModule) error { return m.GetAuthorizationSettings(ctx, nil, nil) }},
+		{"GetMembershipEmailBindings", http.MethodGet, "/v2/membership/settings/email-bindings",
+			url.Values{"setting": {"Welcome"}, "templateId": {"tmpl_1"}}, nil,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.GetMembershipEmailBindings(ctx, map[string]any{"setting": "Welcome", "templateId": "tmpl_1"}, nil)
+			}},
 		{"UpdateAuthorizationSettings", http.MethodPut, "/v2/membership/authorization", nil, authz,
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.UpdateAuthorizationSettings(ctx, authz, nil)
@@ -252,12 +257,13 @@ func TestEveryHubMembershipRouteHitsTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// Users list 7 + user edit 7 + roles 5 + policies 5 + settings 7 + API keys 3.
+// Users list 7 + user edit 7 + roles 5 + policies 5 + settings 8 + API keys 3.
+// (Settings 8 includes GET membership/settings/email-bindings.)
 // (Membership is always on, so settings has no enable or disable route.)
 // A Hub membership route added to a screen changes this count, so it cannot
 // arrive untested.
 func TestHubMembershipRouteSurfaceSize(t *testing.T) {
-	const want = 7 + 7 + 5 + 5 + 7 + 3
+	const want = 7 + 7 + 5 + 5 + 8 + 3
 	if got := len(membershipRouteCases()); got != want {
 		t.Errorf("hub membership route count: got %d want %d", got, want)
 	}
