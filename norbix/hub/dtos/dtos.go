@@ -5998,6 +5998,28 @@ type MembershipTriggerProjectionList struct {
 	DestinationIds []string              `json:"destinationIds,omitempty"`
 }
 
+// MembershipTriggerEventValueDto DTO.
+type MembershipTriggerEventValueDto struct {
+	Key      string `json:"key,omitempty"`
+	Owner    string `json:"owner,omitempty"`
+	Label    string `json:"label,omitempty"`
+	Resolver string `json:"resolver,omitempty"`
+}
+
+// MembershipTriggerEventValuesDto DTO.
+type MembershipTriggerEventValuesDto struct {
+	When          string                            `json:"when,omitempty"`
+	Subject       string                            `json:"subject,omitempty"`
+	SubjectBefore string                            `json:"subjectBefore,omitempty"`
+	Values        []*MembershipTriggerEventValueDto `json:"values,omitempty"`
+	InitiatorNote string                            `json:"initiatorNote,omitempty"`
+}
+
+// MembershipTriggerEventsDto DTO.
+type MembershipTriggerEventsDto struct {
+	Events []*MembershipTriggerEventValuesDto `json:"events,omitempty"`
+}
+
 // RoleListProjectionDto DTO.
 type RoleListProjectionDto struct {
 	ViewId      string  `json:"viewId,omitempty"`
@@ -8672,6 +8694,12 @@ type GetMembershipTriggerResponse struct {
 type GetMembershipTriggersResponse struct {
 	GetTriggersResponse
 	List PaginatedResponse[*MembershipTriggerProjectionList] `json:"list,omitempty"`
+}
+
+// GetMembershipTriggerEventValuesResponse DTO.
+type GetMembershipTriggerEventValuesResponse struct {
+	ResponseBase
+	Result *MembershipTriggerEventsDto `json:"result,omitempty"`
 }
 
 // GetRoleResponse DTO.
@@ -11778,6 +11806,11 @@ type GetMembershipTriggers struct {
 	GetTriggers
 }
 
+// GetMembershipTriggerEventValues DTO.
+type GetMembershipTriggerEventValues struct {
+	CodeMashRequestBase
+}
+
 // SaveMembershipTrigger DTO.
 type SaveMembershipTrigger struct {
 	SaveTrigger
@@ -12673,9 +12706,11 @@ type GetEmailTemplates struct {
 // GetMjml DTO.
 type GetMjml struct {
 	CodeMashRequestBase
-	Code         string             `json:"code,omitempty"`
-	Tokens       []*TokenMappingDto `json:"tokens,omitempty"`
-	IsForPreview bool               `json:"isForPreview"`
+	Code                       string             `json:"code,omitempty"`
+	Tokens                     []*TokenMappingDto `json:"tokens,omitempty"`
+	IsForPreview               bool               `json:"isForPreview"`
+	TriggerSubjectUserId       string             `json:"triggerSubjectUserId,omitempty"`
+	TriggerSubjectBeforeUserId string             `json:"triggerSubjectBeforeUserId,omitempty"`
 }
 
 // GetSystemEmailTemplate DTO.

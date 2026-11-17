@@ -91,6 +91,10 @@ func triggerRouteCases() []triggerRouteCase {
 			func(ctx context.Context, ns *Namespace) error {
 				return ns.Membership.GetMembershipTriggers(ctx, nil, nil)
 			}},
+		{"GetMembershipTriggerEventValues", http.MethodGet, "/v2/membership/triggers/event-values", nil, nil,
+			func(ctx context.Context, ns *Namespace) error {
+				return ns.Membership.GetMembershipTriggerEventValues(ctx, nil, nil)
+			}},
 		{"GetMembershipTrigger", http.MethodGet, "/v2/membership/triggers/" + trgID, nil, nil,
 			func(ctx context.Context, ns *Namespace) error {
 				return ns.Membership.GetMembershipTrigger(ctx, trgID, nil, nil)
@@ -249,10 +253,11 @@ func TestEveryTriggerRouteOfEveryHostHitsTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// Five hosts × six routes + six shared routes. A host or a shared route added
+// Five hosts × six routes + six shared routes + the membership event values
+// (GET membership/triggers/event-values). A host or a shared route added
 // to the gateway changes this count, so it cannot arrive untested.
 func TestTriggerRouteSurfaceSize(t *testing.T) {
-	const want = 5*6 + 6
+	const want = 5*6 + 6 + 1
 	if got := len(triggerRouteCases()); got != want {
 		t.Errorf("trigger route count: got %d want %d", got, want)
 	}
