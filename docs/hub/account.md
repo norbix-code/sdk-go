@@ -298,20 +298,27 @@ err = client.Hub.Account.ChangeManagedServiceBundle(ctx, map[string]any{
 ```
 
 `GetFlexClusters` lists the account's Norbix-managed Atlas clusters
-(`dtos.FlexClusterDto`): tier (`FLEX` or `M10`), status (`Empty`,
+(`dtos.FlexClusterDto`): tier (`FLEX`, `M10` … `M40`), status (`Empty`,
 `Provisioning`, `Active`, `Failed`), the databases on the cluster, its usage
 and the limits it is close to (`NearLimits`). `CanCreateNew` says whether the
 account can add a cluster; when it cannot, `CannotCreateReason` is
 `TrialOneCluster` or `ClusterLimitReached`. `UpgradeFlexCluster` queues the
-upgrade of one cluster to M10.
+upgrade of one cluster by one step on the ladder FLEX → M10 → M20 → M30 → M40,
+within the plan (trial: FLEX only · Starter: up to M20 · Growth: up to M30 ·
+Scale: up to M40). Each cluster carries `NextTierCode` (the next step, empty when
+there is none) and `TopTierCode` (the plan's highest tier); send `NextTierCode`
+as `tierCode`.
 
 ```go
 var clusters dtos.GetFlexClustersResponse
 err := client.Hub.Account.GetFlexClusters(ctx, nil, &clusters)
 
-err = client.Hub.Account.UpgradeFlexCluster(ctx, clusters.Clusters[0].Id, map[string]any{
-    "tierCode": "M10",
-}, nil)
+c := clusters.Clusters[0]
+if c.NextTierCode != "" {
+    err = client.Hub.Account.UpgradeFlexCluster(ctx, c.Id, map[string]any{
+        "tierCode": c.NextTierCode,
+    }, nil)
+}
 ```
 
 To put a new managed database on a cluster that already exists, send its id

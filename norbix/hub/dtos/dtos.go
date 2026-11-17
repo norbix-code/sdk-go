@@ -4682,6 +4682,20 @@ type SaveTrigger struct {
 	Trigger *SaveTriggerRequest `json:"trigger,omitempty"`
 }
 
+// MembershipTokenTranslationDto DTO.
+type MembershipTokenTranslationDto struct {
+	Language string `json:"language,omitempty"`
+	Value    string `json:"value,omitempty"`
+}
+
+// MembershipTokenBindingDto DTO.
+type MembershipTokenBindingDto struct {
+	Token        string                           `json:"token,omitempty"`
+	Kind         string                           `json:"kind,omitempty"`
+	Value        string                           `json:"value,omitempty"`
+	Translations []*MembershipTokenTranslationDto `json:"translations,omitempty"`
+}
+
 // CursorArgs DTO.
 type CursorArgs struct {
 	Field string  `json:"field,omitempty"`
@@ -5114,6 +5128,8 @@ type FlexClusterDto struct {
 	Databases        []*FlexClusterDatabaseDto `json:"databases,omitempty"`
 	Usage            *FlexClusterUsageDto      `json:"usage,omitempty"`
 	NearLimits       []string                  `json:"nearLimits,omitempty"`
+	NextTierCode     string                    `json:"nextTierCode,omitempty"`
+	TopTierCode      string                    `json:"topTierCode,omitempty"`
 }
 
 // AccountOwnerDto DTO.
@@ -5689,6 +5705,7 @@ type ProjectHealthWarningDto struct {
 // ProjectHealthStatsDto DTO.
 type ProjectHealthStatsDto struct {
 	UsersTotal          *float64 `json:"usersTotal,omitempty"`
+	PeriodDays          float64  `json:"periodDays,omitempty"`
 	UsersNew30d         *float64 `json:"usersNew30d,omitempty"`
 	UsersNewPrev30d     *float64 `json:"usersNewPrev30d,omitempty"`
 	EmailsSent30d       *float64 `json:"emailsSent30d,omitempty"`
@@ -6096,6 +6113,36 @@ type MembershipAuthorizationViewDto struct {
 	AllowUsernameRegistration    bool                           `json:"allowUsernameRegistration"`
 	InviteOnly                   bool                           `json:"inviteOnly"`
 	AllowAnyoneToSignUp          bool                           `json:"allowAnyoneToSignUp"`
+	WelcomeEmailTriggers         []string                       `json:"welcomeEmailTriggers,omitempty"`
+}
+
+// MembershipEmailTokenDto DTO.
+type MembershipEmailTokenDto struct {
+	Token    string                     `json:"token,omitempty"`
+	Status   string                     `json:"status,omitempty"`
+	Source   string                     `json:"source,omitempty"`
+	Reason   string                     `json:"reason,omitempty"`
+	IsHelper bool                       `json:"isHelper"`
+	Resolver *MembershipTokenBindingDto `json:"resolver,omitempty"`
+	HasValue bool                       `json:"hasValue"`
+}
+
+// MembershipEventFieldDto DTO.
+type MembershipEventFieldDto struct {
+	Key   string `json:"key,omitempty"`
+	Label string `json:"label,omitempty"`
+}
+
+// MembershipEmailBindingsDto DTO.
+type MembershipEmailBindingsDto struct {
+	Event             string                     `json:"event,omitempty"`
+	Env               string                     `json:"env,omitempty"`
+	TemplateId        string                     `json:"templateId,omitempty"`
+	TemplateName      string                     `json:"templateName,omitempty"`
+	IsBuiltIn         bool                       `json:"isBuiltIn"`
+	WithoutValueCount float64                    `json:"withoutValueCount,omitempty"`
+	Tokens            []*MembershipEmailTokenDto `json:"tokens,omitempty"`
+	Fields            []*MembershipEventFieldDto `json:"fields,omitempty"`
 }
 
 // MembershipCredentialsSettingsDto DTO.
@@ -6370,6 +6417,12 @@ type FlexTierDto struct {
 	Code        string  `json:"code,omitempty"`
 	Step        float64 `json:"step,omitempty"`
 	DisplayName string  `json:"displayName,omitempty"`
+}
+
+// NetworkAddressesDto DTO.
+type NetworkAddressesDto struct {
+	RegionCode string   `json:"regionCode,omitempty"`
+	Addresses  []string `json:"addresses,omitempty"`
 }
 
 // IntegrationTestResultItemDto DTO.
@@ -8675,6 +8728,12 @@ type GetAuthorizationSettingsResponse struct {
 	Result *MembershipAuthorizationViewDto `json:"result,omitempty"`
 }
 
+// GetMembershipEmailBindingsResponse DTO.
+type GetMembershipEmailBindingsResponse struct {
+	ResponseBase
+	Result *MembershipEmailBindingsDto `json:"result,omitempty"`
+}
+
 // UpdatePasswordComplexityResponse DTO.
 type UpdatePasswordComplexityResponse struct {
 	ResponseBase
@@ -8858,6 +8917,12 @@ type GetDatabaseIntegrationsResponse struct {
 type GetAllowedFlexTiersResponse struct {
 	ResponseBase
 	Tiers []*FlexTierDto `json:"tiers,omitempty"`
+}
+
+// GetNetworkAddressesResponse DTO.
+type GetNetworkAddressesResponse struct {
+	ResponseBase
+	Regions []*NetworkAddressesDto `json:"regions,omitempty"`
 }
 
 // TestDatabaseIntegrationResponse DTO.
@@ -11132,7 +11197,8 @@ type GetAccountRegions struct {
 // GetProjectHealth DTO.
 type GetProjectHealth struct {
 	CodeMashRequestBase
-	Refresh bool `json:"refresh"`
+	Refresh    bool     `json:"refresh"`
+	PeriodDays *float64 `json:"periodDays,omitempty"`
 }
 
 // WaitForProjectActiveRequest DTO.
@@ -11856,45 +11922,55 @@ type GetAuthorizationSettings struct {
 	CodeMashRequestBase
 }
 
+// GetMembershipEmailBindings DTO.
+type GetMembershipEmailBindings struct {
+	CodeMashRequestBase
+	Setting    string `json:"setting,omitempty"`
+	TemplateId string `json:"templateId,omitempty"`
+}
+
 // UpdateAuthorizationSettings DTO.
 type UpdateAuthorizationSettings struct {
 	CodeMashRequestBase
-	Setting                      string   `json:"setting,omitempty"`
-	DefaultRoles                 []string `json:"defaultRoles,omitempty"`
-	AllowedRegistrationRoles     []string `json:"allowedRegistrationRoles,omitempty"`
-	AllowGuestUsers              *bool    `json:"allowGuestUsers,omitempty"`
-	GuestCleanupPeriodDays       *float64 `json:"guestCleanupPeriodDays,omitempty"`
-	UserRegistersAsRole          string   `json:"userRegistersAsRole,omitempty"`
-	GuestRegistersAsRole         string   `json:"guestRegistersAsRole,omitempty"`
-	AllowedRegisterRoles         []string `json:"allowedRegisterRoles,omitempty"`
-	NeedVerification             bool     `json:"needVerification"`
-	VerificationEmailTemplate    string   `json:"verificationEmailTemplate,omitempty"`
-	DeactivationEmailTemplate    string   `json:"deactivationEmailTemplate,omitempty"`
-	AllowInviteUsers             bool     `json:"allowInviteUsers"`
-	AllowDeactivateUsers         bool     `json:"allowDeactivateUsers"`
-	InviteUserEmailTemplate      string   `json:"inviteUserEmailTemplate,omitempty"`
-	InvitationExpiration         *float64 `json:"invitationExpiration,omitempty"`
-	EmailVerificationExpiration  *float64 `json:"emailVerificationExpiration,omitempty"`
-	DeactivationExpiration       *float64 `json:"deactivationExpiration,omitempty"`
-	DefaultSubscribeToNews       bool     `json:"defaultSubscribeToNews"`
-	AllowEmailRegistration       *bool    `json:"allowEmailRegistration,omitempty"`
-	InviteOnly                   *bool    `json:"inviteOnly,omitempty"`
-	AllowAnyoneToSignUp          *bool    `json:"allowAnyoneToSignUp,omitempty"`
-	AllowResetPassword           *bool    `json:"allowResetPassword,omitempty"`
-	ResetPasswordEmailTemplate   string   `json:"resetPasswordEmailTemplate,omitempty"`
-	ResetPasswordTokenExpiration *float64 `json:"resetPasswordTokenExpiration,omitempty"`
-	ResetPasswordCallback        string   `json:"resetPasswordCallback,omitempty"`
-	MinLength                    float64  `json:"minLength,omitempty"`
-	MaxLength                    *float64 `json:"maxLength,omitempty"`
-	MinNumbers                   *float64 `json:"minNumbers,omitempty"`
-	MaxNumbers                   *float64 `json:"maxNumbers,omitempty"`
-	MinUpper                     *float64 `json:"minUpper,omitempty"`
-	MaxUpper                     *float64 `json:"maxUpper,omitempty"`
-	MinLower                     *float64 `json:"minLower,omitempty"`
-	MaxLower                     *float64 `json:"maxLower,omitempty"`
-	MinSpecial                   *float64 `json:"minSpecial,omitempty"`
-	MaxSpecial                   *float64 `json:"maxSpecial,omitempty"`
-	AllowedSpecial               string   `json:"allowedSpecial,omitempty"`
+	Setting                      string                       `json:"setting,omitempty"`
+	DefaultRoles                 []string                     `json:"defaultRoles,omitempty"`
+	AllowedRegistrationRoles     []string                     `json:"allowedRegistrationRoles,omitempty"`
+	AllowGuestUsers              *bool                        `json:"allowGuestUsers,omitempty"`
+	GuestCleanupPeriodDays       *float64                     `json:"guestCleanupPeriodDays,omitempty"`
+	UserRegistersAsRole          string                       `json:"userRegistersAsRole,omitempty"`
+	GuestRegistersAsRole         string                       `json:"guestRegistersAsRole,omitempty"`
+	AllowedRegisterRoles         []string                     `json:"allowedRegisterRoles,omitempty"`
+	NeedVerification             bool                         `json:"needVerification"`
+	VerificationEmailTemplate    string                       `json:"verificationEmailTemplate,omitempty"`
+	DeactivationEmailTemplate    string                       `json:"deactivationEmailTemplate,omitempty"`
+	AllowInviteUsers             bool                         `json:"allowInviteUsers"`
+	AllowDeactivateUsers         bool                         `json:"allowDeactivateUsers"`
+	InviteUserEmailTemplate      string                       `json:"inviteUserEmailTemplate,omitempty"`
+	InvitationExpiration         *float64                     `json:"invitationExpiration,omitempty"`
+	EmailVerificationExpiration  *float64                     `json:"emailVerificationExpiration,omitempty"`
+	DeactivationExpiration       *float64                     `json:"deactivationExpiration,omitempty"`
+	DefaultSubscribeToNews       bool                         `json:"defaultSubscribeToNews"`
+	AllowEmailRegistration       *bool                        `json:"allowEmailRegistration,omitempty"`
+	InviteOnly                   *bool                        `json:"inviteOnly,omitempty"`
+	AllowAnyoneToSignUp          *bool                        `json:"allowAnyoneToSignUp,omitempty"`
+	AllowResetPassword           *bool                        `json:"allowResetPassword,omitempty"`
+	ResetPasswordEmailTemplate   string                       `json:"resetPasswordEmailTemplate,omitempty"`
+	ResetPasswordTokenExpiration *float64                     `json:"resetPasswordTokenExpiration,omitempty"`
+	ResetPasswordCallback        string                       `json:"resetPasswordCallback,omitempty"`
+	WelcomeEmailTemplate         string                       `json:"welcomeEmailTemplate,omitempty"`
+	Bindings                     []*MembershipTokenBindingDto `json:"bindings,omitempty"`
+	BindingsEvent                string                       `json:"bindingsEvent,omitempty"`
+	MinLength                    float64                      `json:"minLength,omitempty"`
+	MaxLength                    *float64                     `json:"maxLength,omitempty"`
+	MinNumbers                   *float64                     `json:"minNumbers,omitempty"`
+	MaxNumbers                   *float64                     `json:"maxNumbers,omitempty"`
+	MinUpper                     *float64                     `json:"minUpper,omitempty"`
+	MaxUpper                     *float64                     `json:"maxUpper,omitempty"`
+	MinLower                     *float64                     `json:"minLower,omitempty"`
+	MaxLower                     *float64                     `json:"maxLower,omitempty"`
+	MinSpecial                   *float64                     `json:"minSpecial,omitempty"`
+	MaxSpecial                   *float64                     `json:"maxSpecial,omitempty"`
+	AllowedSpecial               string                       `json:"allowedSpecial,omitempty"`
 }
 
 // UpdatePasswordComplexity DTO.
@@ -12360,6 +12436,12 @@ type GetDatabaseIntegrations struct {
 // GetAllowedFlexTiers DTO.
 type GetAllowedFlexTiers struct {
 	CodeMashRequestBase
+}
+
+// GetNetworkAddresses DTO.
+type GetNetworkAddresses struct {
+	CodeMashRequestBase
+	RegionCode string `json:"regionCode,omitempty"`
 }
 
 // SaveDatabaseIntegration DTO.

@@ -372,6 +372,7 @@ delete act on the copy in that environment. `GetSchemaTrigger` returns
 | `SaveDatabaseIntegration(ctx, req, out)` | `POST` | `/database/integrations` |
 | `SetDatabaseIntegrationAsDefault(ctx, id, req, out)` | `PUT` | `/database/integrations/{Id}/default` |
 | `GetAllowedFlexTiers(ctx, req, out)` | `GET` | `/database/integrations/flex-tiers` |
+| `GetNetworkAddresses(ctx, req, out)` | `GET` | `/database/network-addresses` |
 | `TestDatabaseIntegration(ctx, req, out)` | `POST` | `/database/integrations/test` |
 | `RevealManagedFlexConnectionString(ctx, id, req, out)` | `GET` | `/database/integrations/{Id}/connection-string` |
 
