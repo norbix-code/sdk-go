@@ -16,7 +16,7 @@ There are two clients:
   side: read schemas and taxonomies, work with records, and `FindOwn` for the
   records the signed-in user is responsible for.
 
-Every method is covered by `norbix/hub/database_test.go` (68 routes) and
+Every method is covered by `norbix/hub/database_test.go` (67 routes) and
 `norbix/api/database_test.go` (22 routes); the schema-content additions
 (`expandReferences`, `arrayFilters`, the expanded-reference decode, error
 codes 053 / 056) are in the same files. Each test asserts the verb, the
@@ -375,7 +375,6 @@ delete act on the copy in that environment. `GetSchemaTrigger` returns
 | `GetAllowedFlexTiers(ctx, req, out)` | `GET` | `/database/integrations/flex-tiers` |
 | `GetNetworkAddresses(ctx, req, out)` | `GET` | `/database/network-addresses` |
 | `TestDatabaseIntegration(ctx, req, out)` | `POST` | `/database/integrations/test` |
-| `RevealManagedFlexConnectionString(ctx, id, req, out)` | `GET` | `/database/integrations/{Id}/connection-string` |
 
 A Norbix-managed Atlas database
 (`dtos.MongoDbAtlasFlexManagedDatabaseIntegrationRequest`) takes two optional

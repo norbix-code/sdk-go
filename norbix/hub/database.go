@@ -644,21 +644,6 @@ func (m *DatabaseModule) TestDatabaseIntegration(ctx context.Context, req map[st
 	}, out)
 }
 
-// RevealManagedFlexConnectionString performs GET /{version}/database/integrations/{Id}/connection-string (scope: project).
-func (m *DatabaseModule) RevealManagedFlexConnectionString(ctx context.Context, id string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"Id": id,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/database/integrations/{Id}/connection-string",
-		Method:     "GET",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // SeedCollectionRecords performs POST /{version}/database/collections/seed (scope: project).
 //
 // It fills collections with sample records ("mode", "collections", optional "databaseIntegrationId").
