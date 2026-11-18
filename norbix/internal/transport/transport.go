@@ -148,56 +148,9 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 		return err
 	}
 
-	headers := map[string]string{"Accept": "application/json"}
-	for k, v := range t.Cfg.DefaultHeaders {
-		headers[k] = v
-	}
-	for k, v := range req.Headers {
-		headers[k] = v
-	}
-
-	if req.Scope != ScopeUnauthenticated {
-		token := req.BearerToken
-		if token == "" {
-			token = t.Cfg.BearerToken
-		}
-		if token == "" {
-			token = t.Cfg.APIKey
-		}
-		if token == "" && req.Scope != ScopeOptional {
-			return norbixerr.New(
-				"Not authenticated. Provide APIKey / BearerToken or login first.",
-				norbixerr.CodeNotAuthenticated,
-			)
-		}
-		if token != "" {
-			headers["Authorization"] = "Bearer " + token
-		}
-	}
-
-	headers["norbix-project-id"] = t.Cfg.ProjectID
-	if t.Cfg.AccountID != "" {
-		headers["norbix-account-id"] = t.Cfg.AccountID
-	}
-
-	// Environment selector: per-call override wins; "PROD" is the backend
-	// default so the header is omitted for it.
-	env := req.Env
-	if env == "" {
-		env = t.Cfg.Env
-	}
-	if env != "" && env != "PROD" {
-		headers["norbix-env"] = env
-	}
-
-	// Region selector: per-call override wins; no default region exists, so the
-	// header is omitted when unset.
-	region := req.Region
-	if region == "" {
-		region = t.Cfg.Region
-	}
-	if region != "" {
-		headers["nb-region"] = region
+	headers, err := t.requestHeaders(req, "application/json")
+	if err != nil {
+		return err
 	}
 
 	if body != nil {
@@ -242,6 +195,64 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 		return norbixerr.New("failed to decode response: "+err.Error(), norbixerr.CodeError).WithWrapped(err)
 	}
 	return nil
+}
+
+// requestHeaders builds the headers of one call: Accept, the client's default
+// headers, the call's own extra headers, then auth and the project / account /
+// env / region selectors (the same for Send and Stream).
+func (t *Transport) requestHeaders(req Request, accept string) (map[string]string, error) {
+	headers := map[string]string{"Accept": accept}
+	for k, v := range t.Cfg.DefaultHeaders {
+		headers[k] = v
+	}
+	for k, v := range req.Headers {
+		headers[k] = v
+	}
+
+	if req.Scope != ScopeUnauthenticated {
+		token := req.BearerToken
+		if token == "" {
+			token = t.Cfg.BearerToken
+		}
+		if token == "" {
+			token = t.Cfg.APIKey
+		}
+		if token == "" && req.Scope != ScopeOptional {
+			return nil, norbixerr.New(
+				"Not authenticated. Provide APIKey / BearerToken or login first.",
+				norbixerr.CodeNotAuthenticated,
+			)
+		}
+		if token != "" {
+			headers["Authorization"] = "Bearer " + token
+		}
+	}
+
+	headers["norbix-project-id"] = t.Cfg.ProjectID
+	if t.Cfg.AccountID != "" {
+		headers["norbix-account-id"] = t.Cfg.AccountID
+	}
+
+	// Environment selector: per-call override wins; "PROD" is the backend
+	// default so the header is omitted for it.
+	env := req.Env
+	if env == "" {
+		env = t.Cfg.Env
+	}
+	if env != "" && env != "PROD" {
+		headers["norbix-env"] = env
+	}
+
+	// Region selector: per-call override wins; no default region exists, so the
+	// header is omitted when unset.
+	region := req.Region
+	if region == "" {
+		region = t.Cfg.Region
+	}
+	if region != "" {
+		headers["nb-region"] = region
+	}
+	return headers, nil
 }
 
 func (t *Transport) doWithRetries(
