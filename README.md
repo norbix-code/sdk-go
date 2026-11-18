@@ -1144,11 +1144,9 @@ err = client.API.Ai.AiChat(ctx, authId, func(e api.AiChatEvent) bool {
 })
 ```
 
-The developer AI chat (the Cloud chat drawer) is on the Hub:
-`client.Hub.Account.ChatTurn` runs one turn and answers with the reply; the
-sessions, entries, plans, questions, attachments, memory and the AI tool
-inventory (`GetAiTools`, `InvokeAiTool`) are listed in
-[docs/hub/account.md](docs/hub/account.md#developer-ai-chat).
+There is no developer chat in Cloud: developers connect their own AI tool over
+MCP. The AI tool inventory an external agent can call (`GetAiTools`,
+`InvokeAiTool`) is in [docs/hub/account.md](docs/hub/account.md#ai-tools).
 
 Project owners configure the assistant on the Hub: `client.Hub.Account`
 (`GetProjectAiSettings`, `UpdateProjectAiSettings`, `CreateProjectAiAssistant`,
