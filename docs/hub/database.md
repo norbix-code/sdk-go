@@ -16,7 +16,7 @@ There are two clients:
   side: read schemas and taxonomies, work with records, and `FindOwn` for the
   records the signed-in user is responsible for.
 
-Every method is covered by `norbix/hub/database_test.go` (67 routes) and
+Every method is covered by `norbix/hub/database_test.go` (68 routes) and
 `norbix/api/database_test.go` (22 routes); the schema-content additions
 (`expandReferences`, `arrayFilters`, the expanded-reference decode, error
 codes 053 / 056) are in the same files. Each test asserts the verb, the
@@ -320,6 +320,7 @@ Database is always on: there is no method to enable or disable it.
 | `GetDatabaseSchemaIndexStatus(ctx, id, req, out)` | `GET` | `/database/schemas/{Id}/index-status` |
 | `GetDatabaseSchemaListSettings(ctx, id, req, out)` | `GET` | `/database/schemas/{Id}/list-settings` |
 | `UpdateDatabaseSchemaListSettings(ctx, id, req, out)` | `PUT` | `/database/schemas/{Id}/list-settings` |
+| `EndUserOwnRecordsReport(ctx, req, out)` | `POST` | `/database/schemas/end-user-own-records` |
 
 `DeleteDatabaseSchema` also drops the schema's records — its MongoDB collection, with its indexes — in the request environment (the client's `Env`, on every active database integration of that environment). For a schema with AI embed on, its records are also removed from the AI knowledge. The delete is still refused when a saved aggregate or a schema trigger uses the schema; nothing is dropped then. The request and response shape did not change, and a retry is safe (idempotent).
 
