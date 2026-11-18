@@ -1330,3 +1330,298 @@ func (m *AccountModule) CreateAiCreditPackCheckout(ctx context.Context, projectI
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// ── AI chat coverage (2026-11-18): the developer AI chat on the Hub and the
+// AI tool inventory (TypeScript twins in src/hub/account.ts). ──
+
+// ChatTurn performs POST /{version}/account/chat/turn (scope: project).
+//
+// Runs one developer AI chat turn and answers when the turn is done: the
+// session id, the reply text and the tools the model called (toolTrace). Send
+// "message"; "sessionId" continues a chat (empty starts one, then "profile"
+// names the surface). Optional: "topic", "llmIntegrationId", "model",
+// "projectId", "env", "screenContext". The transcript entries also arrive live
+// as ai.chat.progress server-sent events on the caller's own Hub stream.
+func (m *AccountModule) ChatTurn(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/turn",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ChatAvailability performs GET /{version}/account/chat/availability (scope: project).
+//
+// Tells whether the developer AI chat can run here, why not, its profiles and
+// the models it may use. Optional query: "projectId", "env".
+func (m *AccountModule) ChatAvailability(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/availability",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetChatSessions performs GET /{version}/account/chat/sessions (scope: project).
+//
+// Lists the caller's developer AI chats, newest first. Optional query: "take",
+// "includeArchived".
+func (m *AccountModule) GetChatSessions(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetChatSessionEntries performs GET /{version}/account/chat/sessions/{SessionId}/entries (scope: project).
+//
+// Reads the transcript of one chat. Optional query "sinceSeq" returns only the
+// entries after that sequence number.
+func (m *AccountModule) GetChatSessionEntries(ctx context.Context, sessionId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/entries",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DeleteChatSession performs DELETE /{version}/account/chat/sessions/{SessionId} (scope: project).
+//
+// Deletes one of the caller's chats.
+func (m *AccountModule) DeleteChatSession(ctx context.Context, sessionId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetChatSessionArchived performs PATCH /{version}/account/chat/sessions/{SessionId}/archive (scope: project).
+//
+// Archives ("archived": true) or unarchives one chat.
+func (m *AccountModule) SetChatSessionArchived(ctx context.Context, sessionId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/archive",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetChatSessionPinned performs PATCH /{version}/account/chat/sessions/{SessionId}/pin (scope: project).
+//
+// Pins ("pinned": true) or unpins one chat.
+func (m *AccountModule) SetChatSessionPinned(ctx context.Context, sessionId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/pin",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetChatSessionSharing performs PATCH /{version}/account/chat/sessions/{SessionId}/sharing (scope: project).
+//
+// Keeps one chat out of the shared improvement data ("doNotShare": true) or
+// lets it in again.
+func (m *AccountModule) SetChatSessionSharing(ctx context.Context, sessionId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/sharing",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetChatEntryFeedback performs POST /{version}/account/chat/sessions/{SessionId}/entries/{EntryId}/feedback (scope: project).
+//
+// Sets the feedback of one entry: "feedback" is "up", "down", or empty to
+// clear it.
+func (m *AccountModule) SetChatEntryFeedback(ctx context.Context, sessionId string, entryId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+		"EntryId":   entryId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/entries/{EntryId}/feedback",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// AnswerChatQuestion performs POST /{version}/account/chat/sessions/{SessionId}/questions/{EntryId}/answer (scope: project).
+//
+// Answers a question entry the assistant asked: "answers" maps each question
+// key to the chosen answer.
+func (m *AccountModule) AnswerChatQuestion(ctx context.Context, sessionId string, entryId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+		"EntryId":   entryId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/questions/{EntryId}/answer",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// DecideChatPlan performs POST /{version}/account/chat/sessions/{SessionId}/plans/{EntryId}/decision (scope: project).
+//
+// Approves or rejects a proposed plan entry: "decision" is "approve" or
+// "reject"; an optional "comment" on reject becomes the re-plan instruction.
+func (m *AccountModule) DecideChatPlan(ctx context.Context, sessionId string, entryId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+		"EntryId":   entryId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/plans/{EntryId}/decision",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// StopChatRunStep performs POST /{version}/account/chat/sessions/{SessionId}/steps/{EntryId}/stop (scope: project).
+//
+// Stops a running step of an approved plan.
+func (m *AccountModule) StopChatRunStep(ctx context.Context, sessionId string, entryId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+		"EntryId":   entryId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/sessions/{SessionId}/steps/{EntryId}/stop",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UploadChatAttachment performs POST /{version}/account/chat/attachments (scope: project).
+//
+// Uploads a file into a chat: "fileName", "contentType", "base64Content";
+// "sessionId" (empty starts a chat, then "profile", "topic", "projectId" and
+// "env" describe it).
+func (m *AccountModule) UploadChatAttachment(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/attachments",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetChatMemory performs GET /{version}/account/chat/memory (scope: project).
+//
+// Lists the assistant's memory notes. Optional query "projectId".
+func (m *AccountModule) GetChatMemory(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/memory",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ForgetChatMemory performs DELETE /{version}/account/chat/memory/{NoteId} (scope: project).
+//
+// Deletes one memory note.
+func (m *AccountModule) ForgetChatMemory(ctx context.Context, noteId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"NoteId": noteId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/chat/memory/{NoteId}",
+		Method:     "DELETE",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetAiTools performs GET /{version}/account/ai/tools (scope: project).
+//
+// Lists the AI tools (the chat-tool inventory, shaped like MCP tools/list):
+// name, description, toolsets, whether it asks for confirmation, parameters.
+// Optional query "toolset" narrows the list.
+func (m *AccountModule) GetAiTools(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/ai/tools",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// InvokeAiTool performs POST /{version}/account/ai/tools/{ToolName} (scope: project).
+//
+// Calls one AI tool by name with "argumentsJson" (the arguments as a JSON
+// string) and returns its result text.
+func (m *AccountModule) InvokeAiTool(ctx context.Context, toolName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ToolName": toolName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/ai/tools/{ToolName}",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 
+	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
@@ -234,4 +236,94 @@ func (m *AiModule) StartEndUserChatTurn(ctx context.Context, req map[string]any,
 		Body:   req,
 		Scope:  transport.ScopeProject,
 	}, out)
+}
+
+// ── AI chat coverage (2026-11-18): the end-user AI tool inventory. ──
+
+// GetEndUserAiTools performs GET /{version}/ai/tools (scope: project).
+//
+// Lists the AI tools a signed-in project user's chat may call (own-scope
+// tools only): name, description, toolsets, confirmation, parameters.
+func (m *AiModule) GetEndUserAiTools(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/ai/tools",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// InvokeEndUserAiTool performs POST /{version}/ai/tools/{ToolName} (scope: project).
+//
+// Calls one end-user AI tool by name with "argumentsJson" (the arguments as a
+// JSON string) and returns its result text.
+func (m *AiModule) InvokeEndUserAiTool(ctx context.Context, toolName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"ToolName": toolName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/ai/tools/{ToolName}",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// AiChatChannel is the end-user AI chat channel of one project user,
+// "ai-chat:{projectId}:{authId}" (TypeScript twin: aiChatChannel).
+func AiChatChannel(projectId, authId string) string {
+	return "ai-chat:" + projectId + ":" + authId
+}
+
+// AiChatEvent is one realtime envelope of the end-user AI chat stream.
+// EventName is ai.chat.turn.started / .token / .tool / .completed / .failed
+// or ai.chat.session.* ; Payload carries the turn id and, for a token, the
+// text. FrameID is the SSE frame id.
+type AiChatEvent struct {
+	Channel        string         `json:"channel"`
+	EventName      string         `json:"eventName"`
+	ProjectID      string         `json:"projectId"`
+	NotificationID string         `json:"notificationId,omitempty"`
+	CreatedAtUtc   string         `json:"createdAtUtc"`
+	Payload        map[string]any `json:"payload,omitempty"`
+	FrameID        string         `json:"-"`
+}
+
+// AiChat streams the answer of the end-user AI chat (TypeScript twin:
+// norbix.aiChat). It subscribes to the signed-in user's own channel on the
+// API host — GET /event-stream?channels=ai-chat:{projectId}:{authId} with the
+// client's token and project — and calls onEvent for every chat envelope
+// until onEvent returns false, the server closes the stream (nil) or ctx
+// ends. Frames that are not an envelope (heartbeats, subscription notices)
+// are skipped. Start a turn with StartEndUserChatTurn; its turnId is in each
+// event's payload.
+//
+// Another user's channel is refused with HTTP 403 and the error code
+// "AiChatChannelRefused" before the stream starts; AiChat returns that error
+// and never retries it.
+func (m *AiModule) AiChat(ctx context.Context, authId string, onEvent func(AiChatEvent) bool) error {
+	projectId := m.t.Cfg.ProjectID
+	if projectId == "" {
+		return norbixerr.New("AiChat: the client has no project id.", norbixerr.CodeError)
+	}
+	if authId == "" {
+		return norbixerr.New("AiChat: authId is required.", norbixerr.CodeError)
+	}
+	return m.t.Stream(ctx, transport.Request{
+		Target: transport.TargetAPI,
+		Path:   "/event-stream",
+		Body:   map[string]any{"channels": AiChatChannel(projectId, authId)},
+		Scope:  transport.ScopeProject,
+	}, func(f transport.SSEEvent) bool {
+		var env AiChatEvent
+		if json.Unmarshal([]byte(f.Data), &env) != nil || env.EventName == "" {
+			return true
+		}
+		env.FrameID = f.ID
+		return onEvent(env)
+	})
 }

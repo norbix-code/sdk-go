@@ -5,10 +5,15 @@
 The project's LLM and MCP integrations on the Hub, and the `hub.AiModule`
 method that calls each one. An LLM integration connects a model provider; an
 MCP integration connects an outside MCP server whose tools the project's AI
-can use. Every route is covered by `norbix/hub/ai_integrations_test.go`
-(`SetLlmIntegrationAsDefault` and the embedding routes by
-`norbix/hub/ai_embeddings_test.go`), which asserts the verb and the
-fully-resolved path.
+can use. Every LLM and MCP route is covered by
+`norbix/hub/ai_cluster_routes_test.go`, which asserts the host, the verb, the
+fully-resolved path, the query and the body (the embedding routes by
+`norbix/hub/ai_embeddings_test.go`).
+
+The MCP integration routes are deprecated: the gateway still serves them, but
+`SaveMcpIntegration` is refused (error code ending in `-030`) and stores
+nothing. Read, test, enable, disable and delete still work on the integrations
+that exist.
 
 Each method takes a context, any route ids as plain arguments, an untyped
 request body, and a pointer to decode the response into (pass `nil` to discard

@@ -1124,13 +1124,31 @@ streams over the gateway's SSE endpoint on the user's own channel
 `ai-chat:{projectId}:{authId}` (events `ai.chat.turn.*`, `ai.chat.session.*`);
 a subscription to another user's channel is refused with 403 and
 `responseStatus.errorCode = "AiChatChannelRefused"` before the stream starts —
-do not retry it. This SDK has no SSE client; decode the events with the
-`dtos` package.
+do not retry it. `client.API.Ai.AiChat` opens that stream (GET
+`/event-stream?channels=ai-chat:{projectId}:{authId}` on the API host, with the
+client's token) and calls your function for each event until it returns false,
+the server closes the stream or the context ends. `GetEndUserAiTools` lists the
+tools the user's chat may call and `InvokeEndUserAiTool` calls one. Tests:
+`norbix/api/ai_chat_routes_test.go` (host, verb, path, query and body of every
+route; the stream against a fake SSE server).
 
 ```go
 var out dtos.StartEndUserChatTurnResponse
 err := client.API.Ai.StartEndUserChatTurn(ctx, map[string]any{"sessionId": id, "message": "Hi"}, &out)
+
+err = client.API.Ai.AiChat(ctx, authId, func(e api.AiChatEvent) bool {
+	if e.EventName == "ai.chat.turn.token" {
+		fmt.Print(e.Payload["text"])
+	}
+	return e.EventName != "ai.chat.turn.completed" && e.EventName != "ai.chat.turn.failed"
+})
 ```
+
+The developer AI chat (the Cloud chat drawer) is on the Hub:
+`client.Hub.Account.ChatTurn` runs one turn and answers with the reply; the
+sessions, entries, plans, questions, attachments, memory and the AI tool
+inventory (`GetAiTools`, `InvokeAiTool`) are listed in
+[docs/hub/account.md](docs/hub/account.md#developer-ai-chat).
 
 Project owners configure the assistant on the Hub: `client.Hub.Account`
 (`GetProjectAiSettings`, `UpdateProjectAiSettings`, `CreateProjectAiAssistant`,
