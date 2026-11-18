@@ -66,10 +66,10 @@ func (a *auth) SetEnv(envName string) {
 func (a *auth) GetEnv() string { return a.t.Cfg.Env }
 
 // SetRegion switches the Norbix region (nb-region header). Pass "" to clear it.
-// The default Hub URL is recomposed with the region subdomain. API calls on the
-// default API URL stay on the project's own host, which has no region label;
+// The default Hub URL is recomposed with the region subdomain. API calls on a
+// norbix.ai API URL stay on the project's own host, which has no region label;
 // the regional API host is used only for a project id that is not a Norbix
-// project id. User-supplied base URLs are untouched.
+// project id. A user-supplied base URL gets no region subdomain.
 func (a *auth) SetRegion(region string) {
 	a.t.Cfg.Region = region
 	if a.t.Cfg.BaseURLAPIIsDefault {

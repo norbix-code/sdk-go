@@ -276,7 +276,7 @@ func TestProjectHostTheSocialSignInLinkUsesTheRegionalSharedHost(t *testing.T) {
 	wantPrefix(t, link, "https://nb-eu-germany.api.norbix.ai/")
 }
 
-func TestProjectHostACustomBaseURLIsNeverRewritten(t *testing.T) {
+func TestProjectHostAnotherAddressIsUsedAsGiven(t *testing.T) {
 	c, rec := hostClient(t, hostOpts(Options{
 		ProjectID:  virginia,
 		APIKey:     "k",
@@ -305,7 +305,7 @@ func TestProjectHostACustomBaseURLIsNeverRewritten(t *testing.T) {
 	wantPrefix(t, link, "https://api.norbix.io/")
 }
 
-func TestProjectHostACustomAPIURLFromTheEnvironmentIsNeverRewritten(t *testing.T) {
+func TestProjectHostAnotherAPIURLFromTheEnvironmentIsUsedAsGiven(t *testing.T) {
 	opts := hostOpts(Options{ProjectID: virginia, APIKey: "k"})
 	opts.envOverride = map[string]string{"NORBIX_API_URL": "https://api.norbix.io"}
 	c, rec := hostClient(t, opts)
@@ -313,6 +313,147 @@ func TestProjectHostACustomAPIURLFromTheEnvironmentIsNeverRewritten(t *testing.T
 	apiCall(t, c)
 
 	wantPrefix(t, rec.url, "https://api.norbix.io/")
+}
+
+func TestProjectHostANorbixAPIAddressWrittenOutGoesToTheProjectHost(t *testing.T) {
+	opts := hostOpts(Options{APIKey: "k"})
+	opts.envOverride = map[string]string{"NORBIX_PROJECT_ID": virginia, "NORBIX_API_URL": "https://api.norbix.ai"}
+	c, rec := hostClient(t, opts)
+	apiCall(t, c)
+	wantPrefix(t, rec.url, virginiaHost)
+
+	regional, rec := hostClient(t, hostOpts(Options{
+		ProjectID:  germany,
+		APIKey:     "k",
+		BaseURLAPI: "https://nb-eu-germany.api.norbix.ai",
+	}))
+	apiCall(t, regional)
+	wantPrefix(t, rec.url, germanyHost)
+	wantHeader(t, rec, "norbix-project-id", germany)
+
+	link, err := regional.API.Membership.SocialSignInURL("google", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantPrefix(t, link, "https://nb-eu-germany.api.norbix.ai/")
+}
+
+const customerTemplate = "https://{projectHostLabel}.api.customer.com"
+
+func TestProjectHostATemplateIsFilledAndFollowsSetScope(t *testing.T) {
+	c, rec := hostClient(t, hostOpts(Options{
+		ProjectID:  virginia,
+		APIKey:     "k",
+		BaseURLAPI: customerTemplate,
+		BaseURLHub: "https://hub.customer.com",
+	}))
+
+	apiCall(t, c)
+	wantPrefix(t, rec.url, "https://pr-022c4aca9f9e4df787ab0a20c83c44b6.api.customer.com/")
+	wantHeader(t, rec, "norbix-project-id", virginia)
+
+	c.SetScope(germany, "")
+	apiCall(t, c)
+	wantPrefix(t, rec.url, "https://pr-184336d00e2141c3be5138e8dcf52e81.api.customer.com/")
+	wantHeader(t, rec, "norbix-project-id", germany)
+
+	link, err := c.API.Membership.SocialSignInURL("google", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantPrefix(t, link, "https://api.customer.com/v3/")
+
+	hubCall(t, c)
+	wantPrefix(t, rec.url, "https://hub.customer.com/")
+}
+
+func TestProjectHostATemplateFromTheEnvironmentWithAPort(t *testing.T) {
+	opts := hostOpts(Options{APIKey: "k"})
+	opts.envOverride = map[string]string{
+		"NORBIX_PROJECT_ID": virginia,
+		"NORBIX_API_URL":    "http://{projectHostLabel}.api.local.norbix.test:8443",
+	}
+	c, rec := hostClient(t, opts)
+
+	apiCall(t, c)
+
+	wantPrefix(t, rec.url, "http://pr-022c4aca9f9e4df787ab0a20c83c44b6.api.local.norbix.test:8443/v3/")
+}
+
+func TestProjectHostATemplateWithAnIDThatIsNotANorbixID(t *testing.T) {
+	c, rec := hostClient(t, hostOpts(Options{ProjectID: "p1", APIKey: "k", BaseURLAPI: customerTemplate}))
+
+	apiCall(t, c)
+
+	wantPrefix(t, rec.url, "https://api.customer.com/")
+}
+
+func TestProjectHostAPastedProjectHostFollowsTheClientsProject(t *testing.T) {
+	c, rec := hostClient(t, hostOpts(Options{
+		ProjectID:  germany,
+		APIKey:     "k",
+		BaseURLAPI: "https://pr-022c4aca9f9e4df787ab0a20c83c44b6.api.customer.com",
+	}))
+
+	apiCall(t, c)
+	wantPrefix(t, rec.url, "https://pr-184336d00e2141c3be5138e8dcf52e81.api.customer.com/")
+	wantHeader(t, rec, "norbix-project-id", germany)
+
+	link, err := c.API.Membership.SocialSignInURL("google", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantPrefix(t, link, "https://api.customer.com/")
+}
+
+func TestProjectHostAPlainAddressIsUsedAsGiven(t *testing.T) {
+	for _, api := range []string{
+		"https://api.customer.com",
+		"https://api.norbix.io",
+		"http://localhost:5002",
+		"http://api.norbix.ai",
+	} {
+		c, rec := hostClient(t, hostOpts(Options{ProjectID: virginia, APIKey: "k", BaseURLAPI: api}))
+		apiCall(t, c)
+		wantPrefix(t, rec.url, api+"/")
+	}
+}
+
+func TestProjectAPIBaseURL(t *testing.T) {
+	const (
+		vLabel = "pr-022c4aca9f9e4df787ab0a20c83c44b6"
+		gLabel = "pr-184336d00e2141c3be5138e8dcf52e81"
+	)
+	cases := []struct {
+		base, id, project, shared string
+	}{
+		{"https://api.norbix.ai", virginia, "https://" + vLabel + ".api.norbix.ai", "https://api.norbix.ai"},
+		{"https://api.norbix.ai/v3", virginia, "https://" + vLabel + ".api.norbix.ai/v3", "https://api.norbix.ai/v3"},
+		{"https://nb-eu-germany.api.norbix.ai", germany, "https://" + gLabel + ".api.norbix.ai", "https://nb-eu-germany.api.norbix.ai"},
+		{"https://api.norbix.ai", "p1", "https://api.norbix.ai", "https://api.norbix.ai"},
+		{"https://nb-eu-germany.api.norbix.ai", "p1", "https://nb-eu-germany.api.norbix.ai", "https://nb-eu-germany.api.norbix.ai"},
+		{"https://a.b.api.norbix.ai", virginia, "https://a.b.api.norbix.ai", "https://a.b.api.norbix.ai"},
+		{"http://api.norbix.ai", virginia, "http://api.norbix.ai", "http://api.norbix.ai"},
+		{"https://{projectHostLabel}.api.customer.com/v3", virginia, "https://" + vLabel + ".api.customer.com/v3", "https://api.customer.com/v3"},
+		{"https://{projectHostLabel}.api.customer.com", "p1", "https://api.customer.com", "https://api.customer.com"},
+		{"https://PR-022C4ACA9F9E4DF787AB0A20C83C44B6.api.customer.com/", germany, "https://" + gLabel + ".api.customer.com/", "https://api.customer.com/"},
+		{"https://" + vLabel + ".api.norbix.ai", "p1", "https://api.norbix.ai", "https://api.norbix.ai"},
+		{"http://" + vLabel + ".localhost:5002/v3", germany, "http://" + gLabel + ".localhost:5002/v3", "http://localhost:5002/v3"},
+		{"https://api.customer.com", virginia, "https://api.customer.com", "https://api.customer.com"},
+		{"http://localhost:5002", virginia, "http://localhost:5002", "http://localhost:5002"},
+		{"", virginia, "", ""},
+		{"not a url", virginia, "not a url", "not a url"},
+		{"://bad", virginia, "://bad", "://bad"},
+	}
+	for _, tc := range cases {
+		project, shared := ProjectAPIBaseURL(tc.base, tc.id)
+		if project != tc.project || shared != tc.shared {
+			t.Errorf("ProjectAPIBaseURL(%q, %q) = %q, %q; want %q, %q", tc.base, tc.id, project, shared, tc.project, tc.shared)
+		}
+	}
+	if ProjectHostLabelPlaceholder != "{projectHostLabel}" {
+		t.Errorf("ProjectHostLabelPlaceholder = %q", ProjectHostLabelPlaceholder)
+	}
 }
 
 func TestProjectHostACustomAPIURLWithTheDefaultHubURL(t *testing.T) {

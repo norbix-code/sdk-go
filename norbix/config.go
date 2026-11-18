@@ -14,6 +14,11 @@ const (
 	DefaultBaseURLHub = "https://hub.norbix.ai"
 	DefaultVersion    = "v3"
 	DefaultTimeout    = 30 * time.Second
+
+	// ProjectHostLabelPlaceholder marks where a project's label goes in an API
+	// URL template, e.g. "https://{projectHostLabel}.api.customer.com" (an
+	// install on its own domain gives it in GET /v3/echo -> apiUrlTemplate).
+	ProjectHostLabelPlaceholder = transport.ProjectHostLabelPlaceholder
 )
 
 // Options configures a Norbix client. The zero value is valid; unset fields
@@ -29,8 +34,8 @@ type Options struct {
 	Env string
 	// Region targets a Norbix region (e.g. "nb-eu-germany") and is sent as the
 	// nb-region header. On the default Hub URL it is composed as a subdomain.
-	// API calls on the default API URL go to the project's own host instead
-	// (see ProjectHostLabel); the region subdomain is used for them only when
+	// API calls on a norbix.ai API URL go to the project's own host instead
+	// (see ProjectAPIBaseURL); the region subdomain is used for them only when
 	// the project id is not a Norbix project id.
 	Region string
 
@@ -57,13 +62,28 @@ func firstNonEmpty(vals ...string) string {
 // ProjectHostLabel is the DNS label of a project's own API host:
 // "pr_5XvmrTA6JVggZdmEE5bGdm" -> "pr-022c4aca9f9e4df787ab0a20c83c44b6".
 //
-// On the default API URL (https://api.norbix.ai) every API call of a project
-// goes to https://<label>.api.norbix.ai, with no region label; Hub calls, the
-// social sign-in link and any custom base URL are not changed. ok is false for
-// anything that is not a Norbix project id (a test id, another prefix, a value
-// that is not a version-4 GUID) and the client then keeps the shared host.
+// See ProjectAPIBaseURL for where it is used. ok is false for anything that is
+// not a Norbix project id (a test id, another prefix, a value that is not a
+// version-4 GUID) and the client then keeps the shared host.
 func ProjectHostLabel(projectID string) (label string, ok bool) {
 	return transport.ProjectHostLabel(projectID)
+}
+
+// ProjectAPIBaseURL is where a project's API calls go, from the API base URL
+// the client has (BaseURLAPI / NORBIX_API_URL, or the built-in default with
+// the region composed). The client applies it on every call with the current
+// project:
+//
+//	https://api.norbix.ai, https://nb-eu-germany.api.norbix.ai -> https://pr-<hex>.api.norbix.ai
+//	https://{projectHostLabel}.api.customer.com               -> https://pr-<hex>.api.customer.com
+//	https://pr-<hex of another project>.api.customer.com      -> https://pr-<hex>.api.customer.com
+//	anything else (https://api.customer.com, localhost, ...)  -> as given
+//
+// shared is the address without a project label; the social sign-in link is
+// built on it. With a project id that is not a Norbix id, project is shared.
+// Scheme, port and path are kept. Hub calls are not affected. It never panics.
+func ProjectAPIBaseURL(baseURL, projectID string) (project, shared string) {
+	return transport.ProjectAPIBaseURL(baseURL, projectID)
 }
 
 // composeRegionalURL prefixes the region code as a subdomain of an SDK-default
