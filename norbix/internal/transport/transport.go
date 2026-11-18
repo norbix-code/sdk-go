@@ -67,12 +67,10 @@ type Config struct {
 	Env     string
 	Region  string
 
-	// Whether each base URL is the SDK default. Only a default is rewritten:
-	// the Hub URL gets the region subdomain, API calls go to the project's own
-	// host (see apiBase). BaseURLAPI itself stays the shared host (with the
-	// region subdomain when a region is set): it is the fallback for a project
-	// id that does not decode and the host of browser links (NavigationURL).
-	// User-supplied URLs are never touched.
+	// Whether each base URL is the SDK default. Only a default gets the region
+	// subdomain. BaseURLAPI is kept as given (or composed); each API call goes
+	// to ProjectAPIBaseURL of it (see apiBase), browser links to its shared
+	// form (NavigationURL).
 	BaseURLAPIIsDefault bool
 	BaseURLHubIsDefault bool
 
@@ -348,7 +346,7 @@ func pow2(n int) float64 {
 // gateway's social sign-in callback returns to the shared host and its nonce
 // cookie is host-only.
 func (t *Transport) NavigationURL(target Target, path string, pathParams map[string]string, query [][2]string) (string, error) {
-	base := t.Cfg.BaseURLAPI
+	base := t.sharedAPIBase()
 	version := t.Cfg.APIVersion
 	if target == TargetHub {
 		base = t.Cfg.BaseURLHub
