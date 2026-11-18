@@ -11,7 +11,7 @@ import (
 // EchoModule groups the echo endpoints on the HUB.
 type EchoModule struct{ t *transport.Transport }
 
-// Echo performs GET /{version}/echo (scope: project).
+// Echo performs GET /{version}/echo (scope: optional).
 func (m *EchoModule) Echo(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -19,6 +19,6 @@ func (m *EchoModule) Echo(ctx context.Context, req map[string]any, out any) erro
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }

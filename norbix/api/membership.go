@@ -47,7 +47,7 @@ func (m *MembershipModule) SaveGuestUser(ctx context.Context, req map[string]any
 	}, out)
 }
 
-// SaveUserNameUser performs POST /{version}/membership/auth/register/user-name (scope: project).
+// SaveUserNameUser performs POST /{version}/membership/auth/register/user-name (scope: optional).
 func (m *MembershipModule) SaveUserNameUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -55,11 +55,11 @@ func (m *MembershipModule) SaveUserNameUser(ctx context.Context, req map[string]
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// SaveEmailUser performs POST /{version}/membership/auth/register/email (scope: project).
+// SaveEmailUser performs POST /{version}/membership/auth/register/email (scope: optional).
 func (m *MembershipModule) SaveEmailUser(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -67,7 +67,7 @@ func (m *MembershipModule) SaveEmailUser(ctx context.Context, req map[string]any
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
@@ -236,7 +236,7 @@ func (m *MembershipModule) UpdateUserPreferences(ctx context.Context, id string,
 	}, out)
 }
 
-// ConfirmEmailVerification performs POST /{version}/membership/userauth/email/confirm-verification (scope: project).
+// ConfirmEmailVerification performs POST /{version}/membership/userauth/email/confirm-verification (scope: optional).
 func (m *MembershipModule) ConfirmEmailVerification(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -244,11 +244,11 @@ func (m *MembershipModule) ConfirmEmailVerification(ctx context.Context, req map
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// StartEmailVerification performs POST /{version}/membership/userauth/email/start-verification (scope: project).
+// StartEmailVerification performs POST /{version}/membership/userauth/email/start-verification (scope: optional).
 func (m *MembershipModule) StartEmailVerification(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -256,11 +256,11 @@ func (m *MembershipModule) StartEmailVerification(ctx context.Context, req map[s
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// HasPasskey performs POST /{version}/membership/userauth/has-passkey (scope: project).
+// HasPasskey performs POST /{version}/membership/userauth/has-passkey (scope: optional).
 func (m *MembershipModule) HasPasskey(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -268,11 +268,11 @@ func (m *MembershipModule) HasPasskey(ctx context.Context, req map[string]any, o
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// PasskeyLogout performs POST /{version}/membership/userauth/logout (scope: project).
+// PasskeyLogout performs POST /{version}/membership/userauth/logout (scope: optional).
 func (m *MembershipModule) PasskeyLogout(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -280,11 +280,11 @@ func (m *MembershipModule) PasskeyLogout(ctx context.Context, req map[string]any
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// PasskeyAuthenticationOptions performs POST /{version}/membership/userauth/passkey/authentication-options (scope: project).
+// PasskeyAuthenticationOptions performs POST /{version}/membership/userauth/passkey/authentication-options (scope: optional).
 func (m *MembershipModule) PasskeyAuthenticationOptions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -292,11 +292,11 @@ func (m *MembershipModule) PasskeyAuthenticationOptions(ctx context.Context, req
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// PasskeyRegistrationOptions performs POST /{version}/membership/userauth/passkey/registration-options (scope: project).
+// PasskeyRegistrationOptions performs POST /{version}/membership/userauth/passkey/registration-options (scope: optional).
 func (m *MembershipModule) PasskeyRegistrationOptions(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -304,11 +304,11 @@ func (m *MembershipModule) PasskeyRegistrationOptions(ctx context.Context, req m
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// VerifyPasskeyAuthentication performs POST /{version}/membership/userauth/passkey/verify-authentication (scope: project).
+// VerifyPasskeyAuthentication performs POST /{version}/membership/userauth/passkey/verify-authentication (scope: optional).
 func (m *MembershipModule) VerifyPasskeyAuthentication(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -316,11 +316,11 @@ func (m *MembershipModule) VerifyPasskeyAuthentication(ctx context.Context, req 
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// VerifyPasskeyRegistration performs POST /{version}/membership/userauth/passkey/verify-registration (scope: project).
+// VerifyPasskeyRegistration performs POST /{version}/membership/userauth/passkey/verify-registration (scope: optional).
 func (m *MembershipModule) VerifyPasskeyRegistration(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -328,7 +328,7 @@ func (m *MembershipModule) VerifyPasskeyRegistration(ctx context.Context, req ma
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
@@ -374,7 +374,7 @@ func (m *MembershipModule) RevokePasskey(ctx context.Context, credentialId strin
 	}, out)
 }
 
-// ConsumeMagicLink performs POST /{version}/membership/userauth/recovery/magic-link/consume (scope: project).
+// ConsumeMagicLink performs POST /{version}/membership/userauth/recovery/magic-link/consume (scope: optional).
 func (m *MembershipModule) ConsumeMagicLink(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -382,11 +382,11 @@ func (m *MembershipModule) ConsumeMagicLink(ctx context.Context, req map[string]
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// RequestMagicLink performs POST /{version}/membership/userauth/recovery/magic-link/request (scope: project).
+// RequestMagicLink performs POST /{version}/membership/userauth/recovery/magic-link/request (scope: optional).
 func (m *MembershipModule) RequestMagicLink(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -394,11 +394,11 @@ func (m *MembershipModule) RequestMagicLink(ctx context.Context, req map[string]
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// UseRecoveryCode performs POST /{version}/membership/userauth/recovery/use-code (scope: project).
+// UseRecoveryCode performs POST /{version}/membership/userauth/recovery/use-code (scope: optional).
 func (m *MembershipModule) UseRecoveryCode(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -406,11 +406,11 @@ func (m *MembershipModule) UseRecoveryCode(ctx context.Context, req map[string]a
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// RefreshPasskeyToken performs POST /{version}/membership/userauth/token/refresh (scope: project).
+// RefreshPasskeyToken performs POST /{version}/membership/userauth/token/refresh (scope: optional).
 func (m *MembershipModule) RefreshPasskeyToken(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -418,7 +418,7 @@ func (m *MembershipModule) RefreshPasskeyToken(ctx context.Context, req map[stri
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
@@ -468,7 +468,7 @@ func (m *MembershipModule) ChangePassword(ctx context.Context, req map[string]an
 	}, out)
 }
 
-// RequestPasswordReset performs POST /{version}/membership/userauth/password/reset/request (scope: project).
+// RequestPasswordReset performs POST /{version}/membership/userauth/password/reset/request (scope: optional).
 func (m *MembershipModule) RequestPasswordReset(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -476,11 +476,11 @@ func (m *MembershipModule) RequestPasswordReset(ctx context.Context, req map[str
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
-// ConfirmPasswordReset performs POST /{version}/membership/userauth/password/reset/confirm (scope: project).
+// ConfirmPasswordReset performs POST /{version}/membership/userauth/password/reset/confirm (scope: optional).
 func (m *MembershipModule) ConfirmPasswordReset(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -488,7 +488,7 @@ func (m *MembershipModule) ConfirmPasswordReset(ctx context.Context, req map[str
 		Method:     "POST",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 

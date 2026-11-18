@@ -31,7 +31,7 @@ func (m *IntegrationsModule) GetKeylessIntegrationSetup(ctx context.Context, req
 	}, out)
 }
 
-// GetQuickConnectProviders performs GET /{version}/integrations/connect/providers (scope: project).
+// GetQuickConnectProviders performs GET /{version}/integrations/connect/providers (scope: optional).
 //
 // It lists the providers that can quick-connect (one-click OAuth) on this
 // install: available or not, the inputs to ask for before the provider's page
@@ -47,7 +47,7 @@ func (m *IntegrationsModule) GetQuickConnectProviders(ctx context.Context, req m
 		Method:     "GET",
 		PathParams: nil,
 		Body:       req,
-		Scope:      transport.ScopeProject,
+		Scope:      transport.ScopeOptional,
 	}, out)
 }
 
