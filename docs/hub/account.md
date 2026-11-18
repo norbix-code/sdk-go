@@ -12,8 +12,10 @@ project routes live on the API as `api.PublicModule`.
 
 Every route here is covered by a test that asserts the verb and the
 fully-resolved path: `norbix/hub/account_project_test.go`,
-`norbix/hub/account_ai_test.go`, `norbix/hub/account_settings_routes_test.go`
-(also the query string and the body) and `norbix/api/public_test.go`.
+`norbix/hub/account_ai_test.go` and `norbix/api/public_test.go`. Every
+project settings route (matrix section 21) is also in
+`norbix/hub/account_settings_routes_test.go`, which checks the host, the query
+string and the body too.
 
 Each method takes a context, any route ids as plain arguments, an untyped
 request body, and a pointer to decode the response into (pass `nil` to discard
