@@ -5141,6 +5141,16 @@ type AccountOwnerDto struct {
 	SecurityEmail   string `json:"securityEmail,omitempty"`
 }
 
+// BundleDiscountDto DTO.
+type BundleDiscountDto struct {
+	Code       string   `json:"code,omitempty"`
+	PercentOff *float64 `json:"percentOff,omitempty"`
+	AmountOff  *float64 `json:"amountOff,omitempty"`
+	Currency   string   `json:"currency,omitempty"`
+	Months     *float64 `json:"months,omitempty"`
+	EndsAt     string   `json:"endsAt,omitempty"`
+}
+
 // AccountStatusDto DTO.
 type AccountStatusDto struct {
 	AccountId          string                    `json:"accountId,omitempty"`
@@ -5157,6 +5167,8 @@ type AccountStatusDto struct {
 	Bundle             ManagedServiceBundle      `json:"bundle,omitempty"`
 	BillingPeriod      SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
 	IsTrial            bool                      `json:"isTrial"`
+	ExtraRegions       float64                   `json:"extraRegions,omitempty"`
+	Discount           *BundleDiscountDto        `json:"discount,omitempty"`
 	RenewsOn           string                    `json:"renewsOn,omitempty"`
 	EnabledProjects    float64                   `json:"enabledProjects,omitempty"`
 	EmailVerified      bool                      `json:"emailVerified"`
@@ -5169,12 +5181,20 @@ type BundlePriceDto struct {
 	Currency string  `json:"currency,omitempty"`
 }
 
+// ExtraRegionPriceDto DTO.
+type ExtraRegionPriceDto struct {
+	Monthly *BundlePriceDto `json:"monthly,omitempty"`
+	Annual  *BundlePriceDto `json:"annual,omitempty"`
+}
+
 // ManagedServiceBundleDto DTO.
 type ManagedServiceBundleDto struct {
-	Bundle     ManagedServiceBundle `json:"bundle,omitempty"`
-	ProjectCap float64              `json:"projectCap,omitempty"`
-	Monthly    *BundlePriceDto      `json:"monthly,omitempty"`
-	Annual     *BundlePriceDto      `json:"annual,omitempty"`
+	Bundle      ManagedServiceBundle `json:"bundle,omitempty"`
+	ProjectCap  float64              `json:"projectCap,omitempty"`
+	Monthly     *BundlePriceDto      `json:"monthly,omitempty"`
+	Annual      *BundlePriceDto      `json:"annual,omitempty"`
+	RegionCap   *float64             `json:"regionCap,omitempty"`
+	ExtraRegion *ExtraRegionPriceDto `json:"extraRegion,omitempty"`
 }
 
 // UsageBillingClusterChargeDto DTO.
@@ -5190,6 +5210,7 @@ type UsageBillingPeriodDto struct {
 	TotalCents    float64                         `json:"totalCents,omitempty"`
 	PerCluster    []*UsageBillingClusterChargeDto `json:"perCluster,omitempty"`
 	RecordedAtUtc string                          `json:"recordedAtUtc,omitempty"`
+	Waived        string                          `json:"waived,omitempty"`
 }
 
 // UsageBillingIngestionFailureDto DTO.
@@ -8318,6 +8339,7 @@ type EchoResponse struct {
 	ApiVersion                  string                  `json:"apiVersion,omitempty"`
 	HubVersion                  string                  `json:"hubVersion,omitempty"`
 	AdminUrlTemplate            string                  `json:"adminUrlTemplate,omitempty"`
+	ApiUrlTemplate              string                  `json:"apiUrlTemplate,omitempty"`
 	EmailServiceConfigured      bool                    `json:"emailServiceConfigured"`
 	RootBootstrapPasswordSource string                  `json:"rootBootstrapPasswordSource,omitempty"`
 	Regions                     []*EchoRegionDto        `json:"regions,omitempty"`
@@ -8412,6 +8434,12 @@ type GetAccountStatusResponse struct {
 	Item *AccountStatusDto `json:"item,omitempty"`
 }
 
+// CheckBundleDiscountResponse DTO.
+type CheckBundleDiscountResponse struct {
+	ResponseBase
+	Discount *BundleDiscountDto `json:"discount,omitempty"`
+}
+
 // CreateStripeCheckoutSessionResponse DTO.
 type CreateStripeCheckoutSessionResponse struct {
 	IdResponse
@@ -8434,6 +8462,24 @@ type GetManagedServiceBundlesResponse struct {
 type CreateTeamMemberFromInvitationResponse struct {
 	IdResponse
 	Token string `json:"token,omitempty"`
+}
+
+// TrialWaitlistResponse DTO.
+type TrialWaitlistResponse struct {
+	ResponseBase
+	Status  string `json:"status,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// TrialAvailabilityResponse DTO.
+type TrialAvailabilityResponse struct {
+	ResponseBase
+	LimitsOn     bool   `json:"limitsOn"`
+	Region       string `json:"region,omitempty"`
+	TrialsOpen   bool   `json:"trialsOpen"`
+	WaitlistOpen bool   `json:"waitlistOpen"`
+	OnWaitlist   bool   `json:"onWaitlist"`
+	Refusal      string `json:"refusal,omitempty"`
 }
 
 // GetAccountUsageBillingResponse DTO.
@@ -11043,6 +11089,20 @@ type GetAccountStatus struct {
 	RequestBase
 }
 
+// CheckBundleDiscount DTO.
+type CheckBundleDiscount struct {
+	RequestBase
+	Code          string                    `json:"code,omitempty"`
+	Bundle        ManagedServiceBundle      `json:"bundle,omitempty"`
+	BillingPeriod SubscriptionBillingPeriod `json:"billingPeriod,omitempty"`
+}
+
+// ApplyBundleDiscount DTO.
+type ApplyBundleDiscount struct {
+	RequestBase
+	Code string `json:"code,omitempty"`
+}
+
 // ChangeManagedServiceBundle DTO.
 type ChangeManagedServiceBundle struct {
 	RequestBase
@@ -11059,6 +11119,10 @@ type CreateStripeCheckoutSession struct {
 	Domain              string                    `json:"domain,omitempty"`
 	NewProjectSessionId string                    `json:"newProjectSessionId,omitempty"`
 	ReturnUrl           string                    `json:"returnUrl,omitempty"`
+	DiscountCode        string                    `json:"discountCode,omitempty"`
+	Region              string                    `json:"region,omitempty"`
+	WithoutTrial        *bool                     `json:"withoutTrial,omitempty"`
+	TrialInvite         string                    `json:"trialInvite,omitempty"`
 }
 
 // GetStripeBillingPortalUrl DTO.
@@ -11073,12 +11137,41 @@ type GetManagedServiceBundles struct {
 	RequestBase
 }
 
+// SetExtraRegions DTO.
+type SetExtraRegions struct {
+	RequestBase
+	ExtraRegions *float64 `json:"extraRegions,omitempty"`
+}
+
 // CreateTeamMemberFromInvitation DTO.
 type CreateTeamMemberFromInvitation struct {
 	RequestBase
 	DisplayName string `json:"displayName,omitempty"`
 	Token       string `json:"token,omitempty"`
 	Password    string `json:"password,omitempty"`
+}
+
+// JoinTrialWaitlistRequest DTO.
+type JoinTrialWaitlistRequest struct {
+	RequestBase
+	Region         string `json:"region,omitempty"`
+	Consent        bool   `json:"consent"`
+	ConsentVersion string `json:"consentVersion,omitempty"`
+}
+
+// TrialWaitlistIntakeRequest DTO.
+type TrialWaitlistIntakeRequest struct {
+	RequestBase
+	Email          string `json:"email,omitempty"`
+	Region         string `json:"region,omitempty"`
+	Consent        bool   `json:"consent"`
+	ConsentVersion string `json:"consentVersion,omitempty"`
+}
+
+// GetTrialAvailabilityRequest DTO.
+type GetTrialAvailabilityRequest struct {
+	RequestBase
+	Region string `json:"region,omitempty"`
 }
 
 // GetAccountUsageBilling DTO.

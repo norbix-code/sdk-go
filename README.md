@@ -1145,7 +1145,8 @@ Project owners configure the assistant on the Hub: `client.Hub.Account`
 - [Account and projects](docs/hub/account.md) — project settings, CORS, legal
   documents, Admin Portal, public project config, project AI settings, AI
   service users, subscription bundles (`GetManagedServiceBundles`,
-  `ChangeManagedServiceBundle`), Flex clusters (`GetFlexClusters`,
+  `ChangeManagedServiceBundle`), discount codes (`CheckBundleDiscount`,
+  `ApplyBundleDiscount`), Flex clusters (`GetFlexClusters`,
   `UpgradeFlexCluster`), developer MCP endpoint
 - [AI integrations](docs/hub/ai.md) — LLM and MCP integrations
 - [Database](docs/hub/database.md) — schemas, records (Hub + Api), taxonomies and

@@ -1972,6 +1972,7 @@ type EchoResponse struct {
 	ApiVersion                  string                  `json:"apiVersion,omitempty"`
 	HubVersion                  string                  `json:"hubVersion,omitempty"`
 	AdminUrlTemplate            string                  `json:"adminUrlTemplate,omitempty"`
+	ApiUrlTemplate              string                  `json:"apiUrlTemplate,omitempty"`
 	EmailServiceConfigured      bool                    `json:"emailServiceConfigured"`
 	RootBootstrapPasswordSource string                  `json:"rootBootstrapPasswordSource,omitempty"`
 	Regions                     []*EchoRegionDto        `json:"regions,omitempty"`
