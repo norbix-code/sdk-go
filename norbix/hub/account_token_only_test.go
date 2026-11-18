@@ -92,6 +92,14 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.ApplyBundleDiscount(ctx, body, nil)
 			}},
+		{"GetTrialAvailability", http.MethodGet, "/v2/account/trial-availability",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.GetTrialAvailability(ctx, body, nil)
+			}},
+		{"JoinTrialWaitlist", http.MethodPost, "/v2/account/trial-waitlist",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.JoinTrialWaitlist(ctx, body, nil)
+			}},
 		{"GetFlexClusters", http.MethodGet, "/v2/account/flex-clusters",
 			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetFlexClusters(ctx, body, nil) }},
 		{"UpgradeFlexCluster", http.MethodPost, "/v2/account/flex-clusters/flexClusterId_1/upgrade",

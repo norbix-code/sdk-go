@@ -5,8 +5,8 @@
 The project endpoints on the Hub, and the `hub.AccountModule` method that
 calls each one: create and read projects, project settings (name, brand,
 CORS, languages, regions, legal documents), the Admin Portal, project AI
-settings, AI service users, the subscription bundles, discount codes and
-Flex clusters, and
+settings, AI service users, the subscription bundles, discount codes, trial
+limits and Flex clusters, and
 the developer MCP endpoint. The two public
 project routes live on the API as `api.PublicModule`.
 
@@ -275,6 +275,8 @@ projects. Tests: `norbix/hub/account_bundles_flex_test.go`.
 | `ChangeManagedServiceBundle(ctx, req, out)` | `POST` | `/account/stripe/change-bundle` | project |
 | `CheckBundleDiscount(ctx, req, out)` | `POST` | `/account/stripe/discount/check` | project |
 | `ApplyBundleDiscount(ctx, req, out)` | `POST` | `/account/stripe/discount` | project |
+| `GetTrialAvailability(ctx, req, out)` | `GET` | `/account/trial-availability` | project |
+| `JoinTrialWaitlist(ctx, req, out)` | `POST` | `/account/trial-waitlist` | project |
 | `GetStripeBillingPortalUrl(ctx, req, out)` | `POST` | `/account/stripe/get-portal-url` | project |
 | `GetFlexClusters(ctx, req, out)` | `GET` | `/account/flex-clusters` | project |
 | `UpgradeFlexCluster(ctx, flexClusterId, req, out)` | `POST` | `/account/flex-clusters/{flexClusterId}/upgrade` | project |
@@ -334,6 +336,56 @@ var nerr *nberrors.Error // github.com/norbix-code/sdk-go/v2/norbix/errors
 if errors.As(err, &nerr) && nerr.Code == "CM-ERRORS-ACCOUNT-027" && len(nerr.Errors) > 0 {
     reason, _ := nerr.Errors[0].Context["reason"].(string) // e.g. "already_used"
     _ = reason
+}
+```
+
+### Trial limits
+
+A free Managed Service trial can be limited per region. Tests:
+`norbix/hub/account_trial_limits_test.go`.
+
+- `GetTrialAvailability` asks whether a free trial can start in a region now,
+  before opening a checkout (`dtos.TrialAvailabilityResponse`). Send `region`
+  (it goes in the query string).
+  - `LimitsOn` false: this installation has no trial limits; start the trial
+    as before.
+  - `TrialsOpen` false: the region's trials are full. Offer buying now without
+    a trial (checkout with `withoutTrial: true`) or joining the waiting list
+    when `WaitlistOpen` is true.
+  - `OnWaitlist`: the owner email is already on the list.
+  - `Refusal`: why this account's trial was refused after checkout
+    (`CardAlreadyHadTrial`), or empty.
+- `JoinTrialWaitlist` puts the account owner's email on the trial waiting list
+  for a region (`dtos.TrialWaitlistResponse`). Send `region`, `consent` (must
+  be true) and `consentVersion` (names the consent text shown). When a slot
+  frees, Norbix emails an invitation link valid a few days. `Status` is
+  `added`, `alreadyListed` or `alreadyCustomer` (an email that already had a
+  trial or pays is never added); `Message` can be shown as is. Errors:
+  `CM-ERRORS-ACCOUNT-044` the list is switched off, `CM-ERRORS-ACCOUNT-043`
+  unknown region, a validation error when `consent` is not true.
+- `CreateStripeCheckoutSession` takes `region`, `withoutTrial` and
+  `trialInvite`. A trial checkout in a full region fails with HTTP 400 and
+  `CM-ERRORS-ACCOUNT-040`. The invitation token from the waiting list goes in
+  `trialInvite` and starts the trial once even when the region is full; an
+  expired invitation or someone else's fails with `CM-ERRORS-ACCOUNT-042`.
+
+The website's own waiting-list form posts to `/account/trial-waitlist/intake`
+with a shared key header. That route is for the Norbix website server only, so
+the SDK has no method for it.
+
+```go
+var avail dtos.TrialAvailabilityResponse
+err := client.Hub.Account.GetTrialAvailability(ctx, map[string]any{
+    "region": "nb-eu-germany",
+}, &avail)
+if avail.LimitsOn && !avail.TrialsOpen && avail.WaitlistOpen && !avail.OnWaitlist {
+    var joined dtos.TrialWaitlistResponse
+    err = client.Hub.Account.JoinTrialWaitlist(ctx, map[string]any{
+        "region":         "nb-eu-germany",
+        "consent":        true,
+        "consentVersion": "2026-11",
+    }, &joined)
+    // joined.Status: "added", "alreadyListed" or "alreadyCustomer"
 }
 ```
 
