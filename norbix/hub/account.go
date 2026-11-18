@@ -1044,3 +1044,289 @@ func (m *AccountModule) McpEndSession(ctx context.Context, sessionId string, out
 		Headers: mcpHeaders(sessionId),
 	}, out)
 }
+
+// ── Project settings coverage (2026-11-18): project health, environments,
+// AI plans and knowledge, usage billing and discounts. ──
+
+// GetAccountUsageBilling performs GET /{version}/account/usage-billing (scope: project).
+//
+// It returns the account's usage-based billing: the Norbix-managed Atlas charges
+// per period and cluster, and the workflow run counts. Decode into
+// dtos.GetAccountUsageBillingResponse.
+func (m *AccountModule) GetAccountUsageBilling(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/usage-billing",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetExtraRegions performs POST /{version}/account/stripe/extra-regions (scope: project).
+//
+// It sets how many extra regions the Starter or Growth plan carries (0 removes
+// them). Send "extraRegions". The gateway changes the Stripe subscription pro
+// rata; the account follows when Stripe's webhook arrives.
+func (m *AccountModule) SetExtraRegions(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/stripe/extra-regions",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetProjectHealth performs GET /{version}/account/projects/{projectId}/health (scope: project).
+//
+// It returns the project's health for the request environment: the problems,
+// each with a Cloud fix path, and the user / e-mail / API call numbers of the
+// period. Computed every 6 hours and cached. Optional query: "refresh" (true
+// computes it now) and "periodDays" (7, 30 — the default — or 90).
+func (m *AccountModule) GetProjectHealth(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/health",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// WaitForProjectActive performs GET /{version}/account/projects/{projectId}/wait-active (scope: project).
+//
+// It waits, server-side, for a just-created project to finish provisioning and
+// become active. Optional query "timeoutSeconds" (default 30, at most 90).
+// A timeout is not an error: read isActive in the answer.
+func (m *AccountModule) WaitForProjectActive(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/wait-active",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// SetEnvironmentRank performs PATCH /{version}/account/projects/environments/{environmentName}/rank (scope: project).
+//
+// It moves an environment on the promotion ladder. Send "rank"; out-of-range
+// values are clamped and the ranks re-normalised.
+func (m *AccountModule) SetEnvironmentRank(ctx context.Context, environmentName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"environmentName": environmentName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/environments/{environmentName}/rank",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// PromoteEnvironment performs POST /{version}/account/projects/environments/promote (scope: project).
+//
+// It promotes one environment into another ("sourceEnv" → "targetEnv").
+// "dryRun": true returns the plan only. A real run that deletes a collection
+// holding records needs "confirmRecordLoss": true. The answer's fromVersion
+// is the rollback anchor.
+func (m *AccountModule) PromoteEnvironment(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/environments/promote",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RollbackPromotion performs POST /{version}/account/projects/environments/promote/rollback (scope: project).
+//
+// It rolls a promotion back: send "targetEnv" and the "fromVersion" anchor of
+// the promotion. "dryRun": true returns the plan only.
+func (m *AccountModule) RollbackPromotion(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/environments/promote/rollback",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RepairEnvironmentBuiltIns performs POST /{version}/account/projects/environments/built-ins/repair (scope: project).
+//
+// It creates or realigns the built-in templates (e-mail, push, SMS, the
+// Default footer and signature) of an environment under PROD's ids
+// ("environmentName"; empty = every environment except PROD). "dryRun": true
+// returns what would be done.
+func (m *AccountModule) RepairEnvironmentBuiltIns(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/environments/built-ins/repair",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetEnvironmentAdminUrl performs GET /{version}/account/projects/environments/{environmentName}/admin-url (scope: project).
+//
+// It reads where an environment's e-mail links point: its own admin URL, the
+// address the links really use, and where that came from.
+func (m *AccountModule) GetEnvironmentAdminUrl(ctx context.Context, environmentName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"environmentName": environmentName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/environments/{environmentName}/admin-url",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateEnvironmentAdminUrl performs PATCH /{version}/account/projects/environments/{environmentName}/admin-url (scope: project).
+//
+// It sets the environment's own admin portal address ("url"); an empty url
+// clears it.
+func (m *AccountModule) UpdateEnvironmentAdminUrl(ctx context.Context, environmentName string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"environmentName": environmentName,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/environments/{environmentName}/admin-url",
+		Method:     "PATCH",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateProjectAiKnowledge performs PUT /{version}/account/projects/{projectId}/ai/knowledge (scope: project).
+//
+// It turns the project's AI knowledge from uploaded text files on or off.
+// Send "embedFiles".
+func (m *AccountModule) UpdateProjectAiKnowledge(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/knowledge",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetProjectAiPlans performs GET /{version}/account/projects/{projectId}/ai/plans (scope: project).
+//
+// It reads the project's end-user AI plans (quotas), the role → plan rows and
+// the default plan.
+func (m *AccountModule) GetProjectAiPlans(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/plans",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateProjectAiPlans performs PUT /{version}/account/projects/{projectId}/ai/plans (scope: project).
+//
+// It saves the project's end-user AI plans. Send "plans": the complete list —
+// a plan left out is removed (full replace). Read GetProjectAiPlans first.
+func (m *AccountModule) UpdateProjectAiPlans(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/plans",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// UpdateProjectAiPlanAssignments performs PUT /{version}/account/projects/{projectId}/ai/plans/assignments (scope: project).
+//
+// It saves which plan a user gets: "roles" (role → plan rows, in order; the
+// first row whose role the user has wins) and "defaultPlanId". Both are
+// replaced as a whole.
+func (m *AccountModule) UpdateProjectAiPlanAssignments(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/plans/assignments",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// GetProjectAiUserPlans performs GET /{version}/account/projects/{projectId}/ai/plans/users (scope: project).
+//
+// It lists the users that have their own end-user AI plan, with the plan id.
+func (m *AccountModule) GetProjectAiUserPlans(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/plans/users",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// CreateAiCreditPackCheckout performs POST /{version}/account/projects/{projectId}/ai/credits/checkout (scope: project).
+//
+// It starts a Stripe checkout for an AI credit pack ("pack": pack-10, pack-50 or
+// pack-200) and returns the checkout address. Nothing is charged until the
+// payer completes the checkout. Optional "returnUrl".
+func (m *AccountModule) CreateAiCreditPackCheckout(ctx context.Context, projectId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"projectId": projectId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/projects/{projectId}/ai/credits/checkout",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
@@ -85,11 +86,50 @@ func TestPublicEndpointsHitTheExpectedRouteWithoutAuth(t *testing.T) {
 	}
 }
 
-// The public surface is 2 routes; a changed count means a route arrived or
-// left untested.
+// The brand logo / icon answers the image itself: the bytes come back
+// untouched in a *[]byte, from the API host, with no Authorization header.
+func TestGetPublicProjectBrandAssetReturnsTheImageBytes(t *testing.T) {
+	png := []byte{0x89, 'P', 'N', 'G', 0x0d, 0x0a, 0x1a, 0x0a}
+	var gotMethod, gotPath, gotQuery string
+	gotAuth := "unset"
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod, gotPath, gotQuery = r.Method, r.URL.Path, r.URL.RawQuery
+		gotAuth = r.Header.Get("Authorization")
+		w.Header().Set("Content-Type", "image/png")
+		_, _ = w.Write(png)
+	}))
+	defer srv.Close()
+
+	want := publicCase{"GetPublicProjectBrandAsset", http.MethodGet, "/v2/public/projects/proj_9/brand/logo", nil}
+	var out []byte
+	if err := newPublicTestModule(srv.URL).GetPublicProjectBrandAsset(context.Background(), "proj_9", "logo", &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotMethod != want.verb {
+		t.Errorf("verb: got %q want %q", gotMethod, want.verb)
+	}
+	if gotPath != want.path {
+		t.Errorf("path: got %q want %q", gotPath, want.path)
+	}
+	if gotQuery != "" {
+		t.Errorf("query: got %q want empty", gotQuery)
+	}
+	if gotAuth != "" {
+		t.Errorf("auth header: got %q want none", gotAuth)
+	}
+	if string(out) != string(png) {
+		t.Errorf("bytes: got %v want %v", out, png)
+	}
+}
+
+// The public surface is 3 routes: the two JSON cases above and the brand
+// asset in its own test. A changed method count means a route arrived or left
+// untested.
 func TestPublicSurfaceSize(t *testing.T) {
-	const want = 2
-	if got := len(publicCases()); got != want {
-		t.Errorf("public endpoint count: got %d want %d", got, want)
+	if got := len(publicCases()); got != 2 {
+		t.Errorf("public JSON endpoint count: got %d want 2", got)
+	}
+	if got := reflect.TypeOf(&PublicModule{}).NumMethod(); got != 3 {
+		t.Errorf("PublicModule method count: got %d want 3", got)
 	}
 }
