@@ -4876,12 +4876,6 @@ type PushDeviceDto struct {
 	PlatformApiLevel *float64   `json:"platformApiLevel,omitempty"`
 }
 
-// ChatScreenContextDto DTO.
-type ChatScreenContextDto struct {
-	Kind   string `json:"kind,omitempty"`
-	ViewId string `json:"viewId,omitempty"`
-}
-
 // INoSessionCookies DTO.
 type INoSessionCookies struct {
 }
@@ -7291,39 +7285,6 @@ type AiToolManifestItem struct {
 	Toolsets             []string                   `json:"toolsets,omitempty"`
 	RequiresConfirmation bool                       `json:"requiresConfirmation"`
 	Parameters           []*AiToolManifestParameter `json:"parameters,omitempty"`
-}
-
-// ChatModelOption DTO.
-type ChatModelOption struct {
-	LlmIntegrationId string  `json:"llmIntegrationId,omitempty"`
-	Kind             string  `json:"kind,omitempty"`
-	Provider         string  `json:"provider,omitempty"`
-	Model            string  `json:"model,omitempty"`
-	Label            string  `json:"label,omitempty"`
-	IsDefault        bool    `json:"isDefault"`
-	IsAuto           bool    `json:"isAuto"`
-	ContextWindow    float64 `json:"contextWindow,omitempty"`
-}
-
-// ChatMemoryNote DTO.
-type ChatMemoryNote struct {
-	Id           string `json:"id,omitempty"`
-	Kind         string `json:"kind,omitempty"`
-	Text         string `json:"text,omitempty"`
-	ProjectId    string `json:"projectId,omitempty"`
-	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
-}
-
-// ChatSessionListItem DTO.
-type ChatSessionListItem struct {
-	SessionId    string `json:"sessionId,omitempty"`
-	Profile      string `json:"profile,omitempty"`
-	ProjectId    string `json:"projectId,omitempty"`
-	Env          string `json:"env,omitempty"`
-	Title        string `json:"title,omitempty"`
-	UpdatedAtUtc string `json:"updatedAtUtc,omitempty"`
-	IsArchived   bool   `json:"isArchived"`
-	IsPinned     bool   `json:"isPinned"`
 }
 
 // ScaffoldStep DTO.
@@ -9766,55 +9727,6 @@ type GetAiToolsResponse struct {
 type InvokeAiToolResponse struct {
 	ResponseBase
 	Result string `json:"result,omitempty"`
-}
-
-// UploadChatAttachmentResponse DTO.
-type UploadChatAttachmentResponse struct {
-	ResponseBase
-	Id        string `json:"id,omitempty"`
-	SessionId string `json:"sessionId,omitempty"`
-}
-
-// ChatAvailabilityResponse DTO.
-type ChatAvailabilityResponse struct {
-	ResponseBase
-	Available bool               `json:"available"`
-	Reason    string             `json:"reason,omitempty"`
-	Profiles  []string           `json:"profiles,omitempty"`
-	Models    []*ChatModelOption `json:"models,omitempty"`
-}
-
-// GetChatMemoryResponse DTO.
-type GetChatMemoryResponse struct {
-	ResponseBase
-	Notes []*ChatMemoryNote `json:"notes,omitempty"`
-}
-
-// GetChatSessionsResponse DTO.
-type GetChatSessionsResponse struct {
-	ResponseBase
-	Sessions []*ChatSessionListItem `json:"sessions,omitempty"`
-}
-
-// GetChatSessionEntriesResponse DTO.
-type GetChatSessionEntriesResponse struct {
-	ResponseBase
-	SessionId         string                `json:"sessionId,omitempty"`
-	Profile           string                `json:"profile,omitempty"`
-	ProjectId         string                `json:"projectId,omitempty"`
-	Env               string                `json:"env,omitempty"`
-	Entries           []*AiChatEntryWireDto `json:"entries,omitempty"`
-	LastSeq           float64               `json:"lastSeq,omitempty"`
-	ActiveWorkItemIds []string              `json:"activeWorkItemIds,omitempty"`
-}
-
-// ChatTurnResponse DTO.
-type ChatTurnResponse struct {
-	ResponseBase
-	SessionId   string                `json:"sessionId,omitempty"`
-	Reply       string                `json:"reply,omitempty"`
-	ScreenPatch *ChatScreenContextDto `json:"screenPatch,omitempty"`
-	ToolTrace   []string              `json:"toolTrace,omitempty"`
 }
 
 // ScaffoldProjectResponse DTO.
@@ -13867,125 +13779,6 @@ type InvokeAiToolRequest struct {
 	RequestBase
 	ToolName      string `json:"toolName,omitempty"`
 	ArgumentsJson string `json:"argumentsJson,omitempty"`
-}
-
-// UploadChatAttachmentRequest DTO.
-type UploadChatAttachmentRequest struct {
-	RequestBase
-	SessionId     string `json:"sessionId,omitempty"`
-	FileName      string `json:"fileName,omitempty"`
-	ContentType   string `json:"contentType,omitempty"`
-	Base64Content string `json:"base64Content,omitempty"`
-	Profile       string `json:"profile,omitempty"`
-	Topic         string `json:"topic,omitempty"`
-	ProjectId     string `json:"projectId,omitempty"`
-	Env           string `json:"env,omitempty"`
-}
-
-// ChatAvailabilityRequest DTO.
-type ChatAvailabilityRequest struct {
-	RequestBase
-	ProjectId string `json:"projectId,omitempty"`
-	Env       string `json:"env,omitempty"`
-}
-
-// GetChatMemoryRequest DTO.
-type GetChatMemoryRequest struct {
-	RequestBase
-	ProjectId string `json:"projectId,omitempty"`
-}
-
-// ForgetChatMemoryRequest DTO.
-type ForgetChatMemoryRequest struct {
-	RequestBase
-	NoteId string `json:"noteId,omitempty"`
-}
-
-// DeleteChatSessionRequest DTO.
-type DeleteChatSessionRequest struct {
-	RequestBase
-	SessionId string `json:"sessionId,omitempty"`
-}
-
-// SetChatSessionArchivedRequest DTO.
-type SetChatSessionArchivedRequest struct {
-	RequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	Archived  bool   `json:"archived"`
-}
-
-// SetChatSessionPinnedRequest DTO.
-type SetChatSessionPinnedRequest struct {
-	RequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	Pinned    bool   `json:"pinned"`
-}
-
-// SetChatSessionSharingRequest DTO.
-type SetChatSessionSharingRequest struct {
-	RequestBase
-	SessionId  string `json:"sessionId,omitempty"`
-	DoNotShare bool   `json:"doNotShare"`
-}
-
-// GetChatSessionsRequest DTO.
-type GetChatSessionsRequest struct {
-	RequestBase
-	Take            *float64 `json:"take,omitempty"`
-	IncludeArchived *bool    `json:"includeArchived,omitempty"`
-}
-
-// GetChatSessionEntriesRequest DTO.
-type GetChatSessionEntriesRequest struct {
-	RequestBase
-	SessionId string   `json:"sessionId,omitempty"`
-	SinceSeq  *float64 `json:"sinceSeq,omitempty"`
-}
-
-// SetChatEntryFeedbackRequest DTO.
-type SetChatEntryFeedbackRequest struct {
-	RequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	EntryId   string `json:"entryId,omitempty"`
-	Feedback  string `json:"feedback,omitempty"`
-}
-
-// AnswerChatQuestionRequest DTO.
-type AnswerChatQuestionRequest struct {
-	RequestBase
-	SessionId string            `json:"sessionId,omitempty"`
-	EntryId   string            `json:"entryId,omitempty"`
-	Answers   map[string]string `json:"answers,omitempty"`
-}
-
-// DecideChatPlanRequest DTO.
-type DecideChatPlanRequest struct {
-	RequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	EntryId   string `json:"entryId,omitempty"`
-	Decision  string `json:"decision,omitempty"`
-	Comment   string `json:"comment,omitempty"`
-}
-
-// StopChatRunStepRequest DTO.
-type StopChatRunStepRequest struct {
-	RequestBase
-	SessionId string `json:"sessionId,omitempty"`
-	EntryId   string `json:"entryId,omitempty"`
-}
-
-// ChatTurnRequest DTO.
-type ChatTurnRequest struct {
-	RequestBase
-	SessionId        string                `json:"sessionId,omitempty"`
-	Message          string                `json:"message,omitempty"`
-	Profile          string                `json:"profile,omitempty"`
-	Topic            string                `json:"topic,omitempty"`
-	LlmIntegrationId string                `json:"llmIntegrationId,omitempty"`
-	Model            string                `json:"model,omitempty"`
-	ProjectId        string                `json:"projectId,omitempty"`
-	Env              string                `json:"env,omitempty"`
-	ScreenContext    *ChatScreenContextDto `json:"screenContext,omitempty"`
 }
 
 // ScaffoldProjectRequest DTO.

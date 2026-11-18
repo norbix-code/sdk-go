@@ -16,13 +16,12 @@ import (
 // Matrix sections 06 AI · MCP, 07 AI · LLM integration and 08 AI chat, Hub
 // side: every LLM and MCP integration route of AiModule (the MCP ones are
 // deprecated — save is refused with CM-ERRORS-…-030 — but still served) and
-// every developer AI chat and AI tool route of AccountModule. Each case
-// asserts the verb, the fully-resolved path on the HUB (the API base is an
-// unreachable *.invalid host), the exact query string, the JSON body and the
-// key + project headers. Field names are the gateway's (Hub.AI
-// Integrations/{Llms,Mcps}/*.cs, ChatTurn.cs, ChatSessions.cs,
-// ChatSessionManage.cs, ChatAttachments.cs, ChatAvailability.cs, ChatMemory.cs,
-// AiToolsBridge.cs).
+// the AI tool routes of AccountModule. The developer AI chat routes
+// (/account/chat/*) were retired on 2026-11-18. Each case asserts the verb,
+// the fully-resolved path on the HUB (the API base is an unreachable
+// *.invalid host), the exact query string, the JSON body and the key +
+// project headers. Field names are the gateway's (Hub.AI
+// Integrations/{Llms,Mcps}/*.cs, AiToolsBridge.cs).
 //
 // Nothing leaves the process: every call goes to a local test server, and no
 // LLM or MCP server is contacted.
@@ -102,68 +101,8 @@ func aiClusterIntegrationCases() []aiClusterCase[*AiModule] {
 	}
 }
 
-func aiClusterChatCases() []aiClusterCase[*AccountModule] {
+func aiClusterToolCases() []aiClusterCase[*AccountModule] {
 	return []aiClusterCase[*AccountModule]{
-		{"ChatTurn", http.MethodPost, "/v2/account/chat/turn", nil, map[string]any{"message": "Add a field", "profile": "orchestrator", "projectId": "pr_1", "env": "TEST", "llmIntegrationId": "int_llm1"},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.ChatTurn(ctx, req, nil)
-			}, map[string]any{"message": "Add a field", "profile": "orchestrator", "projectId": "pr_1", "env": "TEST", "llmIntegrationId": "int_llm1"}},
-		{"ChatAvailability", http.MethodGet, "/v2/account/chat/availability", url.Values{"projectId": {"pr_1"}, "env": {"TEST"}}, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.ChatAvailability(ctx, req, nil)
-			}, map[string]any{"projectId": "pr_1", "env": "TEST"}},
-		{"GetChatSessions", http.MethodGet, "/v2/account/chat/sessions", url.Values{"take": {"20"}, "includeArchived": {"true"}}, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.GetChatSessions(ctx, req, nil)
-			}, map[string]any{"take": 20, "includeArchived": true}},
-		{"GetChatSessionEntries", http.MethodGet, "/v2/account/chat/sessions/aics_1/entries", url.Values{"sinceSeq": {"7"}}, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.GetChatSessionEntries(ctx, "aics_1", req, nil)
-			}, map[string]any{"sinceSeq": 7}},
-		{"DeleteChatSession", http.MethodDelete, "/v2/account/chat/sessions/aics_1", nil, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.DeleteChatSession(ctx, "aics_1", req, nil)
-			}, nil},
-		{"SetChatSessionArchived", http.MethodPatch, "/v2/account/chat/sessions/aics_1/archive", nil, map[string]any{"archived": true},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.SetChatSessionArchived(ctx, "aics_1", req, nil)
-			}, map[string]any{"archived": true}},
-		{"SetChatSessionPinned", http.MethodPatch, "/v2/account/chat/sessions/aics_1/pin", nil, map[string]any{"pinned": false},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.SetChatSessionPinned(ctx, "aics_1", req, nil)
-			}, map[string]any{"pinned": false}},
-		{"SetChatSessionSharing", http.MethodPatch, "/v2/account/chat/sessions/aics_1/sharing", nil, map[string]any{"doNotShare": true},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.SetChatSessionSharing(ctx, "aics_1", req, nil)
-			}, map[string]any{"doNotShare": true}},
-		{"SetChatEntryFeedback", http.MethodPost, "/v2/account/chat/sessions/aics_1/entries/ent_1/feedback", nil, map[string]any{"feedback": "up"},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.SetChatEntryFeedback(ctx, "aics_1", "ent_1", req, nil)
-			}, map[string]any{"feedback": "up"}},
-		{"AnswerChatQuestion", http.MethodPost, "/v2/account/chat/sessions/aics_1/questions/ent_1/answer", nil, map[string]any{"answers": map[string]any{"q1": "Yes"}},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.AnswerChatQuestion(ctx, "aics_1", "ent_1", req, nil)
-			}, map[string]any{"answers": map[string]any{"q1": "Yes"}}},
-		{"DecideChatPlan", http.MethodPost, "/v2/account/chat/sessions/aics_1/plans/ent_1/decision", nil, map[string]any{"decision": "reject", "comment": "Keep the old field"},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.DecideChatPlan(ctx, "aics_1", "ent_1", req, nil)
-			}, map[string]any{"decision": "reject", "comment": "Keep the old field"}},
-		{"StopChatRunStep", http.MethodPost, "/v2/account/chat/sessions/aics_1/steps/ent_1/stop", nil, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.StopChatRunStep(ctx, "aics_1", "ent_1", req, nil)
-			}, nil},
-		{"UploadChatAttachment", http.MethodPost, "/v2/account/chat/attachments", nil, map[string]any{"sessionId": "aics_1", "fileName": "notes.txt", "contentType": "text/plain", "base64Content": "aGVsbG8="},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.UploadChatAttachment(ctx, req, nil)
-			}, map[string]any{"sessionId": "aics_1", "fileName": "notes.txt", "contentType": "text/plain", "base64Content": "aGVsbG8="}},
-		{"GetChatMemory", http.MethodGet, "/v2/account/chat/memory", url.Values{"projectId": {"pr_1"}}, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.GetChatMemory(ctx, req, nil)
-			}, map[string]any{"projectId": "pr_1"}},
-		{"ForgetChatMemory", http.MethodDelete, "/v2/account/chat/memory/mem_1", nil, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.ForgetChatMemory(ctx, "mem_1", req, nil)
-			}, nil},
 		{"GetAiTools", http.MethodGet, "/v2/account/ai/tools", url.Values{"toolset": {"ai:database-read"}}, nil,
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.GetAiTools(ctx, req, nil)
@@ -259,19 +198,19 @@ func TestAiIntegrationRoutesHitTheExpectedRoute(t *testing.T) {
 	})
 }
 
-func TestAiChatRoutesHitTheExpectedRoute(t *testing.T) {
-	runAiClusterCases(t, aiClusterChatCases(), func(hubURL string) *AccountModule {
+func TestAiToolRoutesHitTheExpectedRoute(t *testing.T) {
+	runAiClusterCases(t, aiClusterToolCases(), func(hubURL string) *AccountModule {
 		return &AccountModule{t: newAiClusterTestTransport(hubURL)}
 	})
 }
 
-// 8 LLM + 7 MCP integration routes; 15 developer chat routes + 2 AI tool
-// routes. A changed count means a route arrived or left untested.
+// 8 LLM + 7 MCP integration routes; 2 AI tool routes. A changed count means
+// a route arrived or left untested.
 func TestAiClusterSurfaceSize(t *testing.T) {
 	if got := len(aiClusterIntegrationCases()); got != 15 {
 		t.Errorf("LLM + MCP integration route count: got %d want 15", got)
 	}
-	if got := len(aiClusterChatCases()); got != 17 {
-		t.Errorf("developer AI chat + tools route count: got %d want 17", got)
+	if got := len(aiClusterToolCases()); got != 2 {
+		t.Errorf("AI tool route count: got %d want 2", got)
 	}
 }

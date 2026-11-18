@@ -519,60 +519,29 @@ with cannot be read through the SDK, and `McpOpenStream` returns only when the
 server closes the stream or the client timeout is reached. Pass a `*[]byte` as
 `out` when the answer may be an SSE stream rather than JSON.
 
-## Developer AI chat
+## AI tools
 
-The AI chat of the Cloud dashboard, for an account user or service user. A
-turn is one request: `ChatTurn` answers when the turn is done, with the
-session id, the reply and `toolTrace` (the tools the model called). The
-transcript entries (text, plans, questions, steps) also arrive live as
-`ai.chat.progress` server-sent events on the caller's own Hub stream, and can
-be read again with `GetChatSessionEntries`. Tests:
-`norbix/hub/ai_cluster_routes_test.go` (host, verb, path, query, body).
+The AI tool inventory on the Hub, for an account user or service user — the
+tools an external agent can call. There is no developer chat in Cloud:
+developers connect their own AI tool over MCP ([Developer MCP endpoint](#developer-mcp-endpoint)
+above), and the product chat is the end-user chat on the API host
+(`client.API.Ai`). Tests: `norbix/hub/ai_cluster_routes_test.go` (host, verb,
+path, query, body).
 
 | method | verb | path | scope |
 |---|---|---|---|
-| `ChatTurn(ctx, req, out)` | `POST` | `/account/chat/turn` | project |
-| `ChatAvailability(ctx, req, out)` | `GET` | `/account/chat/availability` | project |
-| `GetChatSessions(ctx, req, out)` | `GET` | `/account/chat/sessions` | project |
-| `GetChatSessionEntries(ctx, sessionId, req, out)` | `GET` | `/account/chat/sessions/{SessionId}/entries` | project |
-| `DeleteChatSession(ctx, sessionId, req, out)` | `DELETE` | `/account/chat/sessions/{SessionId}` | project |
-| `SetChatSessionArchived(ctx, sessionId, req, out)` | `PATCH` | `/account/chat/sessions/{SessionId}/archive` | project |
-| `SetChatSessionPinned(ctx, sessionId, req, out)` | `PATCH` | `/account/chat/sessions/{SessionId}/pin` | project |
-| `SetChatSessionSharing(ctx, sessionId, req, out)` | `PATCH` | `/account/chat/sessions/{SessionId}/sharing` | project |
-| `SetChatEntryFeedback(ctx, sessionId, entryId, req, out)` | `POST` | `/account/chat/sessions/{SessionId}/entries/{EntryId}/feedback` | project |
-| `AnswerChatQuestion(ctx, sessionId, entryId, req, out)` | `POST` | `/account/chat/sessions/{SessionId}/questions/{EntryId}/answer` | project |
-| `DecideChatPlan(ctx, sessionId, entryId, req, out)` | `POST` | `/account/chat/sessions/{SessionId}/plans/{EntryId}/decision` | project |
-| `StopChatRunStep(ctx, sessionId, entryId, req, out)` | `POST` | `/account/chat/sessions/{SessionId}/steps/{EntryId}/stop` | project |
-| `UploadChatAttachment(ctx, req, out)` | `POST` | `/account/chat/attachments` | project |
-| `GetChatMemory(ctx, req, out)` | `GET` | `/account/chat/memory` | project |
-| `ForgetChatMemory(ctx, noteId, req, out)` | `DELETE` | `/account/chat/memory/{NoteId}` | project |
 | `GetAiTools(ctx, req, out)` | `GET` | `/account/ai/tools` | project |
 | `InvokeAiTool(ctx, toolName, req, out)` | `POST` | `/account/ai/tools/{ToolName}` | project |
 
-- `ChatTurn` takes `message`; `sessionId` continues a chat, and a new chat
-  names its surface with `profile`. `projectId` and `env` are the screen the
-  user is on; `llmIntegrationId` and `model` pick the model (empty = the
-  default). A turn can take long: give the client a longer `Timeout` than the
-  default when you call it. POST is never retried, so a turn never runs twice.
-- `DecideChatPlan` takes `decision` (`approve` or `reject`) and an optional
-  `comment`; `AnswerChatQuestion` takes `answers` (question key → answer);
-  `SetChatEntryFeedback` takes `feedback` (`up`, `down`, or empty to clear).
-- `GetAiTools` is the chat-tool inventory (shaped like MCP `tools/list`);
-  `toolset` narrows it. `InvokeAiTool` sends `argumentsJson`, the arguments as
-  a JSON object string, and runs the tool under the caller's identity. The env
-  comes from an `env` argument, then the `norbix-env` header; a PROD write needs
+- `GetAiTools` lists the tools (shaped like MCP `tools/list`); `toolset`
+  narrows it. `InvokeAiTool` sends `argumentsJson`, the arguments as a JSON
+  object string, and runs the tool under the caller's identity. The env comes
+  from an `env` argument, then the `norbix-env` header; a PROD write needs
   `"env": "PROD"` in the arguments.
-- `SetChatSessionSharing` with `doNotShare: true` means the chat is never
-  traced, whatever the account's sharing consent says. `DeleteChatSession` is a
-  soft delete. `StopChatRunStep` ends the step failed, blocks its dependants and
-  makes the assistant ask whether to retry, skip or fix.
 
 ```go
-var turn map[string]any
-err := client.Hub.Account.ChatTurn(ctx, map[string]any{
-    "message":   "Add a phone field to customers",
-    "profile":   "assistant",
-    "projectId": "proj_123",
-}, &turn)
-fmt.Println(turn["sessionId"], turn["reply"])
+var out map[string]any
+err := client.Hub.Account.InvokeAiTool(ctx, "get_schemas", map[string]any{
+    "argumentsJson": `{"take":5}`,
+}, &out)
 ```
