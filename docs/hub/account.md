@@ -12,7 +12,8 @@ project routes live on the API as `api.PublicModule`.
 
 Every route here is covered by a test that asserts the verb and the
 fully-resolved path: `norbix/hub/account_project_test.go`,
-`norbix/hub/account_ai_test.go` and `norbix/api/public_test.go`.
+`norbix/hub/account_ai_test.go`, `norbix/hub/account_settings_routes_test.go`
+(also the query string and the body) and `norbix/api/public_test.go`.
 
 Each method takes a context, any route ids as plain arguments, an untyped
 request body, and a pointer to decode the response into (pass `nil` to discard
@@ -47,6 +48,48 @@ err = client.Hub.Account.GetProject(ctx, "proj_123", nil, &project)
 | `EnableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/enable` | project |
 | `DisableProject(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/disable` | project |
 | `GetProjectTokens(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/tokens` | project |
+| `GetProjectHealth(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/health` | project |
+| `WaitForProjectActive(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/wait-active` | project |
+
+A new project provisions its database in the background. Call
+`WaitForProjectActive` once after `CreateProject`, before you build inside the
+project; a timeout is not an error, read `isActive` in the answer.
+`GetProjectHealth` lists the project's problems (each with a Cloud fix path)
+and its user / e-mail / API call numbers; pass `"refresh": true` to compute it
+now and `"periodDays"` (7, 30 or 90) for another window.
+
+```go
+var ready map[string]any
+err := client.Hub.Account.WaitForProjectActive(ctx, "proj_123", map[string]any{"timeoutSeconds": 60}, &ready)
+```
+
+## Environments
+
+`Hub.Environments` lists, creates and deletes the environments:
+`List(ctx, req, out)` (`GET /account/projects/environments`),
+`Create(ctx, req, out)` (`POST`, send `environmentName` and the new
+environment's database `integration`) and
+`Delete(ctx, environmentName, req, out)` (`DELETE …/{environmentName}`).
+The ladder, promotion and admin addresses are on `Hub.Account`:
+
+| method | verb | path | scope |
+|---|---|---|---|
+| `SetEnvironmentRank(ctx, environmentName, req, out)` | `PATCH` | `/account/projects/environments/{environmentName}/rank` | project |
+| `PromoteEnvironment(ctx, req, out)` | `POST` | `/account/projects/environments/promote` | project |
+| `RollbackPromotion(ctx, req, out)` | `POST` | `/account/projects/environments/promote/rollback` | project |
+| `RepairEnvironmentBuiltIns(ctx, req, out)` | `POST` | `/account/projects/environments/built-ins/repair` | project |
+| `GetEnvironmentAdminUrl(ctx, environmentName, req, out)` | `GET` | `/account/projects/environments/{environmentName}/admin-url` | project |
+| `UpdateEnvironmentAdminUrl(ctx, environmentName, req, out)` | `PATCH` | `/account/projects/environments/{environmentName}/admin-url` | project |
+
+Preview a promotion first (`"dryRun": true`), then run it. The answer's
+`fromVersion` is the anchor `RollbackPromotion` takes:
+
+```go
+var plan map[string]any
+err := client.Hub.Account.PromoteEnvironment(ctx, map[string]any{
+    "sourceEnv": "TEST", "targetEnv": "PROD", "dryRun": true,
+}, &plan)
+```
 
 ## Project settings
 
@@ -147,6 +190,10 @@ document, not an error.
 |---|---|---|
 | `GetPublicProjectConfig(ctx, projectId, out)` | `GET` | `/public/projects/{ProjectId}/config` |
 | `GetPublicProjectLegal(ctx, projectId, kind, out)` | `GET` | `/public/projects/{ProjectId}/legal/{Kind}` (`terms` or `privacy`) |
+| `GetPublicProjectBrandAsset(ctx, projectId, kind, out)` | `GET` | `/public/projects/{ProjectId}/brand/{Kind}` (`logo` or `icon`) |
+
+The brand asset answers the image itself: pass a `*[]byte` as `out`. It is
+there only while the project exposes its brand; every miss is a plain 404.
 
 ```go
 var cfg map[string]any
@@ -163,6 +210,19 @@ err := client.API.Public.GetPublicProjectConfig(ctx, "proj_123", &cfg)
 | `UpdateProjectAiAssistant(ctx, projectId, assistantId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/assistants/{assistantId}` | project |
 | `DeleteProjectAiAssistant(ctx, projectId, assistantId, req, out)` | `DELETE` | `/account/projects/{projectId}/ai/assistants/{assistantId}` | project |
 | `GetProjectAiUsage(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/usage` | project |
+| `UpdateProjectAiKnowledge(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/knowledge` | project |
+| `GetProjectAiPlans(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/plans` | project |
+| `UpdateProjectAiPlans(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/plans` | project |
+| `UpdateProjectAiPlanAssignments(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/plans/assignments` | project |
+| `GetProjectAiUserPlans(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/plans/users` | project |
+| `CreateAiCreditPackCheckout(ctx, projectId, req, out)` | `POST` | `/account/projects/{projectId}/ai/credits/checkout` | project |
+
+`UpdateProjectAiPlans` replaces the whole list (`"plans"`): a plan left out is
+removed. `UpdateProjectAiPlanAssignments` replaces `"roles"` and
+`"defaultPlanId"` together. Read `GetProjectAiPlans` first and send the list
+back with your change. `CreateAiCreditPackCheckout` returns a Stripe checkout
+address for a credit pack (`"pack"`: `pack-10`, `pack-50` or `pack-200`);
+nothing is charged until the payer completes the checkout.
 
 ```go
 var settings map[string]any
@@ -278,6 +338,8 @@ projects. Tests: `norbix/hub/account_bundles_flex_test.go`.
 | `GetTrialAvailability(ctx, req, out)` | `GET` | `/account/trial-availability` | project |
 | `JoinTrialWaitlist(ctx, req, out)` | `POST` | `/account/trial-waitlist` | project |
 | `GetStripeBillingPortalUrl(ctx, req, out)` | `POST` | `/account/stripe/get-portal-url` | project |
+| `SetExtraRegions(ctx, req, out)` | `POST` | `/account/stripe/extra-regions` | project |
+| `GetAccountUsageBilling(ctx, req, out)` | `GET` | `/account/usage-billing` | project |
 | `GetFlexClusters(ctx, req, out)` | `GET` | `/account/flex-clusters` | project |
 | `UpgradeFlexCluster(ctx, flexClusterId, req, out)` | `POST` | `/account/flex-clusters/{flexClusterId}/upgrade` | project |
 
@@ -289,6 +351,16 @@ projects. Tests: `norbix/hub/account_bundles_flex_test.go`.
 - `ChangeManagedServiceBundle` moves the account to another bundle or billing
   period. The gateway refuses with `CM-ERRORS-ACCOUNT-023` when the account
   has more enabled projects than the new bundle allows.
+- `SetExtraRegions` sets how many extra regions (`extraRegions`, 0 removes
+  them) the Starter or Growth plan carries; Stripe changes the subscription
+  pro rata. The change reaches the account a moment later, through Stripe's
+  webhook: read `GetAccountStatus` again after the answer. Discount codes:
+  see below.
+- `GetAccountUsageBilling` returns the usage-based billing
+  (`dtos.UsageBillingDto`): the Norbix-managed Atlas charges per period and
+  cluster, and the workflow run counts.
+- Every billing route of this table is also in
+  `norbix/hub/account_settings_routes_test.go` (host, verb, path, query, body).
 - `GetAccountStatus` now also returns `Bundle`, `BillingPeriod`, `IsTrial`,
   `RenewsOn` and `EnabledProjects` (`dtos.AccountStatusDto`).
 
