@@ -1403,7 +1403,8 @@ func (m *AccountModule) GetChatSessionEntries(ctx context.Context, sessionId str
 
 // DeleteChatSession performs DELETE /{version}/account/chat/sessions/{SessionId} (scope: project).
 //
-// Deletes one of the caller's chats.
+// Deletes one of the caller's chats (a soft delete: it leaves the list and the
+// history, the data is kept).
 func (m *AccountModule) DeleteChatSession(ctx context.Context, sessionId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"SessionId": sessionId,
@@ -1454,8 +1455,8 @@ func (m *AccountModule) SetChatSessionPinned(ctx context.Context, sessionId stri
 
 // SetChatSessionSharing performs PATCH /{version}/account/chat/sessions/{SessionId}/sharing (scope: project).
 //
-// Keeps one chat out of the shared improvement data ("doNotShare": true) or
-// lets it in again.
+// Marks one chat do-not-share ("doNotShare": true: it is never traced, whatever
+// the account's sharing consent says) or unmarks it (false: it follows the consent).
 func (m *AccountModule) SetChatSessionSharing(ctx context.Context, sessionId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"SessionId": sessionId,
@@ -1529,7 +1530,9 @@ func (m *AccountModule) DecideChatPlan(ctx context.Context, sessionId string, en
 
 // StopChatRunStep performs POST /{version}/account/chat/sessions/{SessionId}/steps/{EntryId}/stop (scope: project).
 //
-// Stops a running step of an approved plan.
+// Stops one queued, running or waiting step of a plan run: the step ends failed
+// (cancelled by the user), the steps that depend on it are blocked, and the
+// assistant asks whether to retry, skip or fix.
 func (m *AccountModule) StopChatRunStep(ctx context.Context, sessionId string, entryId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"SessionId": sessionId,
@@ -1563,7 +1566,8 @@ func (m *AccountModule) UploadChatAttachment(ctx context.Context, req map[string
 
 // GetChatMemory performs GET /{version}/account/chat/memory (scope: project).
 //
-// Lists the assistant's memory notes. Optional query "projectId".
+// Lists the assistant's memory notes. Optional query "projectId" filters them
+// to one project.
 func (m *AccountModule) GetChatMemory(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -1610,8 +1614,10 @@ func (m *AccountModule) GetAiTools(ctx context.Context, req map[string]any, out 
 
 // InvokeAiTool performs POST /{version}/account/ai/tools/{ToolName} (scope: project).
 //
-// Calls one AI tool by name with "argumentsJson" (the arguments as a JSON
-// string) and returns its result text.
+// Calls one AI tool by name under the caller's identity with "argumentsJson"
+// (the arguments as a JSON object string) and returns the tool envelope
+// ({ok, data} or {ok:false, errors}). The env comes from an "env" argument, then
+// the norbix-env header; a PROD write needs "env": "PROD" in the arguments.
 func (m *AccountModule) InvokeAiTool(ctx context.Context, toolName string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"ToolName": toolName,

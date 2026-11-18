@@ -559,13 +559,19 @@ be read again with `GetChatSessionEntries`. Tests:
   `SetChatEntryFeedback` takes `feedback` (`up`, `down`, or empty to clear).
 - `GetAiTools` is the chat-tool inventory (shaped like MCP `tools/list`);
   `toolset` narrows it. `InvokeAiTool` sends `argumentsJson`, the arguments as
-  a JSON string.
+  a JSON object string, and runs the tool under the caller's identity. The env
+  comes from an `env` argument, then the `norbix-env` header; a PROD write needs
+  `"env": "PROD"` in the arguments.
+- `SetChatSessionSharing` with `doNotShare: true` means the chat is never
+  traced, whatever the account's sharing consent says. `DeleteChatSession` is a
+  soft delete. `StopChatRunStep` ends the step failed, blocks its dependants and
+  makes the assistant ask whether to retry, skip or fix.
 
 ```go
 var turn map[string]any
 err := client.Hub.Account.ChatTurn(ctx, map[string]any{
     "message":   "Add a phone field to customers",
-    "profile":   "orchestrator",
+    "profile":   "assistant",
     "projectId": "proj_123",
 }, &turn)
 fmt.Println(turn["sessionId"], turn["reply"])
