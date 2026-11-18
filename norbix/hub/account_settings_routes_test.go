@@ -13,11 +13,14 @@ import (
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
-// The Project settings routes of matrix section 21 that had no Go method or
-// no exact-route test before the settings coverage campaign (2026-11-18):
-// project health and wait-active, the environment ladder, the AI plans and
-// knowledge, the account usage billing and the bundle discount / extra
-// regions. Each case asserts the verb, the fully-resolved path on the HUB
+// Every AccountModule route of matrix section 21 (Project settings): general
+// info, brand, access, regions, languages, the environment ladder, admin
+// portal, legal + expose switches, AI, termination and billing (the three
+// EnvironmentsModule routes are in TestEnvironmentsModuleRoutes below, the
+// public API-host routes in norbix/api/public_test.go). The older tables of
+// these routes (account_project_test.go, account_ai_test.go) point both hosts
+// at one server and check neither query nor body. Each case asserts the verb,
+// the fully-resolved path on the HUB
 // (the API base is an unreachable *.invalid host), the exact query string,
 // the JSON body and the key + project headers. Field names are the gateway's
 // (Hub.Account Project/*.cs, Project/Settings/Ai/*.cs, Account/Stripe/*.cs).
@@ -37,8 +40,168 @@ type accountSettingsCase struct {
 func accountSettingsCases() []accountSettingsCase {
 	const p = "/v2/account/projects/pr_1"
 	const e = "/v2/account/projects/environments"
+	fileRef := map[string]any{"resource": map[string]any{"id": "fl_1"}, "integrationId": "int_files", "provider": "Local", "path": "brand/logo.png", "isPublic": true}
+	assistant := map[string]any{"name": "Support", "systemPrompt": "Be brief.", "toolsets": []any{"own:records"}, "memoryEnabled": false, "isDefault": true}
 	return []accountSettingsCase{
 		// General info
+		{"GetProjects", http.MethodGet, "/v2/account/projects", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetProjects(ctx, req, nil)
+			}, nil},
+		{"CreateProject", http.MethodPost, "/v2/account/projects", nil, map[string]any{"projectName": "Shop", "primaryRegion": "nb-eu-germany", "description": "Orders", "integration": map[string]any{"provider": "MongoDbConnectionString", "integrationName": "Shop database", "connectionString": "mongodb://db/shop"}},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.CreateProject(ctx, req, nil)
+			}, map[string]any{"projectName": "Shop", "primaryRegion": "nb-eu-germany", "description": "Orders", "integration": map[string]any{"provider": "MongoDbConnectionString", "integrationName": "Shop database", "connectionString": "mongodb://db/shop"}}},
+		{"GetProject", http.MethodGet, "/v2/account/projects/pr_1", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetProject(ctx, "pr_1", req, nil)
+			}, nil},
+		{"GetProjectTokens", http.MethodGet, p + "/tokens", url.Values{"recipientId": {"usr_1"}}, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetProjectTokens(ctx, "pr_1", req, nil)
+			}, map[string]any{"recipientId": "usr_1"}},
+		// Brand
+		{"UpdateProjectName", http.MethodPatch, p + "/settings/name", nil, map[string]any{"name": "Shop"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectName(ctx, "pr_1", req, nil)
+			}, map[string]any{"name": "Shop"}},
+		{"UpdateProjectDescription", http.MethodPatch, p + "/settings/description", nil, map[string]any{"description": "Orders"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectDescription(ctx, "pr_1", req, nil)
+			}, map[string]any{"description": "Orders"}},
+		{"UpdateProjectUrl", http.MethodPatch, p + "/settings/url", nil, map[string]any{"url": "https://shop.example.com"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectUrl(ctx, "pr_1", req, nil)
+			}, map[string]any{"url": "https://shop.example.com"}},
+		{"UpdateProjectIcon", http.MethodPatch, p + "/settings/icon", nil, map[string]any{"fileResource": fileRef},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectIcon(ctx, "pr_1", req, nil)
+			}, map[string]any{"fileResource": fileRef}},
+		{"UpdateProjectLogo", http.MethodPatch, p + "/settings/logo", nil, map[string]any{"fileResource": fileRef},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectLogo(ctx, "pr_1", req, nil)
+			}, map[string]any{"fileResource": fileRef}},
+		{"UpdateProjectMainColor", http.MethodPatch, p + "/settings/main-color", nil, map[string]any{"color": "#1F6FEB"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectMainColor(ctx, "pr_1", req, nil)
+			}, map[string]any{"color": "#1F6FEB"}},
+		{"UpdateProjectAccentColor", http.MethodPatch, p + "/settings/accent-color", nil, map[string]any{"color": "#F78166"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectAccentColor(ctx, "pr_1", req, nil)
+			}, map[string]any{"color": "#F78166"}},
+		// Access (CORS) and regions
+		{"UpdateProjectAllowedOrigins", http.MethodPatch, p + "/settings/origins", nil, map[string]any{"origins": []any{"https://app.example.com"}, "removeAdminPortalOrigin": true},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectAllowedOrigins(ctx, "pr_1", req, nil)
+			}, map[string]any{"origins": []any{"https://app.example.com"}, "removeAdminPortalOrigin": true}},
+		{"UpdateProjectRegions", http.MethodPatch, p + "/settings/regions", nil, map[string]any{"additionalRegions": []any{"nb-us-east"}},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectRegions(ctx, "pr_1", req, nil)
+			}, map[string]any{"additionalRegions": []any{"nb-us-east"}}},
+		// Languages
+		{"UpdateProjectLanguages", http.MethodPatch, p + "/settings/languages", nil, map[string]any{"languages": []any{"en", "lt"}},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectLanguages(ctx, "pr_1", req, nil)
+			}, map[string]any{"languages": []any{"en", "lt"}}},
+		{"UpdateProjectDefaultLanguage", http.MethodPatch, p + "/settings/default-language", nil, map[string]any{"defaultLanguage": "lt"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectDefaultLanguage(ctx, "pr_1", req, nil)
+			}, map[string]any{"defaultLanguage": "lt"}},
+		{"CheckProjectLanguages", http.MethodPost, p + "/settings/languages/check", nil, map[string]any{"languages": []any{"en", "de"}, "defaultLanguage": "en"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.CheckProjectLanguages(ctx, "pr_1", req, nil)
+			}, map[string]any{"languages": []any{"en", "de"}, "defaultLanguage": "en"}},
+		// Admin portal
+		{"SetAdminPortalEnabled", http.MethodPut, p + "/admin-portal/enabled", nil, map[string]any{"enabled": true},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.SetAdminPortalEnabled(ctx, "pr_1", req, nil)
+			}, map[string]any{"enabled": true}},
+		{"GetAdminPortalStructure", http.MethodGet, p + "/admin-portal/structure", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetAdminPortalStructure(ctx, "pr_1", req, nil)
+			}, nil},
+		{"AssignAdminPortalServiceUser", http.MethodPut, p + "/settings/admin-portal/service-user", nil, map[string]any{"serviceUserId": "su_1"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.AssignAdminPortalServiceUser(ctx, "pr_1", req, nil)
+			}, map[string]any{"serviceUserId": "su_1"}},
+		{"UpdateProjectAdminUrl", http.MethodPatch, p + "/settings/admin-url", nil, map[string]any{"url": "https://admin.example.com"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectAdminUrl(ctx, "pr_1", req, nil)
+			}, map[string]any{"url": "https://admin.example.com"}},
+		// Legal + expose switches
+		{"UpdateProjectLegalDocuments", http.MethodPatch, p + "/settings/legal", nil, map[string]any{"termsMarkdown": "# Terms", "privacyMarkdown": "# Privacy"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectLegalDocuments(ctx, "pr_1", req, nil)
+			}, map[string]any{"termsMarkdown": "# Terms", "privacyMarkdown": "# Privacy"}},
+		{"UpdateProjectExposeLegal", http.MethodPatch, p + "/settings/legal/expose", nil, map[string]any{"exposed": true},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectExposeLegal(ctx, "pr_1", req, nil)
+			}, map[string]any{"exposed": true}},
+		{"UpdateProjectExposeAuth", http.MethodPatch, p + "/settings/auth/expose", nil, map[string]any{"exposed": true},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectExposeAuth(ctx, "pr_1", req, nil)
+			}, map[string]any{"exposed": true}},
+		{"UpdateProjectExposeBrand", http.MethodPatch, p + "/settings/brand/expose", nil, map[string]any{"exposed": false},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectExposeBrand(ctx, "pr_1", req, nil)
+			}, map[string]any{"exposed": false}},
+		// AI settings
+		{"GetProjectAiSettings", http.MethodGet, p + "/ai/settings", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetProjectAiSettings(ctx, "pr_1", req, nil)
+			}, nil},
+		{"UpdateProjectAiSettings", http.MethodPut, p + "/ai/settings", nil, map[string]any{"enabled": true, "defaultLlmIntegrationId": "int_llm", "defaultModel": "gpt-4o-mini"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectAiSettings(ctx, "pr_1", req, nil)
+			}, map[string]any{"enabled": true, "defaultLlmIntegrationId": "int_llm", "defaultModel": "gpt-4o-mini"}},
+		{"CreateProjectAiAssistant", http.MethodPost, p + "/ai/assistants", nil, assistant,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.CreateProjectAiAssistant(ctx, "pr_1", req, nil)
+			}, assistant},
+		{"UpdateProjectAiAssistant", http.MethodPut, p + "/ai/assistants/ast_1", nil, assistant,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.UpdateProjectAiAssistant(ctx, "pr_1", "ast_1", req, nil)
+			}, assistant},
+		{"DeleteProjectAiAssistant", http.MethodDelete, p + "/ai/assistants/ast_1", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.DeleteProjectAiAssistant(ctx, "pr_1", "ast_1", req, nil)
+			}, nil},
+		{"GetProjectAiUsage", http.MethodGet, p + "/ai/usage", url.Values{"top": {"5"}}, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetProjectAiUsage(ctx, "pr_1", req, nil)
+			}, map[string]any{"top": 5}},
+		// Termination
+		{"DisableProject", http.MethodPatch, p + "/disable", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.DisableProject(ctx, "pr_1", req, nil)
+			}, nil},
+		{"EnableProject", http.MethodPatch, p + "/enable", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.EnableProject(ctx, "pr_1", req, nil)
+			}, nil},
+		{"DeleteProject", http.MethodDelete, "/v2/account/projects/pr_1", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.DeleteProject(ctx, "pr_1", req, nil)
+			}, nil},
+		// Billing
+		{"GetStripeBillingPortalUrl", http.MethodPost, "/v2/account/stripe/get-portal-url", nil, map[string]any{"subscriptionType": "ManagedService", "returnUrl": "https://cloud.example.com/billing"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetStripeBillingPortalUrl(ctx, req, nil)
+			}, map[string]any{"subscriptionType": "ManagedService", "returnUrl": "https://cloud.example.com/billing"}},
+		{"GetManagedServiceBundles", http.MethodGet, "/v2/account/stripe/bundles", nil, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetManagedServiceBundles(ctx, req, nil)
+			}, nil},
+		{"ChangeManagedServiceBundle", http.MethodPost, "/v2/account/stripe/change-bundle", nil, map[string]any{"bundle": "Growth", "billingPeriod": "Annual"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.ChangeManagedServiceBundle(ctx, req, nil)
+			}, map[string]any{"bundle": "Growth", "billingPeriod": "Annual"}},
+		{"CreateStripeCheckoutSession", http.MethodPost, "/v2/account/stripe/create-checkout-session", nil, map[string]any{"subscriptionType": "ManagedService", "bundle": "Starter", "billingPeriod": "Monthly"},
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.CreateStripeCheckoutSession(ctx, req, nil)
+			}, map[string]any{"subscriptionType": "ManagedService", "bundle": "Starter", "billingPeriod": "Monthly"}},
+
+		// The routes that had no Go method before 2026-11-18: general info
 		{"GetProjectHealth", http.MethodGet, p + "/health", url.Values{"periodDays": {"7"}, "refresh": {"true"}}, nil,
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.GetProjectHealth(ctx, "pr_1", req, nil)
@@ -80,7 +243,7 @@ func accountSettingsCases() []accountSettingsCase {
 				return m.UpdateEnvironmentAdminUrl(ctx, "TEST", req, nil)
 			}, map[string]any{"url": "https://test-admin.example.com"}},
 
-		// AI settings tab
+		// AI settings (new methods)
 		{"UpdateProjectAiKnowledge", http.MethodPut, p + "/ai/knowledge", nil, map[string]any{"embedFiles": true},
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.UpdateProjectAiKnowledge(ctx, "pr_1", req, nil)
@@ -109,7 +272,7 @@ func accountSettingsCases() []accountSettingsCase {
 				return m.CreateAiCreditPackCheckout(ctx, "pr_1", req, nil)
 			}, map[string]any{"pack": "pack-10", "returnUrl": "/projects/shop/settings?tab=AI"}},
 
-		// Billing
+		// Billing (new methods)
 		{"GetAccountUsageBilling", http.MethodGet, "/v2/account/usage-billing", nil, nil,
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.GetAccountUsageBilling(ctx, req, nil)
@@ -270,10 +433,11 @@ func TestEnvironmentsModuleRoutes(t *testing.T) {
 	}
 }
 
-// 18 AccountModule routes; a changed count means a route arrived or left
+// 55 AccountModule routes (58 Hub routes of the section minus the three
+// EnvironmentsModule ones); a changed count means a route arrived or left
 // untested.
 func TestAccountSettingsSurfaceSize(t *testing.T) {
-	const want = 18
+	const want = 55
 	if got := len(accountSettingsCases()); got != want {
 		t.Errorf("account settings endpoint count: got %d want %d", got, want)
 	}
