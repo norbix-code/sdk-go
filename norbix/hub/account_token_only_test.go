@@ -84,6 +84,14 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.ChangeManagedServiceBundle(ctx, body, nil)
 			}},
+		{"CheckBundleDiscount", http.MethodPost, "/v2/account/stripe/discount/check",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.CheckBundleDiscount(ctx, body, nil)
+			}},
+		{"ApplyBundleDiscount", http.MethodPost, "/v2/account/stripe/discount",
+			func(ctx context.Context, h tokenOnlyHub) error {
+				return h.Account.ApplyBundleDiscount(ctx, body, nil)
+			}},
 		{"GetFlexClusters", http.MethodGet, "/v2/account/flex-clusters",
 			func(ctx context.Context, h tokenOnlyHub) error { return h.Account.GetFlexClusters(ctx, body, nil) }},
 		{"UpgradeFlexCluster", http.MethodPost, "/v2/account/flex-clusters/flexClusterId_1/upgrade",

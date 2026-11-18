@@ -5,7 +5,8 @@
 The project endpoints on the Hub, and the `hub.AccountModule` method that
 calls each one: create and read projects, project settings (name, brand,
 CORS, languages, regions, legal documents), the Admin Portal, project AI
-settings, AI service users, the subscription bundles and Flex clusters, and
+settings, AI service users, the subscription bundles, discount codes and
+Flex clusters, and
 the developer MCP endpoint. The two public
 project routes live on the API as `api.PublicModule`.
 
@@ -272,6 +273,8 @@ projects. Tests: `norbix/hub/account_bundles_flex_test.go`.
 | `GetManagedServiceBundles(ctx, req, out)` | `GET` | `/account/stripe/bundles` | project |
 | `CreateStripeCheckoutSession(ctx, req, out)` | `POST` | `/account/stripe/create-checkout-session` | project |
 | `ChangeManagedServiceBundle(ctx, req, out)` | `POST` | `/account/stripe/change-bundle` | project |
+| `CheckBundleDiscount(ctx, req, out)` | `POST` | `/account/stripe/discount/check` | project |
+| `ApplyBundleDiscount(ctx, req, out)` | `POST` | `/account/stripe/discount` | project |
 | `GetStripeBillingPortalUrl(ctx, req, out)` | `POST` | `/account/stripe/get-portal-url` | project |
 | `GetFlexClusters(ctx, req, out)` | `GET` | `/account/flex-clusters` | project |
 | `UpgradeFlexCluster(ctx, flexClusterId, req, out)` | `POST` | `/account/flex-clusters/{flexClusterId}/upgrade` | project |
@@ -296,6 +299,45 @@ err = client.Hub.Account.ChangeManagedServiceBundle(ctx, map[string]any{
     "billingPeriod": dtos.SubscriptionBillingPeriodAnnual,
 }, nil)
 ```
+
+### Discount codes
+
+A discount code takes a share (`PercentOff`) or a fixed sum (`AmountOff`, minor
+units, with `Currency`) off the bundle price, for `Months` months (nil means
+for as long as the subscription runs) or until `EndsAt`
+(`dtos.BundleDiscountDto`). Tests: `norbix/hub/account_bundle_discounts_test.go`.
+
+- `CheckBundleDiscount` checks a code and returns what it gives
+  (`dtos.CheckBundleDiscountResponse`); it changes nothing. Send `code` and,
+  when you know them, `bundle` and `billingPeriod`.
+- `ApplyBundleDiscount` puts a code on the running bundle subscription, so it
+  changes what the account pays. Send `code`. With no subscription the gateway
+  answers `CM-ERRORS-PROJECTS-039`.
+- `CreateStripeCheckoutSession` takes the code as `discountCode`.
+- `GetAccountStatus` returns the discount in force as `Discount`.
+
+A refused code fails with HTTP 400 and `CM-ERRORS-ACCOUNT-027`
+(`*errors.ValidationError`). The reason is in the error's context:
+`not_found`, `not_started`, `expired`, `not_for_bundle`, `monthly_only`,
+`wrong_billing_period`, `already_has_discount` or `already_used`.
+
+```go
+var check dtos.CheckBundleDiscountResponse
+err := client.Hub.Account.CheckBundleDiscount(ctx, map[string]any{
+    "code":          "LAUNCH20",
+    "bundle":        dtos.ManagedServiceBundleGrowth,
+    "billingPeriod": dtos.SubscriptionBillingPeriodMonthly,
+}, &check)
+
+err = client.Hub.Account.ApplyBundleDiscount(ctx, map[string]any{"code": "LAUNCH20"}, nil)
+var nerr *nberrors.Error // github.com/norbix-code/sdk-go/v2/norbix/errors
+if errors.As(err, &nerr) && nerr.Code == "CM-ERRORS-ACCOUNT-027" && len(nerr.Errors) > 0 {
+    reason, _ := nerr.Errors[0].Context["reason"].(string) // e.g. "already_used"
+    _ = reason
+}
+```
+
+### Flex clusters
 
 `GetFlexClusters` lists the account's Norbix-managed Atlas clusters
 (`dtos.FlexClusterDto`): tier (`FLEX`, `M10` … `M40`), status (`Empty`,

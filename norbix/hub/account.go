@@ -116,6 +116,43 @@ func (m *AccountModule) ChangeManagedServiceBundle(ctx context.Context, req map[
 	}, out)
 }
 
+// CheckBundleDiscount performs POST /{version}/account/stripe/discount/check (scope: project).
+//
+// It checks a discount code and says what it gives, without changing
+// anything. Send "code" and, optionally, the "bundle" (Starter, Growth,
+// Scale) and "billingPeriod" (Monthly, Annual) the code is meant for. Decode
+// into dtos.CheckBundleDiscountResponse. A refused code fails with
+// CM-ERRORS-ACCOUNT-027; the reason (not_found, not_started, expired,
+// not_for_bundle, monthly_only, wrong_billing_period, already_has_discount,
+// already_used) is in Errors[0].Context["reason"].
+func (m *AccountModule) CheckBundleDiscount(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/stripe/discount/check",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// ApplyBundleDiscount performs POST /{version}/account/stripe/discount (scope: project).
+//
+// It puts a discount code on the account's running bundle subscription, so
+// it changes what the account pays. Send "code". A refused code fails with
+// CM-ERRORS-ACCOUNT-027 and the reason in Errors[0].Context["reason"];
+// CM-ERRORS-PROJECTS-039 when the account has no subscription.
+func (m *AccountModule) ApplyBundleDiscount(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/stripe/discount",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetFlexClusters performs GET /{version}/account/flex-clusters (scope: project).
 //
 // It lists the account's Norbix-managed Atlas clusters with their databases
