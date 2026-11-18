@@ -8645,83 +8645,6 @@ type ProjectBriefEventWireDto struct {
 	SatisfiedBy       []ProjectBriefSatisfiedByWireDto `json:"satisfiedBy"`
 }
 
-type WorkItemEntryRefWireDto struct {
-	SessionId string `json:"sessionId"`
-	EntryId   string `json:"entryId"`
-}
-
-type WorkItemRunRefWireDto struct {
-	SessionId   string  `json:"sessionId"`
-	PlanEntryId string  `json:"planEntryId"`
-	RunId       *string `json:"runId,omitempty"`
-}
-
-type WorkItemArtifactWireDto struct {
-	ArtifactId  string  `json:"artifactId"`
-	What        string  `json:"what"`
-	Step        int     `json:"step,omitempty"`
-	PlanEntryId *string `json:"planEntryId,omitempty"`
-	Kind        *string `json:"kind,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
-
-type WorkItemMovedOutWireDto struct {
-	Text     string                   `json:"text"`
-	Reason   string                   `json:"reason"`
-	MovedTo  *string                  `json:"movedTo,omitempty"`
-	Source   string                   `json:"source"`
-	EntryRef *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	AtUtc    time.Time                `json:"atUtc,omitempty"`
-}
-
-type WorkItemNeedsYouWireDto struct {
-	Text             string                   `json:"text"`
-	Kind             string                   `json:"kind"`
-	EntryRef         *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	Done             bool                     `json:"done,omitempty"`
-	DoneAtUtc        *time.Time               `json:"doneAtUtc,omitempty"`
-	DoneByUserAuthId *string                  `json:"doneByUserAuthId,omitempty"`
-}
-
-type WorkItemOpenQuestionWireDto struct {
-	EntryRef WorkItemEntryRefWireDto `json:"entryRef"`
-	Blocking bool                    `json:"blocking,omitempty"`
-	Text     string                  `json:"text"`
-	AtUtc    time.Time               `json:"atUtc,omitempty"`
-}
-
-type WorkItemDoneConditionWireDto struct {
-	Condition int    `json:"condition,omitempty"`
-	Holds     bool   `json:"holds,omitempty"`
-	Reason    string `json:"reason"`
-}
-
-type WorkItemWireDto struct {
-	Id                  string                         `json:"id"`
-	ProjectId           *string                        `json:"projectId,omitempty"`
-	Status              string                         `json:"status"`
-	Goal                string                         `json:"goal"`
-	NotInScope          []string                       `json:"notInScope"`
-	ScopeRequirementIds []string                       `json:"scopeRequirementIds"`
-	Difficulty          *int                           `json:"difficulty,omitempty"`
-	DifficultyReason    *string                        `json:"difficultyReason,omitempty"`
-	PlanEntryRefs       []WorkItemEntryRefWireDto      `json:"planEntryRefs"`
-	RunRefs             []WorkItemRunRefWireDto        `json:"runRefs"`
-	Artifacts           []WorkItemArtifactWireDto      `json:"artifacts"`
-	MovedOut            []WorkItemMovedOutWireDto      `json:"movedOut"`
-	NeedsYou            []WorkItemNeedsYouWireDto      `json:"needsYou"`
-	OpenQuestions       []WorkItemOpenQuestionWireDto  `json:"openQuestions"`
-	SessionIds          []string                       `json:"sessionIds"`
-	ParentId            *string                        `json:"parentId,omitempty"`
-	Children            []string                       `json:"children"`
-	SummaryEntryRef     *WorkItemEntryRefWireDto       `json:"summaryEntryRef,omitempty"`
-	CreatedBy           *string                        `json:"createdBy,omitempty"`
-	CreatedAtUtc        time.Time                      `json:"createdAtUtc,omitempty"`
-	UpdatedAtUtc        time.Time                      `json:"updatedAtUtc,omitempty"`
-	DoneVerdict         *string                        `json:"doneVerdict,omitempty"`
-	DoneConditions      []WorkItemDoneConditionWireDto `json:"doneConditions"`
-}
-
 type AiTriggerType string
 
 const (
@@ -11409,25 +11332,6 @@ type GetProjectBriefResponse struct {
 	Snapshot  *ProjectBriefSnapshotWireDto `json:"snapshot,omitempty"`
 	Events    []ProjectBriefEventWireDto   `json:"events,omitempty"`
 	LastSeq   int64                        `json:"lastSeq,omitempty"`
-}
-
-type GetWorkItemsResponse struct {
-	ResponseBase
-	ProjectId *string           `json:"projectId,omitempty"`
-	WorkItems []WorkItemWireDto `json:"workItems,omitempty"`
-}
-
-type GetWorkItemResponse struct {
-	ResponseBase
-	WorkItem *WorkItemWireDto `json:"workItem,omitempty"`
-	Plans    []interface{}    `json:"plans,omitempty"`
-	Steps    []interface{}    `json:"steps,omitempty"`
-}
-
-type ExportWorkItemResponse struct {
-	ResponseBase
-	WorkItemId *string `json:"workItemId,omitempty"`
-	Markdown   *string `json:"markdown,omitempty"`
 }
 
 type GetAiTriggersResponse struct {
@@ -18956,56 +18860,6 @@ type GetProjectBriefRequest struct {
 
 func (GetProjectBriefRequest) CreateResponse() (r GetProjectBriefResponse) { return }
 func (GetProjectBriefRequest) HttpMethod() string                          { return "GET" }
-
-/** @description Lists a project's AI work items: one serious ask each, with its goal, plans, changes, moved-out items, needs-you list and open questions. */
-// @Route("/{version}/projects/{projectId}/ai/work-items", "GET")
-// @Api(Description="Lists a project's AI work items: one serious ask each, with its goal, plans, changes, moved-out items, needs-you list and open questions.")
-type GetWorkItemsRequest struct {
-	CodeMashRequestBase
-	/** @description Filter by status: proposed, active, waiting, done, partly-done or dropped. Omit for all. */
-	// @ApiMember(Description="Filter by status: proposed, active, waiting, done, partly-done or dropped. Omit for all.")
-	Status *string `json:"status,omitempty"`
-}
-
-func (GetWorkItemsRequest) CreateResponse() (r GetWorkItemsResponse) { return }
-func (GetWorkItemsRequest) HttpMethod() string                       { return "GET" }
-
-/** @description Reads one AI work item: the six long-task sections and the definition-of-done verdict. */
-// @Route("/{version}/projects/{projectId}/ai/work-items/{WorkItemId}", "GET")
-// @Api(Description="Reads one AI work item: the six long-task sections and the definition-of-done verdict.")
-type GetWorkItemRequest struct {
-	CodeMashRequestBase
-	WorkItemId string `json:"workItemId"`
-}
-
-func (GetWorkItemRequest) CreateResponse() (r GetWorkItemResponse) { return }
-func (GetWorkItemRequest) HttpMethod() string                      { return "GET" }
-
-/** @description Exports one AI work item as markdown in the long-task shape: Goal, Plan, Changes, Rejected / moved out, Needs you, Open questions. */
-// @Route("/{version}/projects/{projectId}/ai/work-items/{WorkItemId}/export.md", "GET")
-// @Api(Description="Exports one AI work item as markdown in the long-task shape: Goal, Plan, Changes, Rejected / moved out, Needs you, Open questions.")
-type ExportWorkItemRequest struct {
-	CodeMashRequestBase
-	WorkItemId string `json:"workItemId"`
-}
-
-func (ExportWorkItemRequest) CreateResponse() (r ExportWorkItemResponse) { return }
-func (ExportWorkItemRequest) HttpMethod() string                         { return "GET" }
-
-/** @description Ticks one manual line of a work item's "Needs you" checklist — the one write a human makes to a work item directly. */
-// @Route("/{version}/projects/{projectId}/ai/work-items/{WorkItemId}/needs-you/{Index}/done", "POST")
-// @Api(Description="Ticks one manual line of a work item's \"Needs you\" checklist — the one write a human makes to a work item directly.")
-type MarkNeedsYouDoneRequest struct {
-	CodeMashRequestBase
-	WorkItemId string `json:"workItemId"`
-	Index      int    `json:"index,omitempty"`
-	/** @description Set false to un-tick the line. Default true. */
-	// @ApiMember(Description="Set false to un-tick the line. Default true.")
-	Done *bool `json:"done,omitempty"`
-}
-
-func (MarkNeedsYouDoneRequest) CreateResponse() (r IdResponse) { return }
-func (MarkNeedsYouDoneRequest) HttpMethod() string             { return "POST" }
 
 /** @description Save a trigger on an AI project event */
 // @Route("/{version}/ai/triggers", "POST")

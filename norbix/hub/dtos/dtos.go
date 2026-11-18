@@ -7419,91 +7419,6 @@ type ProjectBriefEventWireDto struct {
 	SatisfiedBy       []*ProjectBriefSatisfiedByWireDto `json:"satisfiedBy,omitempty"`
 }
 
-// WorkItemEntryRefWireDto DTO.
-type WorkItemEntryRefWireDto struct {
-	SessionId string `json:"sessionId,omitempty"`
-	EntryId   string `json:"entryId,omitempty"`
-}
-
-// WorkItemRunRefWireDto DTO.
-type WorkItemRunRefWireDto struct {
-	SessionId   string `json:"sessionId,omitempty"`
-	PlanEntryId string `json:"planEntryId,omitempty"`
-	RunId       string `json:"runId,omitempty"`
-}
-
-// WorkItemArtifactWireDto DTO.
-type WorkItemArtifactWireDto struct {
-	ArtifactId  string  `json:"artifactId,omitempty"`
-	What        string  `json:"what,omitempty"`
-	Step        float64 `json:"step,omitempty"`
-	PlanEntryId string  `json:"planEntryId,omitempty"`
-	Kind        string  `json:"kind,omitempty"`
-	Name        string  `json:"name,omitempty"`
-}
-
-// WorkItemMovedOutWireDto DTO.
-type WorkItemMovedOutWireDto struct {
-	Text     string                   `json:"text,omitempty"`
-	Reason   string                   `json:"reason,omitempty"`
-	MovedTo  string                   `json:"movedTo,omitempty"`
-	Source   string                   `json:"source,omitempty"`
-	EntryRef *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	AtUtc    string                   `json:"atUtc,omitempty"`
-}
-
-// WorkItemNeedsYouWireDto DTO.
-type WorkItemNeedsYouWireDto struct {
-	Text             string                   `json:"text,omitempty"`
-	Kind             string                   `json:"kind,omitempty"`
-	EntryRef         *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	Done             bool                     `json:"done"`
-	DoneAtUtc        string                   `json:"doneAtUtc,omitempty"`
-	DoneByUserAuthId string                   `json:"doneByUserAuthId,omitempty"`
-}
-
-// WorkItemOpenQuestionWireDto DTO.
-type WorkItemOpenQuestionWireDto struct {
-	EntryRef *WorkItemEntryRefWireDto `json:"entryRef,omitempty"`
-	Blocking bool                     `json:"blocking"`
-	Text     string                   `json:"text,omitempty"`
-	AtUtc    string                   `json:"atUtc,omitempty"`
-}
-
-// WorkItemDoneConditionWireDto DTO.
-type WorkItemDoneConditionWireDto struct {
-	Condition float64 `json:"condition,omitempty"`
-	Holds     bool    `json:"holds"`
-	Reason    string  `json:"reason,omitempty"`
-}
-
-// WorkItemWireDto DTO.
-type WorkItemWireDto struct {
-	Id                  string                          `json:"id,omitempty"`
-	ProjectId           string                          `json:"projectId,omitempty"`
-	Status              string                          `json:"status,omitempty"`
-	Goal                string                          `json:"goal,omitempty"`
-	NotInScope          []string                        `json:"notInScope,omitempty"`
-	ScopeRequirementIds []string                        `json:"scopeRequirementIds,omitempty"`
-	Difficulty          *float64                        `json:"difficulty,omitempty"`
-	DifficultyReason    string                          `json:"difficultyReason,omitempty"`
-	PlanEntryRefs       []*WorkItemEntryRefWireDto      `json:"planEntryRefs,omitempty"`
-	RunRefs             []*WorkItemRunRefWireDto        `json:"runRefs,omitempty"`
-	Artifacts           []*WorkItemArtifactWireDto      `json:"artifacts,omitempty"`
-	MovedOut            []*WorkItemMovedOutWireDto      `json:"movedOut,omitempty"`
-	NeedsYou            []*WorkItemNeedsYouWireDto      `json:"needsYou,omitempty"`
-	OpenQuestions       []*WorkItemOpenQuestionWireDto  `json:"openQuestions,omitempty"`
-	SessionIds          []string                        `json:"sessionIds,omitempty"`
-	ParentId            string                          `json:"parentId,omitempty"`
-	Children            []string                        `json:"children,omitempty"`
-	SummaryEntryRef     *WorkItemEntryRefWireDto        `json:"summaryEntryRef,omitempty"`
-	CreatedBy           string                          `json:"createdBy,omitempty"`
-	CreatedAtUtc        string                          `json:"createdAtUtc,omitempty"`
-	UpdatedAtUtc        string                          `json:"updatedAtUtc,omitempty"`
-	DoneVerdict         string                          `json:"doneVerdict,omitempty"`
-	DoneConditions      []*WorkItemDoneConditionWireDto `json:"doneConditions,omitempty"`
-}
-
 // AiTriggerProjectionList DTO.
 type AiTriggerProjectionList struct {
 	TriggerProjectionList
@@ -9763,28 +9678,6 @@ type GetProjectBriefResponse struct {
 	Snapshot  *ProjectBriefSnapshotWireDto `json:"snapshot,omitempty"`
 	Events    []*ProjectBriefEventWireDto  `json:"events,omitempty"`
 	LastSeq   float64                      `json:"lastSeq,omitempty"`
-}
-
-// GetWorkItemsResponse DTO.
-type GetWorkItemsResponse struct {
-	ResponseBase
-	ProjectId string             `json:"projectId,omitempty"`
-	WorkItems []*WorkItemWireDto `json:"workItems,omitempty"`
-}
-
-// GetWorkItemResponse DTO.
-type GetWorkItemResponse struct {
-	ResponseBase
-	WorkItem *WorkItemWireDto      `json:"workItem,omitempty"`
-	Plans    []*AiChatEntryWireDto `json:"plans,omitempty"`
-	Steps    []*AiChatEntryWireDto `json:"steps,omitempty"`
-}
-
-// ExportWorkItemResponse DTO.
-type ExportWorkItemResponse struct {
-	ResponseBase
-	WorkItemId string `json:"workItemId,omitempty"`
-	Markdown   string `json:"markdown,omitempty"`
 }
 
 // GetAiTriggersResponse DTO.
@@ -13818,32 +13711,6 @@ type McpRequest struct {
 type GetProjectBriefRequest struct {
 	CodeMashRequestBase
 	SinceSeq *float64 `json:"sinceSeq,omitempty"`
-}
-
-// GetWorkItemsRequest DTO.
-type GetWorkItemsRequest struct {
-	CodeMashRequestBase
-	Status string `json:"status,omitempty"`
-}
-
-// GetWorkItemRequest DTO.
-type GetWorkItemRequest struct {
-	CodeMashRequestBase
-	WorkItemId string `json:"workItemId,omitempty"`
-}
-
-// ExportWorkItemRequest DTO.
-type ExportWorkItemRequest struct {
-	CodeMashRequestBase
-	WorkItemId string `json:"workItemId,omitempty"`
-}
-
-// MarkNeedsYouDoneRequest DTO.
-type MarkNeedsYouDoneRequest struct {
-	CodeMashRequestBase
-	WorkItemId string  `json:"workItemId,omitempty"`
-	Index      float64 `json:"index,omitempty"`
-	Done       *bool   `json:"done,omitempty"`
 }
 
 // SaveAiProjectTrigger DTO.
