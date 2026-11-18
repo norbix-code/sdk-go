@@ -153,6 +153,55 @@ func (m *AccountModule) ApplyBundleDiscount(ctx context.Context, req map[string]
 	}, out)
 }
 
+// GetTrialAvailability performs GET /{version}/account/trial-availability (scope: project).
+//
+// It asks whether a free Managed Service trial can start in a region now,
+// before opening a checkout. Send "region" (it goes in the query string).
+// Decode into dtos.TrialAvailabilityResponse. LimitsOn false: the
+// installation has no trial limits, start the trial as before. TrialsOpen
+// false: the region's trials are full; offer buying without a trial
+// (checkout with "withoutTrial": true) or, when WaitlistOpen is true, the
+// waiting list. OnWaitlist: the owner email is already on the list. Refusal:
+// why this account's trial was refused after checkout (CardAlreadyHadTrial),
+// or empty. A trial checkout in a full region fails with
+// CM-ERRORS-ACCOUNT-040; an invitation token from the waiting list goes in
+// the checkout's "trialInvite" (expired or someone else's:
+// CM-ERRORS-ACCOUNT-042).
+func (m *AccountModule) GetTrialAvailability(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/trial-availability",
+		Method:     "GET",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// JoinTrialWaitlist performs POST /{version}/account/trial-waitlist (scope: project).
+//
+// It puts the account owner's email on the trial waiting list for a region.
+// Send "region", "consent" (must be true) and "consentVersion" (the consent
+// text shown). When a slot frees, Norbix emails an invitation link valid a
+// few days. Decode into dtos.TrialWaitlistResponse: Status is added,
+// alreadyListed or alreadyCustomer (an email that already had a trial or
+// pays is never added); Message can be shown as is. Errors:
+// CM-ERRORS-ACCOUNT-044 list switched off, CM-ERRORS-ACCOUNT-043 unknown
+// region, a validation error when consent is not true.
+//
+// The website-only intake route (/account/trial-waitlist/intake, shared key
+// header) has no method on purpose.
+func (m *AccountModule) JoinTrialWaitlist(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/trial-waitlist",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetFlexClusters performs GET /{version}/account/flex-clusters (scope: project).
 //
 // It lists the account's Norbix-managed Atlas clusters with their databases
