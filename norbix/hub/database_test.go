@@ -141,9 +141,9 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.UpdateDatabaseSchemaDraft(ctx, "id_1", map[string]any{"dataSchema": "{\"type\":\"object\"}"}, nil)
 			}},
-		{"UpdateDatabaseSchemaSettings", http.MethodPut, "/v2/database/schemas/id_1/settings", nil, map[string]any{"settings": map[string]any{"translatable": true}},
+		{"UpdateDatabaseSchemaSettings", http.MethodPut, "/v2/database/schemas/id_1/settings", nil, map[string]any{"settings": map[string]any{"softDelete": true, "hasRecordOwner": true, "description": "Shop orders", "endUserOwnRecords": true}},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.UpdateDatabaseSchemaSettings(ctx, "id_1", map[string]any{"settings": map[string]any{"translatable": true}}, nil)
+				return m.UpdateDatabaseSchemaSettings(ctx, "id_1", map[string]any{"settings": map[string]any{"softDelete": true, "hasRecordOwner": true, "description": "Shop orders", "endUserOwnRecords": true}}, nil)
 			}},
 		{"DeleteDatabaseIntegration", http.MethodDelete, "/v2/database/integrations/id_1", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -165,25 +165,25 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.GetDatabaseIntegrations(ctx, nil, nil)
 			}},
-		{"SaveDatabaseIntegration", http.MethodPost, "/v2/database/integrations", nil, map[string]any{"integration": map[string]any{"name": "Main"}},
+		{"SaveDatabaseIntegration", http.MethodPost, "/v2/database/integrations", nil, map[string]any{"integration": map[string]any{"provider": "MongoDbConnectionString", "integrationName": "Main", "isEnabled": true, "connectionString": "mongodb://db.example.test/shop"}},
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.SaveDatabaseIntegration(ctx, map[string]any{"integration": map[string]any{"name": "Main"}}, nil)
+				return m.SaveDatabaseIntegration(ctx, map[string]any{"integration": map[string]any{"provider": "MongoDbConnectionString", "integrationName": "Main", "isEnabled": true, "connectionString": "mongodb://db.example.test/shop"}}, nil)
 			}},
 		{"SetDatabaseIntegrationAsDefault", http.MethodPut, "/v2/database/integrations/id_1/default", nil, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.SetDatabaseIntegrationAsDefault(ctx, "id_1", nil, nil)
 			}},
-		{"DeleteDatabaseAggregate", http.MethodDelete, "/v2/database/aggregates/id_1", nil, nil,
+		{"DeleteDatabaseAggregate", http.MethodDelete, "/v2/database/aggregates/id_1", url.Values{"schemaId": {"sch_1"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.DeleteDatabaseAggregate(ctx, "id_1", nil, nil)
+				return m.DeleteDatabaseAggregate(ctx, "id_1", map[string]any{"schemaId": "sch_1"}, nil)
 			}},
-		{"GetDatabaseAggregate", http.MethodGet, "/v2/database/aggregates/id_1", nil, nil,
+		{"GetDatabaseAggregate", http.MethodGet, "/v2/database/aggregates/id_1", url.Values{"schemaId": {"sch_1"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.GetDatabaseAggregate(ctx, "id_1", nil, nil)
+				return m.GetDatabaseAggregate(ctx, "id_1", map[string]any{"schemaId": "sch_1"}, nil)
 			}},
-		{"GetDatabaseAggregates", http.MethodGet, "/v2/database/aggregates", nil, nil,
+		{"GetDatabaseAggregates", http.MethodGet, "/v2/database/aggregates", url.Values{"schemaId": {"sch_1"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
-				return m.GetDatabaseAggregates(ctx, nil, nil)
+				return m.GetDatabaseAggregates(ctx, map[string]any{"schemaId": "sch_1"}, nil)
 			}},
 		{"SaveDatabaseAggregate", http.MethodPost, "/v2/database/aggregates", nil, map[string]any{"displayName": "Top products", "schemaId": "sch_1", "pipeline": "[]"},
 			func(ctx context.Context, m *DatabaseModule) error {
@@ -293,6 +293,10 @@ func hubDatabaseCases() []hubDatabaseCase {
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.UpdateDatabaseSchemaListSettings(ctx, "id_1", map[string]any{"settings": map[string]any{"columns": []any{map[string]any{"field": "title"}}, "defaultSort": map[string]any{"field": "title"}}}, nil)
 			}},
+		{"EndUserOwnRecordsReport", http.MethodPost, "/v2/database/schemas/end-user-own-records", nil, map[string]any{"dryRun": true, "enable": []any{"orders"}},
+			func(ctx context.Context, m *DatabaseModule) error {
+				return m.EndUserOwnRecordsReport(ctx, map[string]any{"dryRun": true, "enable": []any{"orders"}}, nil)
+			}},
 		{"GetDatabaseTaxonomyTree", http.MethodGet, "/v2/database/taxonomies/tree", url.Values{"includeTerms": {"true"}}, nil,
 			func(ctx context.Context, m *DatabaseModule) error {
 				return m.GetDatabaseTaxonomyTree(ctx, map[string]any{"includeTerms": true}, nil)
@@ -383,12 +387,12 @@ func TestHubDatabaseEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The HUB database surface is 67 routes (imports excluded; Database is
+// The HUB database surface is 68 routes (imports excluded; Database is
 // always on, so there is no enable or disable route). If the gateway
 // grows one and a method is added, this count changes, so a new endpoint
 // cannot arrive untested.
 func TestHubDatabaseSurfaceSize(t *testing.T) {
-	const want = 67
+	const want = 68
 	if got := len(hubDatabaseCases()); got != want {
 		t.Errorf("database endpoint count: got %d want %d", got, want)
 	}

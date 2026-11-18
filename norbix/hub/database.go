@@ -1084,6 +1084,24 @@ func (m *DatabaseModule) UpdateDatabaseSchemaListSettings(ctx context.Context, i
 	}, out)
 }
 
+// EndUserOwnRecordsReport performs POST /{version}/database/schemas/end-user-own-records (scope: project).
+//
+// It lists every schema of the request's environment with its "Signed-in users
+// can create their own records" switch (endUserOwnRecords) and hasRecordOwner
+// (dtos.EndUserOwnRecordsReportResponse). "dryRun" left out = true (only list);
+// with "dryRun": false it turns the switch on for exactly the schema names in
+// "enable" and nothing else.
+func (m *DatabaseModule) EndUserOwnRecordsReport(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/database/schemas/end-user-own-records",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetDatabaseTaxonomyTree performs GET /{version}/database/taxonomies/tree (scope: project).
 //
 // It returns every taxonomy as a tree ("includeTerms" adds the terms).
