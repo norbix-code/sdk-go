@@ -112,9 +112,6 @@ All are `PATCH /account/projects/{projectId}/settings/<segment>`, scope project.
 | `UpdateProjectAllowedOrigins` | `origins` (CORS) |
 | `UpdateProjectAdminUrl` | `admin-url` |
 | `UpdateProjectLegalDocuments` | `legal` |
-| `UpdateProjectExposeLegal` | `legal/expose` |
-| `UpdateProjectExposeBrand` | `brand/expose` |
-| `UpdateProjectExposeAuth` | `auth/expose` |
 
 ### Check template languages
 
@@ -146,15 +143,14 @@ err := client.Hub.Account.UpdateProjectAllowedOrigins(ctx, "proj_123", map[strin
 
 ### Legal documents
 
-Save the Terms and Privacy Policy as Markdown, then make them public. Once
-exposed, anyone can read them without signing in:
+Save the Terms and Privacy Policy as Markdown. A saved document is public:
+anyone can read it without signing in:
 
 ```go
 _ = client.Hub.Account.UpdateProjectLegalDocuments(ctx, "proj_123", map[string]any{
     "termsMarkdown":   "# Terms\n...",
     "privacyMarkdown": "# Privacy\n...",
 }, nil)
-_ = client.Hub.Account.UpdateProjectExposeLegal(ctx, "proj_123", map[string]any{"exposed": true}, nil)
 
 var terms map[string]any
 _ = client.API.Public.GetPublicProjectLegal(ctx, "proj_123", "terms", &terms)
@@ -162,16 +158,8 @@ _ = client.API.Public.GetPublicProjectLegal(ctx, "proj_123", "terms", &terms)
 
 ### What the public Admin Portal config shows
 
-`api.PublicModule.GetPublicProjectConfig` (no sign-in) returns the brand by
-default and hides the sign-in methods and password policy. Two switches change
-that:
-
-```go
-// Hide the brand (name, colors, logo, icon) from the public config.
-_ = client.Hub.Account.UpdateProjectExposeBrand(ctx, "proj_123", map[string]any{"exposed": false}, nil)
-// Show the sign-in methods (email / phone / username) and the password policy.
-_ = client.Hub.Account.UpdateProjectExposeAuth(ctx, "proj_123", map[string]any{"exposed": true}, nil)
-```
+`api.PublicModule.GetPublicProjectConfig` (no sign-in) always returns the brand
+(name, colors, logo, icon), the sign-in methods and the password policy.
 
 ## Admin Portal
 

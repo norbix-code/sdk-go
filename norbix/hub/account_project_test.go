@@ -117,18 +117,6 @@ func projectCases() []projectCase {
 			func(ctx context.Context, m *AccountModule) error {
 				return m.UpdateProjectLegalDocuments(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectExposeLegal", http.MethodPatch, "/v2/account/projects/projectId_1/settings/legal/expose", "project",
-			func(ctx context.Context, m *AccountModule) error {
-				return m.UpdateProjectExposeLegal(ctx, "projectId_1", body, nil)
-			}},
-		{"UpdateProjectExposeBrand", http.MethodPatch, "/v2/account/projects/projectId_1/settings/brand/expose", "project",
-			func(ctx context.Context, m *AccountModule) error {
-				return m.UpdateProjectExposeBrand(ctx, "projectId_1", body, nil)
-			}},
-		{"UpdateProjectExposeAuth", http.MethodPatch, "/v2/account/projects/projectId_1/settings/auth/expose", "project",
-			func(ctx context.Context, m *AccountModule) error {
-				return m.UpdateProjectExposeAuth(ctx, "projectId_1", body, nil)
-			}},
 		{"AssignAdminPortalServiceUser", http.MethodPut, "/v2/account/projects/projectId_1/settings/admin-portal/service-user", "project",
 			func(ctx context.Context, m *AccountModule) error {
 				return m.AssignAdminPortalServiceUser(ctx, "projectId_1", body, nil)
@@ -291,10 +279,10 @@ func TestMcpSendsSessionHeaderAndJsonRpcBody(t *testing.T) {
 	}
 }
 
-// The Project-module surface tested here is 34 routes; a changed count
+// The Project-module surface tested here is 31 routes; a changed count
 // means a route arrived or left untested.
 func TestProjectSurfaceSize(t *testing.T) {
-	const want = 34
+	const want = 31
 	if got := len(projectCases()); got != want {
 		t.Errorf("project endpoint count: got %d want %d", got, want)
 	}

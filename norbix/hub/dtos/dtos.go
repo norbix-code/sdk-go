@@ -5654,11 +5654,8 @@ type ProjectDto struct {
 	EmailClickTracking            bool                                      `json:"emailClickTracking"`
 	EnvironmentAdminUrls          []*ProjectEnvironmentAdminUrlDto          `json:"environmentAdminUrls,omitempty"`
 	DefaultExecutionIdentities    []*ProjectEnvironmentExecutionIdentityDto `json:"defaultExecutionIdentities,omitempty"`
-	ExposeBrandToAdminPortal      bool                                      `json:"exposeBrandToAdminPortal"`
-	ExposeAuthToAdminPortal       bool                                      `json:"exposeAuthToAdminPortal"`
 	AdminPortalServiceUserId      string                                    `json:"adminPortalServiceUserId,omitempty"`
 	MembershipAuthenticationFlows []*AuthenticationFlowSummaryDto           `json:"membershipAuthenticationFlows,omitempty"`
-	ExposeLegalToAdminPortal      bool                                      `json:"exposeLegalToAdminPortal"`
 	AiChat                        *ProjectAiSettingsDto                     `json:"aiChat,omitempty"`
 	LegalTermsMarkdown            string                                    `json:"legalTermsMarkdown,omitempty"`
 	LegalPrivacyMarkdown          string                                    `json:"legalPrivacyMarkdown,omitempty"`
@@ -11268,18 +11265,6 @@ type GetProjectTokens struct {
 	MembershipTriggerNewUserId string `json:"membershipTriggerNewUserId,omitempty"`
 }
 
-// UpdateProjectExposeBrand DTO.
-type UpdateProjectExposeBrand struct {
-	CodeMashRequestBase
-	Exposed bool `json:"exposed"`
-}
-
-// UpdateProjectExposeAuth DTO.
-type UpdateProjectExposeAuth struct {
-	CodeMashRequestBase
-	Exposed bool `json:"exposed"`
-}
-
 // AssignAdminPortalServiceUserRequest DTO.
 type AssignAdminPortalServiceUserRequest struct {
 	CodeMashRequestBase
@@ -11440,12 +11425,6 @@ type UpdateProjectLegalDocuments struct {
 	CodeMashRequestBase
 	TermsMarkdown   string `json:"termsMarkdown,omitempty"`
 	PrivacyMarkdown string `json:"privacyMarkdown,omitempty"`
-}
-
-// UpdateProjectExposeLegal DTO.
-type UpdateProjectExposeLegal struct {
-	CodeMashRequestBase
-	Exposed bool `json:"exposed"`
 }
 
 // UpdateProjectUrl DTO.

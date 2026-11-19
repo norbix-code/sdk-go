@@ -210,18 +210,6 @@ func tokenOnlyCases() []tokenOnlyCase {
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.UpdateProjectLegalDocuments(ctx, "projectId_1", body, nil)
 			}},
-		{"UpdateProjectExposeLegal", http.MethodPatch, "/v2/account/projects/projectId_1/settings/legal/expose",
-			func(ctx context.Context, h tokenOnlyHub) error {
-				return h.Account.UpdateProjectExposeLegal(ctx, "projectId_1", body, nil)
-			}},
-		{"UpdateProjectExposeBrand", http.MethodPatch, "/v2/account/projects/projectId_1/settings/brand/expose",
-			func(ctx context.Context, h tokenOnlyHub) error {
-				return h.Account.UpdateProjectExposeBrand(ctx, "projectId_1", body, nil)
-			}},
-		{"UpdateProjectExposeAuth", http.MethodPatch, "/v2/account/projects/projectId_1/settings/auth/expose",
-			func(ctx context.Context, h tokenOnlyHub) error {
-				return h.Account.UpdateProjectExposeAuth(ctx, "projectId_1", body, nil)
-			}},
 		{"AssignAdminPortalServiceUser", http.MethodPut, "/v2/account/projects/projectId_1/settings/admin-portal/service-user",
 			func(ctx context.Context, h tokenOnlyHub) error {
 				return h.Account.AssignAdminPortalServiceUser(ctx, "projectId_1", body, nil)

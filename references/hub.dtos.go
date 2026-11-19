@@ -1,7 +1,7 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-11-19 15:03:59
+Date: 2026-11-19 15:30:30
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5001
@@ -6266,15 +6266,9 @@ type ProjectDto struct {
 	// @DataMember
 	DefaultExecutionIdentities []ProjectEnvironmentExecutionIdentityDto `json:"defaultExecutionIdentities,omitempty"`
 	// @DataMember
-	ExposeBrandToAdminPortal bool `json:"exposeBrandToAdminPortal,omitempty"`
-	// @DataMember
-	ExposeAuthToAdminPortal bool `json:"exposeAuthToAdminPortal,omitempty"`
-	// @DataMember
 	AdminPortalServiceUserId *string `json:"adminPortalServiceUserId,omitempty"`
 	// @DataMember
 	MembershipAuthenticationFlows []AuthenticationFlowSummaryDto `json:"membershipAuthenticationFlows,omitempty"`
-	// @DataMember
-	ExposeLegalToAdminPortal bool `json:"exposeLegalToAdminPortal,omitempty"`
 	// @DataMember
 	AiChat *ProjectAiSettingsDto `json:"aiChat,omitempty"`
 	// @DataMember
@@ -13654,32 +13648,6 @@ type GetProjectTokens struct {
 func (GetProjectTokens) CreateResponse() (r GetProjectTokensResponse) { return }
 func (GetProjectTokens) HttpMethod() string                           { return "GET" }
 
-/** @description Sets whether the project's brand is returned by the public Admin Portal config */
-// @Route("/{version}/account/projects/{projectId}/settings/brand/expose", "PATCH")
-// @Api(Description="Sets whether the project's brand is returned by the public Admin Portal config")
-type UpdateProjectExposeBrand struct {
-	CodeMashRequestBase
-	/** @description True to return the brand in the public Admin Portal config, false to hide it. */
-	// @ApiMember(Description="True to return the brand in the public Admin Portal config, false to hide it.")
-	Exposed bool `json:"exposed,omitempty"`
-}
-
-func (UpdateProjectExposeBrand) CreateResponse() (r EmptyResponse) { return }
-func (UpdateProjectExposeBrand) HttpMethod() string                { return "PATCH" }
-
-/** @description Sets whether the project's sign-in methods and password policy are returned by the public Admin Portal config */
-// @Route("/{version}/account/projects/{projectId}/settings/auth/expose", "PATCH")
-// @Api(Description="Sets whether the project's sign-in methods and password policy are returned by the public Admin Portal config")
-type UpdateProjectExposeAuth struct {
-	CodeMashRequestBase
-	/** @description True to return sign-in methods and password policy in the public Admin Portal config, false to hide them. */
-	// @ApiMember(Description="True to return sign-in methods and password policy in the public Admin Portal config, false to hide them.")
-	Exposed bool `json:"exposed,omitempty"`
-}
-
-func (UpdateProjectExposeAuth) CreateResponse() (r EmptyResponse) { return }
-func (UpdateProjectExposeAuth) HttpMethod() string                { return "PATCH" }
-
 /** @description Assigns the project's Admin Portal service user */
 // @Route("/{version}/account/projects/{projectId}/settings/admin-portal/service-user", "PUT")
 // @Api(Description="Assigns the project's Admin Portal service user")
@@ -14031,19 +13999,6 @@ type UpdateProjectLegalDocuments struct {
 
 func (UpdateProjectLegalDocuments) CreateResponse() (r EmptyResponse) { return }
 func (UpdateProjectLegalDocuments) HttpMethod() string                { return "PATCH" }
-
-/** @description Sets whether the project's legal documents are publicly readable via the Admin Portal */
-// @Route("/{version}/account/projects/{projectId}/settings/legal/expose", "PATCH")
-// @Api(Description="Sets whether the project's legal documents are publicly readable via the Admin Portal")
-type UpdateProjectExposeLegal struct {
-	CodeMashRequestBase
-	/** @description True to make the legal documents publicly readable via the Admin Portal, false to hide them. */
-	// @ApiMember(Description="True to make the legal documents publicly readable via the Admin Portal, false to hide them.")
-	Exposed bool `json:"exposed,omitempty"`
-}
-
-func (UpdateProjectExposeLegal) CreateResponse() (r EmptyResponse) { return }
-func (UpdateProjectExposeLegal) HttpMethod() string                { return "PATCH" }
 
 /** @description Updates project marketing url */
 // @Route("/{version}/account/projects/{projectId}/settings/url", "PATCH")
