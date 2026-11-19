@@ -1,7 +1,7 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-11-19 15:03:59
+Date: 2026-11-19 15:30:30
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5002

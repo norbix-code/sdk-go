@@ -28,8 +28,8 @@ func (m *PublicModule) GetPublicProjectConfig(ctx context.Context, projectId str
 }
 
 // GetPublicProjectLegal performs GET /{version}/public/projects/{ProjectId}/legal/{Kind} (scope: unauthenticated).
-// kind is "terms" or "privacy". The document is there only when the project
-// exposes it (hub.AccountModule.UpdateProjectExposeLegal).
+// kind is "terms" or "privacy". The document is there once the project has
+// saved it (hub.AccountModule.UpdateProjectLegalDocuments).
 func (m *PublicModule) GetPublicProjectLegal(ctx context.Context, projectId string, kind string, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
@@ -42,8 +42,8 @@ func (m *PublicModule) GetPublicProjectLegal(ctx context.Context, projectId stri
 
 // GetPublicProjectBrandAsset performs GET /{version}/public/projects/{ProjectId}/brand/{Kind} (scope: unauthenticated).
 // kind is "logo" or "icon". The answer is the image itself, not a document:
-// pass a *[]byte as out. It is there only while the project exposes its brand
-// (hub.AccountModule.UpdateProjectExposeBrand); every miss is a plain 404. The
+// pass a *[]byte as out. It is there once the project has a logo / icon;
+// every miss is a plain 404. The
 // address is the branding.logoUrl / iconUrl that GetPublicProjectConfig hands
 // out. A logo kept in a cloud bucket answers a 302 redirect to a signed link,
 // which the HTTP client follows.

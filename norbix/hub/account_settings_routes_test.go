@@ -129,18 +129,6 @@ func accountSettingsCases() []accountSettingsCase {
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.UpdateProjectLegalDocuments(ctx, "pr_1", req, nil)
 			}, map[string]any{"termsMarkdown": "# Terms", "privacyMarkdown": "# Privacy"}},
-		{"UpdateProjectExposeLegal", http.MethodPatch, p + "/settings/legal/expose", nil, map[string]any{"exposed": true},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.UpdateProjectExposeLegal(ctx, "pr_1", req, nil)
-			}, map[string]any{"exposed": true}},
-		{"UpdateProjectExposeAuth", http.MethodPatch, p + "/settings/auth/expose", nil, map[string]any{"exposed": true},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.UpdateProjectExposeAuth(ctx, "pr_1", req, nil)
-			}, map[string]any{"exposed": true}},
-		{"UpdateProjectExposeBrand", http.MethodPatch, p + "/settings/brand/expose", nil, map[string]any{"exposed": false},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.UpdateProjectExposeBrand(ctx, "pr_1", req, nil)
-			}, map[string]any{"exposed": false}},
 		// AI settings
 		{"GetProjectAiSettings", http.MethodGet, p + "/ai/settings", nil, nil,
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
@@ -429,11 +417,11 @@ func TestEnvironmentsModuleRoutes(t *testing.T) {
 	}
 }
 
-// 54 AccountModule routes (57 Hub routes of the section minus the three
+// 51 AccountModule routes (54 Hub routes of the section minus the three
 // EnvironmentsModule ones); a changed count means a route arrived or left
 // untested.
 func TestAccountSettingsSurfaceSize(t *testing.T) {
-	const want = 54
+	const want = 51
 	if got := len(accountSettingsCases()); got != want {
 		t.Errorf("account settings endpoint count: got %d want %d", got, want)
 	}
