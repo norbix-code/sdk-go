@@ -1971,7 +1971,6 @@ type EchoResponse struct {
 	ApiUrl                      string                  `json:"apiUrl,omitempty"`
 	ApiVersion                  string                  `json:"apiVersion,omitempty"`
 	HubVersion                  string                  `json:"hubVersion,omitempty"`
-	AdminUrlTemplate            string                  `json:"adminUrlTemplate,omitempty"`
 	ApiUrlTemplate              string                  `json:"apiUrlTemplate,omitempty"`
 	EmailServiceConfigured      bool                    `json:"emailServiceConfigured"`
 	RootBootstrapPasswordSource string                  `json:"rootBootstrapPasswordSource,omitempty"`
@@ -1984,11 +1983,10 @@ type EchoResponse struct {
 
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
-	DisplayName        string           `json:"displayName,omitempty"`
-	AdminPortalEnabled bool             `json:"adminPortalEnabled"`
-	Branding           *PublicBrandDto  `json:"branding,omitempty"`
-	Auth               *PublicAuthDto   `json:"auth,omitempty"`
-	AiChat             *PublicAiChatDto `json:"aiChat,omitempty"`
+	DisplayName string           `json:"displayName,omitempty"`
+	Branding    *PublicBrandDto  `json:"branding,omitempty"`
+	Auth        *PublicAuthDto   `json:"auth,omitempty"`
+	AiChat      *PublicAiChatDto `json:"aiChat,omitempty"`
 }
 
 // PublicLegalDocumentDto DTO.

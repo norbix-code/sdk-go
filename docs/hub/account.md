@@ -177,7 +177,6 @@ _ = client.Hub.Account.UpdateProjectExposeAuth(ctx, "proj_123", map[string]any{"
 
 | method | verb | path | scope |
 |---|---|---|---|
-| `SetAdminPortalEnabled(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/admin-portal/enabled` | project |
 | `GetAdminPortalStructure(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/admin-portal/structure` | project |
 | `AssignAdminPortalServiceUser(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/settings/admin-portal/service-user` | project |
 | `UpdateProjectAdminUrl(ctx, projectId, req, out)` | `PATCH` | `/account/projects/{projectId}/settings/admin-url` | project |

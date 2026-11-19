@@ -799,21 +799,6 @@ func (m *AccountModule) GetProjectAiUsage(ctx context.Context, projectId string,
 	}, out)
 }
 
-// SetAdminPortalEnabled performs PUT /{version}/account/projects/{projectId}/admin-portal/enabled (scope: project).
-func (m *AccountModule) SetAdminPortalEnabled(ctx context.Context, projectId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"projectId": projectId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/account/projects/{projectId}/admin-portal/enabled",
-		Method:     "PUT",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
 // ---------------------------------------------------------------------------
 // Project settings and Admin Portal (project audit, item E1). Hand-added.
 // ---------------------------------------------------------------------------

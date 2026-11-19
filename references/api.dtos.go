@@ -1,7 +1,7 @@
 //go:build ignore
 
 /* Options:
-Date: 2026-11-16 09:03:24
+Date: 2026-11-19 15:03:59
 Version: 10.20
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5002
@@ -1368,6 +1368,14 @@ type WorkflowWaitSlotDto struct {
 	Tag *string `json:"tag,omitempty"`
 	// @DataMember
 	TeamRole *bool `json:"teamRole,omitempty"`
+	/** @description Set when this slot is an AI agent's: the agent's id in the step. `userId` is then the agent's service user. */
+	// @DataMember
+	// @ApiMember(Description="Set when this slot is an AI agent's: the agent's id in the step. `userId` is then the agent's service user.")
+	Agent *string `json:"agent,omitempty"`
+	/** @description The reason given with the answer that filled this slot. An AI agent always gives one. */
+	// @DataMember
+	// @ApiMember(Description="The reason given with the answer that filled this slot. An AI agent always gives one.")
+	Reason *string `json:"reason,omitempty"`
 	// @DataMember
 	AnsweredBy *string `json:"answeredBy,omitempty"`
 	// @DataMember
@@ -1386,6 +1394,8 @@ type WorkflowWaitAnswerDto struct {
 	UserId string `json:"userId"`
 	// @DataMember
 	Kind *string `json:"kind,omitempty"`
+	// @DataMember
+	Reason *string `json:"reason,omitempty"`
 	// @DataMember
 	Decision string `json:"decision"`
 	/** @description Which slots this answer filled (places in `slots`, from 0). One person who matches two rules fills both with one answer. */
@@ -2473,7 +2483,7 @@ type EchoResponse struct {
 	ApiUrl                      string                  `json:"apiUrl"`
 	ApiVersion                  string                  `json:"apiVersion"`
 	HubVersion                  string                  `json:"hubVersion"`
-	AdminUrlTemplate            *string                 `json:"adminUrlTemplate,omitempty"`
+	ApiUrlTemplate              *string                 `json:"apiUrlTemplate,omitempty"`
 	EmailServiceConfigured      bool                    `json:"emailServiceConfigured,omitempty"`
 	RootBootstrapPasswordSource *string                 `json:"rootBootstrapPasswordSource,omitempty"`
 	Regions                     []EchoRegionDto         `json:"regions,omitempty"`
@@ -2484,11 +2494,10 @@ type EchoResponse struct {
 }
 
 type PublicProjectConfigDto struct {
-	DisplayName        string          `json:"displayName"`
-	AdminPortalEnabled bool            `json:"adminPortalEnabled,omitempty"`
-	Branding           *PublicBrandDto `json:"branding,omitempty"`
-	Auth               PublicAuthDto   `json:"auth"`
-	AiChat             PublicAiChatDto `json:"aiChat"`
+	DisplayName string          `json:"displayName"`
+	Branding    *PublicBrandDto `json:"branding,omitempty"`
+	Auth        PublicAuthDto   `json:"auth"`
+	AiChat      PublicAiChatDto `json:"aiChat"`
 }
 
 type PublicLegalDocumentDto struct {
@@ -5337,6 +5346,10 @@ type ResumeCodeWorkflowRun struct {
 	Decision *string `json:"decision,omitempty"`
 	// @DataMember
 	Payload map[string]interface{} `json:"payload,omitempty"`
+	/** @description Optional: why — one or two sentences. Kept with the answer and shown on the run (at most 2 000 characters). */
+	// @DataMember
+	// @ApiMember(Description="Optional: why — one or two sentences. Kept with the answer and shown on the run (at most 2 000 characters).")
+	Reason *string `json:"reason,omitempty"`
 }
 
 func (ResumeCodeWorkflowRun) CreateResponse() (r WorkflowRunResponse) { return }
@@ -5447,6 +5460,10 @@ type ResumeCodeWorkflowRunByKey struct {
 	Decision *string `json:"decision,omitempty"`
 	// @DataMember
 	Payload map[string]interface{} `json:"payload,omitempty"`
+	/** @description Optional: why — one or two sentences. Kept with the answer and shown on the run (at most 2 000 characters). */
+	// @DataMember
+	// @ApiMember(Description="Optional: why — one or two sentences. Kept with the answer and shown on the run (at most 2 000 characters).")
+	Reason *string `json:"reason,omitempty"`
 }
 
 func (ResumeCodeWorkflowRunByKey) CreateResponse() (r WorkflowRunResponse) { return }

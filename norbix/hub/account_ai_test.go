@@ -50,10 +50,6 @@ func projectAiCases() []projectAiCase {
 			func(ctx context.Context, m *AccountModule) error {
 				return m.GetProjectAiUsage(ctx, "projectId_1", body, nil)
 			}},
-		{"SetAdminPortalEnabled", http.MethodPut, "/v2/account/projects/projectId_1/admin-portal/enabled",
-			func(ctx context.Context, m *AccountModule) error {
-				return m.SetAdminPortalEnabled(ctx, "projectId_1", body, nil)
-			}},
 	}
 }
 
@@ -103,10 +99,11 @@ func TestProjectaiEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The wave-3 projectAi surface is 7 routes; a changed count means a route arrived
+// The wave-3 projectAi surface is 6 routes (the Admin Portal switch left with
+// the hosted portal); a changed count means a route arrived
 // or left untested.
 func TestProjectaiSurfaceSize(t *testing.T) {
-	const want = 7
+	const want = 6
 	if got := len(projectAiCases()); got != want {
 		t.Errorf("projectAi endpoint count: got %d want %d", got, want)
 	}
