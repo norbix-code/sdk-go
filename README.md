@@ -1150,8 +1150,8 @@ MCP. The AI tool inventory an external agent can call (`GetAiTools`,
 
 Project owners configure the assistant on the Hub: `client.Hub.Account`
 (`GetProjectAiSettings`, `UpdateProjectAiSettings`, `CreateProjectAiAssistant`,
-`UpdateProjectAiAssistant`, `DeleteProjectAiAssistant`, `GetProjectAiUsage`,
-`SetAdminPortalEnabled`) and `client.Hub.Ai` (`GetEmbeddingIntegrations`,
+`UpdateProjectAiAssistant`, `DeleteProjectAiAssistant`, `GetProjectAiUsage`)
+and `client.Hub.Ai` (`GetEmbeddingIntegrations`,
 `SaveEmbeddingIntegration`, `GetEmbeddingIntegration`,
 `DeleteEmbeddingIntegration`, `TestEmbeddingIntegration`,
 `SetLlmIntegrationAsDefault`).

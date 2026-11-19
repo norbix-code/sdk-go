@@ -5641,7 +5641,6 @@ type ProjectDto struct {
 	ApiHost                       string                                    `json:"apiHost,omitempty"`
 	Description                   string                                    `json:"description,omitempty"`
 	MarketingUrl                  string                                    `json:"marketingUrl,omitempty"`
-	CanonicalAdminUrl             string                                    `json:"canonicalAdminUrl,omitempty"`
 	AdminUrl                      string                                    `json:"adminUrl,omitempty"`
 	EffectiveAdminUrl             string                                    `json:"effectiveAdminUrl,omitempty"`
 	DefaultLanguage               string                                    `json:"defaultLanguage,omitempty"`
@@ -5657,7 +5656,6 @@ type ProjectDto struct {
 	DefaultExecutionIdentities    []*ProjectEnvironmentExecutionIdentityDto `json:"defaultExecutionIdentities,omitempty"`
 	ExposeBrandToAdminPortal      bool                                      `json:"exposeBrandToAdminPortal"`
 	ExposeAuthToAdminPortal       bool                                      `json:"exposeAuthToAdminPortal"`
-	AdminPortalEnabled            bool                                      `json:"adminPortalEnabled"`
 	AdminPortalServiceUserId      string                                    `json:"adminPortalServiceUserId,omitempty"`
 	MembershipAuthenticationFlows []*AuthenticationFlowSummaryDto           `json:"membershipAuthenticationFlows,omitempty"`
 	ExposeLegalToAdminPortal      bool                                      `json:"exposeLegalToAdminPortal"`
@@ -5826,6 +5824,26 @@ type TemplateLanguageGapDto struct {
 	TemplateId       string            `json:"templateId,omitempty"`
 	TemplateName     string            `json:"templateName,omitempty"`
 	MissingLanguages []string          `json:"missingLanguages,omitempty"`
+}
+
+// AccountTrustedDeviceDto DTO.
+type AccountTrustedDeviceDto struct {
+	Id              string `json:"id,omitempty"`
+	Label           string `json:"label,omitempty"`
+	RememberedAtUtc string `json:"rememberedAtUtc,omitempty"`
+	LastUsedAtUtc   string `json:"lastUsedAtUtc,omitempty"`
+	ExpiresAtUtc    string `json:"expiresAtUtc,omitempty"`
+	IsThisDevice    bool   `json:"isThisDevice"`
+}
+
+// AccountTeamTwoFactorMemberDto DTO.
+type AccountTeamTwoFactorMemberDto struct {
+	Id                        string `json:"id,omitempty"`
+	Email                     string `json:"email,omitempty"`
+	DisplayName               string `json:"displayName,omitempty"`
+	IsOwner                   bool   `json:"isOwner"`
+	AuthenticatorEnabled      bool   `json:"authenticatorEnabled"`
+	AuthenticatorEnabledAtUtc string `json:"authenticatorEnabledAtUtc,omitempty"`
 }
 
 // AccessInformationDto DTO.
@@ -6678,6 +6696,7 @@ type WorkflowDto struct {
 	SavedByAuthId  string                        `json:"savedByAuthId,omitempty"`
 	Versions       []*WorkflowVersionSummaryDto  `json:"versions,omitempty"`
 	Warnings       []*WorkflowValidationIssueDto `json:"warnings,omitempty"`
+	Canvas         string                        `json:"canvas,omitempty"`
 }
 
 // WorkflowStepDiffDto DTO.
@@ -7244,22 +7263,21 @@ type AiProjectContextModuleWireDto struct {
 
 // AiProjectContextProjectWireDto DTO.
 type AiProjectContextProjectWireDto struct {
-	Id                 string                           `json:"id,omitempty"`
-	Name               string                           `json:"name,omitempty"`
-	UniqueName         string                           `json:"uniqueName,omitempty"`
-	Access             string                           `json:"access,omitempty"`
-	Description        string                           `json:"description,omitempty"`
-	DefaultLanguage    string                           `json:"defaultLanguage,omitempty"`
-	Languages          []string                         `json:"languages,omitempty"`
-	Environments       []string                         `json:"environments,omitempty"`
-	PrimaryRegion      string                           `json:"primaryRegion,omitempty"`
-	AdditionalRegions  []string                         `json:"additionalRegions,omitempty"`
-	CorsOrigins        []string                         `json:"corsOrigins,omitempty"`
-	ApiHost            string                           `json:"apiHost,omitempty"`
-	AdminUrl           string                           `json:"adminUrl,omitempty"`
-	MarketingUrl       string                           `json:"marketingUrl,omitempty"`
-	AdminPortalEnabled *bool                            `json:"adminPortalEnabled,omitempty"`
-	Modules            []*AiProjectContextModuleWireDto `json:"modules,omitempty"`
+	Id                string                           `json:"id,omitempty"`
+	Name              string                           `json:"name,omitempty"`
+	UniqueName        string                           `json:"uniqueName,omitempty"`
+	Access            string                           `json:"access,omitempty"`
+	Description       string                           `json:"description,omitempty"`
+	DefaultLanguage   string                           `json:"defaultLanguage,omitempty"`
+	Languages         []string                         `json:"languages,omitempty"`
+	Environments      []string                         `json:"environments,omitempty"`
+	PrimaryRegion     string                           `json:"primaryRegion,omitempty"`
+	AdditionalRegions []string                         `json:"additionalRegions,omitempty"`
+	CorsOrigins       []string                         `json:"corsOrigins,omitempty"`
+	ApiHost           string                           `json:"apiHost,omitempty"`
+	AdminUrl          string                           `json:"adminUrl,omitempty"`
+	MarketingUrl      string                           `json:"marketingUrl,omitempty"`
+	Modules           []*AiProjectContextModuleWireDto `json:"modules,omitempty"`
 }
 
 // AiProjectContextWireDto DTO.
@@ -7417,6 +7435,49 @@ type ProjectBriefEventWireDto struct {
 	Sources           []*ProjectBriefSourceWireDto      `json:"sources,omitempty"`
 	Origin            string                            `json:"origin,omitempty"`
 	SatisfiedBy       []*ProjectBriefSatisfiedByWireDto `json:"satisfiedBy,omitempty"`
+}
+
+// AppTemplateCollectionDto DTO.
+type AppTemplateCollectionDto struct {
+	Entity string `json:"entity,omitempty"`
+	Tier   string `json:"tier,omitempty"`
+}
+
+// AppTemplateCardDto DTO.
+type AppTemplateCardDto struct {
+	Id          string                      `json:"id,omitempty"`
+	Name        string                      `json:"name,omitempty"`
+	Version     float64                     `json:"version,omitempty"`
+	Tags        []string                    `json:"tags,omitempty"`
+	Summary     string                      `json:"summary,omitempty"`
+	Collections []*AppTemplateCollectionDto `json:"collections,omitempty"`
+	MatchedTags []string                    `json:"matchedTags,omitempty"`
+}
+
+// AppTemplateCollectionSpecDto DTO.
+type AppTemplateCollectionSpecDto struct {
+	FileName string `json:"fileName,omitempty"`
+	Json     string `json:"json,omitempty"`
+}
+
+// SchemaTemplateCardDto DTO.
+type SchemaTemplateCardDto struct {
+	Id             string   `json:"id,omitempty"`
+	Title          string   `json:"title,omitempty"`
+	Summary        string   `json:"summary,omitempty"`
+	Aliases        []string `json:"aliases,omitempty"`
+	Tags           []string `json:"tags,omitempty"`
+	UsesBlocks     []string `json:"usesBlocks,omitempty"`
+	UsesTaxonomies []string `json:"usesTaxonomies,omitempty"`
+	Related        []string `json:"related,omitempty"`
+	MatchedOn      []string `json:"matchedOn,omitempty"`
+}
+
+// EntityGraphEntityDto DTO.
+type EntityGraphEntityDto struct {
+	Id         string   `json:"id,omitempty"`
+	Related    []string `json:"related,omitempty"`
+	IfDocument string   `json:"ifDocument,omitempty"`
 }
 
 // AiTriggerProjectionList DTO.
@@ -8214,7 +8275,6 @@ type EchoResponse struct {
 	ApiUrl                      string                  `json:"apiUrl,omitempty"`
 	ApiVersion                  string                  `json:"apiVersion,omitempty"`
 	HubVersion                  string                  `json:"hubVersion,omitempty"`
-	AdminUrlTemplate            string                  `json:"adminUrlTemplate,omitempty"`
 	ApiUrlTemplate              string                  `json:"apiUrlTemplate,omitempty"`
 	EmailServiceConfigured      bool                    `json:"emailServiceConfigured"`
 	RootBootstrapPasswordSource string                  `json:"rootBootstrapPasswordSource,omitempty"`
@@ -8227,11 +8287,10 @@ type EchoResponse struct {
 
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
-	DisplayName        string           `json:"displayName,omitempty"`
-	AdminPortalEnabled bool             `json:"adminPortalEnabled"`
-	Branding           *PublicBrandDto  `json:"branding,omitempty"`
-	Auth               *PublicAuthDto   `json:"auth,omitempty"`
-	AiChat             *PublicAiChatDto `json:"aiChat,omitempty"`
+	DisplayName string           `json:"displayName,omitempty"`
+	Branding    *PublicBrandDto  `json:"branding,omitempty"`
+	Auth        *PublicAuthDto   `json:"auth,omitempty"`
+	AiChat      *PublicAiChatDto `json:"aiChat,omitempty"`
 }
 
 // PublicLegalDocumentDto DTO.
@@ -8429,10 +8488,9 @@ type GetProjectTokensResponse struct {
 
 // AdminPortalStructureDto DTO.
 type AdminPortalStructureDto struct {
-	ProjectId          string                  `json:"projectId,omitempty"`
-	AdminPortalEnabled bool                    `json:"adminPortalEnabled"`
-	DisplayName        string                  `json:"displayName,omitempty"`
-	Modules            []*AdminPortalModuleDto `json:"modules,omitempty"`
+	ProjectId   string                  `json:"projectId,omitempty"`
+	DisplayName string                  `json:"displayName,omitempty"`
+	Modules     []*AdminPortalModuleDto `json:"modules,omitempty"`
 }
 
 // CreateAiCreditPackCheckoutResponse DTO.
@@ -8483,6 +8541,37 @@ type CreateAccountResponse struct {
 	Token string `json:"token,omitempty"`
 }
 
+// AccountTrustedDevicesResponse DTO.
+type AccountTrustedDevicesResponse struct {
+	ResponseBase
+	Devices []*AccountTrustedDeviceDto `json:"devices,omitempty"`
+}
+
+// AccountTwoFactorResponse DTO.
+type AccountTwoFactorResponse struct {
+	ResponseBase
+	SetupAvailable               bool   `json:"setupAvailable"`
+	AuthenticatorEnabled         bool   `json:"authenticatorEnabled"`
+	AuthenticatorEnabledAtUtc    string `json:"authenticatorEnabledAtUtc,omitempty"`
+	TeamRequiresAuthenticatorApp bool   `json:"teamRequiresAuthenticatorApp"`
+}
+
+// AccountAuthenticatorSetupResponse DTO.
+type AccountAuthenticatorSetupResponse struct {
+	ResponseBase
+	Secret       string `json:"secret,omitempty"`
+	SetupLink    string `json:"setupLink,omitempty"`
+	ExpiresAtUtc string `json:"expiresAtUtc,omitempty"`
+}
+
+// AccountTeamTwoFactorResponse DTO.
+type AccountTeamTwoFactorResponse struct {
+	ResponseBase
+	RequireAuthenticatorApp bool                             `json:"requireAuthenticatorApp"`
+	SetupAvailable          bool                             `json:"setupAvailable"`
+	Members                 []*AccountTeamTwoFactorMemberDto `json:"members,omitempty"`
+}
+
 // GetAccountCollaboratorsResponse DTO.
 type GetAccountCollaboratorsResponse struct {
 	ResponseBase
@@ -8511,6 +8600,13 @@ type GetAccountTeamRolesResponse struct {
 type GetAccountTeamInvitationsResponse struct {
 	ResponseBase
 	Items []*TeamInvitationDto `json:"items,omitempty"`
+}
+
+// CreateDashboardApiTokenResponse DTO.
+type CreateDashboardApiTokenResponse struct {
+	ResponseBase
+	AccessToken string `json:"accessToken,omitempty"`
+	ExpiresAt   string `json:"expiresAt,omitempty"`
 }
 
 // AccountPasskeyOkResponse DTO.
@@ -9678,6 +9774,35 @@ type GetProjectBriefResponse struct {
 	Snapshot  *ProjectBriefSnapshotWireDto `json:"snapshot,omitempty"`
 	Events    []*ProjectBriefEventWireDto  `json:"events,omitempty"`
 	LastSeq   float64                      `json:"lastSeq,omitempty"`
+}
+
+// GetAppTemplatesResponse DTO.
+type GetAppTemplatesResponse struct {
+	ResponseBase
+	Templates []*AppTemplateCardDto `json:"templates,omitempty"`
+}
+
+// GetAppTemplateResponse DTO.
+type GetAppTemplateResponse struct {
+	ResponseBase
+	Template        *AppTemplateCardDto             `json:"template,omitempty"`
+	Guide           string                          `json:"guide,omitempty"`
+	CollectionSpecs []*AppTemplateCollectionSpecDto `json:"collectionSpecs,omitempty"`
+}
+
+// SearchSchemaTemplatesResponse DTO.
+type SearchSchemaTemplatesResponse struct {
+	ResponseBase
+	Total     float64                  `json:"total,omitempty"`
+	Templates []*SchemaTemplateCardDto `json:"templates,omitempty"`
+}
+
+// GetEntityGraphResponse DTO.
+type GetEntityGraphResponse struct {
+	ResponseBase
+	Capped   bool                    `json:"capped"`
+	Unknown  []string                `json:"unknown,omitempty"`
+	Entities []*EntityGraphEntityDto `json:"entities,omitempty"`
 }
 
 // GetAiTriggersResponse DTO.
@@ -11143,12 +11268,6 @@ type GetProjectTokens struct {
 	MembershipTriggerNewUserId string `json:"membershipTriggerNewUserId,omitempty"`
 }
 
-// SetAdminPortalEnabledRequest DTO.
-type SetAdminPortalEnabledRequest struct {
-	CodeMashRequestBase
-	Enabled bool `json:"enabled"`
-}
-
 // UpdateProjectExposeBrand DTO.
 type UpdateProjectExposeBrand struct {
 	CodeMashRequestBase
@@ -11356,6 +11475,60 @@ type CreateAccount struct {
 	Password    string `json:"password,omitempty"`
 }
 
+// GetAccountTrustedDevicesRequest DTO.
+type GetAccountTrustedDevicesRequest struct {
+	RequestBase
+}
+
+// RemoveAccountTrustedDevicesRequest DTO.
+type RemoveAccountTrustedDevicesRequest struct {
+	RequestBase
+	Id  string `json:"id,omitempty"`
+	All bool   `json:"all"`
+}
+
+// GetAccountTwoFactorRequest DTO.
+type GetAccountTwoFactorRequest struct {
+	RequestBase
+}
+
+// StartAccountAuthenticatorRequest DTO.
+type StartAccountAuthenticatorRequest struct {
+	RequestBase
+	CurrentPassword string `json:"currentPassword,omitempty"`
+}
+
+// ConfirmAccountAuthenticatorRequest DTO.
+type ConfirmAccountAuthenticatorRequest struct {
+	RequestBase
+	Code string `json:"code,omitempty"`
+}
+
+// RemoveAccountAuthenticatorRequest DTO.
+type RemoveAccountAuthenticatorRequest struct {
+	RequestBase
+	CurrentPassword string `json:"currentPassword,omitempty"`
+}
+
+// GetAccountTeamTwoFactorRequest DTO.
+type GetAccountTeamTwoFactorRequest struct {
+	RequestBase
+}
+
+// SetAccountTwoFactorPolicyRequest DTO.
+type SetAccountTwoFactorPolicyRequest struct {
+	RequestBase
+	RequireAuthenticatorApp bool   `json:"requireAuthenticatorApp"`
+	CurrentPassword         string `json:"currentPassword,omitempty"`
+}
+
+// ResetTeamMemberAuthenticatorRequest DTO.
+type ResetTeamMemberAuthenticatorRequest struct {
+	RequestBase
+	MemberId        string `json:"memberId,omitempty"`
+	CurrentPassword string `json:"currentPassword,omitempty"`
+}
+
 // ChangeTeamMemberPassword DTO.
 type ChangeTeamMemberPassword struct {
 	RequestBase
@@ -11496,6 +11669,11 @@ type UpdateAccountRole struct {
 	RoleName    string   `json:"roleName,omitempty"`
 	Description string   `json:"description,omitempty"`
 	Policies    []string `json:"policies,omitempty"`
+}
+
+// CreateDashboardApiToken DTO.
+type CreateDashboardApiToken struct {
+	RequestBase
 }
 
 // RequestAccountPasswordResetRequest DTO.
@@ -12937,6 +13115,14 @@ type TestSmsIntegration struct {
 type SaveCodeWorkflow struct {
 	CodeMashRequestBase
 	Definition *WorkflowDefinitionDto `json:"definition,omitempty"`
+	Canvas     string                 `json:"canvas,omitempty"`
+}
+
+// SaveCodeWorkflowCanvas DTO.
+type SaveCodeWorkflowCanvas struct {
+	CodeMashRequestBase
+	Id     string `json:"id,omitempty"`
+	Canvas string `json:"canvas,omitempty"`
 }
 
 // PublishCodeWorkflow DTO.
@@ -13711,6 +13897,32 @@ type McpRequest struct {
 type GetProjectBriefRequest struct {
 	CodeMashRequestBase
 	SinceSeq *float64 `json:"sinceSeq,omitempty"`
+}
+
+// GetAppTemplatesRequest DTO.
+type GetAppTemplatesRequest struct {
+	RequestBase
+	Query string `json:"query,omitempty"`
+}
+
+// GetAppTemplateRequest DTO.
+type GetAppTemplateRequest struct {
+	RequestBase
+	Id string `json:"id,omitempty"`
+}
+
+// SearchSchemaTemplatesRequest DTO.
+type SearchSchemaTemplatesRequest struct {
+	RequestBase
+	Query string   `json:"query,omitempty"`
+	Take  *float64 `json:"take,omitempty"`
+}
+
+// GetEntityGraphRequest DTO.
+type GetEntityGraphRequest struct {
+	RequestBase
+	Names string   `json:"names,omitempty"`
+	Depth *float64 `json:"depth,omitempty"`
 }
 
 // SaveAiProjectTrigger DTO.

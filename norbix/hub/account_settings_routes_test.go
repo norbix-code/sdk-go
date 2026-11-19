@@ -112,10 +112,6 @@ func accountSettingsCases() []accountSettingsCase {
 				return m.CheckProjectLanguages(ctx, "pr_1", req, nil)
 			}, map[string]any{"languages": []any{"en", "de"}, "defaultLanguage": "en"}},
 		// Admin portal
-		{"SetAdminPortalEnabled", http.MethodPut, p + "/admin-portal/enabled", nil, map[string]any{"enabled": true},
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.SetAdminPortalEnabled(ctx, "pr_1", req, nil)
-			}, map[string]any{"enabled": true}},
 		{"GetAdminPortalStructure", http.MethodGet, p + "/admin-portal/structure", nil, nil,
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.GetAdminPortalStructure(ctx, "pr_1", req, nil)
@@ -433,11 +429,11 @@ func TestEnvironmentsModuleRoutes(t *testing.T) {
 	}
 }
 
-// 55 AccountModule routes (58 Hub routes of the section minus the three
+// 54 AccountModule routes (57 Hub routes of the section minus the three
 // EnvironmentsModule ones); a changed count means a route arrived or left
 // untested.
 func TestAccountSettingsSurfaceSize(t *testing.T) {
-	const want = 55
+	const want = 54
 	if got := len(accountSettingsCases()); got != want {
 		t.Errorf("account settings endpoint count: got %d want %d", got, want)
 	}
