@@ -7,6 +7,7 @@ package errors
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -41,6 +42,31 @@ const (
 	CodeWorkflowRunTimeout = "NORBIX_WORKFLOW_RUN_TIMEOUT"
 	CodeWorkflowRunMissing = "NORBIX_WORKFLOW_RUN_MISSING"
 )
+
+// CodeEmailNotVerified is the gateway's code for a password sign-in refused
+// (HTTP 401) because the login's e-mail address is not verified yet, while the
+// project blocks sign-in until it is. Show "check your inbox" and offer
+// c.API.Membership.ResendEmailAddressVerification.
+const CodeEmailNotVerified = "CM-ERRORS-MEMBERSHIP-USERS-052"
+
+// IsEmailNotVerified reports whether err is the "e-mail not verified" sign-in
+// refusal (CodeEmailNotVerified), as the error's own code or any entry of its
+// gateway error list. It sees through wrapped errors.
+func IsEmailNotVerified(err error) bool {
+	var base *Error
+	if !stderrors.As(err, &base) || base == nil {
+		return false
+	}
+	if base.Code == CodeEmailNotVerified {
+		return true
+	}
+	for _, item := range base.Errors {
+		if item.ErrorCode == CodeEmailNotVerified {
+			return true
+		}
+	}
+	return false
+}
 
 // Item is one error inside the gateway's responseStatus.errors list.
 type Item struct {

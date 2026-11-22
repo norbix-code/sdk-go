@@ -456,6 +456,40 @@ func (m *MembershipModule) LinkIdentity(ctx context.Context, userId string, req 
 	}, out)
 }
 
+// VerifyEmailAddress performs POST /{version}/membership/userauth/email-verification/confirm (scope: optional).
+//
+// It confirms the token from the e-mail verification link a password sign-up gets
+// (dtos.VerifyEmailAddressRequest: "token", optional "databaseIntegrationId"). Pass a
+// dtos.EmailAddressVerifiedResponse as out (AuthId, VerifiedAtUtc). A token that is
+// invalid, expired, used or replaced is refused with CM-ERRORS-MEMBERSHIP-USERS-051.
+// The route is public: no token is demanded.
+func (m *MembershipModule) VerifyEmailAddress(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/userauth/email-verification/confirm",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
+	}, out)
+}
+
+// ResendEmailAddressVerification performs POST /{version}/membership/userauth/email-verification/resend (scope: optional).
+//
+// It sends a new verification link to "email" (dtos.ResendEmailAddressVerificationRequest)
+// and always answers OK (dtos.PasskeyOkResponse), so it never tells whether the address
+// has a login. The route is public: no token is demanded.
+func (m *MembershipModule) ResendEmailAddressVerification(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/membership/userauth/email-verification/resend",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeOptional,
+	}, out)
+}
+
 // ChangePassword performs POST /{version}/membership/userauth/password/change (scope: project).
 func (m *MembershipModule) ChangePassword(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{

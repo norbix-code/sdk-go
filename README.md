@@ -218,6 +218,16 @@ generation a login holds; `ChangePassword` and `ConfirmPasswordReset` answer
 with `dtos.CredentialChangedResponse` (`AuthId`, `CredentialVersion`) — pass
 it as `out`.
 
+E-mail verification for password sign-up (both public, no token needed):
+`c.API.Membership.VerifyEmailAddress(ctx, map[string]any{"token": t}, &out)`
+confirms the token from the verification link (`dtos.EmailAddressVerifiedResponse`:
+`AuthId`, `VerifiedAtUtc`; a bad, expired or used link is
+`CM-ERRORS-MEMBERSHIP-USERS-051`), and
+`ResendEmailAddressVerification(ctx, map[string]any{"email": e}, nil)` sends a new
+link and always answers OK. While the project blocks sign-in until the e-mail is
+verified, a password sign-in answers 401 with `errors.CodeEmailNotVerified`
+(`CM-ERRORS-MEMBERSHIP-USERS-052`); `errors.IsEmailNotVerified(err)` says so.
+
 ### Email: stop a campaign, check a domain, read preferences from a link
 
 `c.Hub.Notifications.StopEmailCampaign`, `GetEmailDisableDependencies` and `CheckEmailIntegrationDomainHealth` cover the Email campaign, module and integration checks; `c.Hub.Email.GetEmailPreferencesByLink(ctx, map[string]any{"token": t}, &out)` reads the preferences behind a signed unsubscribe link and needs no API key. To read one campaign message use `GetEmailCampaignBatchNotification(ctx, campaignID, batchID, notificationID, …)` (the `…/messages/{id}` methods were removed with their gateway route).

@@ -85,6 +85,7 @@ func apiMembershipCases() []apiMembershipCase {
 	rename := map[string]any{"friendlyName": "Phone"}
 	changePassword := map[string]any{"currentPassword": "old-pass", "newPassword": "new-pass-1!"}
 	confirmReset := map[string]any{"token": "rst_1", "newPassword": "new-pass-1!"}
+	verifyEmail := map[string]any{"token": "evt_1"}
 	consume := map[string]any{"token": "ml_1"}
 	recovery := map[string]any{"email": "ana@example.test", "recoveryCode": "AAAA-BBBB"}
 
@@ -257,6 +258,14 @@ func apiMembershipCases() []apiMembershipCase {
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.ChangePassword(ctx, changePassword, nil)
 			}},
+		{"VerifyEmailAddress", http.MethodPost, "/v2/membership/userauth/email-verification/confirm", nil, verifyEmail,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.VerifyEmailAddress(ctx, verifyEmail, nil)
+			}},
+		{"ResendEmailAddressVerification", http.MethodPost, "/v2/membership/userauth/email-verification/resend", nil, mail,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.ResendEmailAddressVerification(ctx, mail, nil)
+			}},
 		{"ConfirmPasswordReset", http.MethodPost, "/v2/membership/userauth/password/reset/confirm", nil, confirmReset,
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.ConfirmPasswordReset(ctx, confirmReset, nil)
@@ -363,11 +372,12 @@ func TestEveryAPIMembershipRouteHitsTheExpectedRoute(t *testing.T) {
 }
 
 // Users list 7 + user new 10 + user edit 20 + passkey & user-auth 19 + social
-// sign-in and link 2 (exchange, link start; link finish is in user edit).
+// sign-in and link 2 (exchange, link start; link finish is in user edit) +
+// password sign-up e-mail verification 2 (confirm, resend).
 // An API membership route added to a screen changes this count, so it cannot
 // arrive untested.
 func TestAPIMembershipRouteSurfaceSize(t *testing.T) {
-	const want = 7 + 10 + 20 + 19 + 2
+	const want = 7 + 10 + 20 + 19 + 2 + 2
 	if got := len(apiMembershipCases()); got != want {
 		t.Errorf("api membership route count: got %d want %d", got, want)
 	}
