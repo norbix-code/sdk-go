@@ -86,6 +86,14 @@ func TestPublicRoutesAreSentWithoutAToken(t *testing.T) {
 			func(ctx context.Context, c *Client) error {
 				return c.API.Membership.ConfirmPasswordReset(ctx, map[string]any{"token": "reset_tok", "password": "S3cret-pass!"}, nil)
 			}},
+		{"e-mail address verification confirm", http.MethodPost, "/v3/membership/userauth/email-verification/confirm",
+			func(ctx context.Context, c *Client) error {
+				return c.API.Membership.VerifyEmailAddress(ctx, map[string]any{"token": "evt_1"}, nil)
+			}},
+		{"e-mail address verification resend", http.MethodPost, "/v3/membership/userauth/email-verification/resend",
+			func(ctx context.Context, c *Client) error {
+				return c.API.Membership.ResendEmailAddressVerification(ctx, map[string]any{"email": "ana@example.test"}, nil)
+			}},
 		{"api echo", http.MethodGet, "/v3/echo",
 			func(ctx context.Context, c *Client) error { return c.API.Echo.Echo(ctx, nil, nil) }},
 		{"hub echo", http.MethodGet, "/v2/echo",
