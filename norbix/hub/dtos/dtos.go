@@ -1125,6 +1125,17 @@ const (
 	DeploymentModeEnterprise DeploymentMode = "Enterprise"
 )
 
+// SupportCaseSource enum.
+type SupportCaseSource string
+
+const (
+	SupportCaseSourceCloud SupportCaseSource = "Cloud"
+	SupportCaseSourceApi   SupportCaseSource = "Api"
+	SupportCaseSourceCli   SupportCaseSource = "Cli"
+	SupportCaseSourceSdk   SupportCaseSource = "Sdk"
+	SupportCaseSourceMcp   SupportCaseSource = "Mcp"
+)
+
 // SupportMessageAuthorKind enum.
 type SupportMessageAuthorKind string
 
@@ -5429,9 +5440,10 @@ type AuthenticationFlowPasswordPolicyDto struct {
 
 // AuthenticationFlowSummaryDto DTO.
 type AuthenticationFlowSummaryDto struct {
-	Type               string                               `json:"type,omitempty"`
-	Provider           string                               `json:"provider,omitempty"`
-	PasswordComplexity *AuthenticationFlowPasswordPolicyDto `json:"passwordComplexity,omitempty"`
+	Type                     string                               `json:"type,omitempty"`
+	Provider                 string                               `json:"provider,omitempty"`
+	PasswordComplexity       *AuthenticationFlowPasswordPolicyDto `json:"passwordComplexity,omitempty"`
+	RequireEmailVerification *bool                                `json:"requireEmailVerification,omitempty"`
 }
 
 // AiAssistantDto DTO.
@@ -6166,6 +6178,7 @@ type MembershipAuthorizationViewDto struct {
 	InviteOnly                   bool                           `json:"inviteOnly"`
 	AllowAnyoneToSignUp          bool                           `json:"allowAnyoneToSignUp"`
 	WelcomeEmailTriggers         []string                       `json:"welcomeEmailTriggers,omitempty"`
+	RequireEmailVerification     bool                           `json:"requireEmailVerification"`
 }
 
 // MembershipEmailTokenDto DTO.
@@ -8078,6 +8091,11 @@ type SupportCaseDto struct {
 	ResolvedOn        *float64              `json:"resolvedOn,omitempty"`
 	ClosedOn          *float64              `json:"closedOn,omitempty"`
 	Resolution        string                `json:"resolution,omitempty"`
+	AssigneeId        string                `json:"assigneeId,omitempty"`
+	AssigneeName      string                `json:"assigneeName,omitempty"`
+	Source            SupportCaseSource     `json:"source,omitempty"`
+	Automatic         bool                  `json:"automatic"`
+	ReportedBy        string                `json:"reportedBy,omitempty"`
 	MessageCount      float64               `json:"messageCount,omitempty"`
 	CountedMessageIds []string              `json:"countedMessageIds,omitempty"`
 	LastMessageOn     *float64              `json:"lastMessageOn,omitempty"`
@@ -8092,6 +8110,7 @@ type SupportCaseMessageDto struct {
 	AuthorDisplayName string                   `json:"authorDisplayName,omitempty"`
 	Body              string                   `json:"body,omitempty"`
 	SentOn            float64                  `json:"sentOn,omitempty"`
+	Evidence          map[string]string        `json:"evidence,omitempty"`
 }
 
 // SupportCaseDetailDto DTO.
@@ -8112,6 +8131,8 @@ type SupportCaseListProjection struct {
 	OpenedOn       float64               `json:"openedOn,omitempty"`
 	MessageCount   float64               `json:"messageCount,omitempty"`
 	LastMessageOn  *float64              `json:"lastMessageOn,omitempty"`
+	Source         SupportCaseSource     `json:"source,omitempty"`
+	Automatic      bool                  `json:"automatic"`
 }
 
 // DiagnosticPackStepDescriptorDto DTO.
@@ -8375,8 +8396,10 @@ type CheckBundleDiscountResponse struct {
 // CreateStripeCheckoutSessionResponse DTO.
 type CreateStripeCheckoutSessionResponse struct {
 	IdResponse
-	TrialIncluded bool   `json:"trialIncluded"`
-	NoTrialReason string `json:"noTrialReason,omitempty"`
+	TrialIncluded  bool   `json:"trialIncluded"`
+	NoTrialReason  string `json:"noTrialReason,omitempty"`
+	ClientSecret   string `json:"clientSecret,omitempty"`
+	PublishableKey string `json:"publishableKey,omitempty"`
 }
 
 // GetStripeBillingPortalUrlResponse DTO.
@@ -10295,6 +10318,14 @@ type GetSupportCasesResponse struct {
 	List PaginatedResponse[*SupportCaseListProjection] `json:"list,omitempty"`
 }
 
+// ReportNorbixIssueResponse DTO.
+type ReportNorbixIssueResponse struct {
+	ResponseBase
+	CaseId          string  `json:"caseId,omitempty"`
+	AlreadyReported bool    `json:"alreadyReported"`
+	TimesReported   float64 `json:"timesReported,omitempty"`
+}
+
 // GetDiagnosticPacksResponse DTO.
 type GetDiagnosticPacksResponse struct {
 	ResponseBase
@@ -11050,6 +11081,7 @@ type CreateStripeCheckoutSession struct {
 	Region              string                    `json:"region,omitempty"`
 	WithoutTrial        *bool                     `json:"withoutTrial,omitempty"`
 	TrialInvite         string                    `json:"trialInvite,omitempty"`
+	Embedded            *bool                     `json:"embedded,omitempty"`
 }
 
 // GetStripeBillingPortalUrl DTO.
@@ -12045,6 +12077,8 @@ type UpdateAuthorizationSettings struct {
 	ResetPasswordEmailTemplate   string                       `json:"resetPasswordEmailTemplate,omitempty"`
 	ResetPasswordTokenExpiration *float64                     `json:"resetPasswordTokenExpiration,omitempty"`
 	ResetPasswordCallback        string                       `json:"resetPasswordCallback,omitempty"`
+	RequireEmailVerification     *bool                        `json:"requireEmailVerification,omitempty"`
+	VerificationCallback         string                       `json:"verificationCallback,omitempty"`
 	WelcomeEmailTemplate         string                       `json:"welcomeEmailTemplate,omitempty"`
 	Bindings                     []*MembershipTokenBindingDto `json:"bindings,omitempty"`
 	BindingsEvent                string                       `json:"bindingsEvent,omitempty"`
@@ -14926,6 +14960,20 @@ type OpenSupportCaseRequest struct {
 	Subject   string `json:"subject,omitempty"`
 	Message   string `json:"message,omitempty"`
 	ProjectId string `json:"projectId,omitempty"`
+}
+
+// ReportNorbixIssueRequest DTO.
+type ReportNorbixIssueRequest struct {
+	RequestBase
+	Subject    string            `json:"subject,omitempty"`
+	Message    string            `json:"message,omitempty"`
+	Kind       string            `json:"kind,omitempty"`
+	Severity   string            `json:"severity,omitempty"`
+	ProjectId  string            `json:"projectId,omitempty"`
+	Source     string            `json:"source,omitempty"`
+	Automatic  *bool             `json:"automatic,omitempty"`
+	ReportedBy string            `json:"reportedBy,omitempty"`
+	Evidence   map[string]string `json:"evidence,omitempty"`
 }
 
 // GetDiagnosticPacks DTO.

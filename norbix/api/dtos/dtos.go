@@ -2120,16 +2120,23 @@ type SocialSignInTokenResponse struct {
 	Meta        map[string]string `json:"meta,omitempty"`
 }
 
-// CredentialChangedResponse DTO.
-type CredentialChangedResponse struct {
+// EmailAddressVerifiedResponse DTO.
+type EmailAddressVerifiedResponse struct {
 	ResponseBase
-	AuthId            string `json:"authId,omitempty"`
-	CredentialVersion string `json:"credentialVersion,omitempty"`
+	AuthId        string `json:"authId,omitempty"`
+	VerifiedAtUtc string `json:"verifiedAtUtc,omitempty"`
 }
 
 // PasskeyOkResponse DTO.
 type PasskeyOkResponse struct {
 	ResponseBase
+}
+
+// CredentialChangedResponse DTO.
+type CredentialChangedResponse struct {
+	ResponseBase
+	AuthId            string `json:"authId,omitempty"`
+	CredentialVersion string `json:"credentialVersion,omitempty"`
 }
 
 // SendTestPasswordResetResponse DTO.
@@ -2774,6 +2781,14 @@ type SetEndUserChatEntryFeedbackRequest struct {
 	Feedback  string `json:"feedback,omitempty"`
 }
 
+// DecideEndUserChatActionRequest DTO.
+type DecideEndUserChatActionRequest struct {
+	CodeMashRequestBase
+	SessionId string `json:"sessionId,omitempty"`
+	EntryId   string `json:"entryId,omitempty"`
+	Decision  string `json:"decision,omitempty"`
+}
+
 // ListEndUserChatMemoryRequest DTO.
 type ListEndUserChatMemoryRequest struct {
 	CodeMashRequestBase
@@ -3101,6 +3116,20 @@ type UpdateUserPreferencesRequest struct {
 	BlockAllMarketingMessages bool                `json:"blockAllMarketingMessages"`
 	BlockedTags               map[string][]string `json:"blockedTags,omitempty"`
 	DatabaseIntegrationId     string              `json:"databaseIntegrationId,omitempty"`
+}
+
+// VerifyEmailAddressRequest DTO.
+type VerifyEmailAddressRequest struct {
+	CodeMashRequestBase
+	Token                 string `json:"token,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
+}
+
+// ResendEmailAddressVerificationRequest DTO.
+type ResendEmailAddressVerificationRequest struct {
+	CodeMashRequestBase
+	Email                 string `json:"email,omitempty"`
+	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
 // ChangePasswordRequest DTO.
