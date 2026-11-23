@@ -764,6 +764,14 @@ Debugging a payment trigger: `c.Hub.Payments.GetPaymentsWebhookRuns(ctx, req, &o
 
 Testing a Neopay or Montonio integration with real money: `c.Hub.Payments.StartPaymentsIntegrationTestPayment(ctx, map[string]any{"integrationId": id, "returnUrl": "https://…"}, &out)` opens a 0.01 test payment and answers `payUrl` (open it to pay), `reference`, `amountMinor` and `currency`; other providers answer `CM-ERRORS-PAYMENTS-014`. Saving an integration again with an empty secret keeps the saved one.
 
+## Saved secrets of an integration
+
+`c.Hub.Integrations.GetIntegrationSecrets(ctx, integrationID, map[string]any{"env": "TEST"}, &out)`
+(`dtos.GetIntegrationSecretsResponse`) lists which secrets of an integration of any module are saved
+(`IsSet`) and which may be removed (`IsOptional`) — never a value. Remove optional ones with
+`c.Hub.Integrations.RemoveIntegrationSecrets(ctx, integrationID, map[string]any{"keys": []string{"webhookSigningSecret"}}, &out)`;
+a needed key answers `CM-ERRORS-SECRETS-012` and nothing changes.
+
 ## Keyless cloud connections
 
 The AWS (S3, SES, Lambda) and Azure (Blob, Communication Services, Functions)
