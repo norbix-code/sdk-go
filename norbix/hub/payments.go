@@ -276,6 +276,24 @@ func (m *PaymentsModule) TestPaymentsIntegration(ctx context.Context, req map[st
 	}, out)
 }
 
+// StartPaymentsIntegrationTestPayment performs POST /{version}/payments/integrations/test-payment (scope: project).
+// Opens a real 0.01 test payment at the provider of a payments integration and
+// returns the link to pay it (dtos.StartPaymentsIntegrationTestPaymentRequest:
+// integrationId and returnUrl, an absolute https URL — http only for localhost;
+// answer dtos.StartPaymentsIntegrationTestPaymentResponse: payUrl, reference,
+// amountMinor, currency). Neopay and Montonio only; another provider answers
+// CM-ERRORS-PAYMENTS-014.
+func (m *PaymentsModule) StartPaymentsIntegrationTestPayment(ctx context.Context, req map[string]any, out any) error {
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/payments/integrations/test-payment",
+		Method:     "POST",
+		PathParams: nil,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // StartPaymentsIntegrationConnect performs POST /{version}/payments/integrations/connect/start (scope: project).
 // Quick connect (one-click OAuth) of a payments integration: the request names the
 // provider key (from GetQuickConnectProviders), the integration name, an optional
