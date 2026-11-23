@@ -6519,6 +6519,14 @@ type FilesIntegrationListProjection struct {
 	Provider FileProvider `json:"provider,omitempty"`
 }
 
+// IntegrationSecretDto DTO.
+type IntegrationSecretDto struct {
+	Key        string `json:"key,omitempty"`
+	Field      string `json:"field,omitempty"`
+	IsSet      bool   `json:"isSet"`
+	IsOptional bool   `json:"isOptional"`
+}
+
 // KeylessIntegrationSetupTemplate DTO.
 type KeylessIntegrationSetupTemplate struct {
 	Kind     string `json:"kind,omitempty"`
@@ -9060,6 +9068,12 @@ type GetFilesIntegrationsResponse struct {
 	DefaultIntegrationId string                                             `json:"defaultIntegrationId,omitempty"`
 	List                 PaginatedResponse[*FilesIntegrationListProjection] `json:"list,omitempty"`
 	AvailableProviders   []FileProvider                                     `json:"availableProviders,omitempty"`
+}
+
+// GetIntegrationSecretsResponse DTO.
+type GetIntegrationSecretsResponse struct {
+	ResponseBase
+	Result []*IntegrationSecretDto `json:"result,omitempty"`
 }
 
 // GetKeylessIntegrationSetupResponse DTO.
@@ -12559,6 +12573,7 @@ type UpdateOneRecord struct {
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Update                string `json:"update,omitempty"`
 	ArrayFilters          string `json:"arrayFilters,omitempty"`
+	Condition             string `json:"condition,omitempty"`
 }
 
 // DeleteDatabaseIntegrationRequest DTO.
@@ -12729,12 +12744,25 @@ type GetFilesIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
 
+// GetIntegrationSecrets DTO.
+type GetIntegrationSecrets struct {
+	CodeMashRequestBase
+	IntegrationId string `json:"integrationId,omitempty"`
+}
+
 // GetKeylessIntegrationSetup DTO.
 type GetKeylessIntegrationSetup struct {
 	CodeMashRequestBase
 	Module        string `json:"module,omitempty"`
 	Cloud         string `json:"cloud,omitempty"`
 	IntegrationId string `json:"integrationId,omitempty"`
+}
+
+// RemoveIntegrationSecretsRequest DTO.
+type RemoveIntegrationSecretsRequest struct {
+	CodeMashRequestBase
+	IntegrationId string   `json:"integrationId,omitempty"`
+	Keys          []string `json:"keys,omitempty"`
 }
 
 // SaveFilesIntegration DTO.
@@ -13478,6 +13506,20 @@ type CancelCodeWorkflowRun struct {
 	CodeMashRequestBase
 	RunId  string `json:"runId,omitempty"`
 	Reason string `json:"reason,omitempty"`
+}
+
+// TestCodeWorkflow DTO.
+type TestCodeWorkflow struct {
+	CodeMashRequestBase
+	Id         string         `json:"id,omitempty"`
+	Source     string         `json:"source,omitempty"`
+	Event      string         `json:"event,omitempty"`
+	Collection string         `json:"collection,omitempty"`
+	RecordId   string         `json:"recordId,omitempty"`
+	UserId     string         `json:"userId,omitempty"`
+	Edits      map[string]any `json:"edits,omitempty"`
+	Payload    map[string]any `json:"payload,omitempty"`
+	RunVersion string         `json:"runVersion,omitempty"`
 }
 
 // DisablePush DTO.

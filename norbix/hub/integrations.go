@@ -70,3 +70,45 @@ func (m *IntegrationsModule) GetIntegrationConnectTargets(ctx context.Context, c
 		Scope:      transport.ScopeProject,
 	}, out)
 }
+
+// GetIntegrationSecrets performs GET /{version}/integrations/{IntegrationId}/secrets (scope: project).
+//
+// It lists which secrets of an integration (any module) are saved and which are
+// optional — never a value or any part of one. Each row has Key, Field (the save
+// request property that fills it), IsSet and IsOptional; see
+// dtos.GetIntegrationSecretsResponse. The list is empty for keyless and
+// Norbix-owned integrations and for MCP, Marketplace and Webhook integrations.
+// An optional "env" in req picks the environment.
+func (m *IntegrationsModule) GetIntegrationSecrets(ctx context.Context, integrationId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationId": integrationId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/integrations/{IntegrationId}/secrets",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// RemoveIntegrationSecrets performs POST /{version}/integrations/{IntegrationId}/secrets/remove (scope: project).
+//
+// It removes optional secrets of an integration. The request takes "keys" (as
+// GetIntegrationSecrets lists them) and an optional "env". A key the integration
+// needs is refused with CM-ERRORS-SECRETS-012 (400) and nothing is written; see
+// dtos.RemoveIntegrationSecretsRequest and dtos.IdResponse.
+func (m *IntegrationsModule) RemoveIntegrationSecrets(ctx context.Context, integrationId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"IntegrationId": integrationId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/integrations/{IntegrationId}/secrets/remove",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}

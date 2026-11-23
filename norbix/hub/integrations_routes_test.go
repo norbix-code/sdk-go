@@ -16,7 +16,7 @@ import (
 
 // Every integration route of the Code, Logs, Membership and Payments modules
 // (the gateway's `[Route]` list under Hub.<Module>/Integrations/*.cs, branch
-// refactoringV2) and the two shared quick-connect reads, with the module
+// refactoringV2), the two shared quick-connect reads and the two saved-secret routes, with the module
 // method that calls each one. Each case asserts the verb, the fully-resolved
 // path (version and route id substituted, no `{…}` token left) and where the
 // request lands — the query string for GET, the JSON body otherwise. The
@@ -164,6 +164,16 @@ func integrationRouteCases() []integrationRouteCase {
 			func(ctx context.Context, h *Namespace) error {
 				return h.Integrations.GetIntegrationConnectTargets(ctx, "qc_1", body, nil)
 			}},
+
+		// Saved secrets of any integration — Hub.Files/Integrations/IntegrationSecrets.cs
+		{"Integrations.GetIntegrationSecrets", http.MethodGet, "/v2/integrations/" + id + "/secrets",
+			func(ctx context.Context, h *Namespace) error {
+				return h.Integrations.GetIntegrationSecrets(ctx, id, body, nil)
+			}},
+		{"Integrations.RemoveIntegrationSecrets", http.MethodPost, "/v2/integrations/" + id + "/secrets/remove",
+			func(ctx context.Context, h *Namespace) error {
+				return h.Integrations.RemoveIntegrationSecrets(ctx, id, body, nil)
+			}},
 	}
 }
 
@@ -183,8 +193,8 @@ func newIntegrationRoutesNamespace(baseURL string) *Namespace {
 
 func TestIntegrationRoutesHitTheExpectedRoute(t *testing.T) {
 	cases := integrationRouteCases()
-	if len(cases) != 34 {
-		t.Fatalf("cases: got %d want 34 (code 8, logs 7, membership 6, payments 11, shared 2)", len(cases))
+	if len(cases) != 36 {
+		t.Fatalf("cases: got %d want 36 (code 8, logs 7, membership 6, payments 11, shared 4)", len(cases))
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

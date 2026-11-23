@@ -3458,6 +3458,7 @@ type UpdateOneRequest struct {
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 	Update                string `json:"update,omitempty"`
 	ArrayFilters          string `json:"arrayFilters,omitempty"`
+	Condition             string `json:"condition,omitempty"`
 }
 
 // CommitUploadRequest DTO.
@@ -3763,6 +3764,20 @@ type CancelCodeWorkflowRun struct {
 	CodeMashRequestBase
 	RunId  string `json:"runId,omitempty"`
 	Reason string `json:"reason,omitempty"`
+}
+
+// TestCodeWorkflow DTO.
+type TestCodeWorkflow struct {
+	CodeMashRequestBase
+	Id         string         `json:"id,omitempty"`
+	Source     string         `json:"source,omitempty"`
+	Event      string         `json:"event,omitempty"`
+	Collection string         `json:"collection,omitempty"`
+	RecordId   string         `json:"recordId,omitempty"`
+	UserId     string         `json:"userId,omitempty"`
+	Edits      map[string]any `json:"edits,omitempty"`
+	Payload    map[string]any `json:"payload,omitempty"`
+	RunVersion string         `json:"runVersion,omitempty"`
 }
 
 // GetNotificationInboxRequest DTO.
