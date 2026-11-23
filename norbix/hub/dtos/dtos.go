@@ -1825,19 +1825,20 @@ type AppleInAppPaymentIntegrationRequest struct {
 // GoogleInAppPaymentIntegrationRequest DTO.
 type GoogleInAppPaymentIntegrationRequest struct {
 	PaymentIntegrationRequest
-	Provider            PaymentGatewayPlatform `json:"provider,omitempty"`
-	AuthMode            CloudAuthMode          `json:"authMode,omitempty"`
-	WebhookPackageName  string                 `json:"webhookPackageName,omitempty"`
-	MerchantId          string                 `json:"merchantId,omitempty"`
-	MerchantName        string                 `json:"merchantName,omitempty"`
-	Gateway             string                 `json:"gateway,omitempty"`
-	ProjectNumber       string                 `json:"projectNumber,omitempty"`
-	PoolId              string                 `json:"poolId,omitempty"`
-	ProviderId          string                 `json:"providerId,omitempty"`
-	ServiceAccountEmail string                 `json:"serviceAccountEmail,omitempty"`
-	PrivateKeyOrToken   string                 `json:"privateKeyOrToken,omitempty"`
-	GatewayMerchantId   string                 `json:"gatewayMerchantId,omitempty"`
-	AcceptKeyRisk       *bool                  `json:"acceptKeyRisk,omitempty"`
+	Provider                PaymentGatewayPlatform `json:"provider,omitempty"`
+	AuthMode                CloudAuthMode          `json:"authMode,omitempty"`
+	WebhookPackageName      string                 `json:"webhookPackageName,omitempty"`
+	MerchantId              string                 `json:"merchantId,omitempty"`
+	MerchantName            string                 `json:"merchantName,omitempty"`
+	Gateway                 string                 `json:"gateway,omitempty"`
+	ProjectNumber           string                 `json:"projectNumber,omitempty"`
+	PoolId                  string                 `json:"poolId,omitempty"`
+	ProviderId              string                 `json:"providerId,omitempty"`
+	ServiceAccountEmail     string                 `json:"serviceAccountEmail,omitempty"`
+	PrivateKeyOrToken       string                 `json:"privateKeyOrToken,omitempty"`
+	GatewayMerchantId       string                 `json:"gatewayMerchantId,omitempty"`
+	AcceptKeyRisk           *bool                  `json:"acceptKeyRisk,omitempty"`
+	RemovePrivateKeyOrToken *bool                  `json:"removePrivateKeyOrToken,omitempty"`
 }
 
 // MontonioPaymentIntegrationRequest DTO.
@@ -5711,6 +5712,7 @@ type ProjectListItemDto struct {
 	AdditionalRegions []*ProjectRegionDto `json:"additionalRegions,omitempty"`
 	ModulesCount      float64             `json:"modulesCount,omitempty"`
 	UsersCount        float64             `json:"usersCount,omitempty"`
+	Icon              *FileResourceRefDto `json:"icon,omitempty"`
 }
 
 // ProjectHealthWarningDto DTO.
@@ -8072,33 +8074,36 @@ type AccountComplianceDto struct {
 
 // SupportCaseDto DTO.
 type SupportCaseDto struct {
-	ViewId            string                `json:"viewId,omitempty"`
-	AccountId         string                `json:"accountId,omitempty"`
-	ProjectId         string                `json:"projectId,omitempty"`
-	ReporterId        string                `json:"reporterId,omitempty"`
-	Kind              SupportCaseKind       `json:"kind,omitempty"`
-	Severity          SupportCaseSeverity   `json:"severity,omitempty"`
-	Status            SupportCaseStatus     `json:"status,omitempty"`
-	CustomerStatus    SupportCustomerStatus `json:"customerStatus,omitempty"`
-	Subject           string                `json:"subject,omitempty"`
-	AffectedModule    string                `json:"affectedModule,omitempty"`
-	DeploymentMode    DeploymentMode        `json:"deploymentMode,omitempty"`
-	GatewayVersion    string                `json:"gatewayVersion,omitempty"`
-	Region            string                `json:"region,omitempty"`
-	PlanTier          string                `json:"planTier,omitempty"`
-	OpenedOn          float64               `json:"openedOn,omitempty"`
-	FirstResponseOn   *float64              `json:"firstResponseOn,omitempty"`
-	ResolvedOn        *float64              `json:"resolvedOn,omitempty"`
-	ClosedOn          *float64              `json:"closedOn,omitempty"`
-	Resolution        string                `json:"resolution,omitempty"`
-	AssigneeId        string                `json:"assigneeId,omitempty"`
-	AssigneeName      string                `json:"assigneeName,omitempty"`
-	Source            SupportCaseSource     `json:"source,omitempty"`
-	Automatic         bool                  `json:"automatic"`
-	ReportedBy        string                `json:"reportedBy,omitempty"`
-	MessageCount      float64               `json:"messageCount,omitempty"`
-	CountedMessageIds []string              `json:"countedMessageIds,omitempty"`
-	LastMessageOn     *float64              `json:"lastMessageOn,omitempty"`
+	ViewId               string                `json:"viewId,omitempty"`
+	AccountId            string                `json:"accountId,omitempty"`
+	ProjectId            string                `json:"projectId,omitempty"`
+	ReporterId           string                `json:"reporterId,omitempty"`
+	Kind                 SupportCaseKind       `json:"kind,omitempty"`
+	Severity             SupportCaseSeverity   `json:"severity,omitempty"`
+	Status               SupportCaseStatus     `json:"status,omitempty"`
+	CustomerStatus       SupportCustomerStatus `json:"customerStatus,omitempty"`
+	Subject              string                `json:"subject,omitempty"`
+	AffectedModule       string                `json:"affectedModule,omitempty"`
+	DeploymentMode       DeploymentMode        `json:"deploymentMode,omitempty"`
+	GatewayVersion       string                `json:"gatewayVersion,omitempty"`
+	Region               string                `json:"region,omitempty"`
+	PlanTier             string                `json:"planTier,omitempty"`
+	OpenedOn             float64               `json:"openedOn,omitempty"`
+	FirstResponseOn      *float64              `json:"firstResponseOn,omitempty"`
+	ResolvedOn           *float64              `json:"resolvedOn,omitempty"`
+	ClosedOn             *float64              `json:"closedOn,omitempty"`
+	Resolution           string                `json:"resolution,omitempty"`
+	AssigneeId           string                `json:"assigneeId,omitempty"`
+	AssigneeName         string                `json:"assigneeName,omitempty"`
+	Source               SupportCaseSource     `json:"source,omitempty"`
+	Automatic            bool                  `json:"automatic"`
+	ReportedBy           string                `json:"reportedBy,omitempty"`
+	MessageCount         float64               `json:"messageCount,omitempty"`
+	CountedMessageIds    []string              `json:"countedMessageIds,omitempty"`
+	LastMessageOn        *float64              `json:"lastMessageOn,omitempty"`
+	AttachmentCount      float64               `json:"attachmentCount,omitempty"`
+	AttachmentIds        []string              `json:"attachmentIds,omitempty"`
+	RemovedAttachmentIds []string              `json:"removedAttachmentIds,omitempty"`
 }
 
 // SupportCaseMessageDto DTO.
@@ -8113,26 +8118,42 @@ type SupportCaseMessageDto struct {
 	Evidence          map[string]string        `json:"evidence,omitempty"`
 }
 
+// SupportCaseAttachmentDto DTO.
+type SupportCaseAttachmentDto struct {
+	Id          string                   `json:"id,omitempty"`
+	CaseId      string                   `json:"caseId,omitempty"`
+	FileName    string                   `json:"fileName,omitempty"`
+	SizeBytes   float64                  `json:"sizeBytes,omitempty"`
+	ContentType string                   `json:"contentType,omitempty"`
+	AddedByKind SupportMessageAuthorKind `json:"addedByKind,omitempty"`
+	AddedById   string                   `json:"addedById,omitempty"`
+	AddedOn     float64                  `json:"addedOn,omitempty"`
+	AddedByYou  bool                     `json:"addedByYou"`
+	CanDelete   bool                     `json:"canDelete"`
+}
+
 // SupportCaseDetailDto DTO.
 type SupportCaseDetailDto struct {
-	Case     *SupportCaseDto          `json:"case,omitempty"`
-	Messages []*SupportCaseMessageDto `json:"messages,omitempty"`
+	Case        *SupportCaseDto             `json:"case,omitempty"`
+	Messages    []*SupportCaseMessageDto    `json:"messages,omitempty"`
+	Attachments []*SupportCaseAttachmentDto `json:"attachments,omitempty"`
 }
 
 // SupportCaseListProjection DTO.
 type SupportCaseListProjection struct {
-	ViewId         string                `json:"viewId,omitempty"`
-	ProjectId      string                `json:"projectId,omitempty"`
-	Kind           SupportCaseKind       `json:"kind,omitempty"`
-	Severity       SupportCaseSeverity   `json:"severity,omitempty"`
-	Status         SupportCaseStatus     `json:"status,omitempty"`
-	CustomerStatus SupportCustomerStatus `json:"customerStatus,omitempty"`
-	Subject        string                `json:"subject,omitempty"`
-	OpenedOn       float64               `json:"openedOn,omitempty"`
-	MessageCount   float64               `json:"messageCount,omitempty"`
-	LastMessageOn  *float64              `json:"lastMessageOn,omitempty"`
-	Source         SupportCaseSource     `json:"source,omitempty"`
-	Automatic      bool                  `json:"automatic"`
+	ViewId          string                `json:"viewId,omitempty"`
+	ProjectId       string                `json:"projectId,omitempty"`
+	Kind            SupportCaseKind       `json:"kind,omitempty"`
+	Severity        SupportCaseSeverity   `json:"severity,omitempty"`
+	Status          SupportCaseStatus     `json:"status,omitempty"`
+	CustomerStatus  SupportCustomerStatus `json:"customerStatus,omitempty"`
+	Subject         string                `json:"subject,omitempty"`
+	OpenedOn        float64               `json:"openedOn,omitempty"`
+	MessageCount    float64               `json:"messageCount,omitempty"`
+	LastMessageOn   *float64              `json:"lastMessageOn,omitempty"`
+	Source          SupportCaseSource     `json:"source,omitempty"`
+	Automatic       bool                  `json:"automatic"`
+	AttachmentCount float64               `json:"attachmentCount,omitempty"`
 }
 
 // DiagnosticPackStepDescriptorDto DTO.
@@ -9635,6 +9656,15 @@ type TestPaymentsIntegrationResponse struct {
 	Items []*IntegrationTestResultItemDto `json:"items,omitempty"`
 }
 
+// StartPaymentsIntegrationTestPaymentResponse DTO.
+type StartPaymentsIntegrationTestPaymentResponse struct {
+	ResponseBase
+	PayUrl      string  `json:"payUrl,omitempty"`
+	Reference   string  `json:"reference,omitempty"`
+	AmountMinor float64 `json:"amountMinor,omitempty"`
+	Currency    string  `json:"currency,omitempty"`
+}
+
 // GetQuickConnectProvidersResponse DTO.
 type GetQuickConnectProvidersResponse struct {
 	ResponseBase
@@ -10324,6 +10354,12 @@ type ReportNorbixIssueResponse struct {
 	CaseId          string  `json:"caseId,omitempty"`
 	AlreadyReported bool    `json:"alreadyReported"`
 	TimesReported   float64 `json:"timesReported,omitempty"`
+}
+
+// GetSupportCaseAttachmentsResponse DTO.
+type GetSupportCaseAttachmentsResponse struct {
+	ResponseBase
+	Result []*SupportCaseAttachmentDto `json:"result,omitempty"`
 }
 
 // GetDiagnosticPacksResponse DTO.
@@ -13749,6 +13785,13 @@ type TestPaymentsIntegration struct {
 	IntegrationId string `json:"integrationId,omitempty"`
 }
 
+// StartPaymentsIntegrationTestPaymentRequest DTO.
+type StartPaymentsIntegrationTestPaymentRequest struct {
+	CodeMashRequestBase
+	IntegrationId string `json:"integrationId,omitempty"`
+	ReturnUrl     string `json:"returnUrl,omitempty"`
+}
+
 // DisableLogging DTO.
 type DisableLogging struct {
 	CodeMashRequestBase
@@ -14974,6 +15017,32 @@ type ReportNorbixIssueRequest struct {
 	Automatic  *bool             `json:"automatic,omitempty"`
 	ReportedBy string            `json:"reportedBy,omitempty"`
 	Evidence   map[string]string `json:"evidence,omitempty"`
+}
+
+// AddSupportCaseAttachmentRequest DTO.
+type AddSupportCaseAttachmentRequest struct {
+	RequestBase
+	CaseId string `json:"caseId,omitempty"`
+}
+
+// GetSupportCaseAttachmentsRequest DTO.
+type GetSupportCaseAttachmentsRequest struct {
+	RequestBase
+	CaseId string `json:"caseId,omitempty"`
+}
+
+// DownloadSupportCaseAttachmentRequest DTO.
+type DownloadSupportCaseAttachmentRequest struct {
+	RequestBase
+	CaseId       string `json:"caseId,omitempty"`
+	AttachmentId string `json:"attachmentId,omitempty"`
+}
+
+// DeleteSupportCaseAttachmentRequest DTO.
+type DeleteSupportCaseAttachmentRequest struct {
+	RequestBase
+	CaseId       string `json:"caseId,omitempty"`
+	AttachmentId string `json:"attachmentId,omitempty"`
 }
 
 // GetDiagnosticPacks DTO.

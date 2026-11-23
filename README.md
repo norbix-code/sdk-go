@@ -762,6 +762,8 @@ webhook payload with `webhooks.DecodePayload[norbix.PaymentOrderEvent]`, or read
 
 Debugging a payment trigger: `c.Hub.Payments.GetPaymentsWebhookRuns(ctx, req, &out)` lists the received gateway webhooks (30 days; filters `integrationId`, `eventName`, `triggerId`, `outcome` = applied / ignored / refused / failed, `fromUtc`, `toUtc`, cursor paging) and `GetPaymentsWebhookRun(ctx, "pwr_…", nil, &out)` reads one: the fact, Norbix's answer, the order change, every trigger's action outcome and the masked raw call (7 days).
 
+Testing a Neopay or Montonio integration with real money: `c.Hub.Payments.StartPaymentsIntegrationTestPayment(ctx, map[string]any{"integrationId": id, "returnUrl": "https://…"}, &out)` opens a 0.01 test payment and answers `payUrl` (open it to pay), `reference`, `amountMinor` and `currency`; other providers answer `CM-ERRORS-PAYMENTS-014`. Saving an integration again with an empty secret keeps the saved one.
+
 ## Keyless cloud connections
 
 The AWS (S3, SES, Lambda) and Azure (Blob, Communication Services, Functions)
