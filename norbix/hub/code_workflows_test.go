@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/norbix-code/sdk-go/v2/norbix/hub/dtos"
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
@@ -300,5 +301,70 @@ func TestCodeWorkflowResumeLinkNeedsNoSignIn(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+// What goes into and comes out of each step (gateway Code.Workflows.md
+// §3.7a, §3.7b, §3.2c): a step names the earlier steps it also uses, an Ask AI
+// step takes a context, and validate answers the ports of the definition. The
+// definition goes out as written; the answer reads into the generated types.
+func TestValidateCodeWorkflowSendsUsesAndContextAndReadsThePorts(t *testing.T) {
+	definition := map[string]any{
+		"name":    "Ad check",
+		"trigger": map[string]any{"source": "database", "event": "database.record.inserted", "schema": "ads"},
+		"steps": []any{
+			map[string]any{"id": "checkAd", "kind": "ai.invoke", "next": "decide", "config": map[string]any{
+				"prompt": "Is this ad fine?", "context": "@Model.Input", "contextExclude": []any{"ownerPhone"}, "reask": float64(1),
+			}},
+			map[string]any{"id": "approve", "kind": "database.update", "uses": []any{"checkAd"}},
+		},
+	}
+	var gotBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotBody, _ = io.ReadAll(r.Body)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"isValid":true,"ports":{
+			"start":{"format":"record","collection":"ads","choices":["record"]},
+			"startEvent":"database.record.inserted",
+			"steps":[
+				{"stepId":"checkAd","inputs":[{"from":"start","exit":"start","format":"record","collection":"ads"}],
+				 "output":{"format":"json","choices":["text","json"],"value":"json"},
+				 "takes":[{"field":"config.context","accepts":["text","json","record","records","event"]}]},
+				{"stepId":"approve","inputs":[{"from":"decide","exit":"then","format":"boolean"}],
+				 "output":{"format":"json","choices":["json"]},"uses":[{"stepId":"checkAd","format":"json"}]}
+			]}}`))
+	}))
+	defer srv.Close()
+
+	var answer dtos.ValidateCodeWorkflowResponse
+	if err := newCodeTestModule(srv.URL).ValidateCodeWorkflow(context.Background(), map[string]any{"definition": definition}, &answer); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var sent map[string]any
+	if err := json.Unmarshal(gotBody, &sent); err != nil {
+		t.Fatalf("body is not JSON: %v (%s)", err, gotBody)
+	}
+	gb, _ := json.Marshal(sent)
+	wb, _ := json.Marshal(map[string]any{"definition": definition})
+	if string(gb) != string(wb) {
+		t.Errorf("body: got %s want %s", gb, wb)
+	}
+
+	if answer.Ports == nil || answer.Ports.Start == nil || len(answer.Ports.Steps) != 2 {
+		t.Fatalf("ports were not read: %+v", answer.Ports)
+	}
+	if got := answer.Ports.Start.Format + " " + answer.Ports.Start.Collection; got != "record ads" {
+		t.Errorf("start output: got %q want %q", got, "record ads")
+	}
+	checkAd, approve := answer.Ports.Steps[0], answer.Ports.Steps[1]
+	if checkAd.Output.Format != "json" || checkAd.Output.Value != "json" || checkAd.Inputs[0].From != "start" {
+		t.Errorf("checkAd ports: %+v / %+v", checkAd.Output, checkAd.Inputs[0])
+	}
+	if got, _ := json.Marshal(checkAd.Takes[0]); string(got) != `{"field":"config.context","accepts":["text","json","record","records","event"]}` {
+		t.Errorf("checkAd takes: got %s", got)
+	}
+	if approve.Inputs[0].Format != "boolean" || len(approve.Uses) != 1 || approve.Uses[0].StepId != "checkAd" || approve.Uses[0].Format != "json" {
+		t.Errorf("approve ports: %+v / %+v", approve.Inputs[0], approve.Uses)
 	}
 }

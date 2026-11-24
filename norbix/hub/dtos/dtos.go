@@ -4839,6 +4839,7 @@ type WorkflowStepDto struct {
 	Else           string                `json:"else,omitempty"`
 	Rejected       string                `json:"rejected,omitempty"`
 	OnTimeout      string                `json:"onTimeout,omitempty"`
+	Uses           []string              `json:"uses,omitempty"`
 	Retry          *WorkflowStepRetryDto `json:"retry,omitempty"`
 	TimeoutSeconds *float64              `json:"timeoutSeconds,omitempty"`
 	OnError        *WorkflowOnErrorDto   `json:"onError,omitempty"`
@@ -6748,6 +6749,52 @@ type WorkflowVersionDiffDto struct {
 	ChangedFields []string               `json:"changedFields,omitempty"`
 }
 
+// WorkflowPortOutputDto DTO.
+type WorkflowPortOutputDto struct {
+	Format      string   `json:"format,omitempty"`
+	Collection  string   `json:"collection,omitempty"`
+	Choices     []string `json:"choices,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Value       string   `json:"value,omitempty"`
+}
+
+// WorkflowPortInputDto DTO.
+type WorkflowPortInputDto struct {
+	From       string `json:"from,omitempty"`
+	Exit       string `json:"exit,omitempty"`
+	Format     string `json:"format,omitempty"`
+	Collection string `json:"collection,omitempty"`
+}
+
+// WorkflowPortUsedDto DTO.
+type WorkflowPortUsedDto struct {
+	StepId     string `json:"stepId,omitempty"`
+	Format     string `json:"format,omitempty"`
+	Collection string `json:"collection,omitempty"`
+}
+
+// WorkflowPortTakeDto DTO.
+type WorkflowPortTakeDto struct {
+	Field   string   `json:"field,omitempty"`
+	Accepts []string `json:"accepts,omitempty"`
+}
+
+// WorkflowStepPortsDto DTO.
+type WorkflowStepPortsDto struct {
+	StepId string                  `json:"stepId,omitempty"`
+	Inputs []*WorkflowPortInputDto `json:"inputs,omitempty"`
+	Output *WorkflowPortOutputDto  `json:"output,omitempty"`
+	Uses   []*WorkflowPortUsedDto  `json:"uses,omitempty"`
+	Takes  []*WorkflowPortTakeDto  `json:"takes,omitempty"`
+}
+
+// WorkflowPortsDto DTO.
+type WorkflowPortsDto struct {
+	Start      *WorkflowPortOutputDto  `json:"start,omitempty"`
+	StartEvent string                  `json:"startEvent,omitempty"`
+	Steps      []*WorkflowStepPortsDto `json:"steps,omitempty"`
+}
+
 // WorkflowLastRunDto DTO.
 type WorkflowLastRunDto struct {
 	RunId      string `json:"runId,omitempty"`
@@ -6774,11 +6821,13 @@ type WorkflowListProjection struct {
 
 // WorkflowStepKindSchemaDto DTO.
 type WorkflowStepKindSchemaDto struct {
-	Kind         string         `json:"kind,omitempty"`
-	Description  string         `json:"description,omitempty"`
-	ConfigSchema map[string]any `json:"configSchema,omitempty"`
-	OutputSchema map[string]any `json:"outputSchema,omitempty"`
-	Requires     []string       `json:"requires,omitempty"`
+	Kind              string         `json:"kind,omitempty"`
+	Description       string         `json:"description,omitempty"`
+	ConfigSchema      map[string]any `json:"configSchema,omitempty"`
+	OutputSchema      map[string]any `json:"outputSchema,omitempty"`
+	OutputFormats     []string       `json:"outputFormats,omitempty"`
+	OutputDescription string         `json:"outputDescription,omitempty"`
+	Requires          []string       `json:"requires,omitempty"`
 }
 
 // WorkflowBindingFamilyDto DTO.
@@ -6787,12 +6836,31 @@ type WorkflowBindingFamilyDto struct {
 	Description string `json:"description,omitempty"`
 }
 
+// WorkflowFormatDto DTO.
+type WorkflowFormatDto struct {
+	Id          string `json:"id,omitempty"`
+	Label       string `json:"label,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// WorkflowStartOutputDto DTO.
+type WorkflowStartOutputDto struct {
+	Source      string   `json:"source,omitempty"`
+	Event       string   `json:"event,omitempty"`
+	Format      string   `json:"format,omitempty"`
+	Reads       []string `json:"reads,omitempty"`
+	Description string   `json:"description,omitempty"`
+}
+
 // WorkflowSchemaDto DTO.
 type WorkflowSchemaDto struct {
-	SchemaVersion string                       `json:"schemaVersion,omitempty"`
-	Definition    map[string]any               `json:"definition,omitempty"`
-	StepKinds     []*WorkflowStepKindSchemaDto `json:"stepKinds,omitempty"`
-	Bindings      []*WorkflowBindingFamilyDto  `json:"bindings,omitempty"`
+	SchemaVersion  string                       `json:"schemaVersion,omitempty"`
+	Definition     map[string]any               `json:"definition,omitempty"`
+	StepKinds      []*WorkflowStepKindSchemaDto `json:"stepKinds,omitempty"`
+	Bindings       []*WorkflowBindingFamilyDto  `json:"bindings,omitempty"`
+	Formats        []*WorkflowFormatDto         `json:"formats,omitempty"`
+	StartEvents    []*WorkflowStartOutputDto    `json:"startEvents,omitempty"`
+	TriggerSchemas map[string]any               `json:"triggerSchemas,omitempty"`
 }
 
 // MarketplaceListingProjection DTO.
@@ -8357,6 +8425,7 @@ type EchoResponse struct {
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
 	DisplayName string           `json:"displayName,omitempty"`
+	WebsiteUrl  string           `json:"websiteUrl,omitempty"`
 	Branding    *PublicBrandDto  `json:"branding,omitempty"`
 	Auth        *PublicAuthDto   `json:"auth,omitempty"`
 	AiChat      *PublicAiChatDto `json:"aiChat,omitempty"`
@@ -9324,6 +9393,7 @@ type ValidateCodeWorkflowResponse struct {
 	IsValid  bool                          `json:"isValid"`
 	Errors   []*WorkflowValidationIssueDto `json:"errors,omitempty"`
 	Warnings []*WorkflowValidationIssueDto `json:"warnings,omitempty"`
+	Ports    *WorkflowPortsDto             `json:"ports,omitempty"`
 }
 
 // WorkflowsResponse DTO.
