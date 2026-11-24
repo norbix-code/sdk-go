@@ -1995,6 +1995,7 @@ type EchoResponse struct {
 // PublicProjectConfigDto DTO.
 type PublicProjectConfigDto struct {
 	DisplayName string           `json:"displayName,omitempty"`
+	WebsiteUrl  string           `json:"websiteUrl,omitempty"`
 	Branding    *PublicBrandDto  `json:"branding,omitempty"`
 	Auth        *PublicAuthDto   `json:"auth,omitempty"`
 	AiChat      *PublicAiChatDto `json:"aiChat,omitempty"`

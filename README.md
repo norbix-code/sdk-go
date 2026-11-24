@@ -1101,6 +1101,17 @@ the seven an app's backend calls on the API host: `InvokeCodeWorkflow`,
 `GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
 `ResumeCodeWorkflowRunByKey`, `RetryCodeWorkflowRunStep`, `CancelCodeWorkflowRun`.
 
+Data between steps: a step reads what the step before gives as `@Model.Input` (in a condition
+or a transform: `Input`), and names the earlier steps it also reads in `uses` (`Uses` on
+`dtos.WorkflowStepDto`). `ValidateCodeWorkflow` answers `Ports` (`dtos.WorkflowPortsDto`): what
+the start hands over, and for each step what comes in, what it gives and which formats its
+input-taking fields can take; a connection that carries another format is refused
+(`CM-ERRORS-WORKFLOWS-055`). An `ai.invoke` step takes one value as data beside the prompt —
+`config.context` (for example `"@Model.Input"`, the record that started the run; its file fields
+go as files), `config.contextExclude` (fields that are not sent) and `config.reask` (0–3: ask
+again on a wrong JSON answer). The formats are listed by `GetCodeWorkflowSchema` (`Formats`,
+`StartEvents`).
+
 The start event: `SetCodeWorkflowStartEvent` (`PUT …/{Id}/start-event`) sets the event that
 starts the workflow and saves it as a draft; publishing that version writes the module's
 trigger, linked to the workflow (`ManagedByWorkflowId` on the trigger DTOs) — the trigger
