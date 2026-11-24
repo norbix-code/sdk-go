@@ -1086,7 +1086,7 @@ err := client.Hub.Code.SetMarketplaceIntegrationRoleAccess(ctx, "int_…", map[s
 Workflows are in beta; bugs may occur. A workflow is a definition of steps
 (actions, data steps, waits, branches) saved as a draft, published as a
 version and run from a trigger, a scheduled task or a call. The Hub Code
-module has the 26 routes under `/{version}/code/workflows` (`SaveCodeWorkflow`,
+module has the 29 routes under `/{version}/code/workflows` (`SaveCodeWorkflow`,
 `ValidateCodeWorkflow`, `PublishCodeWorkflow`, `GetCodeWorkflowDraft`,
 `GetCodeWorkflowVersions`, `GetCodeWorkflowVersionDiff`, `InvokeCodeWorkflow`,
 `GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
@@ -1100,6 +1100,26 @@ and the signed resume link from a notification (`OpenCodeWorkflowResumeLink`,
 the seven an app's backend calls on the API host: `InvokeCodeWorkflow`,
 `GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
 `ResumeCodeWorkflowRunByKey`, `RetryCodeWorkflowRunStep`, `CancelCodeWorkflowRun`.
+
+The start event: `SetCodeWorkflowStartEvent` (`PUT …/{Id}/start-event`) sets the event that
+starts the workflow and saves it as a draft; publishing that version writes the module's
+trigger, linked to the workflow (`ManagedByWorkflowId` on the trigger DTOs) — the trigger
+routes cannot change it (`CM-ERRORS-WORKFLOWS-052`), and a different start is refused
+(`-054`). The condition reads `Old`, `New` and `Event`, like a trigger's activation code.
+The same start can be written as `Trigger` in the definition. `TestCodeWorkflow`
+(`POST …/{Id}/test`) starts a real run with a test record, user or manual payload;
+`SaveCodeWorkflowCanvas` (`PUT …/{Id}/canvas`) saves the visual builder layout.
+
+```go
+var saved dtos.WorkflowResponse
+err := client.Hub.Code.SetCodeWorkflowStartEvent(ctx, "wf_…", map[string]any{
+	"start": map[string]any{
+		"source": "database", "event": "database.record.inserted",
+		"schema": "moto_listings", "condition": `return New.status == "review";`,
+	},
+}, &saved)
+err = client.Hub.Code.PublishCodeWorkflow(ctx, "wf_…", map[string]any{}, &saved) // writes the trigger
+```
 
 Two helpers: `client.Hub.Code.WaitForWorkflowRun` reads the run until its
 status is `succeeded`, `failed`, `cancelled` or `waiting` (defaults: 60 s

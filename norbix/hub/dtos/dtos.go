@@ -572,6 +572,7 @@ const (
 	MarketplaceFormKindPrompt         MarketplaceFormKind = "Prompt"
 	MarketplaceFormKindWeb            MarketplaceFormKind = "Web"
 	MarketplaceFormKindMembershipUser MarketplaceFormKind = "MembershipUser"
+	MarketplaceFormKindDocument       MarketplaceFormKind = "Document"
 )
 
 // CodeFunctionSource enum.
@@ -1263,6 +1264,7 @@ type EmailCampaignRequest struct {
 	Notes                   string                             `json:"notes,omitempty"`
 	MappedTokens            []*TokenMappingDto                 `json:"mappedTokens,omitempty"`
 	CampaignTime            *float64                           `json:"campaignTime,omitempty"`
+	Attachments             []string                           `json:"attachments,omitempty"`
 }
 
 // EmailToAllUsersDeliverySettingsRequest DTO.
@@ -4807,6 +4809,14 @@ type SaveSmsTemplate struct {
 	Translations         []*SmsMessageTranslationDto `json:"translations,omitempty"`
 }
 
+// WorkflowStartEventDto DTO.
+type WorkflowStartEventDto struct {
+	Source    string `json:"source,omitempty"`
+	Event     string `json:"event,omitempty"`
+	Schema    string `json:"schema,omitempty"`
+	Condition string `json:"condition,omitempty"`
+}
+
 // WorkflowStepRetryDto DTO.
 type WorkflowStepRetryDto struct {
 	Count          float64 `json:"count,omitempty"`
@@ -4849,18 +4859,19 @@ type WorkflowLimitsDto struct {
 
 // WorkflowDefinitionDto DTO.
 type WorkflowDefinitionDto struct {
-	SchemaVersion       string              `json:"schemaVersion,omitempty"`
-	WorkflowId          string              `json:"workflowId,omitempty"`
-	Name                string              `json:"name,omitempty"`
-	Description         string              `json:"description,omitempty"`
-	Version             *float64            `json:"version,omitempty"`
-	IsEnabled           bool                `json:"isEnabled"`
-	ExecutionIdentityId string              `json:"executionIdentityId,omitempty"`
-	Inputs              map[string]any      `json:"inputs,omitempty"`
-	Start               string              `json:"start,omitempty"`
-	Steps               []*WorkflowStepDto  `json:"steps,omitempty"`
-	OnError             *WorkflowOnErrorDto `json:"onError,omitempty"`
-	Limits              *WorkflowLimitsDto  `json:"limits,omitempty"`
+	SchemaVersion       string                 `json:"schemaVersion,omitempty"`
+	WorkflowId          string                 `json:"workflowId,omitempty"`
+	Name                string                 `json:"name,omitempty"`
+	Description         string                 `json:"description,omitempty"`
+	Version             *float64               `json:"version,omitempty"`
+	IsEnabled           bool                   `json:"isEnabled"`
+	ExecutionIdentityId string                 `json:"executionIdentityId,omitempty"`
+	Inputs              map[string]any         `json:"inputs,omitempty"`
+	Trigger             *WorkflowStartEventDto `json:"trigger,omitempty"`
+	Start               string                 `json:"start,omitempty"`
+	Steps               []*WorkflowStepDto     `json:"steps,omitempty"`
+	OnError             *WorkflowOnErrorDto    `json:"onError,omitempty"`
+	Limits              *WorkflowLimitsDto     `json:"limits,omitempty"`
 }
 
 // SavePushTemplate DTO.
@@ -5487,6 +5498,7 @@ type TriggerDto struct {
 	SavedByAuthId       string                       `json:"savedByAuthId,omitempty"`
 	ExecutionIdentityId string                       `json:"executionIdentityId,omitempty"`
 	ExecutionIdentity   *ExecutionIdentitySummaryDto `json:"executionIdentity,omitempty"`
+	ManagedByWorkflowId string                       `json:"managedByWorkflowId,omitempty"`
 }
 
 // SchemaTriggerDto DTO.
@@ -6033,6 +6045,7 @@ type TriggerProjectionList struct {
 	HasPreExecuteCode   bool              `json:"hasPreExecuteCode"`
 	IsEnabled           bool              `json:"isEnabled"`
 	ExecutionIdentityId string            `json:"executionIdentityId,omitempty"`
+	ManagedByWorkflowId string            `json:"managedByWorkflowId,omitempty"`
 }
 
 // MembershipTriggerProjectionList DTO.
@@ -7771,6 +7784,7 @@ type EmailCampaignDto struct {
 	DeliverySettings        *EmailCampaignDeliverySettingsDto `json:"deliverySettings,omitempty"`
 	Template                *EmailTemplateDto                 `json:"template,omitempty"`
 	ValidationIntegrationId string                            `json:"validationIntegrationId,omitempty"`
+	AttachmentFileIds       []string                          `json:"attachmentFileIds,omitempty"`
 	TemplateIsSystem        bool                              `json:"templateIsSystem"`
 }
 
@@ -7893,6 +7907,13 @@ type RemovedRecipientDto struct {
 	Tag     string                 `json:"tag,omitempty"`
 }
 
+// SentAttachmentDto DTO.
+type SentAttachmentDto struct {
+	FileName    string  `json:"fileName,omitempty"`
+	SizeBytes   float64 `json:"sizeBytes,omitempty"`
+	ContentType string  `json:"contentType,omitempty"`
+}
+
 // EmailCampaignBatchNotificationDto DTO.
 type EmailCampaignBatchNotificationDto struct {
 	CampaignBatchNotificationDto
@@ -7900,6 +7921,7 @@ type EmailCampaignBatchNotificationDto struct {
 	Recipients        *EmailRecipientsDto     `json:"recipients,omitempty"`
 	RemovedRecipients []*RemovedRecipientDto  `json:"removedRecipients,omitempty"`
 	Content           *EmailMessageContentDto `json:"content,omitempty"`
+	Attachments       []*SentAttachmentDto    `json:"attachments,omitempty"`
 	TransactionalKind string                  `json:"transactionalKind,omitempty"`
 }
 
@@ -13200,6 +13222,13 @@ type SaveCodeWorkflowCanvas struct {
 	CodeMashRequestBase
 	Id     string `json:"id,omitempty"`
 	Canvas string `json:"canvas,omitempty"`
+}
+
+// SetCodeWorkflowStartEvent DTO.
+type SetCodeWorkflowStartEvent struct {
+	CodeMashRequestBase
+	Id    string                 `json:"id,omitempty"`
+	Start *WorkflowStartEventDto `json:"start,omitempty"`
 }
 
 // PublishCodeWorkflow DTO.
