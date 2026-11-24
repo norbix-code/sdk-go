@@ -13,7 +13,7 @@ import (
 	"github.com/norbix-code/sdk-go/v2/norbix/internal/transport"
 )
 
-// The 26 workflow (beta) routes of the Code module (gateway campaign
+// The 29 workflow (beta) routes of the Code module (gateway campaign
 // audit/workflows, docs/architecture/Code.Workflows.md §7) and the module
 // method that calls each one. Every case asserts the verb, the fully-resolved
 // path (version and ids substituted) and where the parameters land: the query
@@ -32,6 +32,19 @@ func workflowCases() []codeCase {
 		"start": "approve",
 		"steps": []any{map[string]any{"id": "approve", "kind": "wait.approval"}},
 	}
+	startEvent := map[string]any{
+		"source":    "database",
+		"event":     "database.record.inserted",
+		"schema":    "moto_listings",
+		"condition": `return New.status == "review";`,
+	}
+	testRun := map[string]any{
+		"source":     "database",
+		"event":      "database.record.updated",
+		"collection": "moto_listings",
+		"recordId":   "rec_1",
+		"edits":      map[string]any{"status": "review"},
+	}
 	return []codeCase{
 		{"GetCodeWorkflows", http.MethodGet, "/v2/code/workflows",
 			url.Values{"isEnabled": {"true"}, "pageSize": {"20"}, "startingAfter": {"wf_1"}}, nil,
@@ -49,6 +62,18 @@ func workflowCases() []codeCase {
 		{"GetCodeWorkflowSchema", http.MethodGet, "/v2/code/workflows/schema", nil, nil,
 			func(ctx context.Context, m *CodeModule) error {
 				return m.GetCodeWorkflowSchema(ctx, nil, nil)
+			}},
+		{"SetCodeWorkflowStartEvent", http.MethodPut, "/v2/code/workflows/" + testWorkflowID + "/start-event", nil, map[string]any{"start": startEvent},
+			func(ctx context.Context, m *CodeModule) error {
+				return m.SetCodeWorkflowStartEvent(ctx, testWorkflowID, map[string]any{"start": startEvent}, nil)
+			}},
+		{"SaveCodeWorkflowCanvas", http.MethodPut, "/v2/code/workflows/" + testWorkflowID + "/canvas", nil, map[string]any{"canvas": `{"nodes":{}}`},
+			func(ctx context.Context, m *CodeModule) error {
+				return m.SaveCodeWorkflowCanvas(ctx, testWorkflowID, map[string]any{"canvas": `{"nodes":{}}`}, nil)
+			}},
+		{"TestCodeWorkflow", http.MethodPost, "/v2/code/workflows/" + testWorkflowID + "/test", nil, testRun,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.TestCodeWorkflow(ctx, testWorkflowID, testRun, nil)
 			}},
 		{"EnableCodeWorkflows", http.MethodPut, "/v2/code/workflows/enable", nil, map[string]any{},
 			func(ctx context.Context, m *CodeModule) error {
@@ -207,7 +232,7 @@ func TestCodeWorkflowEndpointsHitTheExpectedRoute(t *testing.T) {
 }
 
 func TestCodeWorkflowCaseCount(t *testing.T) {
-	const want = 26
+	const want = 29
 	if got := len(workflowCases()); got != want {
 		t.Errorf("code/workflows case count: got %d want %d", got, want)
 	}

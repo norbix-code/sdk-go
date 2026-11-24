@@ -775,6 +775,41 @@ func (m *CodeModule) DeleteCodeWorkflow(ctx context.Context, id string, req map[
 	}, out)
 }
 
+// Beta: SetCodeWorkflowStartEvent performs PUT /{version}/code/workflows/{Id}/start-event (scope: project).
+// Sets the event that starts the workflow ({"start": {"source", "event", "schema", "condition"}})
+// and saves it as a draft; publishing that version writes the trigger. A different start
+// answers CM-ERRORS-WORKFLOWS-054. Answers dtos.WorkflowResponse.
+func (m *CodeModule) SetCodeWorkflowStartEvent(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/start-event",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: SaveCodeWorkflowCanvas performs PUT /{version}/code/workflows/{Id}/canvas (scope: project).
+// Saves where the visual builder draws the steps ({"canvas": "<json text>"}); no draft, no
+// version. Answers dtos.WorkflowResponse.
+func (m *CodeModule) SaveCodeWorkflowCanvas(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/canvas",
+		Method:     "PUT",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // Beta: PublishCodeWorkflow performs POST /{version}/code/workflows/{Id}/publish (scope: project).
 // The draft becomes the next published version. Answers dtos.WorkflowResponse.
 func (m *CodeModule) PublishCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
@@ -897,6 +932,24 @@ func (m *CodeModule) InvokeCodeWorkflow(ctx context.Context, id string, req map[
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
 		Path:       "/{version}/code/workflows/{Id}/invoke",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
+// Beta: TestCodeWorkflow performs POST /{version}/code/workflows/{Id}/test (scope: project).
+// Starts a real run with a test event: a database record ("source": "database", "collection",
+// "recordId", "edits"), a Membership user ("source": "membership", "userId") or a manual
+// "payload". Answers dtos.InvokeCodeWorkflowResponse.
+func (m *CodeModule) TestCodeWorkflow(ctx context.Context, id string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"Id": id,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/code/workflows/{Id}/test",
 		Method:     "POST",
 		PathParams: pathParams,
 		Body:       req,
