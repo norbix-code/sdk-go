@@ -46,6 +46,12 @@ type Options struct {
 
 	Timeout        time.Duration
 	DefaultHeaders map[string]string
+
+	// OnSessionToken is called when the client swapped its bearer token for a
+	// fresh one: a project sign-in token past half its window gets one in the
+	// norbix-session-token answer header. Save the token here to keep the
+	// user signed in after a restart. Optional; an API key never triggers it.
+	OnSessionToken func(token string)
 }
 
 func env(key string) string { return os.Getenv(key) }
@@ -154,5 +160,6 @@ func buildConfig(o Options, clientName string) (*transport.Config, error) {
 		BaseURLAPIIsDefault: apiIsDefault,
 		BaseURLHubIsDefault: hubIsDefault,
 		DefaultHeaders:      headers,
+		OnSessionToken:      o.OnSessionToken,
 	}, nil
 }

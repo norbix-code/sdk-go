@@ -44,7 +44,7 @@ func (t *Transport) Stream(ctx context.Context, req Request, onEvent func(SSEEve
 	if err != nil {
 		return err
 	}
-	headers, err := t.requestHeaders(req, "text/event-stream")
+	headers, sentToken, err := t.requestHeaders(req, "text/event-stream")
 	if err != nil {
 		return err
 	}
@@ -65,6 +65,7 @@ func (t *Transport) Stream(ctx context.Context, req Request, onEvent func(SSEEve
 		return norbixerr.New(err.Error(), norbixerr.CodeNetwork).WithWrapped(err)
 	}
 	defer resp.Body.Close()
+	t.swapSessionToken(sentToken, resp.Header)
 
 	if resp.StatusCode >= 400 {
 		raw, _ := io.ReadAll(resp.Body)

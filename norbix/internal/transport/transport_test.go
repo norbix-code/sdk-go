@@ -281,3 +281,27 @@ func TestQueryExpandsTypedSlices(t *testing.T) {
 		t.Errorf("query: got %s want %s", got, want)
 	}
 }
+
+// A per-call bearer token is not the client's own: a fresh token in the
+// answer must not replace the stored one.
+func TestSessionTokenHeaderIgnoredForAPerCallToken(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(SessionTokenHeader, "jwt_new")
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+	tr := newTestTransport(srv.URL)
+	tr.Cfg.BearerToken = "jwt_stored"
+	called := false
+	tr.Cfg.OnSessionToken = func(string) { called = true }
+	err := tr.Send(context.Background(), Request{
+		Target: TargetAPI, Path: "/{version}/echo", Method: http.MethodGet,
+		Scope: ScopeProject, BearerToken: "jwt_per_call",
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tr.BearerToken() != "jwt_stored" || called {
+		t.Fatalf("per-call token answer swapped the stored token: %q, callback %v", tr.BearerToken(), called)
+	}
+}

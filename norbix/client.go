@@ -30,6 +30,10 @@ type LoginCredentials struct {
 	UserName string `json:"userName"`
 	Password string `json:"password"`
 	Provider string `json:"provider,omitempty"`
+	// RememberMe is the "Remember me" box: true keeps the sign-in for a
+	// sliding 30 days, false (the default) for a sliding 12 hours. Never
+	// longer than 90 days from the sign-in.
+	RememberMe bool `json:"rememberMe"`
 }
 
 // auth bundles the shared mutators every client embeds.
@@ -38,13 +42,17 @@ type auth struct {
 }
 
 // SetBearerToken sets the bearer token used for subsequent requests.
-func (a *auth) SetBearerToken(token string) { a.t.Cfg.BearerToken = token }
+func (a *auth) SetBearerToken(token string) { a.t.SetBearerToken(token) }
+
+// BearerToken returns the bearer token the client holds now ("" when none).
+// It changes when an answer carries a fresh one (see Options.OnSessionToken).
+func (a *auth) BearerToken() string { return a.t.BearerToken() }
 
 // SetAPIKey sets the API key used for subsequent requests.
 func (a *auth) SetAPIKey(key string) { a.t.Cfg.APIKey = key }
 
 // Logout clears the bearer token.
-func (a *auth) Logout() { a.t.Cfg.BearerToken = "" }
+func (a *auth) Logout() { a.t.SetBearerToken("") }
 
 // SetScope switches the project (and optionally account) for subsequent requests.
 // On the default API URL the calls move to the new project's own host.
@@ -85,18 +93,20 @@ func (a *auth) GetRegion() string { return a.t.Cfg.Region }
 
 // IsAuthenticated reports whether a bearer token or API key is configured.
 func (a *auth) IsAuthenticated() bool {
-	return a.t.Cfg.BearerToken != "" || a.t.Cfg.APIKey != ""
+	return a.t.BearerToken() != "" || a.t.Cfg.APIKey != ""
 }
 
 // login performs the shared /auth POST and stores the returned bearer token.
+// rememberMe is always sent, true or false.
 func (a *auth) login(ctx context.Context, creds LoginCredentials) (map[string]any, error) {
 	if creds.Provider == "" {
 		creds.Provider = "credentials"
 	}
 	body := map[string]any{
-		"userName": creds.UserName,
-		"password": creds.Password,
-		"provider": creds.Provider,
+		"userName":   creds.UserName,
+		"password":   creds.Password,
+		"provider":   creds.Provider,
+		"rememberMe": creds.RememberMe,
 	}
 	var result map[string]any
 	err := a.t.Send(ctx, transport.Request{
