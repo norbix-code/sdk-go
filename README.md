@@ -60,9 +60,32 @@ func main() {
 
 ```go
 c, _ := norbix.New(norbix.Options{ProjectID: "proj_..."})
-_, err := c.Login(ctx, norbix.LoginCredentials{UserName: "alice", Password: "..."})
+_, err := c.Login(ctx, norbix.LoginCredentials{UserName: "alice", Password: "...", RememberMe: true})
 // subsequent calls use the bearer token returned by Login
 ```
+
+### Sessions
+
+- A project user's sign-in lives a sliding 12 hours. With `RememberMe: true`
+  in `LoginCredentials` it lives a sliding 30 days. It never lives longer than
+  90 days from the sign-in. `RememberMe` is false by default, and `Login`
+  always sends it.
+- "Sliding" means: once a token is past half its window, an answer carries a
+  fresh token in the `norbix-session-token` header. The client puts it in
+  place of its bearer token by itself and calls `Options.OnSessionToken`, so
+  you can save the new token:
+
+```go
+c, _ := norbix.New(norbix.Options{
+    ProjectID:      "proj_...",
+    BearerToken:    savedToken,
+    OnSessionToken: func(token string) { save(token) },
+})
+```
+
+- The swap happens only when the call sent the client's own bearer token. An
+  API key, a per-call token or an empty header value changes nothing.
+  `c.BearerToken()` returns the token the client holds now.
 
 ### Client shapes
 
@@ -325,7 +348,8 @@ FunctionId}, InvocationType}`; a Workflow action is
 - Users (contacts) on both hosts: `GetAllContacts`, `CreateContact`,
   `GetContact`, `UpdateContact`, `DeleteContact`, `MergeContacts`,
   `RepairContactRoles`, `Add/Remove/PromoteContactIdentity`,
-  `ClearContactBounce(ctx, contactId, "Email", …)` and `SetUserAiPlan` live on
+  `ClearContactBounce(ctx, contactId, "Email", …)` and `GetUserAiPlan` (the
+  plan a user has now; plans are given by role) live on
   `client.Hub.Membership` and on `client.API.Membership` (a project API key
   calls the API host). `ImportUsers` and `RepairLoginProjectIds` are Hub only.
 - Settings: `GetAuthenticationSettings`, `GetAuthorizationSettings` and
@@ -1100,6 +1124,10 @@ and the signed resume link from a notification (`OpenCodeWorkflowResumeLink`,
 the seven an app's backend calls on the API host: `InvokeCodeWorkflow`,
 `GetCodeWorkflowRuns`, `GetCodeWorkflowRun`, `GetCodeWorkflowRunLogs`,
 `ResumeCodeWorkflowRunByKey`, `RetryCodeWorkflowRunStep`, `CancelCodeWorkflowRun`.
+
+`GetCodeWorkflows` lists newest first and takes `"search"` (part of the name);
+`GetCodeWorkflowRuns` (both hosts) takes `"workflowVersion"` for the runs of one
+published version.
 
 Data between steps: a step reads what the step before gives as `@Model.Input` (in a condition
 or a transform: `Input`), and names the earlier steps it also reads in `uses` (`Uses` on

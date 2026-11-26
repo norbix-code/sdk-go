@@ -662,7 +662,8 @@ func (m *CodeModule) GetMarketplaceFunctionRuns(ctx context.Context, req map[str
 // Path ids are positional arguments; leave them out of req.
 
 // Beta: GetCodeWorkflows performs GET /{version}/code/workflows (scope: project).
-// Query: isEnabled?, pageSize?, startingAfter?, endingBefore? (dtos.GetCodeWorkflows). Answers dtos.WorkflowsResponse.
+// Query: isEnabled?, search? (part of the name), pageSize?, startingAfter?, endingBefore?
+// (dtos.GetCodeWorkflows). Answers dtos.WorkflowsResponse, newest first.
 func (m *CodeModule) GetCodeWorkflows(ctx context.Context, req map[string]any, out any) error {
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetHub,
@@ -958,8 +959,8 @@ func (m *CodeModule) TestCodeWorkflow(ctx context.Context, id string, req map[st
 }
 
 // Beta: GetCodeWorkflowRuns performs GET /{version}/code/workflows/{Id}/runs (scope: project).
-// Query: status?, from?, to?, pageSize?, startingAfter?, endingBefore?. Answers dtos.WorkflowRunsResponse,
-// newest first.
+// Query: status?, from?, to?, workflowVersion? (runs of one published version), pageSize?,
+// startingAfter?, endingBefore?. Answers dtos.WorkflowRunsResponse, newest first.
 func (m *CodeModule) GetCodeWorkflowRuns(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,

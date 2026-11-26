@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -51,6 +52,11 @@ func workflowCases() []codeCase {
 			url.Values{"isEnabled": {"true"}, "pageSize": {"20"}, "startingAfter": {"wf_1"}}, nil,
 			func(ctx context.Context, m *CodeModule) error {
 				return m.GetCodeWorkflows(ctx, map[string]any{"isEnabled": true, "pageSize": 20, "startingAfter": "wf_1"}, nil)
+			}},
+		{"GetCodeWorkflows search", http.MethodGet, "/v2/code/workflows",
+			url.Values{"search": {"invoice"}}, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetCodeWorkflows(ctx, map[string]any{"search": "invoice"}, nil)
 			}},
 		{"SaveCodeWorkflow", http.MethodPut, "/v2/code/workflows", nil, map[string]any{"definition": definition},
 			func(ctx context.Context, m *CodeModule) error {
@@ -131,6 +137,11 @@ func workflowCases() []codeCase {
 			url.Values{"from": {"2026-10-01T00:00:00Z"}, "pageSize": {"50"}, "status": {"failed"}}, nil,
 			func(ctx context.Context, m *CodeModule) error {
 				return m.GetCodeWorkflowRuns(ctx, testWorkflowID, map[string]any{"status": "failed", "from": "2026-10-01T00:00:00Z", "pageSize": 50}, nil)
+			}},
+		{"GetCodeWorkflowRuns workflowVersion", http.MethodGet, "/v2/code/workflows/" + testWorkflowID + "/runs",
+			url.Values{"workflowVersion": {"3"}}, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetCodeWorkflowRuns(ctx, testWorkflowID, map[string]any{"workflowVersion": 3}, nil)
 			}},
 		{"ResumeCodeWorkflowRunByKey", http.MethodPost, "/v2/code/workflows/" + testWorkflowID + "/resume", nil,
 			map[string]any{"decision": "approved", "key": "order-1042", "payload": map[string]any{"note": "ok"}, "stepId": "approve"},
@@ -233,8 +244,16 @@ func TestCodeWorkflowEndpointsHitTheExpectedRoute(t *testing.T) {
 }
 
 func TestCodeWorkflowCaseCount(t *testing.T) {
+	// One case per route; a name with a space is an extra case for a query
+	// option of a route already counted (search, workflowVersion).
 	const want = 29
-	if got := len(workflowCases()); got != want {
+	got := 0
+	for _, c := range workflowCases() {
+		if !strings.Contains(c.name, " ") {
+			got++
+		}
+	}
+	if got != want {
 		t.Errorf("code/workflows case count: got %d want %d", got, want)
 	}
 }

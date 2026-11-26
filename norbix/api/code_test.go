@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -71,6 +72,11 @@ func apiCodeCases() []apiCodeCase {
 			url.Values{"pageSize": {"50"}, "status": {"failed"}}, nil,
 			func(ctx context.Context, m *CodeModule) error {
 				return m.GetCodeWorkflowRuns(ctx, testAPIWorkflowID, map[string]any{"status": "failed", "pageSize": 50}, nil)
+			}},
+		{"GetCodeWorkflowRuns workflowVersion", http.MethodGet, "/v2/code/workflows/" + testAPIWorkflowID + "/runs",
+			url.Values{"workflowVersion": {"3"}}, nil,
+			func(ctx context.Context, m *CodeModule) error {
+				return m.GetCodeWorkflowRuns(ctx, testAPIWorkflowID, map[string]any{"workflowVersion": 3}, nil)
 			}},
 		{"GetCodeWorkflowRun", http.MethodGet, "/v2/code/workflows/runs/" + testAPIWorkflowRunID, nil, nil,
 			func(ctx context.Context, m *CodeModule) error {
@@ -200,8 +206,16 @@ func TestAPICodeWorkflowInboxNeedsSignIn(t *testing.T) {
 }
 
 func TestAPICodeSurfaceSize(t *testing.T) {
+	// One case per route; a name with a space is an extra case for a query
+	// option of a route already counted (workflowVersion).
 	const want = 11
-	if got := len(apiCodeCases()); got != want {
+	got := 0
+	for _, c := range apiCodeCases() {
+		if !strings.Contains(c.name, " ") {
+			got++
+		}
+	}
+	if got != want {
 		t.Errorf("api code case count: got %d want %d", got, want)
 	}
 	if got := reflect.TypeOf(&CodeModule{}).NumMethod(); got != want {
