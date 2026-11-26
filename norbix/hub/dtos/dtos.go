@@ -650,6 +650,38 @@ const (
 	DeliveryChannelChatPlatform DeliveryChannel = "ChatPlatform"
 )
 
+// ProjectHealthSeverity enum.
+type ProjectHealthSeverity string
+
+const (
+	ProjectHealthSeverityWarning ProjectHealthSeverity = "Warning"
+	ProjectHealthSeverityError   ProjectHealthSeverity = "Error"
+)
+
+// ApplicationModule enum.
+type ApplicationModule string
+
+const (
+	ApplicationModuleAccount      ApplicationModule = "Account"
+	ApplicationModuleMembership   ApplicationModule = "Membership"
+	ApplicationModuleDatabase     ApplicationModule = "Database"
+	ApplicationModuleFiles        ApplicationModule = "Files"
+	ApplicationModuleCode         ApplicationModule = "Code"
+	ApplicationModuleEmail        ApplicationModule = "Email"
+	ApplicationModulePush         ApplicationModule = "Push"
+	ApplicationModulePayment      ApplicationModule = "Payment"
+	ApplicationModuleScheduler    ApplicationModule = "Scheduler"
+	ApplicationModuleLogging      ApplicationModule = "Logging"
+	ApplicationModuleServerEvents ApplicationModule = "ServerEvents"
+	ApplicationModuleAi           ApplicationModule = "Ai"
+	ApplicationModuleSms          ApplicationModule = "Sms"
+	ApplicationModuleProject      ApplicationModule = "Project"
+	ApplicationModuleCompliance   ApplicationModule = "Compliance"
+	ApplicationModuleContacts     ApplicationModule = "Contacts"
+	ApplicationModuleMarketplace  ApplicationModule = "Marketplace"
+	ApplicationModuleDiagnostics  ApplicationModule = "Diagnostics"
+)
+
 // AiPlanQuotaUnit enum.
 type AiPlanQuotaUnit string
 
@@ -796,38 +828,6 @@ type PermissionEffect string
 const (
 	PermissionEffectAllow PermissionEffect = "Allow"
 	PermissionEffectDeny  PermissionEffect = "Deny"
-)
-
-// ProjectHealthSeverity enum.
-type ProjectHealthSeverity string
-
-const (
-	ProjectHealthSeverityWarning ProjectHealthSeverity = "Warning"
-	ProjectHealthSeverityError   ProjectHealthSeverity = "Error"
-)
-
-// ApplicationModule enum.
-type ApplicationModule string
-
-const (
-	ApplicationModuleAccount      ApplicationModule = "Account"
-	ApplicationModuleMembership   ApplicationModule = "Membership"
-	ApplicationModuleDatabase     ApplicationModule = "Database"
-	ApplicationModuleFiles        ApplicationModule = "Files"
-	ApplicationModuleCode         ApplicationModule = "Code"
-	ApplicationModuleEmail        ApplicationModule = "Email"
-	ApplicationModulePush         ApplicationModule = "Push"
-	ApplicationModulePayment      ApplicationModule = "Payment"
-	ApplicationModuleScheduler    ApplicationModule = "Scheduler"
-	ApplicationModuleLogging      ApplicationModule = "Logging"
-	ApplicationModuleServerEvents ApplicationModule = "ServerEvents"
-	ApplicationModuleAi           ApplicationModule = "Ai"
-	ApplicationModuleSms          ApplicationModule = "Sms"
-	ApplicationModuleProject      ApplicationModule = "Project"
-	ApplicationModuleCompliance   ApplicationModule = "Compliance"
-	ApplicationModuleContacts     ApplicationModule = "Contacts"
-	ApplicationModuleMarketplace  ApplicationModule = "Marketplace"
-	ApplicationModuleDiagnostics  ApplicationModule = "Diagnostics"
 )
 
 // LanguageGapKind enum.
@@ -4564,7 +4564,6 @@ type AiPlanModelDto struct {
 // AiPlanFeaturesDto DTO.
 type AiPlanFeaturesDto struct {
 	Attachments bool `json:"attachments"`
-	Rag         bool `json:"rag"`
 	Memory      bool `json:"memory"`
 }
 
@@ -5407,6 +5406,8 @@ type ProjectBrandDto struct {
 	AccentColor string              `json:"accentColor,omitempty"`
 	Logo        *FileResourceRefDto `json:"logo,omitempty"`
 	Icon        *FileResourceRefDto `json:"icon,omitempty"`
+	LogoEnv     string              `json:"logoEnv,omitempty"`
+	IconEnv     string              `json:"iconEnv,omitempty"`
 }
 
 // NotificationsSettingsGroupDto DTO.
@@ -5726,6 +5727,7 @@ type ProjectListItemDto struct {
 	ModulesCount      float64             `json:"modulesCount,omitempty"`
 	UsersCount        float64             `json:"usersCount,omitempty"`
 	Icon              *FileResourceRefDto `json:"icon,omitempty"`
+	IconEnv           string              `json:"iconEnv,omitempty"`
 }
 
 // ProjectHealthWarningDto DTO.
@@ -5764,6 +5766,9 @@ type ProjectHealthDto struct {
 	CheckedAtUtc  string                          `json:"checkedAtUtc,omitempty"`
 	Env           string                          `json:"env,omitempty"`
 	Warnings      []*ProjectHealthWarningDto      `json:"warnings,omitempty"`
+	WarningsTotal float64                         `json:"warningsTotal,omitempty"`
+	PageNumber    float64                         `json:"pageNumber,omitempty"`
+	PageSize      *float64                        `json:"pageSize,omitempty"`
 	Stats         *ProjectHealthStatsDto          `json:"stats,omitempty"`
 	SkippedChecks []*ProjectHealthSkippedCheckDto `json:"skippedChecks,omitempty"`
 }
@@ -5783,17 +5788,6 @@ type ProjectAiPlansDto struct {
 	Plans         []*AiPlanDto               `json:"plans,omitempty"`
 	Roles         []*AiPlanRoleAssignmentDto `json:"roles,omitempty"`
 	DefaultPlanId string                     `json:"defaultPlanId,omitempty"`
-}
-
-// AiUserPlanAssignmentDto DTO.
-type AiUserPlanAssignmentDto struct {
-	UserId string `json:"userId,omitempty"`
-	PlanId string `json:"planId,omitempty"`
-}
-
-// AiUserPlansDto DTO.
-type AiUserPlansDto struct {
-	Users []*AiUserPlanAssignmentDto `json:"users,omitempty"`
 }
 
 // AiUsageGroupDto DTO.
@@ -5904,6 +5898,42 @@ type AuthDto struct {
 	CreatedOn         string              `json:"createdOn,omitempty"`
 	ModifiedOn        string              `json:"modifiedOn,omitempty"`
 	CredentialVersion string              `json:"credentialVersion,omitempty"`
+}
+
+// TeamMemberRoleDto DTO.
+type TeamMemberRoleDto struct {
+	RoleId       string   `json:"roleId,omitempty"`
+	Environments []string `json:"environments,omitempty"`
+	Projects     []string `json:"projects,omitempty"`
+}
+
+// TeamMemberPushDeviceDto DTO.
+type TeamMemberPushDeviceDto struct {
+	Id           string `json:"id,omitempty"`
+	DeviceOs     string `json:"deviceOs,omitempty"`
+	DeviceName   string `json:"deviceName,omitempty"`
+	Brand        string `json:"brand,omitempty"`
+	ModelName    string `json:"modelName,omitempty"`
+	OsName       string `json:"osName,omitempty"`
+	OsVersion    string `json:"osVersion,omitempty"`
+	AppVersion   string `json:"appVersion,omitempty"`
+	UpdatedAtUtc string `json:"updatedAtUtc,omitempty"`
+}
+
+// TeamMemberDetailsDto DTO.
+type TeamMemberDetailsDto struct {
+	Id             string                     `json:"id,omitempty"`
+	Email          string                     `json:"email,omitempty"`
+	DisplayName    string                     `json:"displayName,omitempty"`
+	FirstName      string                     `json:"firstName,omitempty"`
+	LastName       string                     `json:"lastName,omitempty"`
+	FullName       string                     `json:"fullName,omitempty"`
+	Phone          string                     `json:"phone,omitempty"`
+	Status         AuthStatus                 `json:"status,omitempty"`
+	IsAccountOwner bool                       `json:"isAccountOwner"`
+	Roles          []*TeamMemberRoleDto       `json:"roles,omitempty"`
+	PushDevices    []*TeamMemberPushDeviceDto `json:"pushDevices,omitempty"`
+	CreatedOn      string                     `json:"createdOn,omitempty"`
 }
 
 // AccountPasswordPolicyDto DTO.
@@ -6511,6 +6541,7 @@ type IntegrationTestResultItemDto struct {
 	Operation string   `json:"operation,omitempty"`
 	Result    string   `json:"result,omitempty"`
 	Errors    []string `json:"errors,omitempty"`
+	Detail    string   `json:"detail,omitempty"`
 }
 
 // MongoDbAggregateListProjection DTO.
@@ -7254,16 +7285,17 @@ type PaymentsWebhookRunOrderDto struct {
 
 // PaymentsWebhookRunActionDto DTO.
 type PaymentsWebhookRunActionDto struct {
-	TriggerId   string   `json:"triggerId,omitempty"`
-	TriggerName string   `json:"triggerName,omitempty"`
-	Action      string   `json:"action,omitempty"`
-	Status      string   `json:"status,omitempty"`
-	Reason      string   `json:"reason,omitempty"`
-	Queue       string   `json:"queue,omitempty"`
-	MessageId   string   `json:"messageId,omitempty"`
-	Deliveries  *float64 `json:"deliveries,omitempty"`
-	NorbixEvent string   `json:"norbixEvent,omitempty"`
-	At          string   `json:"at,omitempty"`
+	TriggerId    string   `json:"triggerId,omitempty"`
+	TriggerName  string   `json:"triggerName,omitempty"`
+	Action       string   `json:"action,omitempty"`
+	Status       string   `json:"status,omitempty"`
+	Reason       string   `json:"reason,omitempty"`
+	Queue        string   `json:"queue,omitempty"`
+	MessageId    string   `json:"messageId,omitempty"`
+	Deliveries   *float64 `json:"deliveries,omitempty"`
+	NorbixEvent  string   `json:"norbixEvent,omitempty"`
+	At           string   `json:"at,omitempty"`
+	TriggerRunId string   `json:"triggerRunId,omitempty"`
 }
 
 // PaymentsWebhookRunDto DTO.
@@ -7622,6 +7654,21 @@ type LlmIntegrationListProjection struct {
 	Models       []*LlmModelOptionDto `json:"models,omitempty"`
 }
 
+// LlmModelSuggestionDto DTO.
+type LlmModelSuggestionDto struct {
+	Id            string      `json:"id,omitempty"`
+	Provider      LlmProvider `json:"provider,omitempty"`
+	Vendor        string      `json:"vendor,omitempty"`
+	ModelId       string      `json:"modelId,omitempty"`
+	DisplayName   string      `json:"displayName,omitempty"`
+	Description   string      `json:"description,omitempty"`
+	Tags          []string    `json:"tags,omitempty"`
+	ContextWindow *float64    `json:"contextWindow,omitempty"`
+	Order         float64     `json:"order,omitempty"`
+	ModelsPageUrl string      `json:"modelsPageUrl,omitempty"`
+	CheckedOn     string      `json:"checkedOn,omitempty"`
+}
+
 // McpIntegrationListProjection DTO.
 type McpIntegrationListProjection struct {
 	IntegrationListProjection
@@ -7700,6 +7747,15 @@ type ResolvedResourceEntry struct {
 	Status     ResolvedRefStatus `json:"status,omitempty"`
 	Resolved   any               `json:"resolved,omitempty"`
 	Diagnostic string            `json:"diagnostic,omitempty"`
+}
+
+// UserAiPlanDto DTO.
+type UserAiPlanDto struct {
+	UserId   string `json:"userId,omitempty"`
+	PlanId   string `json:"planId,omitempty"`
+	PlanName string `json:"planName,omitempty"`
+	Reason   string `json:"reason,omitempty"`
+	RoleId   string `json:"roleId,omitempty"`
 }
 
 // ChannelSubscriptionStateDto DTO.
@@ -8651,12 +8707,6 @@ type UpdateProjectAiPlansResponse struct {
 	PlanIds []string `json:"planIds,omitempty"`
 }
 
-// GetProjectAiUserPlansResponse DTO.
-type GetProjectAiUserPlansResponse struct {
-	ResponseBase
-	Result *AiUserPlansDto `json:"result,omitempty"`
-}
-
 // GetProjectAiSettingsResponse DTO.
 type GetProjectAiSettingsResponse struct {
 	ResponseBase
@@ -8716,6 +8766,12 @@ type AccountTeamTwoFactorResponse struct {
 type GetAccountCollaboratorsResponse struct {
 	ResponseBase
 	List PaginatedResponse[*AuthDto] `json:"list,omitempty"`
+}
+
+// GetTeamMemberResponse DTO.
+type GetTeamMemberResponse struct {
+	ResponseBase
+	Item *TeamMemberDetailsDto `json:"item,omitempty"`
 }
 
 // GetAccountPasswordPolicyResponse DTO.
@@ -8786,6 +8842,12 @@ type AccountPasskeyListResponse struct {
 type AccountPasskeyEnrollmentResponse struct {
 	ResponseBase
 	RecoveryCodes []string `json:"recoveryCodes,omitempty"`
+}
+
+// OnboardingEmailsResponse DTO.
+type OnboardingEmailsResponse struct {
+	ResponseBase
+	Stopped bool `json:"stopped"`
 }
 
 // GetMyAccountUserProfileResponse DTO.
@@ -9980,6 +10042,7 @@ type AuthDeviceStartResponse struct {
 	UserCode                string  `json:"userCode,omitempty"`
 	VerificationUri         string  `json:"verificationUri,omitempty"`
 	VerificationUriComplete string  `json:"verificationUriComplete,omitempty"`
+	SignInText              string  `json:"signInText,omitempty"`
 	ExpiresIn               float64 `json:"expiresIn,omitempty"`
 	Interval                float64 `json:"interval,omitempty"`
 }
@@ -10067,6 +10130,12 @@ type GetLlmIntegrationsResponse struct {
 	ResponseBase
 	DefaultIntegrationId string                                           `json:"defaultIntegrationId,omitempty"`
 	List                 PaginatedResponse[*LlmIntegrationListProjection] `json:"list,omitempty"`
+}
+
+// GetLlmModelSuggestionsResponse DTO.
+type GetLlmModelSuggestionsResponse struct {
+	ResponseBase
+	Items []*LlmModelSuggestionDto `json:"items,omitempty"`
 }
 
 // TestLlmIntegrationResponse DTO.
@@ -10165,6 +10234,12 @@ type GetSchedulerTaskRunsResponse struct {
 type ResolveResourcesResponse struct {
 	ResponseBase
 	Resolved []*ResolvedResourceEntry `json:"resolved,omitempty"`
+}
+
+// GetUserAiPlanResponse DTO.
+type GetUserAiPlanResponse struct {
+	ResponseBase
+	Item *UserAiPlanDto `json:"item,omitempty"`
 }
 
 // GetContactResponse DTO.
@@ -11419,8 +11494,12 @@ type GetAccountRegions struct {
 // GetProjectHealth DTO.
 type GetProjectHealth struct {
 	CodeMashRequestBase
-	Refresh    bool     `json:"refresh"`
-	PeriodDays *float64 `json:"periodDays,omitempty"`
+	Refresh    bool                  `json:"refresh"`
+	PeriodDays *float64              `json:"periodDays,omitempty"`
+	Severity   ProjectHealthSeverity `json:"severity,omitempty"`
+	Module     ApplicationModule     `json:"module,omitempty"`
+	PageNumber float64               `json:"pageNumber,omitempty"`
+	PageSize   *float64              `json:"pageSize,omitempty"`
 }
 
 // WaitForProjectActiveRequest DTO.
@@ -11479,11 +11558,6 @@ type UpdateProjectAiPlanAssignments struct {
 	CodeMashRequestBase
 	Roles         []*AiPlanRoleAssignmentDto `json:"roles,omitempty"`
 	DefaultPlanId string                     `json:"defaultPlanId,omitempty"`
-}
-
-// GetProjectAiUserPlans DTO.
-type GetProjectAiUserPlans struct {
-	CodeMashRequestBase
 }
 
 // GetProjectAiSettings DTO.
@@ -11742,6 +11816,12 @@ type GetAccountCollaborators struct {
 	PageSize                 *float64 `json:"pageSize,omitempty"`
 }
 
+// GetTeamMember DTO.
+type GetTeamMember struct {
+	RequestBase
+	MemberId string `json:"memberId,omitempty"`
+}
+
 // GetAccountPasswordPolicy DTO.
 type GetAccountPasswordPolicy struct {
 	RequestBase
@@ -11804,6 +11884,7 @@ type UpdateTeamMember struct {
 	MemberId    string                 `json:"memberId,omitempty"`
 	DisplayName string                 `json:"displayName,omitempty"`
 	Roles       []*TeamMemberRoleInput `json:"roles,omitempty"`
+	Phone       string                 `json:"phone,omitempty"`
 }
 
 // UpdateAccountPolicy DTO.
@@ -11918,6 +11999,19 @@ type AccountVerifyPasskeyEnrollmentRequest struct {
 	CeremonyId          string `json:"ceremonyId,omitempty"`
 	AttestationResponse string `json:"attestationResponse,omitempty"`
 	FriendlyName        string `json:"friendlyName,omitempty"`
+}
+
+// OpenOnboardingEmailsLink DTO.
+type OpenOnboardingEmailsLink struct {
+	RequestBase
+	Token string `json:"token,omitempty"`
+}
+
+// UseOnboardingEmailsLink DTO.
+type UseOnboardingEmailsLink struct {
+	RequestBase
+	Token  string `json:"token,omitempty"`
+	Action string `json:"action,omitempty"`
 }
 
 // GetMyAccountUserProfile DTO.
@@ -13342,7 +13436,8 @@ type ValidateCodeWorkflow struct {
 // GetCodeWorkflows DTO.
 type GetCodeWorkflows struct {
 	CodeMashListPaginationRequestBase
-	IsEnabled *bool `json:"isEnabled,omitempty"`
+	IsEnabled *bool  `json:"isEnabled,omitempty"`
+	Search    string `json:"search,omitempty"`
 }
 
 // GetCodeWorkflow DTO.
@@ -13562,10 +13657,11 @@ type UseCodeWorkflowResumeLink struct {
 // GetCodeWorkflowRuns DTO.
 type GetCodeWorkflowRuns struct {
 	CodeMashListPaginationRequestBase
-	Id     string `json:"id,omitempty"`
-	Status string `json:"status,omitempty"`
-	From   string `json:"from,omitempty"`
-	To     string `json:"to,omitempty"`
+	Id              string   `json:"id,omitempty"`
+	Status          string   `json:"status,omitempty"`
+	From            string   `json:"from,omitempty"`
+	To              string   `json:"to,omitempty"`
+	WorkflowVersion *float64 `json:"workflowVersion,omitempty"`
 }
 
 // GetCodeWorkflowRun DTO.
@@ -14300,6 +14396,12 @@ type GetLlmIntegrations struct {
 	CodeMashListPaginationRequestBase
 }
 
+// GetLlmModelSuggestions DTO.
+type GetLlmModelSuggestions struct {
+	CodeMashRequestBase
+	Provider string `json:"provider,omitempty"`
+}
+
 // SaveLlmIntegration DTO.
 type SaveLlmIntegration struct {
 	CodeMashRequestBase
@@ -14486,11 +14588,10 @@ type ResolveResources struct {
 	Refs []*ResourceRefDto `json:"refs,omitempty"`
 }
 
-// SetUserAiPlan DTO.
-type SetUserAiPlan struct {
+// GetUserAiPlan DTO.
+type GetUserAiPlan struct {
 	CodeMashRequestBase
 	UserId                string `json:"userId,omitempty"`
-	PlanId                string `json:"planId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
