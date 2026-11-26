@@ -707,6 +707,24 @@ func (m *AccountModule) SendInviteToTeamMember(ctx context.Context, req map[stri
 	}, out)
 }
 
+// GetTeamMember performs GET /{version}/account/team/member/{MemberId} (scope: project).
+// It reads one team member of the signed-in account (dtos.GetTeamMemberResponse,
+// Item dtos.TeamMemberDetailsDto): the profile and phone, the roles with their
+// projects and environments, and the push devices. AccountID is not needed.
+func (m *AccountModule) GetTeamMember(ctx context.Context, memberId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"MemberId": memberId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetHub,
+		Path:       "/{version}/account/team/member/{MemberId}",
+		Method:     "GET",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // GetProjectAiSettings performs GET /{version}/account/projects/{projectId}/ai/settings (scope: project).
 func (m *AccountModule) GetProjectAiSettings(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
@@ -1029,7 +1047,9 @@ func (m *AccountModule) SetExtraRegions(ctx context.Context, req map[string]any,
 // It returns the project's health for the request environment: the problems,
 // each with a Cloud fix path, and the user / e-mail / API call numbers of the
 // period. Computed every 6 hours and cached. Optional query: "refresh" (true
-// computes it now) and "periodDays" (7, 30 — the default — or 90).
+// computes it now), "periodDays" (7, 30 — the default — or 90), "severity"
+// and "module" (only those warnings), "pageNumber" and "pageSize" (a page of
+// the warnings). Warnings come errors first; WarningsTotal counts them all.
 func (m *AccountModule) GetProjectHealth(ctx context.Context, projectId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"projectId": projectId,
@@ -1233,23 +1253,6 @@ func (m *AccountModule) UpdateProjectAiPlanAssignments(ctx context.Context, proj
 		Target:     transport.TargetHub,
 		Path:       "/{version}/account/projects/{projectId}/ai/plans/assignments",
 		Method:     "PUT",
-		PathParams: pathParams,
-		Body:       req,
-		Scope:      transport.ScopeProject,
-	}, out)
-}
-
-// GetProjectAiUserPlans performs GET /{version}/account/projects/{projectId}/ai/plans/users (scope: project).
-//
-// It lists the users that have their own end-user AI plan, with the plan id.
-func (m *AccountModule) GetProjectAiUserPlans(ctx context.Context, projectId string, req map[string]any, out any) error {
-	pathParams := map[string]string{
-		"projectId": projectId,
-	}
-	return m.t.Send(ctx, transport.Request{
-		Target:     transport.TargetHub,
-		Path:       "/{version}/account/projects/{projectId}/ai/plans/users",
-		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,

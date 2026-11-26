@@ -49,7 +49,7 @@ func apiMembershipCases() []apiMembershipCase {
 	dryRun := map[string]any{"dryRun": true}
 	updateContact := map[string]any{"displayName": "Ana B.", "language": "lt"}
 	identity := map[string]any{"authId": amAuth}
-	aiPlan := map[string]any{"planId": "plan_pro"}
+	aiPlanQuery := url.Values{"databaseIntegrationId": {"int_db"}}
 
 	invite := map[string]any{"email": "ana@example.test", "fullName": "Ana Berg", "roles": []any{"Editor"}}
 	finish := map[string]any{"token": "inv_tok", "password": "S3cret-pass!", "firstName": "Ana"}
@@ -164,8 +164,10 @@ func apiMembershipCases() []apiMembershipCase {
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.ClearContactBounce(ctx, amContact, "Sms", nil, nil)
 			}},
-		{"SetUserAiPlan", http.MethodPut, "/v2/membership/users/" + amUser + "/ai-plan", nil, aiPlan,
-			func(ctx context.Context, m *MembershipModule) error { return m.SetUserAiPlan(ctx, amUser, aiPlan, nil) }},
+		{"GetUserAiPlan", http.MethodGet, "/v2/membership/users/" + amUser + "/ai-plan", aiPlanQuery, nil,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.GetUserAiPlan(ctx, amUser, map[string]any{"databaseIntegrationId": "int_db"}, nil)
+			}},
 
 		// User edit / detail — /membership/auth user routes.
 		{"UpdateUser", http.MethodPut, "/v2/membership/auth", nil, updateUser,

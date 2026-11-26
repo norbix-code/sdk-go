@@ -58,7 +58,9 @@ A new project provisions its database in the background. Call
 project; a timeout is not an error, read `isActive` in the answer.
 `GetProjectHealth` lists the project's problems (each with a Cloud fix path)
 and its user / e-mail / API call numbers; pass `"refresh": true` to compute it
-now and `"periodDays"` (7, 30 or 90) for another window.
+now and `"periodDays"` (7, 30 or 90) for another window. `"severity"`
+(`Warning`, `Error`), `"module"`, `"pageNumber"` and `"pageSize"` filter and page
+the warnings; they come errors first, and `WarningsTotal` counts them all.
 
 ```go
 var ready map[string]any
@@ -203,13 +205,14 @@ err := client.API.Public.GetPublicProjectConfig(ctx, "proj_123", &cfg)
 | `GetProjectAiPlans(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/plans` | project |
 | `UpdateProjectAiPlans(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/plans` | project |
 | `UpdateProjectAiPlanAssignments(ctx, projectId, req, out)` | `PUT` | `/account/projects/{projectId}/ai/plans/assignments` | project |
-| `GetProjectAiUserPlans(ctx, projectId, req, out)` | `GET` | `/account/projects/{projectId}/ai/plans/users` | project |
 | `CreateAiCreditPackCheckout(ctx, projectId, req, out)` | `POST` | `/account/projects/{projectId}/ai/credits/checkout` | project |
 
 `UpdateProjectAiPlans` replaces the whole list (`"plans"`): a plan left out is
 removed. `UpdateProjectAiPlanAssignments` replaces `"roles"` and
 `"defaultPlanId"` together. Read `GetProjectAiPlans` first and send the list
-back with your change. `CreateAiCreditPackCheckout` returns a Stripe checkout
+back with your change. Plans are given by role; read the plan one user has now
+with `client.Hub.Membership.GetUserAiPlan(ctx, userId, nil, &out)`
+(`dtos.GetUserAiPlanResponse`). `CreateAiCreditPackCheckout` returns a Stripe checkout
 address for a credit pack (`"pack"`: `pack-10`, `pack-50` or `pack-200`);
 nothing is charged until the payer completes the checkout.
 
@@ -282,6 +285,7 @@ or a bearer token — no `AccountID`. Tests: `norbix/hub/account_me_test.go`.
 | `GetMyAccountUserProfile(ctx, req, out)` | `GET` | `/account/me` | project |
 | `UpdateMyAccountUserPhone(ctx, req, out)` | `PUT` | `/account/me/phone` | project |
 | `GetAccountCollaborators(ctx, req, out)` | `GET` | `/account/collaborators` | project |
+| `GetTeamMember(ctx, memberId, req, out)` | `GET` | `/account/team/member/{MemberId}` | project |
 
 The phone (E.164 format, `+` and the country code; an empty value clears it) is
 the number "Account users" SMS campaigns send to. Members without a phone are
@@ -307,6 +311,15 @@ err := client.Hub.Account.GetAccountCollaborators(ctx, map[string]any{
     "projectId": "proj_123",
     "pageSize":  50,
 }, &team)
+```
+
+`GetTeamMember` reads one member: profile and phone, the roles with their
+projects and environments, and the push devices (`dtos.TeamMemberDetailsDto`):
+
+```go
+var member dtos.GetTeamMemberResponse
+err := client.Hub.Account.GetTeamMember(ctx, "mem_123", nil, &member)
+fmt.Println(member.Item.DisplayName, member.Item.Phone)
 ```
 
 ## Subscription, bundles and Flex clusters

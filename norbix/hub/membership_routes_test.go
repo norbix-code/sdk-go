@@ -47,7 +47,7 @@ func membershipRouteCases() []membershipRouteCase {
 	importUsers := map[string]any{"dryRun": false, "ignoreDefaultRoles": true, "users": []any{map[string]any{"email": "ana@example.test"}}}
 	updateContact := map[string]any{"displayName": "Ana B.", "company": "Norbix", "city": "Vilnius"}
 	identity := map[string]any{"authId": mbAuth}
-	aiPlan := map[string]any{"planId": "plan_pro"}
+	aiPlanQuery := url.Values{"databaseIntegrationId": {"int_db"}}
 	role := map[string]any{"roleName": "Editor", "description": "Edits records", "policies": []any{"pol_1"}}
 	roleUpdate := map[string]any{"id": mbRole, "roleName": "Editor", "policies": []any{"pol_1", "pol_2"}}
 	policy := map[string]any{"policyName": "Read orders", "description": "Orders only", "policyDocumentJson": `{"statements":[]}`}
@@ -100,8 +100,10 @@ func membershipRouteCases() []membershipRouteCase {
 			func(ctx context.Context, m *MembershipModule) error {
 				return m.ClearContactBounce(ctx, mbContact, "Email", nil, nil)
 			}},
-		{"SetUserAiPlan", http.MethodPut, "/v2/membership/users/" + mbAuth + "/ai-plan", nil, aiPlan,
-			func(ctx context.Context, m *MembershipModule) error { return m.SetUserAiPlan(ctx, mbAuth, aiPlan, nil) }},
+		{"GetUserAiPlan", http.MethodGet, "/v2/membership/users/" + mbAuth + "/ai-plan", aiPlanQuery, nil,
+			func(ctx context.Context, m *MembershipModule) error {
+				return m.GetUserAiPlan(ctx, mbAuth, map[string]any{"databaseIntegrationId": "int_db"}, nil)
+			}},
 
 		// Roles.
 		{"GetRoles", http.MethodGet, "/v2/membership/roles", nil, nil,

@@ -104,3 +104,19 @@ func TestGetAccountCollaboratorsSendsFlatPagingAndTheProjectFilter(t *testing.T)
 		t.Errorf("query must not carry pagingArgs: %v", got.query)
 	}
 }
+
+func TestGetTeamMemberReadsOneMember(t *testing.T) {
+	var out dtos.GetTeamMemberResponse
+	got := captureAccount(t,
+		`{"item":{"id":"mem_1","email":"ada@example.test","phone":"+37060000000"}}`,
+		func(m *AccountModule) error {
+			return m.GetTeamMember(context.Background(), "mem_1", nil, &out)
+		})
+
+	if got.method != http.MethodGet || got.path != "/v2/account/team/member/mem_1" {
+		t.Errorf("route: got %s %s want GET /v2/account/team/member/mem_1", got.method, got.path)
+	}
+	if out.Item == nil || out.Item.Email != "ada@example.test" {
+		t.Fatalf("member not decoded: %+v", out.Item)
+	}
+}

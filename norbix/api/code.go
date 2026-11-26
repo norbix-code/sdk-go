@@ -107,8 +107,8 @@ func (m *CodeModule) InvokeCodeWorkflow(ctx context.Context, id string, req map[
 }
 
 // Beta: GetCodeWorkflowRuns performs GET /{version}/code/workflows/{Id}/runs (scope: project).
-// Query: status?, from?, to?, pageSize?, startingAfter?, endingBefore?. Answers dtos.WorkflowRunsResponse,
-// newest first.
+// Query: status?, from?, to?, workflowVersion? (runs of one published version), pageSize?,
+// startingAfter?, endingBefore?. Answers dtos.WorkflowRunsResponse, newest first.
 func (m *CodeModule) GetCodeWorkflowRuns(ctx context.Context, id string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"Id": id,

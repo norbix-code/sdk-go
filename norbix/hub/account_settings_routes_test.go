@@ -190,6 +190,11 @@ func accountSettingsCases() []accountSettingsCase {
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.GetProjectHealth(ctx, "pr_1", req, nil)
 			}, map[string]any{"refresh": true, "periodDays": 7}},
+		{"GetProjectHealth filters and pages the warnings", http.MethodGet, p + "/health",
+			url.Values{"severity": {"Error"}, "module": {"Database"}, "pageNumber": {"2"}, "pageSize": {"10"}}, nil,
+			func(ctx context.Context, m *AccountModule, req map[string]any) error {
+				return m.GetProjectHealth(ctx, "pr_1", req, nil)
+			}, map[string]any{"severity": "Error", "module": "Database", "pageNumber": 2, "pageSize": 10}},
 		{"WaitForProjectActive", http.MethodGet, p + "/wait-active", url.Values{"timeoutSeconds": {"60"}}, nil,
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.WaitForProjectActive(ctx, "pr_1", req, nil)
@@ -246,10 +251,6 @@ func accountSettingsCases() []accountSettingsCase {
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {
 				return m.UpdateProjectAiPlanAssignments(ctx, "pr_1", req, nil)
 			}, map[string]any{"roles": []any{map[string]any{"roleId": "rl_pro", "planId": "aip_2"}}, "defaultPlanId": "aip_1"}},
-		{"GetProjectAiUserPlans", http.MethodGet, p + "/ai/plans/users", nil, nil,
-			func(ctx context.Context, m *AccountModule, req map[string]any) error {
-				return m.GetProjectAiUserPlans(ctx, "pr_1", req, nil)
-			}, nil},
 		{"CreateAiCreditPackCheckout", http.MethodPost, p + "/ai/credits/checkout", nil,
 			map[string]any{"pack": "pack-10", "returnUrl": "/projects/shop/settings?tab=AI"},
 			func(ctx context.Context, m *AccountModule, req map[string]any) error {

@@ -795,18 +795,19 @@ func (m *MembershipModule) ClearContactBounce(ctx context.Context, contactId str
 	}, out)
 }
 
-// SetUserAiPlan performs PUT /{version}/membership/users/{userId}/ai-plan (scope: project).
+// GetUserAiPlan performs GET /{version}/membership/users/{userId}/ai-plan (scope: project).
 //
-// Gives the user an AI plan (planId) (dtos.SetUserAiPlan).
+// Reads the AI plan the user has now (dtos.GetUserAiPlanResponse, Item dtos.UserAiPlanDto).
+// Plans are given by role in the project's AI plans; optional query "databaseIntegrationId".
 // Served by the API host too, for project API keys.
-func (m *MembershipModule) SetUserAiPlan(ctx context.Context, userId string, req map[string]any, out any) error {
+func (m *MembershipModule) GetUserAiPlan(ctx context.Context, userId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
 		"userId": userId,
 	}
 	return m.t.Send(ctx, transport.Request{
 		Target:     transport.TargetAPI,
 		Path:       "/{version}/membership/users/{userId}/ai-plan",
-		Method:     "PUT",
+		Method:     "GET",
 		PathParams: pathParams,
 		Body:       req,
 		Scope:      transport.ScopeProject,
