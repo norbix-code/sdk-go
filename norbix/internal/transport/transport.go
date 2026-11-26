@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	norbixerr "github.com/norbix-code/sdk-go/v2/norbix/errors"
@@ -75,12 +76,63 @@ type Config struct {
 	BaseURLHubIsDefault bool
 
 	DefaultHeaders map[string]string
+
+	// OnSessionToken is called after the client swapped in a fresh bearer
+	// token from the norbix-session-token answer header, so the app can save
+	// it. Optional.
+	OnSessionToken func(token string)
 }
+
+// SessionTokenHeader is the answer header that carries a fresh project
+// sign-in token once the one sent is past half its window.
+const SessionTokenHeader = "norbix-session-token"
 
 // Transport performs requests against the Norbix API and Hub.
 type Transport struct {
 	Cfg    *Config
 	client *http.Client
+	// mu guards Cfg.BearerToken: an answer can replace it while other calls
+	// on the same client read it.
+	mu sync.Mutex
+}
+
+// BearerToken returns the stored bearer token.
+func (t *Transport) BearerToken() string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.Cfg.BearerToken
+}
+
+// SetBearerToken replaces the stored bearer token ("" clears it).
+func (t *Transport) SetBearerToken(token string) {
+	t.mu.Lock()
+	t.Cfg.BearerToken = token
+	t.mu.Unlock()
+}
+
+// swapSessionToken applies the norbix-session-token answer header. sent is
+// the stored bearer token this request carried ("" when it carried an API
+// key, a per-call token or nothing). The token is replaced only when the
+// header has a value and the stored token is still the one sent, so an
+// answer that arrives after Logout or SetBearerToken changes nothing.
+func (t *Transport) swapSessionToken(sent string, h http.Header) {
+	if sent == "" || h == nil {
+		return
+	}
+	fresh := strings.TrimSpace(h.Get(SessionTokenHeader))
+	if fresh == "" || fresh == sent {
+		return
+	}
+	t.mu.Lock()
+	if t.Cfg.BearerToken != sent {
+		t.mu.Unlock()
+		return
+	}
+	t.Cfg.BearerToken = fresh
+	t.mu.Unlock()
+	if t.Cfg.OnSessionToken != nil {
+		t.Cfg.OnSessionToken(fresh)
+	}
 }
 
 // New builds a Transport. Pass a nil http.Client to use a default one.
@@ -148,7 +200,7 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 		return err
 	}
 
-	headers, err := t.requestHeaders(req, "application/json")
+	headers, sentToken, err := t.requestHeaders(req, "application/json")
 	if err != nil {
 		return err
 	}
@@ -166,6 +218,7 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 	if err != nil {
 		return norbixerr.New(err.Error(), norbixerr.CodeNetwork).WithWrapped(err)
 	}
+	t.swapSessionToken(sentToken, resp.headers)
 
 	if resp.status >= 400 {
 		return norbixerr.FromResponse(resp.body, resp.status, resp.headers)
@@ -199,9 +252,11 @@ func (t *Transport) Send(ctx context.Context, req Request, out any) error {
 
 // requestHeaders builds the headers of one call: Accept, the client's default
 // headers, the call's own extra headers, then auth and the project / account /
-// env / region selectors (the same for Send and Stream).
-func (t *Transport) requestHeaders(req Request, accept string) (map[string]string, error) {
-	headers := map[string]string{"Accept": accept}
+// env / region selectors (the same for Send and Stream). sentToken is the
+// stored bearer token the call carries, "" for an API key, a per-call token
+// or no auth (see swapSessionToken).
+func (t *Transport) requestHeaders(req Request, accept string) (headers map[string]string, sentToken string, err error) {
+	headers = map[string]string{"Accept": accept}
 	for k, v := range t.Cfg.DefaultHeaders {
 		headers[k] = v
 	}
@@ -212,13 +267,14 @@ func (t *Transport) requestHeaders(req Request, accept string) (map[string]strin
 	if req.Scope != ScopeUnauthenticated {
 		token := req.BearerToken
 		if token == "" {
-			token = t.Cfg.BearerToken
+			token = t.BearerToken()
+			sentToken = token
 		}
 		if token == "" {
 			token = t.Cfg.APIKey
 		}
 		if token == "" && req.Scope != ScopeOptional {
-			return nil, norbixerr.New(
+			return nil, "", norbixerr.New(
 				"Not authenticated. Provide APIKey / BearerToken or login first.",
 				norbixerr.CodeNotAuthenticated,
 			)
@@ -252,7 +308,7 @@ func (t *Transport) requestHeaders(req Request, accept string) (map[string]strin
 	if region != "" {
 		headers["nb-region"] = region
 	}
-	return headers, nil
+	return headers, sentToken, nil
 }
 
 func (t *Transport) doWithRetries(
