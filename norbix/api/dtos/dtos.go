@@ -939,7 +939,6 @@ type EndUserChatPlan struct {
 	Used         float64 `json:"used,omitempty"`
 	Remaining    float64 `json:"remaining,omitempty"`
 	Attachments  bool    `json:"attachments"`
-	Rag          bool    `json:"rag"`
 	Memory       bool    `json:"memory"`
 }
 
@@ -1437,6 +1436,15 @@ type InAppNotificationDto struct {
 	SeenAtUtc    string `json:"seenAtUtc,omitempty"`
 	ReadAtUtc    string `json:"readAtUtc,omitempty"`
 	CreatedAtUtc string `json:"createdAtUtc,omitempty"`
+}
+
+// UserAiPlanDto DTO.
+type UserAiPlanDto struct {
+	UserId   string `json:"userId,omitempty"`
+	PlanId   string `json:"planId,omitempty"`
+	PlanName string `json:"planName,omitempty"`
+	Reason   string `json:"reason,omitempty"`
+	RoleId   string `json:"roleId,omitempty"`
 }
 
 // ChannelSubscriptionStateDto DTO.
@@ -2444,6 +2452,12 @@ type MarkNotificationReadResponse struct {
 // MarkAllNotificationsReadResponse DTO.
 type MarkAllNotificationsReadResponse struct {
 	ResponseBase
+}
+
+// GetUserAiPlanResponse DTO.
+type GetUserAiPlanResponse struct {
+	ResponseBase
+	Item *UserAiPlanDto `json:"item,omitempty"`
 }
 
 // GetContactResponse DTO.
@@ -3733,10 +3747,11 @@ type UseCodeWorkflowResumeLink struct {
 // GetCodeWorkflowRuns DTO.
 type GetCodeWorkflowRuns struct {
 	CodeMashListPaginationRequestBase
-	Id     string `json:"id,omitempty"`
-	Status string `json:"status,omitempty"`
-	From   string `json:"from,omitempty"`
-	To     string `json:"to,omitempty"`
+	Id              string   `json:"id,omitempty"`
+	Status          string   `json:"status,omitempty"`
+	From            string   `json:"from,omitempty"`
+	To              string   `json:"to,omitempty"`
+	WorkflowVersion *float64 `json:"workflowVersion,omitempty"`
 }
 
 // GetCodeWorkflowRun DTO.
@@ -3815,11 +3830,10 @@ type MarkAllNotificationsReadRequest struct {
 	CodeMashRequestBase
 }
 
-// SetUserAiPlan DTO.
-type SetUserAiPlan struct {
+// GetUserAiPlan DTO.
+type GetUserAiPlan struct {
 	CodeMashRequestBase
 	UserId                string `json:"userId,omitempty"`
-	PlanId                string `json:"planId,omitempty"`
 	DatabaseIntegrationId string `json:"databaseIntegrationId,omitempty"`
 }
 
