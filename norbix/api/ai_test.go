@@ -66,6 +66,10 @@ func endUserChatCases() []endUserChatCase {
 			func(ctx context.Context, m *AiModule) error {
 				return m.SetEndUserChatEntryFeedback(ctx, "sessionId_1", "entryId_1", body, nil)
 			}},
+		{"DecideEndUserChatAction", http.MethodPost, "/v2/ai/chat/sessions/sessionId_1/actions/entryId_1",
+			func(ctx context.Context, m *AiModule) error {
+				return m.DecideEndUserChatAction(ctx, "sessionId_1", "entryId_1", body, nil)
+			}},
 		{"ListEndUserChatAttachments", http.MethodGet, "/v2/ai/chat/sessions/sessionId_1/attachments",
 			func(ctx context.Context, m *AiModule) error {
 				return m.ListEndUserChatAttachments(ctx, "sessionId_1", body, nil)
@@ -139,10 +143,10 @@ func TestEnduserchatEndpointsHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// The wave-3 endUserChat surface is 16 routes; a changed count means a route arrived
-// or left untested.
+// The endUserChat surface is 17 routes (wave 3's 16 + the held-action decision,
+// 2026-11-22); a changed count means a route arrived or left untested.
 func TestEnduserchatSurfaceSize(t *testing.T) {
-	const want = 16
+	const want = 17
 	if got := len(endUserChatCases()); got != want {
 		t.Errorf("endUserChat endpoint count: got %d want %d", got, want)
 	}

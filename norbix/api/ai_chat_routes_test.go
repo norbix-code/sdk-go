@@ -86,6 +86,10 @@ func aiChatRouteCases() []aiChatRouteCase {
 			func(ctx context.Context, m *AiModule, req map[string]any) error {
 				return m.SetEndUserChatEntryFeedback(ctx, "aics_1", "ent_1", req, nil)
 			}, map[string]any{"feedback": "down"}},
+		{"DecideEndUserChatAction", http.MethodPost, "/v2/ai/chat/sessions/aics_1/actions/ent_7", nil, map[string]any{"decision": "apply"},
+			func(ctx context.Context, m *AiModule, req map[string]any) error {
+				return m.DecideEndUserChatAction(ctx, "aics_1", "ent_7", req, nil)
+			}, map[string]any{"decision": "apply"}},
 		{"ListEndUserChatAttachments", http.MethodGet, "/v2/ai/chat/sessions/aics_1/attachments", nil, nil,
 			func(ctx context.Context, m *AiModule, req map[string]any) error {
 				return m.ListEndUserChatAttachments(ctx, "aics_1", req, nil)
@@ -194,10 +198,10 @@ func TestAiChatRoutesHitTheExpectedRoute(t *testing.T) {
 	}
 }
 
-// 16 end-user chat routes + 2 AI tool routes.
+// 17 end-user chat routes (with the held-action decision) + 2 AI tool routes.
 func TestAiChatRoutesSurfaceSize(t *testing.T) {
-	if got := len(aiChatRouteCases()); got != 18 {
-		t.Errorf("end-user AI chat route count: got %d want 18", got)
+	if got := len(aiChatRouteCases()); got != 19 {
+		t.Errorf("end-user AI chat route count: got %d want 19", got)
 	}
 }
 
