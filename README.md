@@ -1223,6 +1223,18 @@ err = client.API.Ai.AiChat(ctx, authId, func(e api.AiChatEvent) bool {
 })
 ```
 
+**Held actions.** A tool that changes something (sends, pays, creates,
+deletes) is not run by the assistant: it lands in the chat as an
+`action.pending` entry with the tool and its exact arguments, and runs only on
+the signed-in user's own decision — never on the model's word.
+`DecideEndUserChatAction` with `"decision": "apply"` runs it once, as the user;
+`"dismiss"` runs nothing. The answer's `status` is `applied`, `failed` or
+`skipped`; a second decision is refused with 409.
+
+```go
+err = client.API.Ai.DecideEndUserChatAction(ctx, sessionId, entryId, map[string]any{"decision": "apply"}, &out)
+```
+
 There is no developer chat in Cloud: developers connect their own AI tool over
 MCP. The AI tool inventory an external agent can call (`GetAiTools`,
 `InvokeAiTool`) is in [docs/hub/account.md](docs/hub/account.md#ai-tools).

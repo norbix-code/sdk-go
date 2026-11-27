@@ -156,6 +156,28 @@ func (m *AiModule) SetEndUserChatEntryFeedback(ctx context.Context, sessionId st
 	}, out)
 }
 
+// DecideEndUserChatAction performs POST /{version}/ai/chat/sessions/{SessionId}/actions/{EntryId} (scope: project).
+// It is the signed-in user's own decision on an action the chat held: a tool
+// that changes something (sends, pays, creates, deletes) is not run by the
+// assistant but lands in the chat as an "action.pending" entry. req carries
+// "decision": "apply" runs it once, as the user; "dismiss" runs nothing. The
+// answer's "status" is "applied", "failed" or "skipped"; a second decision is
+// refused with HTTP 409.
+func (m *AiModule) DecideEndUserChatAction(ctx context.Context, sessionId string, entryId string, req map[string]any, out any) error {
+	pathParams := map[string]string{
+		"SessionId": sessionId,
+		"EntryId":   entryId,
+	}
+	return m.t.Send(ctx, transport.Request{
+		Target:     transport.TargetAPI,
+		Path:       "/{version}/ai/chat/sessions/{SessionId}/actions/{EntryId}",
+		Method:     "POST",
+		PathParams: pathParams,
+		Body:       req,
+		Scope:      transport.ScopeProject,
+	}, out)
+}
+
 // ListEndUserChatAttachments performs GET /{version}/ai/chat/sessions/{SessionId}/attachments (scope: project).
 func (m *AiModule) ListEndUserChatAttachments(ctx context.Context, sessionId string, req map[string]any, out any) error {
 	pathParams := map[string]string{
